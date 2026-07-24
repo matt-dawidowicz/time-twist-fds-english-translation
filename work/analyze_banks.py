@@ -9,12 +9,16 @@ from pathlib import Path
 
 
 def entropy(data: bytes) -> float:
+    """Return Shannon entropy in bits per byte for a binary region."""
+
     counts = collections.Counter(data)
     length = len(data)
     return -sum((count / length) * math.log2(count / length) for count in counts.values())
 
 
 def main() -> None:
+    """Print size and entropy diagnostics for extracted scenario banks."""
+
     parser = argparse.ArgumentParser()
     parser.add_argument("inputs", nargs="+", type=Path)
     parser.add_argument("--window", type=lambda value: int(value, 0), default=0x200)

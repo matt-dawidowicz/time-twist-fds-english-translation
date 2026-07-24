@@ -1,4 +1,14 @@
-"""English character map and record encoder for the translated game."""
+"""Encode and validate English text for Time Twist's native renderer.
+
+Visible text is represented with the game's common/extended packed symbols.
+Structural controls are written in JSON as ``{CTRL:n}`` and become native
+seven-bit control symbols.  The module also enforces the 24-tile dialogue-row
+limit that prevents wrapped characters from being overwritten by the next
+control transition.
+
+This is the patch-facing character map.  The Japanese decode-only map lives in
+:mod:`time_twist.charmap`.
+"""
 
 from __future__ import annotations
 
@@ -63,6 +73,8 @@ class EnglishTextError(ValueError):
 
 
 def _character_symbols() -> dict[str, PackedSymbol]:
+    """Build the preferred symbol for every supported visible character."""
+
     result = {
         char: PackedSymbol(SymbolKind.COMMON, value, 0, 0)
         for value, char in enumerate(COMMON_CHARACTERS)
@@ -77,7 +89,13 @@ CHARACTER_SYMBOLS = _character_symbols()
 
 
 def encode_english(text: str) -> tuple[PackedSymbol, ...]:
-    """Encode ASCII dialogue plus explicit ``{CTRL:n}`` tags."""
+    """Encode supported dialogue characters plus explicit ``{CTRL:n}`` tags.
+
+    Control 5 is rejected because the packed-text codec owns it as the
+    byte-aligned record separator.  Unsupported characters and malformed tags
+    fail with their character position so translation JSON can be corrected
+    before any ROM is rebuilt.
+    """
 
     symbols: list[PackedSymbol] = []
     position = 0
@@ -126,7 +144,7 @@ def render_english(symbols: Iterable[PackedSymbol]) -> str:
 
 
 def control_values(text: str) -> tuple[int, ...]:
-    """Return the ordered control tags in rendered dialogue."""
+    """Return ordered control values for Japanese/English parity checks."""
 
     return tuple(int(match.group(1)) for match in CONTROL_PATTERN.finditer(text))
 

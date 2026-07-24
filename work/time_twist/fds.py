@@ -25,7 +25,13 @@ class FdsFormatError(ValueError):
 
 @dataclass
 class FdsFile:
-    """One block-3/block-4 FDS file pair."""
+    """One block-3 header and block-4 payload pair from an FDS side.
+
+    ``header_offset`` points to the block-3 marker in the original archival
+    side. ``data_offset`` points to the first payload byte after block 4.
+    These offsets are diagnostic; serialization rebuilds the side in file
+    order and recalculates payload sizes.
+    """
 
     index: int
     header: bytearray
@@ -35,38 +41,56 @@ class FdsFile:
 
     @property
     def number(self) -> int:
+        """File number used by the FDS filesystem."""
+
         return self.header[1]
 
     @property
     def file_id(self) -> int:
+        """Game-assigned file identifier."""
+
         return self.header[2]
 
     @property
     def raw_name(self) -> bytes:
+        """Return the exact eight-byte on-disk filename field."""
+
         return bytes(self.header[3:11])
 
     @property
     def name(self) -> str:
+        """Return the printable FDS filename with trailing padding removed."""
+
         return self.raw_name.decode("ascii", "replace").rstrip("\0 ")
 
     @property
     def load_address(self) -> int:
+        """Return the little-endian destination address from the header."""
+
         return int.from_bytes(self.header[11:13], "little")
 
     @property
     def size(self) -> int:
+        """Current payload size, including any in-memory replacement."""
+
         return len(self.data)
 
     @property
     def kind(self) -> int:
+        """FDS file kind byte (program, character, or nametable data)."""
+
         return self.header[15]
 
     def serialized_header(self) -> bytes:
+        """Return the preserved header with its payload-size field refreshed."""
+
         header = bytearray(self.header)
         header[13:15] = len(self.data).to_bytes(2, "little")
         return bytes(header)
 
     def manifest(self) -> dict[str, Any]:
+        """Return a JSON-serializable description for audits and diffs."""
+
         return {
             "index": self.index,
             "number": self.number,
@@ -85,7 +109,12 @@ class FdsFile:
 
 @dataclass
 class FdsSide:
-    """One 65,500-byte archival FDS side."""
+    """One 65,500-byte archival FDS side.
+
+    ``padding`` retains every byte after the last parsed file.  Rebuilding
+    consumes that original padding first when a file grows and pads with zeroes
+    only if the original padding is shorter than the remaining side capacity.
+    """
 
     index: int
     disk_info: bytes
@@ -96,6 +125,8 @@ class FdsSide:
 
     @classmethod
     def parse(cls, raw: bytes, index: int) -> "FdsSide":
+        """Parse one side and validate every expected block marker/boundary."""
+
         if len(raw) != SIDE_SIZE:
             raise FdsFormatError(
                 f"side {index}: expected {SIDE_SIZE} bytes, got {len(raw)}"
@@ -166,21 +197,31 @@ class FdsSide:
 
     @property
     def game_code(self) -> str:
+        """Return the four-character game code from the disk-info block."""
+
         return self.disk_info[16:20].decode("ascii", "replace").rstrip(" ")
 
     @property
     def version(self) -> int:
+        """Return the disk version byte."""
+
         return self.disk_info[20]
 
     @property
     def side_number(self) -> int:
+        """Return the game's side number from disk metadata."""
+
         return self.disk_info[21]
 
     @property
     def disk_number(self) -> int:
+        """Return the game's disk number from disk metadata."""
+
         return self.disk_info[22]
 
     def find_file(self, name: str) -> FdsFile:
+        """Return the unique file named ``name`` or raise :class:`KeyError`."""
+
         matches = [entry for entry in self.files if entry.name == name]
         if len(matches) != 1:
             raise KeyError(
@@ -190,6 +231,13 @@ class FdsSide:
         return matches[0]
 
     def to_bytes(self) -> bytes:
+        """Rebuild this side at exactly :data:`SIDE_SIZE` bytes.
+
+        File count and payload-size fields are refreshed.  All other disk-info
+        and file-header bytes are preserved.  Growth beyond the archival side
+        capacity is rejected before a result is returned.
+        """
+
         count_block = bytearray(self.file_count_block)
         count_block[1] = len(self.files)
         output = bytearray(self.disk_info)
@@ -212,6 +260,8 @@ class FdsSide:
         return bytes(output)
 
     def manifest(self) -> dict[str, Any]:
+        """Return side layout, capacity, metadata, and per-file details."""
+
         rebuilt_used = DISK_INFO_SIZE + 2 + sum(
             FILE_HEADER_SIZE + 1 + entry.size for entry in self.files
         )
@@ -230,7 +280,7 @@ class FdsSide:
 
 @dataclass
 class FdsImage:
-    """A complete archival FDS image."""
+    """A complete raw or 16-byte-headered archival FDS image."""
 
     header: bytes
     sides: list[FdsSide]
@@ -238,6 +288,8 @@ class FdsImage:
 
     @classmethod
     def from_bytes(cls, raw: bytes, source_path: Path | None = None) -> "FdsImage":
+        """Parse all declared/raw sides and enforce exact image sizing."""
+
         if raw[:4] == b"FDS\x1A":
             if len(raw) < FDS_HEADER_SIZE:
                 raise FdsFormatError("truncated 16-byte FDS header")
@@ -269,10 +321,14 @@ class FdsImage:
 
     @classmethod
     def read(cls, path: str | Path) -> "FdsImage":
+        """Read and parse an image from ``path``."""
+
         source = Path(path)
         return cls.from_bytes(source.read_bytes(), source)
 
     def to_bytes(self) -> bytes:
+        """Serialize all sides and refresh the optional header's side count."""
+
         header = self.header
         if header:
             mutable_header = bytearray(header)
@@ -281,9 +337,13 @@ class FdsImage:
         return header + b"".join(side.to_bytes() for side in self.sides)
 
     def write(self, path: str | Path) -> None:
+        """Serialize the complete image to ``path``."""
+
         Path(path).write_bytes(self.to_bytes())
 
     def manifest(self) -> dict[str, Any]:
+        """Return a JSON-serializable image/side/file inventory."""
+
         return {
             "source": str(self.source_path) if self.source_path else None,
             "headered": bool(self.header),

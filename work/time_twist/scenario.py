@@ -1,4 +1,10 @@
-"""Parse and render Time Twist scenario-bank text."""
+"""Parse, render, and rebuild Time Twist scenario overlay text.
+
+Scenario overlays normally load at ``$A200``.  Header pointers identify group
+streams, a pointer table, and a referenced dictionary.  The parser keeps the
+complete source bank so a rebuild can replace only the variable text region
+and leave the fixed tail at its original loaded address.
+"""
 
 from __future__ import annotations
 
@@ -19,6 +25,8 @@ MAX_DICTIONARY_ENTRY_COUNT = 31
 
 @dataclass(frozen=True)
 class ScenarioRecord:
+    """One packed record identified by its group-local coordinates."""
+
     group_index: int
     record_index: int
     symbols: tuple[PackedSymbol, ...]
@@ -26,6 +34,12 @@ class ScenarioRecord:
 
 @dataclass(frozen=True)
 class ScenarioBank:
+    """Parsed scenario layout plus immutable source bytes.
+
+    ``dictionary_end_offset`` is the critical fixed-memory boundary.  Bytes at
+    and after that offset may be code or data referenced by absolute address.
+    """
+
     path: Path
     data: bytes
     load_address: int
@@ -42,12 +56,16 @@ class ScenarioError(ValueError):
 
 
 def _read_word(data: bytes, offset: int) -> int:
+    """Read a bounded little-endian pointer from a bank."""
+
     if offset < 0 or offset + 2 > len(data):
         raise ScenarioError(f"word offset ${offset:04X} is outside the bank")
     return int.from_bytes(data[offset : offset + 2], "little")
 
 
 def _to_offset(address: int, load_address: int, size: int) -> int:
+    """Convert a loaded CPU address to a validated file-relative offset."""
+
     offset = address - load_address
     if offset < 0 or offset > size:
         raise ScenarioError(
@@ -61,6 +79,8 @@ def _decode_records_to_end(
     start_offset: int,
     end_offset: int,
 ) -> tuple[tuple[PackedSymbol, ...], ...]:
+    """Decode byte-aligned records until an exact stream boundary is reached."""
+
     if start_offset > end_offset:
         raise ScenarioError("record stream starts after its end")
     reader = BitReader(data, start_offset * 8)
@@ -90,6 +110,8 @@ def _decode_fixed_records(
     start_offset: int,
     count: int,
 ) -> tuple[tuple[tuple[PackedSymbol, ...], ...], int]:
+    """Decode a known record count and return records plus the ending offset."""
+
     reader = BitReader(data, start_offset * 8)
     records: list[tuple[PackedSymbol, ...]] = []
     for _ in range(count):
@@ -107,6 +129,8 @@ def _decode_fixed_records(
 def _maximum_dictionary_reference(
     records: Iterable[Iterable[PackedSymbol]],
 ) -> int:
+    """Return the largest one-based dictionary entry referenced by records."""
+
     return max(
         (
             symbol.value
@@ -123,6 +147,8 @@ def _decode_referenced_dictionary(
     start_offset: int,
     text_records: Iterable[Iterable[PackedSymbol]],
 ) -> tuple[tuple[tuple[PackedSymbol, ...], ...], int]:
+    """Decode enough dictionary entries to close all nested references."""
+
     required_count = _maximum_dictionary_reference(text_records)
     if required_count > MAX_DICTIONARY_ENTRY_COUNT:
         raise ScenarioError(f"dictionary reference {required_count} is out of range")
@@ -144,6 +170,14 @@ def parse_scenario_bank(
     *,
     load_address: int = LOAD_ADDRESS,
 ) -> ScenarioBank:
+    """Parse group pointers, byte-aligned records, and referenced dictionary.
+
+    The pointer table stores groups 1..n; group zero has its own header pointer.
+    Group addresses must be ordered, and each group must end exactly at the
+    next group or the pointer table.  Only as many dictionary records as are
+    reachable from text (including nested source references) are decoded.
+    """
+
     data = path.read_bytes()
     dictionary_address = _read_word(data, DICTIONARY_POINTER_OFFSET)
     group_table_address = _read_word(data, GROUP_TABLE_POINTER_OFFSET)
@@ -206,7 +240,14 @@ def rebuild_scenario_bank(
     dictionary: tuple[tuple[PackedSymbol, ...], ...] = (),
     preserve_memory_footprint: bool = False,
 ) -> bytes:
-    """Rebuild a bank while preserving code/data outside its text region."""
+    """Rebuild text and pointers while preserving non-text source bytes.
+
+    ``groups`` must match the original group count.  When
+    ``preserve_memory_footprint`` is true, the rebuilt group/table/dictionary
+    area cannot cross the original ``dictionary_end_offset`` and any unused
+    bytes before that boundary are copied from the source.  The suffix begins
+    at the same file offset and therefore the same loaded CPU address.
+    """
 
     if len(groups) != len(bank.group_addresses):
         raise ScenarioError(
@@ -264,6 +305,12 @@ def render_symbols(
     *,
     _stack: tuple[int, ...] = (),
 ) -> str:
+    """Render Japanese glyphs, recursively expanded dictionary text, and tags.
+
+    Invalid references and loops remain visible as diagnostic tokens rather
+    than disappearing from the extracted source.
+    """
+
     rendered: list[str] = []
     for symbol in symbols:
         if symbol.kind is SymbolKind.COMMON:

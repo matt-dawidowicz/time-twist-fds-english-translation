@@ -11,6 +11,8 @@ from render_chr import render_chr
 
 
 def main() -> None:
+    """Render a CHR tile sheet with hexadecimal tile-index labels."""
+
     parser = argparse.ArgumentParser()
     parser.add_argument("input", type=Path)
     parser.add_argument("output", type=Path)

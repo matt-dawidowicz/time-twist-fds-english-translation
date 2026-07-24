@@ -1374,6 +1374,8 @@ GLOSSARY_SEEDS = (
 
 @dataclass
 class WorkbookRow:
+    """Complete linguistic, technical, and localization review of one record."""
+
     sequential_entry_number: int
     original_record_id: str
     bank: str
@@ -1405,7 +1407,11 @@ class WorkbookRow:
 
 
 class ReviewTableParser(HTMLParser):
+    """Minimal table parser for the supplied diagnostic review workbook."""
+
     def __init__(self) -> None:
+        """Initialize row, cell, and text-buffer state."""
+
         super().__init__(convert_charrefs=True)
         self.rows: list[list[str]] = []
         self._row: list[str] | None = None
@@ -1413,6 +1419,8 @@ class ReviewTableParser(HTMLParser):
         self._buffer: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        """Start rows/cells and preserve HTML line breaks inside a cell."""
+
         if tag == "tr":
             self._row = []
         elif self._row is not None and tag in {"td", "th"}:
@@ -1422,6 +1430,8 @@ class ReviewTableParser(HTMLParser):
             self._buffer.append("\n")
 
     def handle_endtag(self, tag: str) -> None:
+        """Finalize the current cell or append a completed table row."""
+
         if tag in {"td", "th"} and self._in_cell:
             assert self._row is not None
             self._row.append("".join(self._buffer).strip())
@@ -1431,11 +1441,15 @@ class ReviewTableParser(HTMLParser):
             self._row = None
 
     def handle_data(self, data: str) -> None:
+        """Accumulate decoded character data for the current table cell."""
+
         if self._in_cell:
             self._buffer.append(data)
 
 
 def sha256(path: Path) -> str:
+    """Return an uppercase SHA-256 fingerprint for provenance reporting."""
+
     digest = hashlib.sha256()
     with path.open("rb") as stream:
         for chunk in iter(lambda: stream.read(1 << 20), b""):
@@ -1444,14 +1458,20 @@ def sha256(path: Path) -> str:
 
 
 def collapse(text: str) -> str:
+    """Collapse all whitespace runs to one display space."""
+
     return re.sub(r"\s+", " ", text).strip()
 
 
 def without_controls(text: str, separator: str = " ") -> str:
+    """Remove explicit control markers while keeping surrounding words apart."""
+
     return collapse(CONTROL_RE.sub(separator, text))
 
 
 def naturalize_current(text: str) -> str:
+    """Turn terse patch text into readable editorial prose without retranslation."""
+
     value = CONTROL_RE.sub(" ", text)
     value = re.sub(r"\.{4,}", "…", value)
     value = value.replace("...", "…")
@@ -1462,6 +1482,8 @@ def naturalize_current(text: str) -> str:
 
 
 def conservative_reconstruction(exact: str) -> str:
+    """Apply only approved kana-to-normalized-Japanese substitutions."""
+
     text = CONTROL_RE.sub(" ", exact)
     for source, replacement in sorted(
         SAFE_RECONSTRUCTIONS.items(), key=lambda item: len(item[0]), reverse=True
@@ -1471,10 +1493,14 @@ def conservative_reconstruction(exact: str) -> str:
 
 
 def controls(text: str) -> tuple[str, ...]:
+    """Return control values in exact textual order."""
+
     return tuple(CONTROL_RE.findall(text))
 
 
 def current_capacity(source_row: dict) -> str:
+    """Describe the known or estimated storage/display constraint for a row."""
+
     if source_row["packed_bytes"].isdigit():
         return f"{source_row['packed_bytes']} packed bytes (fixed-address slot)"
     if source_row["packed_bytes"] == "group-compressed":
@@ -1490,6 +1516,8 @@ def current_capacity(source_row: dict) -> str:
 
 
 def parse_review(source_rows: list[dict]) -> tuple[dict[str, dict], Path]:
+    """Load the supplied review HTML and align every row by source order and ID."""
+
     review_path = next((path for path in REVIEW_CANDIDATES if path.exists()), None)
     if review_path is None:
         raise FileNotFoundError("no supplied translation-review HTML found")
@@ -1530,6 +1558,8 @@ def parse_review(source_rows: list[dict]) -> tuple[dict[str, dict], Path]:
 
 
 def direction_is_translation(direction: str) -> bool:
+    """Distinguish a proposed translation from generic reviewer instructions."""
+
     generic = (
         "Current English is a usable draft",
         "Retranslate clause by clause",
@@ -1540,6 +1570,8 @@ def direction_is_translation(direction: str) -> bool:
 
 
 def expanded_fixed_meaning(source_row: dict) -> str:
+    """Expand a compact fixed-address label into its natural full meaning."""
+
     exact = source_row["japanese_exact"]
     plain = collapse(CONTROL_RE.sub(" ", exact))
     if exact in FIXED_NATURAL:
@@ -1573,6 +1605,8 @@ def expanded_fixed_meaning(source_row: dict) -> str:
 
 
 def final_natural(source_row: dict, review: dict) -> str:
+    """Select the preferred unconstrained English translation for a record."""
+
     text_id = source_row["text_id"]
     if text_id in MANUAL_FINAL:
         return MANUAL_FINAL[text_id]
@@ -1586,6 +1620,8 @@ def final_natural(source_row: dict, review: dict) -> str:
 
 
 def literal_meaning(source_row: dict, review: dict, final: str) -> str:
+    """Select the closest complete reading available for the literal field."""
+
     if review["close_reading"]:
         return naturalize_current(review["close_reading"])
     if source_row["kind"] == "fixed-address":
@@ -1601,6 +1637,8 @@ def literal_meaning(source_row: dict, review: dict, final: str) -> str:
 
 
 def speaker_identity(source_row: dict, final: str) -> str:
+    """Infer speaker/narration identity from overrides, labels, and record type."""
+
     if source_row["text_id"] in SPEAKER_IDENTITY_OVERRIDES:
         return SPEAKER_IDENTITY_OVERRIDES[source_row["text_id"]]
     if source_row["kind"] == "fixed-address":
@@ -1627,6 +1665,8 @@ def speaker_identity(source_row: dict, final: str) -> str:
 
 
 def dialect_register(source_row: dict) -> str:
+    """Describe grammatical voice markers using boundary-aware expressions."""
+
     text = CONTROL_RE.sub(" ", source_row["japanese_exact"])
     notes: list[str] = []
     if re.search(r"おれ(?:は|が|の|を|に|も|だ|「|$)", text):
@@ -1673,6 +1713,8 @@ def dialect_register(source_row: dict) -> str:
 
 
 def linguistic_notes(source_row: dict, review: dict, register: str) -> str:
+    """Assemble record-specific language, culture, control, and safety notes."""
+
     notes: list[str] = []
     if register:
         notes.append(register)
@@ -1726,6 +1768,8 @@ def linguistic_notes(source_row: dict, review: dict, register: str) -> str:
 
 
 def problem_categories(qa: str, source_row: dict, final: str) -> tuple[str, ...]:
+    """Map concrete review findings to the workbook's normalized problem labels."""
+
     categories: list[str] = []
     generic_review_boilerplate = (
         "No obvious line-level defect detected automatically. "
@@ -1787,6 +1831,8 @@ def problem_categories(qa: str, source_row: dict, final: str) -> tuple[str, ...]
 def current_problems(
     source_row: dict, review: dict, final: str, categories: tuple[str, ...]
 ) -> str:
+    """Explain specifically how the current English differs from the source."""
+
     qa = review["qa"]
     manual = {
         "TT1B/g0/r31": (
@@ -1834,6 +1880,8 @@ def current_problems(
 
 
 def insert_controls_by_current_layout(final: str, current_exact: str) -> str:
+    """Redistribute existing controls across new words while preserving order."""
+
     values = list(controls(current_exact))
     if not values:
         return final
@@ -1879,6 +1927,8 @@ def patch_charset_safe(text: str) -> str:
 
 
 def patch_safe(source_row: dict, final: str, review: dict) -> tuple[str, str, bool]:
+    """Build a charset/control-safe patch candidate and flag likely expansion."""
+
     text_id = source_row["text_id"]
     if text_id in MANUAL_PATCH:
         patch = MANUAL_PATCH[text_id]
@@ -1940,6 +1990,8 @@ def patch_safe(source_row: dict, final: str, review: dict) -> tuple[str, str, bo
 def ambiguity_and_confidence(
     source_row: dict, review: dict, register: str
 ) -> tuple[str, str, bool]:
+    """Return unresolved context, confidence, and visual-verification status."""
+
     text_id = source_row["text_id"]
     if text_id == "TT3A/g2/r30":
         return (
@@ -1989,6 +2041,8 @@ def ambiguity_and_confidence(
 
 
 def make_rows() -> tuple[list[WorkbookRow], dict, Path]:
+    """Create all 2,052 ordered workbook rows from source and review data."""
+
     payload = json.loads(SOURCE_JSON.read_text(encoding="utf-8"))
     source_rows = payload["rows"]
     if len(source_rows) != 2052:
@@ -2057,6 +2111,8 @@ def make_rows() -> tuple[list[WorkbookRow], dict, Path]:
 
 
 def first_occurrence(rows: list[WorkbookRow], needle: str) -> str:
+    """Find the first stable record ID containing a glossary expression."""
+
     simplified = CONTROL_RE.sub(" ", needle)
     for row in rows:
         if needle in row.exact_japanese_source or simplified in CONTROL_RE.sub(
@@ -2067,6 +2123,8 @@ def first_occurrence(rows: list[WorkbookRow], needle: str) -> str:
 
 
 def make_glossary(rows: list[WorkbookRow]) -> list[dict]:
+    """Materialize the global terminology table and first-occurrence links."""
+
     output = []
     for category, exact, reconstructed, chosen, alternatives, notes in GLOSSARY_SEEDS:
         output.append(
@@ -2085,6 +2143,8 @@ def make_glossary(rows: list[WorkbookRow]) -> list[dict]:
 
 
 def escape_cell(value: object) -> str:
+    """Escape arbitrary workbook content for HTML while retaining line breaks."""
+
     return html.escape(str(value)).replace("\n", "<br>")
 
 
@@ -2094,6 +2154,8 @@ def render_html(
     source_payload: dict,
     review_path: Path,
 ) -> str:
+    """Render the searchable, filterable, self-contained workbook page."""
+
     counts = Counter(row.record_type for row in rows)
     footprint_summary = "; ".join(
         f"{bank} {result['used']}/{result['capacity']} bytes "
@@ -2328,6 +2390,8 @@ apply();
 
 
 def write_csv(path: Path, records: Iterable[dict]) -> None:
+    """Write non-empty record dictionaries as Excel-friendly UTF-8 CSV."""
+
     records = list(records)
     if not records:
         raise ValueError("cannot write empty CSV")
@@ -2342,6 +2406,8 @@ def write_progress(
     glossary: list[dict],
     review_path: Path,
 ) -> None:
+    """Write completion, capacity, provenance, and ambiguity status in Markdown."""
+
     gameplay = [row for row in rows if row.requires_gameplay_context == "yes"]
     technical = [row for row in rows if row.requires_technical_expansion == "yes"]
     unresolved = [row for row in rows if row.unresolved_ambiguity]
@@ -2439,6 +2505,8 @@ def write_progress(
 
 
 def write_voice_guide(glossary: list[dict]) -> None:
+    """Write the recurring-character voice reference and terminology guide."""
+
     lines = [
         "# Time Twist terminology and character-voice guide",
         "",
@@ -2491,6 +2559,8 @@ def write_voice_guide(glossary: list[dict]) -> None:
 def validate(
     rows: list[WorkbookRow], source_payload: dict, glossary: list[dict]
 ) -> None:
+    """Enforce corpus count, ID, source, control, translation, and glossary invariants."""
+
     source_rows = source_payload["rows"]
     if len(rows) != 2052:
         raise AssertionError(f"expected 2052 rows, got {len(rows)}")
@@ -2518,6 +2588,8 @@ def validate(
 
 
 def write_checkpoints(rows: list[WorkbookRow]) -> None:
+    """Write one detailed JSON checkpoint per bank plus rolling progress."""
+
     directory = WORK / "translation_workbook_banks"
     directory.mkdir(parents=True, exist_ok=True)
     completed: list[str] = []
@@ -2554,6 +2626,8 @@ def write_checkpoints(rows: list[WorkbookRow]) -> None:
 
 
 def main() -> None:
+    """Generate and validate all workbook, glossary, progress, and checkpoint files."""
+
     OUTPUTS.mkdir(parents=True, exist_ok=True)
     rows, source_payload, review_path = make_rows()
     glossary = make_glossary(rows)

@@ -27,6 +27,7 @@ The project covers both halves of the game:
 
 | Path | Contents |
 | --- | --- |
+| `docs/` | Architecture, formats, CLI, editing workflow, and development guides |
 | `work/time_twist/` | FDS parsing, compression, text, font, title, and UI patch code |
 | `work/tests/` | Regression and format-safety tests |
 | `work/translations/` | Patch-oriented bank translation maps |
@@ -41,9 +42,32 @@ The searchable translation workbook is:
 
 Machine-readable versions are provided as CSV and JSON beside it.
 
+## Documentation
+
+Start with [`docs/README.md`](docs/README.md). The documentation is organized
+by the kind of work you want to do:
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) explains the complete data
+  flow and module boundaries.
+- [`docs/FORMATS.md`](docs/FORMATS.md) documents the FDS container, scenario
+  pointers, packed-text prefix tree, dictionary references, fixed tables,
+  font layout, and title assets.
+- [`docs/TRANSLATION_WORKFLOW.md`](docs/TRANSLATION_WORKFLOW.md) is a
+  bank-by-bank extraction, editing, rebuilding, and verification tutorial.
+- [`docs/CLI_REFERENCE.md`](docs/CLI_REFERENCE.md) lists every command and its
+  safety role.
+- [`docs/WORKBOOK_PIPELINE.md`](docs/WORKBOOK_PIPELINE.md) explains how the
+  immutable comparison corpus becomes the review workbook and bank checkpoints.
+- [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) covers tests, fixtures,
+  debugging, and safe ways to add a new patch.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) summarizes the invariants a contribution
+  must preserve.
+
 ## Running the tools
 
-The code uses Python's standard library. From `work/`:
+Most parsing and patching code uses Python's standard library. Pillow is also
+required for the title-screen and image-preview commands exposed by the CLI.
+From `work/`:
 
 ```powershell
 python -m time_twist.cli --help
@@ -53,6 +77,9 @@ python -m unittest discover -s tests -v
 The command-line interface supports FDS inventory/extraction, byte-identical
 round trips, four-side combination, scenario extraction/insertion, fixed-bank
 footprint checks, font/title/UI patches, and file replacement.
+
+Run `python -m time_twist.cli COMMAND --help` for command-specific examples and
+argument descriptions.
 
 ## Required game files
 

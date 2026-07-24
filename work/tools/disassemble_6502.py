@@ -29,6 +29,8 @@ SIZES = {"imp":1,"acc":1,"imm":2,"zp":2,"zpx":2,"zpy":2,"inx":2,"iny":2,"rel":2,
 
 
 def operand(mode: str, raw: bytes, pc: int) -> str:
+    """Format an instruction operand, including resolved relative branches."""
+
     if mode == "imp": return ""
     if mode == "acc": return "A"
     if mode == "imm": return f"#${raw[1]:02X}"
@@ -48,6 +50,8 @@ def operand(mode: str, raw: bytes, pc: int) -> str:
 
 
 def main() -> None:
+    """Disassemble a selected 6502 binary range to annotated text."""
+
     parser = argparse.ArgumentParser()
     parser.add_argument("path", type=Path)
     parser.add_argument("start", type=lambda value: int(value, 0))

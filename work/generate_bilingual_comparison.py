@@ -33,6 +33,8 @@ CONTROL_RE = re.compile(r"\{CTRL:(\d+)\}")
 
 @dataclass(frozen=True)
 class ComparisonRow:
+    """One stable source record plus machine-generated review annotations."""
+
     sequence: int
     bank: str
     text_id: str
@@ -149,10 +151,14 @@ KATAKANA_CANDIDATES = (
 
 
 def _read_source_document(bank: str) -> dict:
+    """Load the decoded scenario document for a named bank."""
+
     return json.loads((WORK / "translated_scripts" / f"{bank}.json").read_text(encoding="utf-8"))
 
 
 def _source_path(document: dict) -> Path:
+    """Resolve a decoded document's source bank, including relocated extracts."""
+
     path = Path(document["source"])
     if path.exists():
         return path
@@ -163,14 +169,20 @@ def _source_path(document: dict) -> Path:
 
 
 def _readable(text: str) -> str:
+    """Expose embedded controls as visible, non-linguistic review markers."""
+
     return CONTROL_RE.sub(lambda match: f" ⟦CTRL:{match.group(1)}⟧ ", text).strip()
 
 
 def _controls(text: str) -> tuple[str, ...]:
+    """Return control-code values in their exact source order."""
+
     return tuple(CONTROL_RE.findall(text))
 
 
 def _script_profile(text: str) -> str:
+    """Summarize the visible text's hiragana, katakana, kanji, and Latin use."""
+
     clean = CONTROL_RE.sub("", text)
     counts = Counter()
     for character in clean:
@@ -221,6 +233,8 @@ ROMAJI_DIGRAPHS = {
 
 
 def _to_hiragana(character: str) -> str:
+    """Map a katakana code point to hiragana for mechanical romanization."""
+
     codepoint = ord(character)
     if 0x30A1 <= codepoint <= 0x30F6:
         return chr(codepoint - 0x60)
@@ -228,6 +242,8 @@ def _to_hiragana(character: str) -> str:
 
 
 def _romanize(text: str) -> str:
+    """Produce deterministic review-aid romaji without claiming full parsing."""
+
     clean = CONTROL_RE.sub(" / ", text)
     kana = "".join(_to_hiragana(character) for character in clean)
     output: list[str] = []
@@ -262,6 +278,8 @@ def _romanize(text: str) -> str:
 
 
 def _voice_notes(text: str) -> tuple[str, ...]:
+    """Detect boundary-aware pronoun, register, and role-language signals."""
+
     clean = CONTROL_RE.sub("", text)
     notes: list[str] = []
     for marker, explanation in VOICE_MARKERS:
@@ -294,6 +312,8 @@ def _voice_notes(text: str) -> tuple[str, ...]:
 
 
 def _orthography_notes(text: str) -> tuple[str, str]:
+    """Return exact kana plus conservative kanji/katakana review suggestions."""
+
     clean = CONTROL_RE.sub("", text)
     candidates: list[str] = []
     searchable = clean
@@ -325,6 +345,8 @@ def _orthography_notes(text: str) -> tuple[str, str]:
 
 
 def _comparison_flags(japanese: str, english: str, kind: str, packed_bytes: str) -> tuple[str, ...]:
+    """Identify control, layout, numeral, and punctuation checks for a row."""
+
     flags: list[str] = []
     source_controls = _controls(japanese)
     english_controls = _controls(english)
@@ -345,6 +367,8 @@ def _comparison_flags(japanese: str, english: str, kind: str, packed_bytes: str)
 
 
 def _priority(kind: str, voice: tuple[str, ...], orthography: tuple[str, ...], flags: tuple[str, ...]) -> str:
+    """Assign a review priority from explicit, explainable warning signals."""
+
     score = 0
     score += min(4, len(voice) * 2)
     score += 2 if any("/" in note or "context" in note for note in orthography) else 0
@@ -358,6 +382,8 @@ def _make_row(
     *, sequence: int, bank: str, text_id: str, kind: str,
     source_location: str, packed_bytes: str, japanese: str, english: str,
 ) -> ComparisonRow:
+    """Construct a fully annotated comparison row from one source record."""
+
     voice = _voice_notes(japanese)
     normalized, orthography = _orthography_notes(japanese)
     flags = _comparison_flags(japanese, english, kind, packed_bytes)
@@ -388,6 +414,8 @@ def _make_row(
 
 
 def _scenario_rows(start_sequence: int) -> list[ComparisonRow]:
+    """Collect all scenario records and verify translation-map coverage."""
+
     rows: list[ComparisonRow] = []
     sequence = start_sequence
     for bank in BANK_ORDER:
@@ -433,6 +461,8 @@ FIXED_SPECS = (
 
 
 def _fixed_rows(start_sequence: int) -> list[ComparisonRow]:
+    """Decode fixed-address record tables through their native dictionaries."""
+
     rows: list[ComparisonRow] = []
     sequence = start_sequence
     for bank, start, end, english_records in FIXED_SPECS:
@@ -463,6 +493,8 @@ def _fixed_rows(start_sequence: int) -> list[ComparisonRow]:
 
 
 def _single_packed_japanese(packed: bytes) -> str:
+    """Decode a byte string that must contain exactly one dictionary-free record."""
+
     records, end = split_records(packed, limit=1)
     if end != len(packed):
         raise ValueError("single UI record has trailing bytes")
@@ -470,6 +502,8 @@ def _single_packed_japanese(packed: bytes) -> str:
 
 
 def _ui_rows(start_sequence: int) -> list[ComparisonRow]:
+    """Collect quiz, prompt, disk, title, and direct-boot interface records."""
+
     rows: list[ComparisonRow] = []
     sequence = start_sequence
     tt1a_sections = (
@@ -519,6 +553,8 @@ def _ui_rows(start_sequence: int) -> list[ComparisonRow]:
 
 
 def build_rows() -> list[ComparisonRow]:
+    """Build the ordered corpus and reject duplicate stable record IDs."""
+
     scenario = _scenario_rows(1)
     fixed = _fixed_rows(len(scenario) + 1)
     interface = _ui_rows(len(scenario) + len(fixed) + 1)
@@ -529,6 +565,8 @@ def build_rows() -> list[ComparisonRow]:
 
 
 def _write_tsv(rows: list[ComparisonRow], path: Path) -> None:
+    """Write spreadsheet-friendly UTF-8 TSV with a BOM."""
+
     with path.open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=ComparisonRow.__dataclass_fields__, dialect="excel-tab")
         writer.writeheader()
@@ -536,6 +574,8 @@ def _write_tsv(rows: list[ComparisonRow], path: Path) -> None:
 
 
 def _write_json(rows: list[ComparisonRow], path: Path) -> None:
+    """Write the lossless canonical comparison corpus as UTF-8 JSON."""
+
     payload = {
         "schema": "time-twist-bilingual-comparison-v1",
         "source_of_truth": "japanese_exact is decoded from immutable Japanese banks; annotations are editorial aids",
@@ -545,10 +585,14 @@ def _write_json(rows: list[ComparisonRow], path: Path) -> None:
 
 
 def _cell(value: object) -> str:
+    """Escape a value for safe insertion into the generated HTML table."""
+
     return html.escape(str(value)).replace("\n", "<br>")
 
 
 def _write_html(rows: list[ComparisonRow], path: Path) -> None:
+    """Write the searchable human-review table."""
+
     counts = Counter(row.kind for row in rows)
     priorities = Counter(row.review_priority for row in rows)
     body_rows = []
@@ -592,6 +636,8 @@ function filter(){{const needle=q.value.toLowerCase();let count=0;for(const row 
 
 
 def _write_guide(rows: list[ComparisonRow], path: Path) -> None:
+    """Write corpus counts, caveats, and a prioritized review checklist."""
+
     banks = Counter(row.bank for row in rows if row.kind == "scenario")
     priority = Counter(row.review_priority for row in rows)
     voice_rows = sum(bool(row.voice_dialect_register) for row in rows)
@@ -638,6 +684,8 @@ The staff roll is graphics/program data rather than part of the decoded packed-t
 
 
 def main() -> None:
+    """Regenerate every bilingual comparison artifact from source documents."""
+
     rows = build_rows()
     OUTPUTS.mkdir(parents=True, exist_ok=True)
     _write_tsv(rows, OUTPUTS / "Time Twist Japanese-English script comparison.tsv")

@@ -13,6 +13,8 @@ from enum import Enum
 
 
 class SymbolKind(str, Enum):
+    """Kinds selected by the native packed-text prefix tree."""
+
     COMMON = "common"
     EXTENDED = "extended"
     DICTIONARY = "dictionary"
@@ -22,6 +24,13 @@ class SymbolKind(str, Enum):
 
 @dataclass(frozen=True)
 class PackedSymbol:
+    """One decoded or to-be-encoded native text token.
+
+    ``start_bit`` and ``end_bit`` retain source positions during decoding.
+    Encoders construct symbols with zero positions; the final writer assigns
+    physical positions implicitly as it emits the stream.
+    """
+
     kind: SymbolKind
     value: int
     start_bit: int
@@ -43,13 +52,19 @@ class BitReader:
 
     @property
     def byte_position(self) -> int:
+        """Current whole-byte offset (floor of the absolute bit position)."""
+
         return self.bit_position // 8
 
     @property
     def at_byte_boundary(self) -> bool:
+        """Whether the next bit begins a new byte."""
+
         return self.bit_position % 8 == 0
 
     def read_bit(self) -> int:
+        """Read one bit, advancing from bit 7 toward bit 0 in each byte."""
+
         if self.bit_position >= len(self.data) * 8:
             raise PackedTextError("unexpected end of packed-text stream")
         byte_index, within_byte = divmod(self.bit_position, 8)
@@ -57,6 +72,8 @@ class BitReader:
         return (self.data[byte_index] >> (7 - within_byte)) & 1
 
     def read_bits(self, count: int) -> int:
+        """Read ``count`` bits as one big-endian integer."""
+
         if count < 0:
             raise ValueError("bit count cannot be negative")
         value = 0
@@ -65,6 +82,8 @@ class BitReader:
         return value
 
     def align_to_next_byte(self) -> None:
+        """Discard unread padding bits in the current record-separator byte."""
+
         remainder = self.bit_position % 8
         if remainder:
             self.bit_position += 8 - remainder
@@ -78,6 +97,8 @@ class BitWriter:
         self.bit_position = 0
 
     def write_bits(self, value: int, count: int) -> None:
+        """Write ``value`` in exactly ``count`` bits, most-significant first."""
+
         if count < 0 or value < 0 or value >= (1 << count):
             raise ValueError(f"value {value} does not fit in {count} bits")
         for shift in range(count - 1, -1, -1):
@@ -88,11 +109,15 @@ class BitWriter:
             self.bit_position += 1
 
     def align_to_next_byte(self) -> None:
+        """Leave the rest of the current byte as zero padding."""
+
         remainder = self.bit_position % 8
         if remainder:
             self.bit_position += 8 - remainder
 
     def to_bytes(self) -> bytes:
+        """Return an immutable copy of the emitted bytes."""
+
         return bytes(self._bytes)
 
 
@@ -162,7 +187,12 @@ def encode_symbol(writer: BitWriter, symbol: PackedSymbol) -> None:
 
 
 def pack_records(records: list[tuple[PackedSymbol, ...]] | tuple[tuple[PackedSymbol, ...], ...]) -> bytes:
-    """Pack byte-aligned records with the engine's control-5 separator."""
+    """Pack records with control-5 separators and byte-aligned starts.
+
+    Record payloads cannot contain a separator themselves.  The writer emits
+    exactly one separator after each record and pads to the next byte exactly
+    as the game's lookup routine does.
+    """
 
     writer = BitWriter()
     separator = PackedSymbol(SymbolKind.SEPARATOR, 5, 0, 0)

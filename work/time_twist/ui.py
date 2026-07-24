@@ -1,4 +1,14 @@
-"""Size-neutral patches for packed text outside scenario record groups."""
+"""Patch fixed-address UI text and small verified program fragments.
+
+Normal dialogue is rebuilt through :mod:`time_twist.scenario`; this module owns
+text that is referenced directly by 6502 code or stored in separate overlays.
+Most replacements must preserve a complete table and every individual packed
+record boundary.  Short code patches compare exact source bytes before
+writing, and larger tables use SHA-256 revision guards.
+
+Public ``patched_*`` functions are pure: they accept one extracted FDS file as
+``bytes`` and return replacement bytes or raise :class:`UiPatchError`.
+"""
 
 from __future__ import annotations
 
@@ -16,6 +26,10 @@ from .textcodec import (
     split_records,
 )
 
+
+# ---------------------------------------------------------------------------
+# Shared NOV2/NOV4 prompts and input behavior
+# ---------------------------------------------------------------------------
 
 START_PROMPT_OFFSET = 0x2651
 NOV4_START_PROMPT_OFFSET = 0x0095
@@ -59,6 +73,10 @@ ORIGINAL_WAIT_PROMPT = bytes.fromhex(
     "2F 33 30 FE 37 FB F1 1E 40 7C 79 40 FD"
 )
 ENGLISH_WAIT_PROMPT = pack_records([encode_english("PLEASE WAIT... ")])
+
+# ---------------------------------------------------------------------------
+# Kouhen direct-boot guard (SON-KOUH)
+# ---------------------------------------------------------------------------
 
 # Kouhen's 739-byte startup program is used only when the second game is
 # booted directly.  It draws a Japanese warning from 21 private 1bpp tiles and
@@ -163,6 +181,10 @@ NOV2_SINGLE_CHOICE_B_PATCHES = (
         "B action detour",
     ),
 )
+
+# ---------------------------------------------------------------------------
+# Bank-specific fixed-address record tables
+# ---------------------------------------------------------------------------
 
 # TT1A keeps the blood-type choices in a fixed-address record table before
 # its normal scenario groups.  NOV2 directly references the fourth record at
@@ -807,7 +829,13 @@ def _encode_with_dictionary(
     text: str,
     dictionary: tuple[tuple[PackedSymbol, ...], ...],
 ) -> tuple[PackedSymbol, ...]:
-    """Encode one label using the cheapest matching flat dictionary entries."""
+    """Encode one label using the cheapest matching flat dictionary entries.
+
+    Dynamic programming chooses, at each literal position, between emitting
+    the next symbol and any dictionary entry that matches the remaining text.
+    The cost is measured in native bits, so the result is the shortest symbol
+    sequence for the fixed dictionary rather than a greedy word replacement.
+    """
 
     source = encode_english(text)
     normalized_dictionary = tuple(
@@ -882,7 +910,13 @@ def _patched_fixed_record_table(
     records: tuple[str, ...],
     component: str,
 ) -> bytes:
-    """Translate a fixed table while preserving every record boundary."""
+    """Translate a fixed table while preserving every record boundary.
+
+    The complete Japanese table is hash-checked, decoded into byte-aligned
+    record slots, and rebuilt with the bank's already-generated English
+    dictionary.  Each replacement is independently padded to its original slot
+    size before the complete table is written back.
+    """
 
     source = data[start:end]
     if len(source) != end - start:

@@ -1,4 +1,15 @@
-"""Build compact native dictionaries for fully translated scenario banks."""
+"""Build compact dictionaries that the original scenario engine can decode.
+
+The game offers 31 one-based dictionary references.  Each reference costs
+nine bits, so a repeated literal sequence is useful only when the references
+save more space than the packed dictionary entry consumes.  The compressor
+uses deterministic greedy selection and creates flat entries containing only
+literal common/extended symbols.
+
+The result is not a general-purpose optimal compressor.  It is designed around
+the game's fixed RAM reservation, native prefix tree, byte-aligned record
+separators, and fixed tables that may require particular entries.
+"""
 
 from __future__ import annotations
 
@@ -14,6 +25,8 @@ MAX_CANDIDATES_TO_EVALUATE = 200
 
 
 def symbol_bit_length(symbol: PackedSymbol) -> int:
+    """Return the native encoded width of a non-separator record symbol."""
+
     if symbol.kind is SymbolKind.COMMON:
         return 6
     if symbol.kind in (SymbolKind.EXTENDED, SymbolKind.DICTIONARY):
@@ -27,6 +40,8 @@ def packed_size(
     groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
     dictionary: tuple[tuple[PackedSymbol, ...], ...],
 ) -> int:
+    """Return total bytes for all record groups plus the dictionary stream."""
+
     return sum(len(pack_records(group)) for group in groups) + len(
         pack_records(dictionary)
     )
@@ -35,6 +50,8 @@ def packed_size(
 def _candidate_counts(
     groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
 ) -> Counter[tuple[PackedSymbol, ...]]:
+    """Count repeated literal substrings that are legal flat entries."""
+
     counts: Counter[tuple[PackedSymbol, ...]] = Counter()
     for group in groups:
         for record in group:
@@ -62,6 +79,8 @@ def _replace_candidate(
     candidate: tuple[PackedSymbol, ...],
     reference: PackedSymbol,
 ) -> tuple[tuple[tuple[PackedSymbol, ...], ...], ...]:
+    """Replace non-overlapping occurrences of ``candidate`` in every record."""
+
     candidate_length = len(candidate)
     rebuilt_groups: list[tuple[tuple[PackedSymbol, ...], ...]] = []
     for group in groups:
@@ -89,11 +108,19 @@ def compress_english_groups(
     tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
     tuple[tuple[PackedSymbol, ...], ...],
 ]:
-    """Return groups and a flat native-compatible dictionary, chosen greedily.
+    """Return compressed groups and a flat native-compatible dictionary.
 
     ``required_entries`` lets a bank reserve dictionary slots for packed text
     outside its normal scenario groups.  Those entries are installed first,
-    then the remaining slots are selected with the ordinary scenario corpus.
+    then the remaining slots are selected greedily from the scenario corpus.
+
+    Candidate ranking starts with an inexpensive bit-saving estimate.  The
+    best 200 candidates are then measured by repacking the complete groups and
+    dictionary, which accounts for separator alignment.  Selection stops when
+    no candidate reduces the final byte count or all 31 slots are occupied.
+
+    The transformation is deterministic: identical input produces identical
+    group symbols, dictionary order, and packed size.
     """
 
     if len(required_entries) > MAX_DICTIONARY_ENTRIES:
@@ -162,7 +189,11 @@ def expand_dictionary_symbols(
     *,
     _stack: tuple[int, ...] = (),
 ) -> tuple[PackedSymbol, ...]:
-    """Expand nested dictionary references for encoder verification."""
+    """Recursively expand references and reject out-of-range values or loops.
+
+    English dictionaries are flat, but this accepts nested source dictionaries
+    so verification can compare fully expanded symbols in either form.
+    """
 
     expanded: list[PackedSymbol] = []
     for symbol in symbols:

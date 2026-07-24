@@ -1,4 +1,13 @@
-"""Generate and install the translated 8x8 dialogue font in NOV4."""
+"""Generate and install the translated 8x8 dialogue font in NOV4.
+
+The game expands inverse one-bit glyph rows stored in NOV4.  Each deterministic
+5x7 pattern is inset one pixel inside an 8x8 tile, avoiding desktop-font
+antialiasing and ensuring the same binary output on every machine.
+
+Tile IDs are derived from the common/extended runtime lookup tables used by
+the packed text renderer.  Updating a character map therefore also requires a
+matching glyph and regression coverage here.
+"""
 
 from __future__ import annotations
 
@@ -136,6 +145,8 @@ class FontPatchError(ValueError):
 
 
 def common_tile_id(value: int) -> int:
+    """Map a common packed value to the tile selected by NOV2."""
+
     if 0 <= value <= 45:
         return 0xC0 + value
     if value == 46:
@@ -146,7 +157,12 @@ def common_tile_id(value: int) -> int:
 
 
 def render_glyph(char: str) -> bytes:
-    """Render one crisp glyph in the inverse 1bpp format expanded by NOV4."""
+    """Render one crisp glyph in the inverse 1bpp format expanded by NOV4.
+
+    A blank stored row is ``$FF``.  Every ``1`` in the human-readable 5x7
+    pattern clears the corresponding stored bit, producing an ink pixel when
+    NOV4 expands the table into NES CHR.
+    """
 
     if len(char) != 1:
         raise FontPatchError(f"expected one character, got {char!r}")
@@ -168,7 +184,11 @@ def render_glyph(char: str) -> bytes:
 def patched_nov4_font(
     data: bytes,
 ) -> bytes:
-    """Return NOV4 with every translated dialogue glyph installed."""
+    """Return a size-identical NOV4 with every translated glyph installed.
+
+    Only recovered font-table rows are changed.  A short/unknown NOV4 is
+    rejected instead of being partially patched.
+    """
 
     if len(data) < NOV4_FONT_BASE_OFFSET + (0xFE + 1) * 8:
         raise FontPatchError("NOV4 is too short for its recovered font table")

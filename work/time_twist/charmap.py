@@ -1,4 +1,14 @@
-"""Recovered character map for Time Twist's packed scenario text."""
+"""Render Time Twist's recovered Japanese packed-text character codes.
+
+This module is intentionally decode-only.  :mod:`time_twist.textcodec`
+identifies common and extended numeric symbols without assigning language,
+then this module maps those values to the glyphs used by the Japanese ROM.
+English encoding uses a separate map in :mod:`time_twist.english`.
+
+Unknown values are rendered as explicit ``{COMMON:n}`` or ``{EXT:n}`` tokens
+instead of being discarded.  That makes an incomplete recovery visible in
+extracted JSON and prevents silent source-text corruption.
+"""
 
 from __future__ import annotations
 
@@ -15,6 +25,12 @@ COMMON_KANA = tuple(
 
 
 def decode_common(value: int) -> str:
+    """Return the Japanese glyph for a six-bit common symbol.
+
+    Values 0-45 index the recovered kana table.  Values 46 and 47 are special
+    punctuation tiles selected by NOV2 rather than entries in ``COMMON_KANA``.
+    """
+
     if 0 <= value < len(COMMON_KANA):
         return COMMON_KANA[value]
     if value == 46:
@@ -89,6 +105,12 @@ _EXTENDED_GLYPHS = {
 
 
 def decode_extended(value: int) -> str:
+    """Return the Japanese glyph for a nine-bit extended symbol.
+
+    The extended range contains voiced/semi-voiced kana, small kana, digits,
+    punctuation, the prolonged-sound mark, and a literal space.
+    """
+
     if value in _DAKUTEN:
         return _DAKUTEN[value]
     if value in _HANDAKUTEN:

@@ -1,4 +1,13 @@
-"""Command-line interface for the Time Twist FDS tools."""
+"""Compose the lossless parsers and guarded patch layers as a command-line tool.
+
+Run from the repository's ``work`` directory:
+
+``python -m time_twist.cli --help``
+
+Commands are deliberately small and explicit.  Intermediate extracted banks,
+translation JSON, rebuilt banks, and FDS images remain inspectable instead of
+being hidden inside one irreversible build command.
+"""
 
 from __future__ import annotations
 
@@ -84,10 +93,14 @@ def _required_dictionary_entries(
 
 
 def safe_filename(name: str) -> str:
+    """Replace characters unsafe for extracted filenames with underscores."""
+
     return "".join(char if char.isalnum() or char in "-_" else "_" for char in name)
 
 
 def command_manifest(args: argparse.Namespace) -> None:
+    """Write a JSON inventory of image, side, capacity, and file metadata."""
+
     image = FdsImage.read(args.image)
     output = json.dumps(image.manifest(), ensure_ascii=False, indent=2) + "\n"
     if args.output:
@@ -97,6 +110,8 @@ def command_manifest(args: argparse.Namespace) -> None:
 
 
 def command_extract(args: argparse.Namespace) -> None:
+    """Extract every named FDS file payload without changing the image."""
+
     image = FdsImage.read(args.image)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     for side in image.sides:
@@ -111,6 +126,8 @@ def command_extract(args: argparse.Namespace) -> None:
 
 
 def command_roundtrip(args: argparse.Namespace) -> None:
+    """Prove that parse/serialize reproduces an image byte-for-byte."""
+
     source = args.image.read_bytes()
     image = FdsImage.from_bytes(source, args.image)
     rebuilt = image.to_bytes()
@@ -125,6 +142,8 @@ def command_roundtrip(args: argparse.Namespace) -> None:
 
 
 def command_combine(args: argparse.Namespace) -> None:
+    """Concatenate all sides from the supplied images in argument order."""
+
     image = combine_images([FdsImage.read(path) for path in args.images])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     image.write(args.output)
@@ -132,6 +151,8 @@ def command_combine(args: argparse.Namespace) -> None:
 
 
 def command_scenario_extract(args: argparse.Namespace) -> None:
+    """Decode one scenario bank to stable-ID JSON, retaining prior English."""
+
     bank = parse_scenario_bank(args.bank)
     bank_name = args.bank.stem.split("_")[2] if "_" in args.bank.stem else args.bank.stem
     existing_english: dict[tuple[int, int], str] = {}
@@ -190,6 +211,8 @@ def command_scenario_extract(args: argparse.Namespace) -> None:
 
 
 def command_scenario_insert(args: argparse.Namespace) -> None:
+    """Encode a scenario document and rebuild it inside the fixed RAM region."""
+
     bank = parse_scenario_bank(args.bank)
     bank_name = (
         args.bank.stem.split("_")[2]
@@ -320,6 +343,8 @@ def merge_translation_document(
 
 
 def command_scenario_merge(args: argparse.Namespace) -> None:
+    """Validate and merge an ID-keyed English map into scenario JSON."""
+
     document = json.loads(args.scenario.read_text(encoding="utf-8"))
     translations = json.loads(args.translations.read_text(encoding="utf-8"))
     if not isinstance(document, dict) or not isinstance(translations, dict):
@@ -428,6 +453,8 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
 
 
 def command_font_patch(args: argparse.Namespace) -> None:
+    """Install the complete translated dialogue font in NOV4."""
+
     patched = patched_nov4_font(args.nov4.read_bytes())
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(patched)
@@ -435,6 +462,8 @@ def command_font_patch(args: argparse.Namespace) -> None:
 
 
 def command_title_patch(args: argparse.Namespace) -> None:
+    """Build and install the relocated English NOV4 title assets."""
+
     patched = patched_nov4_title(
         args.nov4.read_bytes(),
         args.target,
@@ -446,6 +475,8 @@ def command_title_patch(args: argparse.Namespace) -> None:
 
 
 def command_ui_patch(args: argparse.Namespace) -> None:
+    """Apply one named fixed-UI/program patch to an extracted component."""
+
     patcher = {
         "SON-KOUH": patched_kouhen_boot_guard,
         "NOV2": patched_nov2_ui,
@@ -470,6 +501,8 @@ def command_ui_patch(args: argparse.Namespace) -> None:
 
 
 def command_replace_file(args: argparse.Namespace) -> None:
+    """Replace one unique named FDS file on one zero-based side."""
+
     image = FdsImage.read(args.image)
     if args.side < 0 or args.side >= len(image.sides):
         raise SystemExit(f"side {args.side} is outside this image")
@@ -480,68 +513,216 @@ def command_replace_file(args: argparse.Namespace) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    """Construct the CLI parser without reading files or changing state."""
 
-    manifest = subparsers.add_parser("manifest")
-    manifest.add_argument("image", type=Path)
-    manifest.add_argument("--output", type=Path)
+    parser = argparse.ArgumentParser(
+        prog="python -m time_twist.cli",
+        description=(
+            "Inspect, extract, translate, rebuild, and verify Time Twist "
+            "Famicom Disk System images."
+        ),
+        epilog=(
+            "All patch commands validate the recovered source layout. "
+            "Original and patched ROM images are intentionally not stored "
+            "in the repository."
+        ),
+    )
+    subparsers = parser.add_subparsers(
+        dest="command",
+        required=True,
+        metavar="COMMAND",
+    )
+
+    manifest = subparsers.add_parser(
+        "manifest",
+        help="describe every side and named FDS file as JSON",
+        description=(
+            "Parse an archival FDS image and report its header convention, "
+            "disk metadata, side capacity, and named file layout."
+        ),
+    )
+    manifest.add_argument("image", type=Path, help="source .fds image")
+    manifest.add_argument(
+        "--output",
+        type=Path,
+        help="write JSON to this file instead of standard output",
+    )
     manifest.set_defaults(function=command_manifest)
 
-    extract = subparsers.add_parser("extract")
-    extract.add_argument("image", type=Path)
-    extract.add_argument("output_dir", type=Path)
+    extract = subparsers.add_parser(
+        "extract",
+        help="extract every named FDS file payload",
+        description=(
+            "Write one .bin file per FDS file. Output names include side, "
+            "file index, FDS name, and load address."
+        ),
+    )
+    extract.add_argument("image", type=Path, help="source .fds image")
+    extract.add_argument("output_dir", type=Path, help="destination directory")
     extract.set_defaults(function=command_extract)
 
-    roundtrip = subparsers.add_parser("roundtrip")
-    roundtrip.add_argument("image", type=Path)
-    roundtrip.add_argument("output", type=Path)
+    roundtrip = subparsers.add_parser(
+        "roundtrip",
+        help="prove lossless FDS parse/serialization",
+        description=(
+            "Parse and serialize an image, print both SHA-256 values, and "
+            "fail unless the complete output is byte-identical."
+        ),
+    )
+    roundtrip.add_argument("image", type=Path, help="source .fds image")
+    roundtrip.add_argument("output", type=Path, help="rebuilt verification image")
     roundtrip.set_defaults(function=command_roundtrip)
 
-    combine = subparsers.add_parser("combine")
-    combine.add_argument("images", nargs="+", type=Path)
-    combine.add_argument("--output", required=True, type=Path)
+    combine = subparsers.add_parser(
+        "combine",
+        help="combine sides from multiple FDS images",
+        description=(
+            "Append every side from each image in argument order. The first "
+            "image determines whether the result has a 16-byte FDS header."
+        ),
+    )
+    combine.add_argument(
+        "images",
+        nargs="+",
+        type=Path,
+        help="two or more source images in desired side order",
+    )
+    combine.add_argument(
+        "--output",
+        required=True,
+        type=Path,
+        help="combined output .fds path",
+    )
     combine.set_defaults(function=command_combine)
 
-    scenario_extract = subparsers.add_parser("scenario-extract")
-    scenario_extract.add_argument("bank", type=Path)
-    scenario_extract.add_argument("output", type=Path)
+    scenario_extract = subparsers.add_parser(
+        "scenario-extract",
+        help="decode a packed scenario bank to editable JSON",
+        description=(
+            "Decode group pointers, packed records, dictionary references, "
+            "Japanese text, and raw symbols. Existing English in the output "
+            "is retained at matching group/record coordinates."
+        ),
+    )
+    scenario_extract.add_argument("bank", type=Path, help="extracted scenario .bin")
+    scenario_extract.add_argument("output", type=Path, help="scenario JSON path")
     scenario_extract.set_defaults(function=command_scenario_extract)
 
-    scenario_insert = subparsers.add_parser("scenario-insert")
-    scenario_insert.add_argument("bank", type=Path)
-    scenario_insert.add_argument("translation", type=Path)
-    scenario_insert.add_argument("output", type=Path)
-    scenario_insert.add_argument("--no-compress", action="store_true")
+    scenario_insert = subparsers.add_parser(
+        "scenario-insert",
+        help="encode translated JSON into a scenario bank",
+        description=(
+            "Rebuild scenario groups and pointers while retaining code/data "
+            "outside the original text reservation. Fully translated banks "
+            "receive a compact English dictionary."
+        ),
+    )
+    scenario_insert.add_argument("bank", type=Path, help="clean extracted bank")
+    scenario_insert.add_argument(
+        "translation",
+        type=Path,
+        help="merged scenario JSON containing English fields",
+    )
+    scenario_insert.add_argument("output", type=Path, help="rebuilt bank .bin")
+    scenario_insert.add_argument(
+        "--no-compress",
+        action="store_true",
+        help="diagnostic: preserve the original dictionary on a complete bank",
+    )
     scenario_insert.set_defaults(function=command_scenario_insert)
 
-    scenario_merge = subparsers.add_parser("scenario-merge")
-    scenario_merge.add_argument("scenario", type=Path)
-    scenario_merge.add_argument("translations", type=Path)
-    scenario_merge.add_argument("--output", type=Path)
-    scenario_merge.add_argument("--allow-partial", action="store_true")
+    scenario_merge = subparsers.add_parser(
+        "scenario-merge",
+        help="validate and merge an ID-keyed English map",
+        description=(
+            "Merge translations into extracted scenario JSON while checking "
+            "IDs, control order, display width, and font encodability."
+        ),
+    )
+    scenario_merge.add_argument(
+        "scenario",
+        type=Path,
+        help="scenario-extract JSON document",
+    )
+    scenario_merge.add_argument(
+        "translations",
+        type=Path,
+        help="JSON object mapping record IDs to English",
+    )
+    scenario_merge.add_argument(
+        "--output",
+        type=Path,
+        help="destination scenario JSON (default: update SCENARIO)",
+    )
+    scenario_merge.add_argument(
+        "--allow-partial",
+        action="store_true",
+        help="allow translation IDs to cover only part of the bank",
+    )
     scenario_merge.set_defaults(function=command_scenario_merge)
 
-    scenario_footprint = subparsers.add_parser("scenario-footprint")
-    scenario_footprint.add_argument("bank", type=Path)
-    scenario_footprint.add_argument("--translations", type=Path)
+    scenario_footprint = subparsers.add_parser(
+        "scenario-footprint",
+        help="report fixed text capacity and compressed usage",
+        description=(
+            "Show the scenario reservation and fixed tail. With a complete "
+            "translation map, build the English dictionary and report "
+            "remaining bytes or a hard overrun."
+        ),
+    )
+    scenario_footprint.add_argument("bank", type=Path, help="clean extracted bank")
+    scenario_footprint.add_argument(
+        "--translations",
+        type=Path,
+        help="optional ID-keyed English JSON map",
+    )
     scenario_footprint.set_defaults(function=command_scenario_footprint)
 
-    font_patch = subparsers.add_parser("font-patch")
-    font_patch.add_argument("nov4", type=Path)
-    font_patch.add_argument("output", type=Path)
+    font_patch = subparsers.add_parser(
+        "font-patch",
+        help="install the translated 8x8 dialogue font",
+        description=(
+            "Replace recovered NOV4 font-table glyph rows without changing "
+            "the component's size."
+        ),
+    )
+    font_patch.add_argument("nov4", type=Path, help="source NOV4 .bin")
+    font_patch.add_argument("output", type=Path, help="patched NOV4 .bin")
     font_patch.set_defaults(function=command_font_patch)
 
-    title_patch = subparsers.add_parser("title-patch")
-    title_patch.add_argument("nov4", type=Path)
-    title_patch.add_argument("target", type=Path)
-    title_patch.add_argument("output", type=Path)
-    title_patch.add_argument("--subtitle", default=DEFAULT_SUBTITLE)
+    title_patch = subparsers.add_parser(
+        "title-patch",
+        help="build and install the English title assets",
+        description=(
+            "Convert a logo/full-screen reference to exact NES assets, retain "
+            "the animated clock sprites, and append relocated NOV4 helpers "
+            "and nametables below resident NOV3."
+        ),
+    )
+    title_patch.add_argument("nov4", type=Path, help="source/patched-size NOV4 .bin")
+    title_patch.add_argument(
+        "target",
+        type=Path,
+        help="logo crop or full-screen reference image",
+    )
+    title_patch.add_argument("output", type=Path, help="expanded NOV4 .bin")
+    title_patch.add_argument(
+        "--subtitle",
+        default=DEFAULT_SUBTITLE,
+        help=f"title subtitle (default: {DEFAULT_SUBTITLE!r})",
+    )
     title_patch.set_defaults(function=command_title_patch)
 
-    ui_patch = subparsers.add_parser("ui-patch")
-    ui_patch.add_argument("source", type=Path)
-    ui_patch.add_argument("output", type=Path)
+    ui_patch = subparsers.add_parser(
+        "ui-patch",
+        help="apply a verified fixed UI/text-table patch",
+        description=(
+            "Patch one extracted component's fixed prompts, menu labels, "
+            "commands, objects, quiz answers, or small input/program behavior."
+        ),
+    )
+    ui_patch.add_argument("source", type=Path, help="source component .bin")
+    ui_patch.add_argument("output", type=Path, help="patched component .bin")
     ui_patch.add_argument(
         "--component",
         choices=(
@@ -549,20 +730,30 @@ def build_parser() -> argparse.ArgumentParser:
             "TT5", "T25", "TT6A", "TT6B", "TT6C",
         ),
         default="NOV2",
+        help="owning FDS component (default: NOV2)",
     )
     ui_patch.set_defaults(function=command_ui_patch)
 
-    replace_file = subparsers.add_parser("replace-file")
-    replace_file.add_argument("image", type=Path)
-    replace_file.add_argument("side", type=int)
-    replace_file.add_argument("name")
-    replace_file.add_argument("data", type=Path)
-    replace_file.add_argument("output", type=Path)
+    replace_file = subparsers.add_parser(
+        "replace-file",
+        help="replace one named file and rebuild its FDS image",
+        description=(
+            "Replace the unique FDS file NAME on zero-based SIDE, refresh its "
+            "size field, and fail if the rebuilt side exceeds 65,500 bytes."
+        ),
+    )
+    replace_file.add_argument("image", type=Path, help="input .fds image")
+    replace_file.add_argument("side", type=int, help="zero-based side index")
+    replace_file.add_argument("name", help="exact printable FDS filename")
+    replace_file.add_argument("data", type=Path, help="replacement payload .bin")
+    replace_file.add_argument("output", type=Path, help="rebuilt output .fds")
     replace_file.set_defaults(function=command_replace_file)
     return parser
 
 
 def main() -> None:
+    """Parse command-line arguments and dispatch the selected operation."""
+
     args = build_parser().parse_args()
     args.function(args)
 

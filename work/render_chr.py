@@ -12,6 +12,8 @@ PALETTE = (0, 85, 170, 255)
 
 
 def render_chr(data: bytes, columns: int = 16, scale: int = 2) -> Image.Image:
+    """Decode NES 2bpp CHR bytes into a scaled tile-sheet image."""
+
     tile_count = len(data) // 16
     rows = (tile_count + columns - 1) // columns
     image = Image.new("L", (columns * 8, rows * 8), 0)
@@ -37,6 +39,8 @@ def render_chr(data: bytes, columns: int = 16, scale: int = 2) -> Image.Image:
 
 
 def main() -> None:
+    """Render a CHR binary selected on the command line to PNG."""
+
     parser = argparse.ArgumentParser()
     parser.add_argument("inputs", nargs="+", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)

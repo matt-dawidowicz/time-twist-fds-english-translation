@@ -1,3 +1,10 @@
+"""Render the replacement title assets without building or launching the ROM.
+
+This script is a fast visual-review tool. It uses the same title-asset helpers
+as the patcher so preview discrepancies point to asset/layout code rather than
+an unrelated mockup pipeline.
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -19,6 +26,8 @@ OUTPUT = Path("outputs/Time Twist exact split-title preview.png")
 
 
 def main() -> None:
+    """Build and save the current English title-screen preview image."""
+
     assets = build_title_assets(SOURCE.read_bytes(), REFERENCE)
     background = render_title_background(assets)
 

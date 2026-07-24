@@ -1,4 +1,16 @@
-"""Deterministic English title-card conversion for Time Twist's NOV4 overlay."""
+"""Build and install the English title card in the NOV4 overlay.
+
+NOV4 contains the title-state 6502 program, two RLE-compressed nametables,
+background CHR, and the source tiles/metasprites for the animated clock hands.
+The English logo needs more distinct patterns than the original one-table
+layout, so this module reuses the game's existing mid-screen pattern-table
+split and relocates the title stream plus small helper routines.
+
+The conversion is deterministic and revision-guarded.  Source size, selected
+instructions, asset boundaries, and hashes must match before any patch is
+returned.  Post-build checks decode relocated streams and prove that clock
+animation bytes remain unchanged.
+"""
 
 from __future__ import annotations
 
@@ -12,6 +24,10 @@ from PIL import Image, ImageDraw
 
 from .font import PIXEL_FONT_5X7
 
+
+# ---------------------------------------------------------------------------
+# Recovered NOV4 memory/file layout and source guards
+# ---------------------------------------------------------------------------
 
 NOV4_LOAD_ADDRESS = 0xA200
 NOV4_SOURCE_SIZE = 0x2375
@@ -74,6 +90,10 @@ CLOCK_METASPRITE_SHA256 = (
     "AC1BC81C837B32B7225319A86E5E5C41D20C3C081C33FB81FC6C742390458670"
 )
 
+# ---------------------------------------------------------------------------
+# Rendering policy and NES palettes
+# ---------------------------------------------------------------------------
+
 DEFAULT_SUBTITLE = "On the Outskirts of History..."
 TITLE_PALETTE = (
     (0, 0, 0),
@@ -101,6 +121,16 @@ class TitlePatchError(ValueError):
 
 @dataclass(frozen=True)
 class TitleAssets:
+    """All generated binary assets needed by :func:`patched_nov4_title`.
+
+    ``background_chr`` is the exact upper title table, ``bottom_chr`` supplies
+    the independent lower rows after the raster split, and ``nintendo_chr`` /
+    ``restore_chr`` temporarily share reserved tile IDs across title phases.
+    ``encoded_final`` and ``encoded_second`` are the relocated native RLE
+    nametables.  ``approximation_error`` remains for preview compatibility and
+    is zero for the current exact conversion.
+    """
+
     chr_data: bytes
     background_chr: bytes
     bottom_chr: bytes
@@ -114,6 +144,8 @@ class TitleAssets:
 
 
 def _sha256(data: bytes) -> str:
+    """Return the uppercase source fingerprint used by title patch guards."""
+
     return hashlib.sha256(data).hexdigest().upper()
 
 
@@ -198,6 +230,8 @@ def encode_title_rle(data: bytes) -> bytes:
 
 
 def _render_indexed_nametable(nametable: bytes, chr_data: bytes) -> Image.Image:
+    """Render a conventional single-pattern-table nametable as palette indices."""
+
     image = Image.new("L", (256, 240), 0)
     pixels = image.load()
     for tile_y in range(30):
@@ -233,6 +267,13 @@ def _render_split_nametable(
 
 
 def _target_to_indices(path: Path) -> Image.Image:
+    """Normalize a logo crop or full-screen reference to NES palette indices.
+
+    Blue clock-hand pixels are removed because the live game draws the moving
+    hands as sprites.  The returned image is 256x240 indexed data; source art
+    occupies the visible 224-line reference area.
+    """
+
     source = Image.open(path).convert("RGB")
     logo_crop = source.width / source.height > 2
     if logo_crop:
@@ -359,6 +400,8 @@ def _draw_text(
     y: int,
     color: int,
 ) -> None:
+    """Rasterize deterministic 5x7 text into an indexed title image."""
+
     pixels = image.load()
     cursor = x
     for character in text:
@@ -379,6 +422,8 @@ def _draw_text(
 
 
 def _tile_bytes(image: Image.Image, tile_x: int, tile_y: int) -> bytes:
+    """Encode one indexed 8x8 image cell as an NES two-bitplane CHR tile."""
+
     pixels = image.load()
     low = bytearray(8)
     high = bytearray(8)
@@ -392,6 +437,8 @@ def _tile_bytes(image: Image.Image, tile_x: int, tile_y: int) -> bytes:
 
 @lru_cache(maxsize=None)
 def _pattern_values(pattern: bytes) -> tuple[int, ...]:
+    """Decode one NES 2bpp tile to 64 row-major palette indices."""
+
     values: list[int] = []
     for y in range(8):
         for x in range(8):
@@ -414,6 +461,8 @@ _COLOR_DISTANCE = tuple(
 
 @lru_cache(maxsize=None)
 def _pattern_distance(left: bytes, right: bytes) -> int:
+    """Score tile mismatch while heavily protecting the white outline color."""
+
     return sum(
         _COLOR_DISTANCE[a][b]
         for a, b in zip(_pattern_values(left), _pattern_values(right))
@@ -534,6 +583,8 @@ def _refine_title_centers(
 
 
 def _validate_source(data: bytes) -> None:
+    """Reject any NOV4 whose recovered program/assets differ from the source."""
+
     if len(data) != NOV4_SOURCE_SIZE:
         raise TitlePatchError(
             f"NOV4 must be the original 0x{NOV4_SOURCE_SIZE:X}-byte layout"
@@ -614,7 +665,14 @@ def build_title_assets(
     *,
     subtitle: str = DEFAULT_SUBTITLE,
 ) -> TitleAssets:
-    """Build two English title nametables and their shared NES tile set."""
+    """Build exact English title assets without modifying the source bytes.
+
+    ``target`` may be a tight logo crop or a complete title-screen reference.
+    The supplied subtitle is always redrawn by the deterministic pixel font.
+    The returned upper/lower pattern sets must match their recovered capacity,
+    Nintendo-phase tiles receive reversible host IDs, and the original clock
+    tile tail is preserved byte-for-byte.
+    """
 
     _validate_source(data)
     final_nametable, final_end = decode_title_rle(data, FINAL_NAMETABLE_START)
@@ -833,7 +891,13 @@ def patched_nov4_title(
     *,
     subtitle: str = DEFAULT_SUBTITLE,
 ) -> bytes:
-    """Install title/Nintendo tiles and restore them at the phase boundary."""
+    """Return NOV4 with relocated English title assets and helper code.
+
+    The function appends lower-title CHR, Nintendo overlay/restore CHR, three
+    small 6502 helpers, and two compressed nametables.  It rewrites only the
+    recovered call/pointer/origin sites and the background CHR region.  The
+    expanded overlay must finish below resident NOV3 at ``$D7B5``.
+    """
 
     assets = build_title_assets(data, target, subtitle=subtitle)
     bottom_chr_offset = len(data)
@@ -845,6 +909,8 @@ def patched_nov4_title(
     title_stream_offset = exit_offset + TITLE_EXIT_SIZE
 
     def loaded_address(offset: int) -> int:
+        """Convert a NOV4 file offset to its loaded CPU address."""
+
         return NOV4_LOAD_ADDRESS + offset
 
     bottom_chr_address = loaded_address(bottom_chr_offset)

@@ -19,6 +19,8 @@ SAMPLES = (
 
 
 def main() -> None:
+    """Render the built-in ROM-style pixel font as a labeled preview sheet."""
+
     scale = 4
     margin = 8
     width = (max(map(len, SAMPLES)) * 8 + margin * 2) * scale

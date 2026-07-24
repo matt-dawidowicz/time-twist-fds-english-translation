@@ -16,6 +16,8 @@ FONTS = (
 
 
 def render_glyph(font: ImageFont.FreeTypeFont, char: str, threshold: int) -> Image.Image:
+    """Rasterize one character as a thresholded 8x8 monochrome preview."""
+
     grayscale = Image.new("L", (8, 8), 0)
     draw = ImageDraw.Draw(grayscale)
     draw.text((1, 0), char, font=font, fill=255)
@@ -23,6 +25,8 @@ def render_glyph(font: ImageFont.FreeTypeFont, char: str, threshold: int) -> Ima
 
 
 def main() -> None:
+    """Render the configured font sample sheet for visual inspection."""
+
     scale = 4
     columns = 16
     rows_per_font = (len(CHARACTERS) + columns - 1) // columns
