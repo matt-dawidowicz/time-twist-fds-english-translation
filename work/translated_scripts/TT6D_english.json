@@ -1,0 +1,1398 @@
+{
+  "source": "work\\extracted_kouhen\\side0_05_TT6D_A200.bin",
+  "load_address": "0xA200",
+  "dictionary_address": "0xA4D1",
+  "group_table_address": "0xA4D1",
+  "groups": [
+    {
+      "group": 0,
+      "address": "0xA38F",
+      "records": [
+        {
+          "id": "TT6D/g0/r0",
+          "record": 0,
+          "japanese": "おれ「うう…… ああ… あ……」",
+          "english": "Me: Ugh... Ah...",
+          "symbols": [
+            {
+              "kind": "dictionary",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 2
+            },
+            {
+              "kind": "common",
+              "value": 2
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            }
+          ]
+        },
+        {
+          "id": "TT6D/g0/r1",
+          "record": 1,
+          "japanese": "おんなのこ「よかった…… わたし{CTRL:0} しんでるのかと……」{CTRL:2}おれ「ああ きみか…… ひさしぶりだなあ」{CTRL:6}おんなのこ「……！ あの どこかで{CTRL:4} おあいしました……！」{CTRL:3}おれ「あ そっか…… そうだよね」{CTRL:3}おんなのこ「ぷっ… おかしなひと」{CTRL:3}おれ「いやあ ははは」{CTRL:4}おんなのこ「ふふふ…」",
+          "english": "Girl: Thank goodness...{CTRL:0}I thought you were dead.{CTRL:2}Me: You... Long time.{CTRL:6}Girl: Huh? Have we met{CTRL:4}somewhere before...?{CTRL:3}Me: Oh... I suppose not.{CTRL:3}Girl: Heh. How strange.{CTRL:3}Me: Well... Ha ha ha.{CTRL:4}Girl: Hee hee...",
+          "symbols": [
+            {
+              "kind": "dictionary",
+              "value": 2
+            },
+            {
+              "kind": "common",
+              "value": 37
+            },
+            {
+              "kind": "common",
+              "value": 5
+            },
+            {
+              "kind": "extended",
+              "value": 42
+            },
+            {
+              "kind": "common",
+              "value": 15
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 43
+            },
+            {
+              "kind": "common",
+              "value": 15
+            },
+            {
+              "kind": "common",
+              "value": 11
+            },
+            {
+              "kind": "control",
+              "value": 0
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 11
+            },
+            {
+              "kind": "common",
+              "value": 45
+            },
+            {
+              "kind": "extended",
+              "value": 18
+            },
+            {
+              "kind": "common",
+              "value": 40
+            },
+            {
+              "kind": "common",
+              "value": 24
+            },
+            {
+              "kind": "common",
+              "value": 5
+            },
+            {
+              "kind": "common",
+              "value": 19
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 2
+            },
+            {
+              "kind": "dictionary",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 6
+            },
+            {
+              "kind": "common",
+              "value": 31
+            },
+            {
+              "kind": "common",
+              "value": 5
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 26
+            },
+            {
+              "kind": "common",
+              "value": 10
+            },
+            {
+              "kind": "common",
+              "value": 11
+            },
+            {
+              "kind": "extended",
+              "value": 27
+            },
+            {
+              "kind": "common",
+              "value": 39
+            },
+            {
+              "kind": "extended",
+              "value": 15
+            },
+            {
+              "kind": "common",
+              "value": 20
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 6
+            },
+            {
+              "kind": "dictionary",
+              "value": 2
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 58
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "common",
+              "value": 24
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "extended",
+              "value": 19
+            },
+            {
+              "kind": "common",
+              "value": 9
+            },
+            {
+              "kind": "common",
+              "value": 5
+            },
+            {
+              "kind": "extended",
+              "value": 18
+            },
+            {
+              "kind": "control",
+              "value": 4
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 4
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "common",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 11
+            },
+            {
+              "kind": "common",
+              "value": 30
+            },
+            {
+              "kind": "common",
+              "value": 11
+            },
+            {
+              "kind": "common",
+              "value": 15
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 58
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 3
+            },
+            {
+              "kind": "dictionary",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 14
+            },
+            {
+              "kind": "extended",
+              "value": 42
+            },
+            {
+              "kind": "common",
+              "value": 5
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 14
+            },
+            {
+              "kind": "common",
+              "value": 2
+            },
+            {
+              "kind": "extended",
+              "value": 15
+            },
+            {
+              "kind": "common",
+              "value": 37
+            },
+            {
+              "kind": "common",
+              "value": 23
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 3
+            },
+            {
+              "kind": "dictionary",
+              "value": 2
+            },
+            {
+              "kind": "extended",
+              "value": 34
+            },
+            {
+              "kind": "extended",
+              "value": 42
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 4
+            },
+            {
+              "kind": "common",
+              "value": 5
+            },
+            {
+              "kind": "common",
+              "value": 11
+            },
+            {
+              "kind": "common",
+              "value": 20
+            },
+            {
+              "kind": "common",
+              "value": 26
+            },
+            {
+              "kind": "common",
+              "value": 19
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 3
+            },
+            {
+              "kind": "dictionary",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 35
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 25
+            },
+            {
+              "kind": "common",
+              "value": 25
+            },
+            {
+              "kind": "common",
+              "value": 25
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 4
+            },
+            {
+              "kind": "dictionary",
+              "value": 2
+            },
+            {
+              "kind": "common",
+              "value": 27
+            },
+            {
+              "kind": "common",
+              "value": 27
+            },
+            {
+              "kind": "common",
+              "value": 27
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            }
+          ]
+        },
+        {
+          "id": "TT6D/g0/r2",
+          "record": 2,
+          "japanese": "おれ「きみの なまえは！」{CTRL:0}おんなのこ「わたしは…」",
+          "english": "Me: What is your name?{CTRL:0}Girl: I am...",
+          "symbols": [
+            {
+              "kind": "dictionary",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 6
+            },
+            {
+              "kind": "common",
+              "value": 31
+            },
+            {
+              "kind": "common",
+              "value": 24
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 20
+            },
+            {
+              "kind": "common",
+              "value": 30
+            },
+            {
+              "kind": "common",
+              "value": 3
+            },
+            {
+              "kind": "common",
+              "value": 25
+            },
+            {
+              "kind": "extended",
+              "value": 58
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 0
+            },
+            {
+              "kind": "dictionary",
+              "value": 2
+            },
+            {
+              "kind": "common",
+              "value": 43
+            },
+            {
+              "kind": "common",
+              "value": 15
+            },
+            {
+              "kind": "common",
+              "value": 11
+            },
+            {
+              "kind": "common",
+              "value": 25
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            }
+          ]
+        },
+        {
+          "id": "TT6D/g0/r3",
+          "record": 3,
+          "japanese": "おんなのこ「／」{CTRL:0}おれ「じしんだ／」",
+          "english": "Girl: !{CTRL:0}Me: An earthquake!",
+          "symbols": [
+            {
+              "kind": "dictionary",
+              "value": 2
+            },
+            {
+              "kind": "extended",
+              "value": 57
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 0
+            },
+            {
+              "kind": "dictionary",
+              "value": 1
+            },
+            {
+              "kind": "extended",
+              "value": 11
+            },
+            {
+              "kind": "common",
+              "value": 11
+            },
+            {
+              "kind": "common",
+              "value": 45
+            },
+            {
+              "kind": "extended",
+              "value": 15
+            },
+            {
+              "kind": "extended",
+              "value": 57
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            }
+          ]
+        },
+        {
+          "id": "TT6D/g0/r4",
+          "record": 4,
+          "japanese": "おんなのこ「だいじょうぶ／ しんぱいないわ／」{CTRL:0}おれ「は はい／」{CTRL:2}おんなのこ「まらどぅる ばらお がらどぅーら…」{CTRL:0}おれ「／／」{CTRL:3}おんなのこ「わたしにまかせて／{CTRL:3} まらどぅる ばらお がらどぅーら／{CTRL:4} まらどぅる ばらお がらどぅーらーーーっ／」",
+          "english": "Girl: Do not worry!{CTRL:0}Me: Y-yes!{CTRL:2}Girl: Maradul Barao{CTRL:0}Garadura...{CTRL:3}Girl: Leave it to me!{CTRL:3}Maradul Barao Garadura!{CTRL:4}Maradul Barao Garadura!!",
+          "symbols": [
+            {
+              "kind": "dictionary",
+              "value": 2
+            },
+            {
+              "kind": "extended",
+              "value": 15
+            },
+            {
+              "kind": "common",
+              "value": 1
+            },
+            {
+              "kind": "extended",
+              "value": 11
+            },
+            {
+              "kind": "extended",
+              "value": 45
+            },
+            {
+              "kind": "common",
+              "value": 2
+            },
+            {
+              "kind": "extended",
+              "value": 27
+            },
+            {
+              "kind": "extended",
+              "value": 57
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 11
+            },
+            {
+              "kind": "common",
+              "value": 45
+            },
+            {
+              "kind": "extended",
+              "value": 32
+            },
+            {
+              "kind": "common",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 20
+            },
+            {
+              "kind": "common",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 43
+            },
+            {
+              "kind": "extended",
+              "value": 57
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 0
+            },
+            {
+              "kind": "dictionary",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 25
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 25
+            },
+            {
+              "kind": "common",
+              "value": 1
+            },
+            {
+              "kind": "extended",
+              "value": 57
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 2
+            },
+            {
+              "kind": "dictionary",
+              "value": 2
+            },
+            {
+              "kind": "common",
+              "value": 30
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "extended",
+              "value": 19
+            },
+            {
+              "kind": "extended",
+              "value": 39
+            },
+            {
+              "kind": "common",
+              "value": 40
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "extended",
+              "value": 25
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "common",
+              "value": 4
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "extended",
+              "value": 5
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "extended",
+              "value": 19
+            },
+            {
+              "kind": "extended",
+              "value": 39
+            },
+            {
+              "kind": "extended",
+              "value": 56
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 0
+            },
+            {
+              "kind": "dictionary",
+              "value": 1
+            },
+            {
+              "kind": "extended",
+              "value": 57
+            },
+            {
+              "kind": "extended",
+              "value": 57
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 3
+            },
+            {
+              "kind": "dictionary",
+              "value": 2
+            },
+            {
+              "kind": "common",
+              "value": 43
+            },
+            {
+              "kind": "common",
+              "value": 15
+            },
+            {
+              "kind": "common",
+              "value": 11
+            },
+            {
+              "kind": "common",
+              "value": 21
+            },
+            {
+              "kind": "common",
+              "value": 30
+            },
+            {
+              "kind": "common",
+              "value": 5
+            },
+            {
+              "kind": "common",
+              "value": 13
+            },
+            {
+              "kind": "common",
+              "value": 18
+            },
+            {
+              "kind": "extended",
+              "value": 57
+            },
+            {
+              "kind": "control",
+              "value": 3
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 30
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "extended",
+              "value": 19
+            },
+            {
+              "kind": "extended",
+              "value": 39
+            },
+            {
+              "kind": "common",
+              "value": 40
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "extended",
+              "value": 25
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "common",
+              "value": 4
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "extended",
+              "value": 5
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "extended",
+              "value": 19
+            },
+            {
+              "kind": "extended",
+              "value": 39
+            },
+            {
+              "kind": "extended",
+              "value": 56
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "extended",
+              "value": 57
+            },
+            {
+              "kind": "control",
+              "value": 4
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 30
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "extended",
+              "value": 19
+            },
+            {
+              "kind": "extended",
+              "value": 39
+            },
+            {
+              "kind": "common",
+              "value": 40
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "extended",
+              "value": 25
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "common",
+              "value": 4
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "extended",
+              "value": 5
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "extended",
+              "value": 19
+            },
+            {
+              "kind": "extended",
+              "value": 39
+            },
+            {
+              "kind": "extended",
+              "value": 56
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "extended",
+              "value": 56
+            },
+            {
+              "kind": "extended",
+              "value": 56
+            },
+            {
+              "kind": "extended",
+              "value": 56
+            },
+            {
+              "kind": "extended",
+              "value": 42
+            },
+            {
+              "kind": "extended",
+              "value": 57
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            }
+          ]
+        },
+        {
+          "id": "TT6D/g0/r5",
+          "record": 5,
+          "japanese": "おんなのこ「けさね うらないできいたの{CTRL:0} \"すてきなだんせいとの であいあり\" って…」{CTRL:2}おれ「そそ そんなあ……」",
+          "english": "Girl: My fortune said{CTRL:0}\"A fine man awaits you.\"{CTRL:2}Me: N-no way...",
+          "symbols": [
+            {
+              "kind": "dictionary",
+              "value": 2
+            },
+            {
+              "kind": "common",
+              "value": 8
+            },
+            {
+              "kind": "common",
+              "value": 10
+            },
+            {
+              "kind": "common",
+              "value": 23
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 2
+            },
+            {
+              "kind": "common",
+              "value": 38
+            },
+            {
+              "kind": "common",
+              "value": 20
+            },
+            {
+              "kind": "common",
+              "value": 1
+            },
+            {
+              "kind": "extended",
+              "value": 18
+            },
+            {
+              "kind": "common",
+              "value": 6
+            },
+            {
+              "kind": "common",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 15
+            },
+            {
+              "kind": "common",
+              "value": 24
+            },
+            {
+              "kind": "control",
+              "value": 0
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "extended",
+              "value": 2
+            },
+            {
+              "kind": "common",
+              "value": 12
+            },
+            {
+              "kind": "common",
+              "value": 18
+            },
+            {
+              "kind": "common",
+              "value": 6
+            },
+            {
+              "kind": "common",
+              "value": 20
+            },
+            {
+              "kind": "extended",
+              "value": 15
+            },
+            {
+              "kind": "common",
+              "value": 45
+            },
+            {
+              "kind": "common",
+              "value": 13
+            },
+            {
+              "kind": "common",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 19
+            },
+            {
+              "kind": "common",
+              "value": 24
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "extended",
+              "value": 18
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "common",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "common",
+              "value": 39
+            },
+            {
+              "kind": "extended",
+              "value": 2
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "extended",
+              "value": 42
+            },
+            {
+              "kind": "common",
+              "value": 18
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            },
+            {
+              "kind": "control",
+              "value": 2
+            },
+            {
+              "kind": "dictionary",
+              "value": 1
+            },
+            {
+              "kind": "common",
+              "value": 14
+            },
+            {
+              "kind": "common",
+              "value": 14
+            },
+            {
+              "kind": "extended",
+              "value": 63
+            },
+            {
+              "kind": "common",
+              "value": 14
+            },
+            {
+              "kind": "common",
+              "value": 45
+            },
+            {
+              "kind": "common",
+              "value": 20
+            },
+            {
+              "kind": "common",
+              "value": 0
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            }
+          ]
+        },
+        {
+          "id": "TT6D/g0/r6",
+          "record": 6,
+          "japanese": "……「ぐううう……」",
+          "english": "Voice: Grrrrrr...",
+          "symbols": [
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 60
+            },
+            {
+              "kind": "extended",
+              "value": 7
+            },
+            {
+              "kind": "common",
+              "value": 2
+            },
+            {
+              "kind": "common",
+              "value": 2
+            },
+            {
+              "kind": "common",
+              "value": 2
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 61
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            }
+          ]
+        },
+        {
+          "id": "TT6D/g0/r7",
+          "record": 7,
+          "japanese": "おれ「げっ／」",
+          "english": "Me: Ack!",
+          "symbols": [
+            {
+              "kind": "dictionary",
+              "value": 1
+            },
+            {
+              "kind": "extended",
+              "value": 8
+            },
+            {
+              "kind": "extended",
+              "value": 42
+            },
+            {
+              "kind": "extended",
+              "value": 57
+            },
+            {
+              "kind": "extended",
+              "value": 59
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

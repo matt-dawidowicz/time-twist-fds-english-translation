@@ -1,0 +1,33 @@
+# Original and patched game images are not distributed from this repository.
+*.fds
+*.nes
+*.rom
+
+# Extracted or rebuilt ROM banks and emulator memory captures.
+*.bin
+*.dmp
+work/baseline/
+work/extracted_*/
+work/translated_banks/
+
+# Third-party emulator packages and machine-local settings.
+work/Mesen_*.zip
+work/mesen_settings*.json
+
+# Python caches and test artifacts.
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+
+# Codex task metadata is local to this workspace.
+.agents/
+.codex/
+
+# OS/editor noise.
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.tmp
+

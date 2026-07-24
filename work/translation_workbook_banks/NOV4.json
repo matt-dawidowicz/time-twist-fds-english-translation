@@ -1,0 +1,41 @@
+{
+  "bank": "NOV4",
+  "scene": {
+    "title": "Title-screen start prompt",
+    "summary": "The fixed start-menu label loaded with the title program.",
+    "choices": "Uppercase is retained."
+  },
+  "completed_records": 1,
+  "rows": [
+    {
+      "sequential_entry_number": 2041,
+      "original_record_id": "NOV4/start",
+      "bank": "NOV4",
+      "record_type": "fixed-address",
+      "exact_japanese_source": "さいしょから",
+      "romaji": "saishokara",
+      "reconstructed_japanese": "さいしょから",
+      "literal_english_meaning": "Start from the beginning",
+      "linguistic_and_cultural_notes": "Fixed-address interface record: 6 packed bytes. The natural field expands the meaning; the patch-safe field retains the verified slot form. Reconstructed Japanese is conservative editorial normalization; any kana left unreconstructed remains deliberately unresolved rather than being silently assigned kanji.",
+      "speaker_or_narration_identity": "Interface / command / object label",
+      "current_english": "START",
+      "problems_with_current_english": "Technical abbreviation: current slot text 'START' represents 'Start from the beginning' in 6 packed bytes. Natural meaning is expanded in the final field.",
+      "final_natural_english_translation": "Start from the beginning",
+      "patch_safe_english_translation": "START",
+      "confidence_level": "High",
+      "unresolved_ambiguity": "",
+      "translation_status": "Final proposed",
+      "scene": "Title-screen start prompt",
+      "source_location": "$A295",
+      "apparent_capacity": "6 packed bytes (fixed-address slot)",
+      "source_control_codes": "",
+      "patch_control_codes": "",
+      "control_codes_match": "yes",
+      "problem_categories": "Acceptable compression / technical abbreviation",
+      "dialect_or_register": "Unmarked / neutral or context-dependent",
+      "requires_gameplay_context": "no",
+      "requires_technical_expansion": "no",
+      "nuance_lost_in_patch_safe_version": ""
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "bank": "SON-KOUH",
+  "scene": {
+    "title": "Kouhen direct-boot guard",
+    "summary": "Graphics text instructing the player to begin by loading Zenpen.",
+    "choices": "Natural English is expanded; the graphic itself remains a separate technical asset."
+  },
+  "completed_records": 1,
+  "rows": [
+    {
+      "sequential_entry_number": 2052,
+      "original_record_id": "SON-KOUH/direct-boot",
+      "bank": "SON-KOUH",
+      "record_type": "graphics-text",
+      "exact_japanese_source": "ぜんぺんディスクから ロードしてください。",
+      "romaji": "zenpendisukukara roodoshitekudasai。",
+      "reconstructed_japanese": "ぜんぺんディスクから ロードしてください。",
+      "literal_english_meaning": "PLEASE START WITH PART 1",
+      "linguistic_and_cultural_notes": "polite です/ます register Reconstructed Japanese is conservative editorial normalization; any kana left unreconstructed remains deliberately unresolved rather than being silently assigned kanji.",
+      "speaker_or_narration_identity": "Title or system graphics",
+      "current_english": "PLEASE START WITH PART 1",
+      "problems_with_current_english": "Accurate.",
+      "final_natural_english_translation": "PLEASE START WITH PART 1",
+      "patch_safe_english_translation": "PLEASE START WITH PART 1",
+      "confidence_level": "High",
+      "unresolved_ambiguity": "",
+      "translation_status": "Final proposed",
+      "scene": "Kouhen direct-boot guard",
+      "source_location": "graphics-only",
+      "apparent_capacity": "graphics/program text; no scenario slot",
+      "source_control_codes": "",
+      "patch_control_codes": "",
+      "control_codes_match": "yes",
+      "problem_categories": "Accurate",
+      "dialect_or_register": "polite です/ます register",
+      "requires_gameplay_context": "no",
+      "requires_technical_expansion": "no",
+      "nuance_lost_in_patch_safe_version": ""
+    }
+  ]
+}

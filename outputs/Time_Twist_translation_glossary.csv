@@ -1,0 +1,68 @@
+﻿category,exact_japanese,reconstructed_japanese,romaji,chosen_english,alternative_readings,first_occurrence,notes
+Character,おれ,俺,ore,Protagonist,I; me,TT1B/g0/r7,Source speaker tag and rough/plain masculine first person.
+Character,おんなのこ,女の子,onnanoko,Girl,young woman,TT1B/g0/r26,Recurring modern woman; no personal name is supplied in the extracted text.
+Character,しもんはかせ,シモン博士,shimonhakase,Dr. Simon,Dr. Shimon,TT1A/g0/r1,Physicist and creator of the Time Belt.
+Character,あくま,悪魔,akuma,Devil,demon,TT1B/g0/r0,Recurring antagonist; translated as a title/role.
+Character,ぴえーる,ピエール,pieeru,Pierre,,TT2/g0/r0,Body/identity used in the 1428 France chapter.
+Character,じゃんぬ・だるく,ジャンヌ・ダルク,jannu・daruku,Jeanne d'Arc,Joan of Arc,TT2/g0/r22,Use Jeanne in direct address; full historical name in narration.
+Character,るごー,ルゴー,rugoo,Lugot,Rugot,TT2/g0/r22,Medieval French ally; romanization retained consistently.
+Character,ちの,チノ,chino,Chino,,TT1B/g1/r11,Medieval French ally.
+Character,ごるどー,ゴルドー,gorudoo,Gordo,Gordeaux,TT2/g2/r2,Medieval French ally.
+Character,しきょう,司教,shikyou,Bishop,,TT2/g2/r11,"Office/title, not a personal name."
+Character,だんしゃく,男爵,danshaku,Baron,,T22/g0/r0,Office/title.
+Character,いざべる,イザベル,izaberu,Isabelle,Isabel,T22/g0/r13,The Baron's wife.
+Character,くーがー,クーガー,kuugaa,Cougar,Kuger,TT3A/g0/r13,U.S. air lieutenant identity in 1944.
+Character,しゅみっと,シュミット,shumitto,Schmidt,,TT3B/g0/r2,German officer and resistance ally.
+Character,ひとらー,ヒトラー,hitoraa,Hitler,,TT3A/g0/r19,Historical figure under supernatural influence in the game.
+Character,にくらす,ニクラス,nikurasu,Nicras,Niklas,TT4/g1/r5,Physician identity in ancient Athens.
+Character,あてな,アテナ,atena,Athena,,TT4/g0/r3,Greek goddess of wisdom and patron of Athens.
+Character,へるめす,ヘルメス,herumesu,Hermes,,TT4/g1/r3,Greek god.
+Character,はです,ハデス,hadesu,Hades,,TT4/g3/r12,Greek underworld figure.
+Character,けるべろす,ケルベロス,keruberosu,Cerberus,,TT4/g4/r4,Guardian hound of the underworld.
+Character,りんかーん,リンカーン,rinkaan,Lincoln,Abraham Lincoln,TT5/g0/r0,Historical figure in the Civil War chapter.
+Character,まいやー,マイヤー,maiyaa,Meyer,Mayer,TT5/g0/r2,Plantation/farm owner; current script establishes Meyer.
+Character,べる,ベル,beru,Belle,Bell,TT1A/g0/r1,George's mother.
+Character,じょーじ,ジョージ,jooji,George,,TT5/g0/r4,Protagonist's identity in 1864 Atlanta.
+Character,よせふ,ヨセフ,yosefu,Joseph,,TT6A/g0/r1,Mary's betrothed.
+Character,まりあ,マリア,maria,Mary,Maria,TT6A/g0/r7,Mother of Jesus.
+Character,かしむ,カシム,kashimu,Kashim,Kas(h)im,TT6A/g0/r1,Joseph's donkey and the protagonist's animal identity.
+Character,かすぱる,カスパル,kasuparu,Caspar,Gaspar,TT6C/g0/r2,One of the Magi.
+Character,めるきおーる,メルキオール,merukiooru,Melchior,,TT6C/g0/r2,One of the Magi.
+Character,ばるたざーる,バルタザール,barutazaaru,Balthazar,Balthasar,TT6C/g0/r2,One of the Magi.
+Historical person,いえす・きりすと,イエス・キリスト,iesu・kirisuto,Jesus Christ,,TT6C/g3/r4,Name revealed through an intentional Jesus/yes wordplay.
+Location,あくまはくぶつかん,悪魔博物館,akumahakubutsukan,Devil Museum,Demon Museum,TT1B/g0/r0,Modern museum where the supernatural plot begins.
+Location,きょうかい,教会,kyoukai,Church,,TT1B/g0/r6,Modern and medieval church contexts are distinguished by scene.
+Location,どいつなんぶ ほりょしゅうようじょ,ドイツ南部 捕虜収容所,doitsunanbu horyoshuuyoujo,POW camp in southern Germany,,TT3A/g0/r14,1944 setting.
+Location,よみのくに,黄泉の国,yominokuni,the underworld,Yomi,TT4/g0/r10,Rendered by Greek-scene function rather than as a Japanese place name.
+Location,なざれ,ナザレ,nazare,Nazareth,,TT6A/g0/r8,Nativity chapter.
+Location,べつれへむ,ベツレヘム,betsurehemu,Bethlehem,,TT6A/g3/r0,Nativity chapter.
+Location,えるされむ,エルサレム,erusaremu,Jerusalem,,TT6B/g2/r2,Historical/biblical place name.
+Location,いすらえる,イスラエル,isuraeru,Israel,,TT6A/g0/r8,The game's geographic label.
+Artifact,たいむべると,タイムベルト,taimuberuto,Time Belt,time belt,TT1B/g3/r7,Belt-shaped time machine; capitalization retained as an item name.
+Artifact,たいむましん,タイムマシン,taimumashin,time machine,,TT1B/g3/r8,General technology term.
+Artifact,まふうじのつぼ,魔封じの壺,mafuujinotsubo,Demon-Sealing Jar,demon-binding jar,TT1B/g0/r15,Museum artifact and key sealing vessel.
+Artifact,さばとのはこ,サバトの箱,sabatonohako,Sabbath Box,Witches' Sabbath box,TT1B/g0/r14,Museum exhibit said to hold soul contracts.
+Artifact,いましめのすず,戒めの鈴,imashimenosuzu,Warding Bell,Bell of Admonition,TT1B/g0/r16,Museum exhibit; English favors function.
+Artifact,あくまのて,悪魔の手,akumanote,Devil's Hand,,TT1B/g0/r17,"A bronze statue, not merely a symbol."
+Artifact,まもりふだ,守り札,mamorifuda,protective charm,amulet,TT1B/g0/r18,Recurring warding object.
+Supernatural,まらどぅる ばらお がらどぅーら,マラドゥル・バラオ・ガラドゥーラ,maraduru barao garaduura,Maradul Barao Garadura,Galdura variant,TT1A/g0/r29,Incantation; variants in the source are preserved and noted.
+Time travel,たいむとらべる,タイムトラベル,taimutoraberu,time travel,,TT1A/g0/r1,General concept.
+Time travel,たいむわーぷ,タイムワープ,taimuwaapu,time warp,time jump,TT1B/g2/r12,The game's term for historical transit.
+Historical period,1428ねん,1428年,1428nen,1428,,TT2/g0/r25,France/Jeanne chapter.
+Historical period,1944ねん 7がつ,1944年7月,1944nen 7gatsu,July 1944,,TT3A/g0/r14,German POW chapter.
+Historical period,1864ねん 9がつ,1864年9月,1864nen 9gatsu,September 1864,,TT5/g1/r6,Atlanta/Civil War chapter.
+Historical period,きげんぜん 4ねんごろ,紀元前4年頃,kigenzen 4nengoro,circa 4 BC,around 4 BCE,TT6A/g0/r8,The game uses BC-era framing.
+Command,みる,見る,miru,LOOK,Examine,T22/g1/r0,Core menu command.
+Command,はなす,話す,hanasu,TALK,Speak,TT1B/fixed/r1,Core menu command.
+Command,いどう,移動,idou,MOVE,Go,TT1B/fixed/r2,Core menu command.
+Command,つかう,使う,tsukau,USE,,TT1B/fixed/r10,Core menu command.
+Command,とる,取る,toru,TAKE,Get,TT1A/g0/r7,Core menu command.
+Command,きく,聞く／訊く,kiku,ASK / LISTEN,Hear,TT1A/g0/r2,Context determines whether it means ask or listen.
+Interface,さいしょから,最初から,saishokara,START,From the beginning,NOV2/start,Start-menu label.
+Interface,しばらく おまちください,しばらくお待ちください,shibaraku omachikudasai,PLEASE WAIT…,,TT1A/g0/r21,System wait prompt.
+Interface,ぜんぺん,前編,zenpen,PART 1,first part,NOV2/disk/r0,Zenpen disk label.
+Interface,こうへん,後編,kouhen,PART 2,second part,TT3B/g1/r25,Kouhen disk label.
+Graphics,タイムツイスト,タイムツイスト,taimutsuisuto,TIME TWIST,,TITLE/wordmark,Title wordmark.
+Graphics,歴史のかたすみで……,歴史の片隅で……,歴史nokatasumide……,On the Outskirts of History…,In a Corner of History,TITLE/subtitle,Requested localized subtitle.
+Register,いわゆるひとつの,いわゆる一つの,iwayuruhitotsuno,what you might call…,one of those…,TT1B/g0/r31,Comic Nagashima-associated verbal mannerism.
+Slang,ぼいん,ボイン,boin,quite a pair / big breasts,,TT1B/g1/r14,"Dated, objectifying slang; tone is intentionally crude."
