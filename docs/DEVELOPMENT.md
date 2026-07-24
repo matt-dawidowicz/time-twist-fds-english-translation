@@ -130,6 +130,33 @@ The title code appends data and patches 6502 control flow. A visually correct
 static image is not enough; START, B, the swipe, raster split shutdown, and the
 next game state must all be tested.
 
+## Python documentation standard
+
+Production Python follows PEP 257 structure and uses PEP 8 explanatory-comment
+style. A public or non-obvious class/function contract should state the parts
+that a maintainer cannot safely infer from its name:
+
+- purpose and project context;
+- arguments and return value;
+- accepted coordinate system, byte layout, or source assumptions;
+- deliberate side effects and generated files;
+- domain exceptions and the invariant each one protects;
+- why a non-obvious implementation strategy was chosen;
+- what the function validates and what still requires recompression, rendering,
+  or gameplay verification.
+
+Use an imperative, standalone summary line ending in punctuation. Separate a
+multi-line description from that summary with a blank line. Keep exact ROM
+evidence distinct from inferred editorial data in both prose and identifiers.
+Simple properties may use a concise one-line docstring when their complete
+contract is genuinely obvious from the documented owning class.
+
+Comments explain constraints, causality, or design intent. They are complete
+phrases or sentences, begin with `# `, and appear immediately above the code
+they illuminate. Do not narrate syntax. If a comment must explain a public
+caller contract, failure condition, or side effect, move that information into
+the docstring so documentation tools can expose it.
+
 ## Generated and ignored files
 
 The following remain local:

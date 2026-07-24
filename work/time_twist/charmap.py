@@ -27,8 +27,16 @@ COMMON_KANA = tuple(
 def decode_common(value: int) -> str:
     """Return the Japanese glyph for a six-bit common symbol.
 
-    Values 0-45 index the recovered kana table.  Values 46 and 47 are special
+    Args:
+        value: Numeric payload decoded from the common prefix branch.
+
+    Returns:
+        The recovered kana/punctuation glyph, or ``{COMMON:n}`` when no glyph
+        assignment is known.
+
+    Values 0-45 index the recovered kana table. Values 46 and 47 are special
     punctuation tiles selected by NOV2 rather than entries in ``COMMON_KANA``.
+    The function is deliberately total and never raises for an unknown value.
     """
 
     if 0 <= value < len(COMMON_KANA):
@@ -107,8 +115,17 @@ _EXTENDED_GLYPHS = {
 def decode_extended(value: int) -> str:
     """Return the Japanese glyph for a nine-bit extended symbol.
 
+    Args:
+        value: Numeric payload decoded from the extended prefix branch.
+
+    Returns:
+        The recovered Japanese glyph, or ``{EXT:n}`` when the value is
+        currently unmapped.
+
     The extended range contains voiced/semi-voiced kana, small kana, digits,
     punctuation, the prolonged-sound mark, and a literal space.
+    The function is deliberately total so extraction exposes unknown values
+    without losing their identity.
     """
 
     if value in _DAKUTEN:

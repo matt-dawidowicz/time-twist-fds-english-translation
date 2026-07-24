@@ -25,7 +25,13 @@ MAX_DICTIONARY_ENTRY_COUNT = 31
 
 @dataclass(frozen=True)
 class ScenarioRecord:
-    """One packed record identified by its group-local coordinates."""
+    """Store one packed record and its stable group-local coordinates.
+
+    Attributes:
+        group_index: Zero-based scenario group selected by the pointer table.
+        record_index: Zero-based record position within that group.
+        symbols: Payload tokens without the terminating separator.
+    """
 
     group_index: int
     record_index: int
@@ -36,7 +42,18 @@ class ScenarioRecord:
 class ScenarioBank:
     """Parsed scenario layout plus immutable source bytes.
 
-    ``dictionary_end_offset`` is the critical fixed-memory boundary.  Bytes at
+    Attributes:
+        path: Source bank path used for provenance and stable naming.
+        data: Complete immutable source bytes.
+        load_address: CPU address corresponding to file offset zero.
+        dictionary_address: Loaded address of the dictionary stream.
+        group_table_address: Loaded address of group pointers 1 through n.
+        group_addresses: Loaded addresses for every group, including group 0.
+        dictionary: Decoded reachable entries in one-based reference order.
+        dictionary_end_offset: First source byte after the decoded dictionary.
+        records: Flattened records retaining their group-local coordinates.
+
+    ``dictionary_end_offset`` is the critical fixed-memory boundary. Bytes at
     and after that offset may be code or data referenced by absolute address.
     """
 
@@ -52,11 +69,28 @@ class ScenarioBank:
 
 
 class ScenarioError(ValueError):
-    """Raised when a scenario bank's pointers or record boundaries are invalid."""
+    """Report invalid pointers, streams, capacity, or rebuilt scenario layout.
+
+    The exception covers both malformed source banks and proposed translations
+    that cannot preserve native structural constraints.  Rebuild operations
+    validate into temporary buffers first, so a raised error does not mutate the
+    caller's original bank bytes.
+    """
 
 
 def _read_word(data: bytes, offset: int) -> int:
-    """Read a bounded little-endian pointer from a bank."""
+    """Read one bounded little-endian 16-bit word.
+
+    Args:
+        data: Complete scenario bank.
+        offset: File-relative offset of the low byte.
+
+    Returns:
+        Unsigned 16-bit value.
+
+    Raises:
+        ScenarioError: If either byte lies outside ``data``.
+    """
 
     if offset < 0 or offset + 2 > len(data):
         raise ScenarioError(f"word offset ${offset:04X} is outside the bank")
@@ -64,7 +98,20 @@ def _read_word(data: bytes, offset: int) -> int:
 
 
 def _to_offset(address: int, load_address: int, size: int) -> int:
-    """Convert a loaded CPU address to a validated file-relative offset."""
+    """Convert a loaded address to a validated file-relative offset.
+
+    Args:
+        address: Absolute CPU address stored in the bank.
+        load_address: CPU address corresponding to file offset zero.
+        size: Complete bank length in bytes.
+
+    Returns:
+        ``address - load_address``. A pointer exactly one byte beyond the bank
+        is accepted as an end boundary.
+
+    Raises:
+        ScenarioError: If the result is negative or greater than ``size``.
+    """
 
     offset = address - load_address
     if offset < 0 or offset > size:
@@ -79,7 +126,21 @@ def _decode_records_to_end(
     start_offset: int,
     end_offset: int,
 ) -> tuple[tuple[PackedSymbol, ...], ...]:
-    """Decode byte-aligned records until an exact stream boundary is reached."""
+    """Decode byte-aligned records up to an exact stream boundary.
+
+    Args:
+        data: Complete scenario bank.
+        start_offset: File offset of the first record.
+        end_offset: Required byte offset immediately after the last record.
+
+    Returns:
+        Immutable record payloads without separator tokens.
+
+    Raises:
+        ScenarioError: If offsets are reversed or record alignment crosses or
+            fails to reach ``end_offset`` exactly.
+        PackedTextError: If a symbol is truncated.
+    """
 
     if start_offset > end_offset:
         raise ScenarioError("record stream starts after its end")
@@ -110,7 +171,20 @@ def _decode_fixed_records(
     start_offset: int,
     count: int,
 ) -> tuple[tuple[tuple[PackedSymbol, ...], ...], int]:
-    """Decode a known record count and return records plus the ending offset."""
+    """Decode a known number of aligned records from one byte offset.
+
+    Args:
+        data: Complete scenario bank.
+        start_offset: File offset of the first record.
+        count: Number of separators/records to consume.
+
+    Returns:
+        A pair of immutable record payloads and the byte offset after the final
+        separator alignment.
+
+    Raises:
+        PackedTextError: If the stream ends before ``count`` records.
+    """
 
     reader = BitReader(data, start_offset * 8)
     records: list[tuple[PackedSymbol, ...]] = []
@@ -129,7 +203,14 @@ def _decode_fixed_records(
 def _maximum_dictionary_reference(
     records: Iterable[Iterable[PackedSymbol]],
 ) -> int:
-    """Return the largest one-based dictionary entry referenced by records."""
+    """Return the largest one-based dictionary reference in nested records.
+
+    Args:
+        records: Any iterable of symbol iterables.
+
+    Returns:
+        Maximum dictionary payload, or zero when no reference exists.
+    """
 
     return max(
         (
@@ -147,7 +228,24 @@ def _decode_referenced_dictionary(
     start_offset: int,
     text_records: Iterable[Iterable[PackedSymbol]],
 ) -> tuple[tuple[tuple[PackedSymbol, ...], ...], int]:
-    """Decode enough dictionary entries to close all nested references."""
+    """Decode the transitive closure of dictionary references.
+
+    Args:
+        data: Complete scenario bank.
+        start_offset: File offset of dictionary entry 1.
+        text_records: Scenario records that seed the reachable entry count.
+
+    Returns:
+        Reachable dictionary entries and the byte offset after the final entry.
+
+    Raises:
+        ScenarioError: If a direct or nested reference exceeds the native
+            31-entry limit.
+        PackedTextError: If the required dictionary stream is truncated.
+
+    The dictionary is reparsed when a decoded entry references a later entry.
+    This avoids assuming that source dictionaries are flat.
+    """
 
     required_count = _maximum_dictionary_reference(text_records)
     if required_count > MAX_DICTIONARY_ENTRY_COUNT:
@@ -172,10 +270,25 @@ def parse_scenario_bank(
 ) -> ScenarioBank:
     """Parse group pointers, byte-aligned records, and referenced dictionary.
 
+    Args:
+        path: Extracted scenario/program bank to read.
+        load_address: CPU address corresponding to file offset zero.
+
+    Returns:
+        Parsed layout, source bytes, records, and reachable dictionary.
+
+    Raises:
+        OSError: If ``path`` cannot be read.
+        ScenarioError: If pointers, table size, ordering, group boundaries, or
+            dictionary references are invalid.
+        PackedTextError: If a packed symbol is truncated.
+
     The pointer table stores groups 1..n; group zero has its own header pointer.
     Group addresses must be ordered, and each group must end exactly at the
-    next group or the pointer table.  Only as many dictionary records as are
+    next group or the pointer table. Only as many dictionary records as are
     reachable from text (including nested source references) are decoded.
+
+    The function reads the filesystem but never mutates the bank.
     """
 
     data = path.read_bytes()
@@ -242,11 +355,29 @@ def rebuild_scenario_bank(
 ) -> bytes:
     """Rebuild text and pointers while preserving non-text source bytes.
 
-    ``groups`` must match the original group count.  When
+    Args:
+        bank: Parsed source layout and immutable bytes.
+        groups: Replacement records in original group order.
+        dictionary: Replacement one-based dictionary entries.
+        preserve_memory_footprint: Keep the original fixed tail at its loaded
+            address and reject any text-region overrun.
+
+    Returns:
+        Rebuilt bank bytes with updated group/dictionary pointers.
+
+    Raises:
+        ScenarioError: If the group count changes, a loaded pointer exceeds
+            16 bits, total scenario data exceeds address space, or a preserved
+            footprint is too small.
+        PackedTextError: If any replacement token cannot be packed.
+
+    ``groups`` must match the original group count. When
     ``preserve_memory_footprint`` is true, the rebuilt group/table/dictionary
     area cannot cross the original ``dictionary_end_offset`` and any unused
-    bytes before that boundary are copied from the source.  The suffix begins
+    bytes before that boundary are copied from the source. The suffix begins
     at the same file offset and therefore the same loaded CPU address.
+
+    The function is side-effect free and does not modify ``bank``.
     """
 
     if len(groups) != len(bank.group_addresses):
@@ -307,8 +438,19 @@ def render_symbols(
 ) -> str:
     """Render Japanese glyphs, recursively expanded dictionary text, and tags.
 
+    Args:
+        symbols: Record or dictionary-entry tokens to render.
+        dictionary: Ordered one-based source dictionary.
+        _stack: Internal recursion path for loop detection. Callers should use
+            the default.
+
+    Returns:
+        Exact decoded Japanese where known, plus explicit tags for controls,
+        separators, unknown glyphs, invalid references, or loops.
+
     Invalid references and loops remain visible as diagnostic tokens rather
-    than disappearing from the extracted source.
+    than disappearing from the extracted source. Rendering never mutates the
+    symbols or dictionary and never raises for a bad reference.
     """
 
     rendered: list[str] = []

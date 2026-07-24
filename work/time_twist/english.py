@@ -69,11 +69,25 @@ DISPLAY_COLUMNS = 24
 
 
 class EnglishTextError(ValueError):
-    """Raised when translated text cannot be represented safely."""
+    """Report English text that the native font or renderer cannot use safely.
+
+    This error identifies unsupported characters, malformed control syntax, or
+    display-width violations discovered before bytes are inserted into a bank.
+    Callers should revise the translation or control layout rather than suppress
+    the exception, because replacement characters would conceal ROM corruption.
+    """
 
 
 def _character_symbols() -> dict[str, PackedSymbol]:
-    """Build the preferred symbol for every supported visible character."""
+    """Build the canonical visible-character-to-symbol map.
+
+    Returns:
+        A new mapping for every character supported by the English font.
+
+    Common codes are installed first because they cost six bits. Extended
+    duplicates, currently only space, use :meth:`dict.setdefault` and cannot
+    replace the cheaper representation.
+    """
 
     result = {
         char: PackedSymbol(SymbolKind.COMMON, value, 0, 0)
@@ -91,8 +105,19 @@ CHARACTER_SYMBOLS = _character_symbols()
 def encode_english(text: str) -> tuple[PackedSymbol, ...]:
     """Encode supported dialogue characters plus explicit ``{CTRL:n}`` tags.
 
+    Args:
+        text: Patch-facing English containing only supported glyphs and
+            complete ``{CTRL:0}`` through ``{CTRL:7}`` tags.
+
+    Returns:
+        An immutable symbol tuple suitable for compression or packing.
+
+    Raises:
+        EnglishTextError: If a tag is malformed, a visible character is not in
+            the English font, or control 5 is used inside a record.
+
     Control 5 is rejected because the packed-text codec owns it as the
-    byte-aligned record separator.  Unsupported characters and malformed tags
+    byte-aligned record separator. Unsupported characters and malformed tags
     fail with their character position so translation JSON can be corrected
     before any ROM is rebuilt.
     """
@@ -124,7 +149,20 @@ def encode_english(text: str) -> tuple[PackedSymbol, ...]:
 
 
 def render_english(symbols: Iterable[PackedSymbol]) -> str:
-    """Render symbols encoded by :func:`encode_english` for verification."""
+    """Render English symbols and diagnostic tokens for verification.
+
+    Args:
+        symbols: Ordered native symbols, normally produced by
+            :func:`encode_english` or dictionary expansion.
+
+    Returns:
+        Visible English plus explicit control tags. Unknown symbol/value pairs
+        remain visible as diagnostic tokens rather than being discarded.
+
+    This function does not expand dictionary references. Call
+    :func:`time_twist.compression.expand_dictionary_symbols` first when
+    verifying compressed scenario text.
+    """
 
     common = {value: char for value, char in enumerate(COMMON_CHARACTERS)}
     rendered: list[str] = []
@@ -144,7 +182,16 @@ def render_english(symbols: Iterable[PackedSymbol]) -> str:
 
 
 def control_values(text: str) -> tuple[int, ...]:
-    """Return ordered control values for Japanese/English parity checks."""
+    """Extract recognized control values in textual order.
+
+    Args:
+        text: Source or translated text containing explicit control tags.
+
+    Returns:
+        An immutable tuple of integer control values. Malformed text outside
+        recognized tags is ignored; full validation belongs to
+        :func:`encode_english`.
+    """
 
     return tuple(int(match.group(1)) for match in CONTROL_PATTERN.finditer(text))
 
@@ -157,11 +204,26 @@ def validate_display_width(
 ) -> None:
     """Validate text chunks against the renderer's fixed row width.
 
-    Time Twist's dialogue row is 24 tiles wide.  A chunk that overruns it is
+    Args:
+        text: English text with optional control tags.
+        columns: Visible tile width of one renderer row.
+        allow_wrap: Permit segments longer than one row only when every
+            automatic wrap lands on safe word-padding boundaries.
+
+    Raises:
+        EnglishTextError: If a segment exceeds ``columns`` when wrapping is
+            disabled, or if an enabled wrap would split a word or begin the
+            next row with padding.
+
+    Time Twist's dialogue row is 24 tiles wide. A chunk that overruns it is
     automatically wrapped by the renderer, but the following control code can
-    immediately reuse that row and overwrite the wrapped characters.  Selected
+    immediately reuse that row and overwrite the wrapped characters. Selected
     records may intentionally wrap when padding places every new word exactly
     at a row boundary.
+
+    The function performs validation only and has no side effects. Control
+    tags delimit independently measured display segments and do not consume
+    columns.
     """
 
     start = 0

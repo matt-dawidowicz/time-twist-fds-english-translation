@@ -116,19 +116,35 @@ SPRITE_PALETTE = (
 
 
 class TitlePatchError(ValueError):
-    """Raised when the recovered title assets cannot be patched safely."""
+    """Report incompatible NOV4 data, invalid artwork, or exhausted title space.
+
+    Title helpers raise this exception when fingerprints, dimensions, palette
+    assumptions, tile budgets, or address ranges do not match the supported
+    source.  These checks intentionally fail before returning patch bytes so an
+    approximate preview cannot be mistaken for a safe ROM modification.
+    """
 
 
 @dataclass(frozen=True)
 class TitleAssets:
     """All generated binary assets needed by :func:`patched_nov4_title`.
 
-    ``background_chr`` is the exact upper title table, ``bottom_chr`` supplies
-    the independent lower rows after the raster split, and ``nintendo_chr`` /
-    ``restore_chr`` temporarily share reserved tile IDs across title phases.
-    ``encoded_final`` and ``encoded_second`` are the relocated native RLE
-    nametables.  ``approximation_error`` remains for preview compatibility and
-    is zero for the current exact conversion.
+    Attributes:
+        chr_data: Complete replacement for NOV4's original title CHR region.
+        background_chr: Exact upper pattern table used after initialization.
+        bottom_chr: Independent lower patterns loaded for the raster split.
+        nintendo_chr: Temporary Nintendo-phase patterns for reserved tile IDs.
+        restore_chr: Upper-title patterns restored over those temporary IDs.
+        final_nametable: Decoded final title-screen nametable and attributes.
+        second_nametable: Decoded slide/Nintendo nametable and attributes.
+        encoded_final: Native RLE for ``final_nametable``.
+        encoded_second: Native RLE for ``second_nametable``.
+        approximation_error: Compatibility metric; zero for the exact split
+            conversion.
+
+    ``nintendo_chr`` and ``restore_chr`` intentionally share tile IDs across
+    non-overlapping title phases. This temporal reuse avoids consuming
+    additional pattern-table space without changing the clock-sprite tail.
     """
 
     chr_data: bytes
@@ -144,7 +160,14 @@ class TitleAssets:
 
 
 def _sha256(data: bytes) -> str:
-    """Return the uppercase source fingerprint used by title patch guards."""
+    """Fingerprint a recovered byte region for compatibility checks.
+
+    Args:
+        data: Exact bytes from the source bank or captured asset region.
+
+    Returns:
+        The 64-character SHA-256 hexadecimal digest in uppercase.
+    """
 
     return hashlib.sha256(data).hexdigest().upper()
 
@@ -155,7 +178,21 @@ def decode_title_rle(
     *,
     size: int = 1024,
 ) -> tuple[bytes, int]:
-    """Decode NOV4's count-prefix nametable format."""
+    """Decode an exact-size NOV4 count-prefix stream.
+
+    Args:
+        data: Complete NOV4 data or another buffer containing the stream.
+        start: Byte offset of the first encoded value.
+        size: Required decoded byte count, normally one 1,024-byte nametable.
+
+    Returns:
+        Decoded bytes and the input offset immediately after the final encoded
+        value. This fixed-size form does not consume an ``$FF`` terminator.
+
+    Raises:
+        TitlePatchError: If the stream ends early, terminates before ``size``,
+            contains an invalid run, or expands past the target.
+    """
 
     output = bytearray()
     offset = start
@@ -182,7 +219,22 @@ def decode_title_rle(
 
 
 def decode_title_stream(data: bytes, start: int) -> tuple[bytes, int]:
-    """Decode NOV4's complete, $FF-terminated two-nametable stream."""
+    """Decode a complete ``$FF``-terminated NOV4 title stream.
+
+    Args:
+        data: Buffer containing the compressed stream.
+        start: Byte offset of its first encoded value.
+
+    Returns:
+        All decoded bytes and the offset immediately after the terminator.
+
+    Raises:
+        TitlePatchError: If no terminator is present, a run is invalid, or the
+            decoded output exceeds the defensive 64-KiB limit.
+
+    Unlike :func:`decode_title_rle`, this form does not impose a nametable
+    boundary and is used to verify combined relocated streams.
+    """
 
     output = bytearray()
     offset = start
@@ -206,7 +258,18 @@ def decode_title_stream(data: bytes, start: int) -> tuple[bytes, int]:
 
 
 def encode_title_rle(data: bytes) -> bytes:
-    """Encode a 1 KB title nametable using NOV4's native run format."""
+    """Encode bytes using NOV4's count-prefix run format.
+
+    Args:
+        data: Decoded nametable or stream fragment.
+
+    Returns:
+        Encoded bytes without the stream-level ``$FF`` terminator.
+
+    Values at or above ``$C0`` must always use a run prefix because the decoder
+    cannot distinguish them from literal run markers. Runs are split at 62
+    bytes because ``$FF`` is reserved for stream termination.
+    """
 
     output = bytearray()
     offset = 0
@@ -230,7 +293,18 @@ def encode_title_rle(data: bytes) -> bytes:
 
 
 def _render_indexed_nametable(nametable: bytes, chr_data: bytes) -> Image.Image:
-    """Render a conventional single-pattern-table nametable as palette indices."""
+    """Render one nametable through a single NES pattern table.
+
+    Args:
+        nametable: At least 960 tile IDs; attribute bytes are ignored.
+        chr_data: NES 2bpp patterns addressed by those tile IDs.
+
+    Returns:
+        A 256-by-240 ``L`` image whose pixel values are palette indices 0-3.
+
+    Raises:
+        IndexError: If a referenced tile is missing from ``chr_data``.
+    """
 
     image = Image.new("L", (256, 240), 0)
     pixels = image.load()
@@ -255,7 +329,22 @@ def _render_split_nametable(
     top_chr: bytes,
     bottom_chr: bytes,
 ) -> Image.Image:
-    """Render the title with the same mid-screen pattern-table split as NOV4."""
+    """Render a nametable with NOV4's recovered mid-screen CHR split.
+
+    Args:
+        nametable: Decoded title nametable.
+        top_chr: Pattern table used above :data:`SPLIT_TILE_ROW`.
+        bottom_chr: Compact lower pattern set loaded into table 0.
+
+    Returns:
+        Indexed 256-by-240 title image.
+
+    Raises:
+        TitlePatchError: If ``bottom_chr`` exceeds one NES pattern table.
+
+    Missing lower slots are padded with blank patterns for deterministic
+    preview behavior.
+    """
 
     if len(bottom_chr) > TITLE_CHR_SIZE:
         raise TitlePatchError("bottom title CHR exceeds one NES pattern table")
@@ -269,9 +358,21 @@ def _render_split_nametable(
 def _target_to_indices(path: Path) -> Image.Image:
     """Normalize a logo crop or full-screen reference to NES palette indices.
 
+    Args:
+        path: Tight logo crop or complete title-screen reference image.
+
+    Returns:
+        A 256-by-240 indexed image using the title/gray palette conventions.
+
+    Raises:
+        OSError: If Pillow cannot read the image.
+
     Blue clock-hand pixels are removed because the live game draws the moving
     hands as sprites.  The returned image is 256x240 indexed data; source art
     occupies the visible 224-line reference area.
+
+    A width-to-height ratio greater than two selects the legacy crop placement
+    path. Otherwise the source is treated as a full-screen reference.
     """
 
     source = Image.open(path).convert("RGB")
@@ -315,7 +416,14 @@ def _target_to_indices(path: Path) -> Image.Image:
 
 
 def _remove_reference_hand(image: Image.Image) -> None:
-    """Clear the one frozen hand in the logo crop before live sprites draw."""
+    """Erase the frozen hand from a downscaled legacy logo crop.
+
+    Args:
+        image: Mutable indexed title image using background color zero.
+
+    Side Effects:
+        Clears recovered hand polygons and two quantization remnants in place.
+    """
 
     clock = ImageDraw.Draw(image)
     clock.polygon(((114, 77), (118, 82), (134, 68), (131, 64)), fill=0)
@@ -326,7 +434,14 @@ def _remove_reference_hand(image: Image.Image) -> None:
 
 
 def _remove_full_reference_hand(image: Image.Image) -> None:
-    """Clear antialiased remnants of the full-screen reference hand."""
+    """Erase the frozen hand from a full-screen reference.
+
+    Args:
+        image: Mutable indexed title image using background color zero.
+
+    Side Effects:
+        Draws three black cleanup strokes directly into ``image``.
+    """
 
     clock = ImageDraw.Draw(image)
     clock.line(((122, 74), (132, 65)), fill=0, width=4)
@@ -335,7 +450,17 @@ def _remove_full_reference_hand(image: Image.Image) -> None:
 
 
 def _draw_clock_numerals(image: Image.Image) -> None:
-    """Draw the compact clock labels used by the original title artwork."""
+    """Redraw compact ``12``, ``9``, ``3``, and ``6`` clock labels.
+
+    Args:
+        image: Mutable indexed title image.
+
+    Side Effects:
+        Clears the four numeral boxes and writes white index-1 pixels in place.
+
+    This helper is used only for the heavily downscaled legacy crop. A
+    full-screen reference keeps its authoritative numeral pixels.
+    """
 
     clock = ImageDraw.Draw(image)
     for bounds in (
@@ -400,7 +525,22 @@ def _draw_text(
     y: int,
     color: int,
 ) -> None:
-    """Rasterize deterministic 5x7 text into an indexed title image."""
+    """Rasterize deterministic 5x7 text into an indexed image.
+
+    Args:
+        image: Mutable Pillow image with integer palette indices.
+        text: Text supported by :data:`time_twist.font.PIXEL_FONT_5X7`.
+        x: Leftmost pixel of the first character.
+        y: Top pixel of every glyph.
+        color: Palette index written for set pixels.
+
+    Raises:
+        TitlePatchError: If ``text`` contains an unsupported character.
+
+    Side Effects:
+        Writes glyph pixels directly into ``image``. Characters advance six
+        pixels; spaces advance four and draw nothing.
+    """
 
     pixels = image.load()
     cursor = x
@@ -422,7 +562,16 @@ def _draw_text(
 
 
 def _tile_bytes(image: Image.Image, tile_x: int, tile_y: int) -> bytes:
-    """Encode one indexed 8x8 image cell as an NES two-bitplane CHR tile."""
+    """Encode one indexed image cell as an NES 2bpp tile.
+
+    Args:
+        image: Image whose pixel values are in the range 0-3.
+        tile_x: Horizontal eight-pixel cell index.
+        tile_y: Vertical eight-pixel cell index.
+
+    Returns:
+        Sixteen bytes: eight low-plane rows followed by eight high-plane rows.
+    """
 
     pixels = image.load()
     low = bytearray(8)
@@ -437,7 +586,17 @@ def _tile_bytes(image: Image.Image, tile_x: int, tile_y: int) -> bytes:
 
 @lru_cache(maxsize=None)
 def _pattern_values(pattern: bytes) -> tuple[int, ...]:
-    """Decode one NES 2bpp tile to 64 row-major palette indices."""
+    """Decode one NES 2bpp tile to 64 row-major palette indices.
+
+    Args:
+        pattern: Sixteen-byte low-plane/high-plane tile.
+
+    Returns:
+        Cached immutable values in the range 0-3.
+
+    Raises:
+        IndexError: If ``pattern`` is shorter than 16 bytes.
+    """
 
     values: list[int] = []
     for y in range(8):
@@ -461,7 +620,16 @@ _COLOR_DISTANCE = tuple(
 
 @lru_cache(maxsize=None)
 def _pattern_distance(left: bytes, right: bytes) -> int:
-    """Score tile mismatch while heavily protecting the white outline color."""
+    """Score color mismatch between two tiles.
+
+    Args:
+        left: Source/target tile whose white pixels must be protected.
+        right: Candidate representative tile.
+
+    Returns:
+        Weighted per-pixel error. Replacing a white source pixel receives a
+        prohibitive penalty; other pink/purple differences remain finite.
+    """
 
     return sum(
         _COLOR_DISTANCE[a][b]
@@ -470,7 +638,17 @@ def _pattern_distance(left: bytes, right: bytes) -> int:
 
 
 def _values_to_pattern(values: list[int]) -> bytes:
-    """Encode 64 palette indices as one native NES 2bpp tile."""
+    """Encode 64 row-major palette indices as one NES 2bpp tile.
+
+    Args:
+        values: Exactly 64 integers whose low two bits select colors.
+
+    Returns:
+        Sixteen-byte low-plane/high-plane tile.
+
+    Raises:
+        IndexError: If fewer than 64 values are supplied.
+    """
 
     low = bytearray(8)
     high = bytearray(8)
@@ -491,6 +669,20 @@ def _refine_title_centers(
     iterations: int = 8,
 ) -> list[bytes]:
     """Refine lossy logo tiles into deterministic weighted consensus tiles.
+
+    Args:
+        centers: Initial unique representative patterns.
+        exact_patterns: Representatives that must never be changed.
+        represented_patterns: Full target pattern set.
+        weighted_frequency: On-screen use count for every represented pattern.
+        iterations: Maximum deterministic refinement passes.
+
+    Returns:
+        The same number of unique centers, with fixed patterns retained.
+
+    Raises:
+        TitlePatchError: If refinement runs out of candidates or changes the
+            requested center count.
 
     Reusing a whole source tile for several different diagonal edges can copy
     unrelated pink or purple pixels into the logo.  The exact lower-title and
@@ -583,7 +775,19 @@ def _refine_title_centers(
 
 
 def _validate_source(data: bytes) -> None:
-    """Reject any NOV4 whose recovered program/assets differ from the source."""
+    """Validate every revision-specific NOV4 assumption before patching.
+
+    Args:
+        data: Candidate unmodified NOV4 overlay.
+
+    Raises:
+        TitlePatchError: If size, instructions, pointers, stream framing,
+            nametable hashes, CHR hashes, clock source, or metasprite animation
+            differs from the recovered Japanese revision.
+
+    The function performs no mutation. These strict guards prevent absolute
+    offsets and injected 6502 helpers from being applied to an unknown build.
+    """
 
     if len(data) != NOV4_SOURCE_SIZE:
         raise TitlePatchError(
@@ -667,11 +871,26 @@ def build_title_assets(
 ) -> TitleAssets:
     """Build exact English title assets without modifying the source bytes.
 
+    Args:
+        data: Original, revision-checked NOV4 overlay.
+        target: Tight logo crop or complete title-screen reference image.
+        subtitle: Localized subtitle redrawn with the deterministic pixel font.
+
+    Returns:
+        Exact CHR, nametable, RLE, Nintendo-phase, and restore assets.
+
+    Raises:
+        OSError: If ``target`` cannot be read.
+        TitlePatchError: If NOV4 is unknown, the subtitle is unsupported or
+            wider than the screen, exact pattern counts differ, temporary tile
+            IDs are exhausted, or clock-source preservation fails.
+
     ``target`` may be a tight logo crop or a complete title-screen reference.
     The supplied subtitle is always redrawn by the deterministic pixel font.
     The returned upper/lower pattern sets must match their recovered capacity,
     Nintendo-phase tiles receive reversible host IDs, and the original clock
-    tile tail is preserved byte-for-byte.
+    tile tail is preserved byte-for-byte. The function does not write files or
+    mutate ``data``.
     """
 
     _validate_source(data)
@@ -893,10 +1112,25 @@ def patched_nov4_title(
 ) -> bytes:
     """Return NOV4 with relocated English title assets and helper code.
 
+    Args:
+        data: Original NOV4 overlay accepted by :func:`_validate_source`.
+        target: Logo or full-screen reference image.
+        subtitle: Localized subtitle to retain under the wordmark.
+
+    Returns:
+        Expanded NOV4 bytes containing title assets and verified helper code.
+
+    Raises:
+        OSError: If the reference image cannot be read.
+        TitlePatchError: If asset generation fails, helper sizes change, the
+            expanded overlay would overlap NOV3, a source patch site differs,
+            or any post-build verification fails.
+
     The function appends lower-title CHR, Nintendo overlay/restore CHR, three
     small 6502 helpers, and two compressed nametables.  It rewrites only the
     recovered call/pointer/origin sites and the background CHR region.  The
-    expanded overlay must finish below resident NOV3 at ``$D7B5``.
+    expanded overlay must finish below resident NOV3 at ``$D7B5``. Inputs and
+    the reference file are not modified.
     """
 
     assets = build_title_assets(data, target, subtitle=subtitle)
@@ -909,7 +1143,18 @@ def patched_nov4_title(
     title_stream_offset = exit_offset + TITLE_EXIT_SIZE
 
     def loaded_address(offset: int) -> int:
-        """Convert a NOV4 file offset to its loaded CPU address."""
+        """Convert a validated NOV4 file offset to its loaded CPU address.
+
+        Args:
+            offset: Offset inside the bank's loaded payload.
+
+        Returns:
+            CPU address obtained by adding the bank's load base.
+
+        Note:
+            The enclosing function validates the final expanded address against
+            NOV3 residency after all appended regions have been laid out.
+        """
 
         return NOV4_LOAD_ADDRESS + offset
 
@@ -1055,7 +1300,17 @@ def patched_nov4_title(
 
 
 def render_title_background(assets: TitleAssets) -> Image.Image:
-    """Render the final translated title background with its NES palettes."""
+    """Render generated title assets as a full-color verification image.
+
+    Args:
+        assets: Generated title nametable and split CHR sets.
+
+    Returns:
+        A new 256-by-240 RGB image with attribute-table palette selection.
+
+    This preview omits animated clock-hand sprites. Use
+    :func:`overlay_clock_sprites` with a runtime capture to inspect a frame.
+    """
 
     indexed = _render_split_nametable(
         assets.final_nametable,
@@ -1081,7 +1336,24 @@ def overlay_clock_sprites(
     chr_dump: bytes,
     oam: bytes,
 ) -> Image.Image:
-    """Overlay one captured hand position for a static verification preview."""
+    """Overlay one captured clock-hand frame on a title preview.
+
+    Args:
+        background: Base title image; it is copied and never modified.
+        chr_dump: Complete 8-KiB runtime NES pattern-table capture.
+        oam: At least the first eight four-byte sprite records.
+
+    Returns:
+        A new RGB image with nontransparent hand pixels applied.
+
+    Raises:
+        TitlePatchError: If the CHR dump is not exactly 8 KiB or fewer than
+            eight sprites are available.
+
+    Horizontal/vertical flip bits and the NES OAM y-plus-one convention are
+    honored. Sprite priority and palette-number bits are intentionally ignored
+    because the captured hand uses one known verification palette.
+    """
 
     if len(chr_dump) != 0x2000 or len(oam) < 0x20:
         raise TitlePatchError("clock preview needs 8 KB CHR and eight OAM sprites")

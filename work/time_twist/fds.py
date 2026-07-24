@@ -20,17 +20,29 @@ FILE_HEADER_SIZE = 16
 
 
 class FdsFormatError(ValueError):
-    """Raised when an image does not follow the archival FDS block layout."""
+    """Report an invalid archival FDS block, boundary, count, or capacity.
+
+    Parsing and replacement routines raise this exception when bytes violate the
+    block layout documented in ``docs/FORMATS.md`` or when a replacement would
+    overrun a fixed payload.  Callers may treat it as a safe rejection: no image
+    is serialized until the relevant structural check succeeds.
+    """
 
 
 @dataclass
 class FdsFile:
     """One block-3 header and block-4 payload pair from an FDS side.
 
-    ``header_offset`` points to the block-3 marker in the original archival
-    side. ``data_offset`` points to the first payload byte after block 4.
-    These offsets are diagnostic; serialization rebuilds the side in file
-    order and recalculates payload sizes.
+    Attributes:
+        index: Zero-based order within the parsed side.
+        header: Mutable 16-byte block-3 header, including its marker.
+        data: Current immutable block-4 payload.
+        header_offset: Original side offset of the block-3 marker.
+        data_offset: Original side offset of the first payload byte.
+
+    The offsets are diagnostic. Serialization rebuilds a side in file order,
+    refreshes payload sizes, and does not attempt to preserve gaps between
+    parsed file blocks because archival images omit physical FDS gaps.
     """
 
     index: int
@@ -41,55 +53,77 @@ class FdsFile:
 
     @property
     def number(self) -> int:
-        """File number used by the FDS filesystem."""
+        """Return the filesystem sequence number from the preserved header."""
 
         return self.header[1]
 
     @property
     def file_id(self) -> int:
-        """Game-assigned file identifier."""
+        """Return the game-assigned identifier from the preserved header."""
 
         return self.header[2]
 
     @property
     def raw_name(self) -> bytes:
-        """Return the exact eight-byte on-disk filename field."""
+        """Return the exact eight-byte filename field, including padding."""
 
         return bytes(self.header[3:11])
 
     @property
     def name(self) -> str:
-        """Return the printable FDS filename with trailing padding removed."""
+        """Decode the printable ASCII filename and remove trailing padding.
+
+        Invalid ASCII bytes are replaced rather than raising an exception so a
+        manifest can still identify a malformed or unusual file header. Use
+        :attr:`raw_name` when exact filename bytes matter.
+        """
 
         return self.raw_name.decode("ascii", "replace").rstrip("\0 ")
 
     @property
     def load_address(self) -> int:
-        """Return the little-endian destination address from the header."""
+        """Return the 16-bit little-endian CPU/PPU destination address."""
 
         return int.from_bytes(self.header[11:13], "little")
 
     @property
     def size(self) -> int:
-        """Current payload size, including any in-memory replacement."""
+        """Return the current payload size, not the stale header declaration."""
 
         return len(self.data)
 
     @property
     def kind(self) -> int:
-        """FDS file kind byte (program, character, or nametable data)."""
+        """Return the raw FDS file-kind byte.
+
+        Conventionally 0 means program data, 1 means character data, and 2
+        means nametable data. The parser preserves other values for diagnosis.
+        """
 
         return self.header[15]
 
     def serialized_header(self) -> bytes:
-        """Return the preserved header with its payload-size field refreshed."""
+        """Serialize the header with the current payload size.
+
+        Returns:
+            A new 16-byte header. The mutable :attr:`header` is not changed.
+
+        Raises:
+            OverflowError: If the payload is larger than the 16-bit FDS size
+                field.
+        """
 
         header = bytearray(self.header)
         header[13:15] = len(self.data).to_bytes(2, "little")
         return bytes(header)
 
     def manifest(self) -> dict[str, Any]:
-        """Return a JSON-serializable description for audits and diffs."""
+        """Return exact and human-readable file metadata for audits.
+
+        Returns:
+            A JSON-serializable dictionary containing IDs, decoded and raw
+            names, load address, current size, kind, and original offsets.
+        """
 
         return {
             "index": self.index,
@@ -111,7 +145,15 @@ class FdsFile:
 class FdsSide:
     """One 65,500-byte archival FDS side.
 
-    ``padding`` retains every byte after the last parsed file.  Rebuilding
+    Attributes:
+        index: Zero-based side position in the archival image.
+        disk_info: Preserved 56-byte block-1 disk information.
+        file_count_block: Mutable two-byte block-2 count record.
+        files: Parsed block-3/block-4 pairs in source order.
+        padding: Bytes after the last declared file.
+        parsed_length: Original offset immediately after the last payload.
+
+    ``padding`` retains every byte after the last parsed file. Rebuilding
     consumes that original padding first when a file grows and pads with zeroes
     only if the original padding is shorter than the remaining side capacity.
     """
@@ -125,7 +167,20 @@ class FdsSide:
 
     @classmethod
     def parse(cls, raw: bytes, index: int) -> "FdsSide":
-        """Parse one side and validate every expected block marker/boundary."""
+        """Parse one fixed-size archival side.
+
+        Args:
+            raw: Exactly 65,500 side bytes without a 16-byte image header.
+            index: Zero-based side number used in diagnostics.
+
+        Returns:
+            A side that preserves all block headers, payloads, and trailing
+            padding.
+
+        Raises:
+            FdsFormatError: If the side size, block markers, declared payload
+                boundary, or file count is inconsistent.
+        """
 
         if len(raw) != SIDE_SIZE:
             raise FdsFormatError(
@@ -197,30 +252,40 @@ class FdsSide:
 
     @property
     def game_code(self) -> str:
-        """Return the four-character game code from the disk-info block."""
+        """Return the printable four-character game code."""
 
         return self.disk_info[16:20].decode("ascii", "replace").rstrip(" ")
 
     @property
     def version(self) -> int:
-        """Return the disk version byte."""
+        """Return the unmodified disk version byte."""
 
         return self.disk_info[20]
 
     @property
     def side_number(self) -> int:
-        """Return the game's side number from disk metadata."""
+        """Return the game's own side number, which may differ from ``index``."""
 
         return self.disk_info[21]
 
     @property
     def disk_number(self) -> int:
-        """Return the game's disk number from disk metadata."""
+        """Return the game-assigned disk number from block 1."""
 
         return self.disk_info[22]
 
     def find_file(self, name: str) -> FdsFile:
-        """Return the unique file named ``name`` or raise :class:`KeyError`."""
+        """Find exactly one file by its decoded, unpadded name.
+
+        Args:
+            name: Case-sensitive filename such as ``"TT1B"`` or ``"NOV4"``.
+
+        Returns:
+            The mutable :class:`FdsFile` object owned by this side.
+
+        Raises:
+            KeyError: If no file or more than one file has the requested name.
+        """
 
         matches = [entry for entry in self.files if entry.name == name]
         if len(matches) != 1:
@@ -233,9 +298,21 @@ class FdsSide:
     def to_bytes(self) -> bytes:
         """Rebuild this side at exactly :data:`SIDE_SIZE` bytes.
 
-        File count and payload-size fields are refreshed.  All other disk-info
-        and file-header bytes are preserved.  Growth beyond the archival side
+        Returns:
+            Exactly :data:`SIDE_SIZE` rebuilt bytes.
+
+        Raises:
+            FdsFormatError: If current files no longer fit on the side.
+            OverflowError: If the file count or a payload size does not fit its
+                one- or two-byte field.
+
+        File count and payload-size fields are refreshed. All other disk-info
+        and file-header bytes are preserved. Growth beyond the archival side
         capacity is rejected before a result is returned.
+
+        The method has no side effects on the parsed object. It retains as much
+        original padding as fits and appends deterministic zero padding only
+        when necessary.
         """
 
         count_block = bytearray(self.file_count_block)
@@ -260,7 +337,15 @@ class FdsSide:
         return bytes(output)
 
     def manifest(self) -> dict[str, Any]:
-        """Return side layout, capacity, metadata, and per-file details."""
+        """Return a JSON-serializable side layout and capacity report.
+
+        ``used_bytes`` reflects current payloads and rebuilt headers;
+        ``padding_bytes`` is the capacity still available to grow files.
+
+        Returns:
+            A dictionary containing side identity, layout offsets, capacity
+            totals, and nested file manifests.
+        """
 
         rebuilt_used = DISK_INFO_SIZE + 2 + sum(
             FILE_HEADER_SIZE + 1 + entry.size for entry in self.files
@@ -280,7 +365,13 @@ class FdsSide:
 
 @dataclass
 class FdsImage:
-    """A complete raw or 16-byte-headered archival FDS image."""
+    """Represent a complete raw or 16-byte-headered archival FDS image.
+
+    Attributes:
+        header: Empty bytes for a raw image or the preserved 16-byte header.
+        sides: Parsed sides in image order.
+        source_path: Optional path retained for manifests and diagnostics.
+    """
 
     header: bytes
     sides: list[FdsSide]
@@ -288,7 +379,20 @@ class FdsImage:
 
     @classmethod
     def from_bytes(cls, raw: bytes, source_path: Path | None = None) -> "FdsImage":
-        """Parse all declared/raw sides and enforce exact image sizing."""
+        """Parse a complete archival image.
+
+        Args:
+            raw: Headered or raw image bytes.
+            source_path: Optional provenance path; it is not opened.
+
+        Returns:
+            A parsed image with every side and file represented.
+
+        Raises:
+            FdsFormatError: If a header is truncated, its side count disagrees
+                with the image size, a raw image is not side-aligned, or any
+                side is malformed.
+        """
 
         if raw[:4] == b"FDS\x1A":
             if len(raw) < FDS_HEADER_SIZE:
@@ -321,13 +425,34 @@ class FdsImage:
 
     @classmethod
     def read(cls, path: str | Path) -> "FdsImage":
-        """Read and parse an image from ``path``."""
+        """Read and parse an image while retaining its source path.
+
+        Args:
+            path: Headered or raw archival FDS file.
+
+        Returns:
+            The parsed image.
+
+        Raises:
+            OSError: If the path cannot be read.
+            FdsFormatError: If the file is not a valid archival image.
+        """
 
         source = Path(path)
         return cls.from_bytes(source.read_bytes(), source)
 
     def to_bytes(self) -> bytes:
-        """Serialize all sides and refresh the optional header's side count."""
+        """Serialize all sides and refresh the optional header's side count.
+
+        Returns:
+            Complete image bytes using the original header convention.
+
+        Raises:
+            FdsFormatError: If any rebuilt side exceeds its capacity.
+            OverflowError: If the number of sides does not fit the header.
+
+        The method does not modify :attr:`header` or any parsed side.
+        """
 
         header = self.header
         if header:
@@ -337,12 +462,28 @@ class FdsImage:
         return header + b"".join(side.to_bytes() for side in self.sides)
 
     def write(self, path: str | Path) -> None:
-        """Serialize the complete image to ``path``."""
+        """Serialize the complete image to a filesystem path.
+
+        Args:
+            path: Destination file. Existing contents are replaced.
+
+        Raises:
+            OSError: If the destination cannot be written.
+            FdsFormatError: If a side cannot be rebuilt safely.
+
+        Side Effects:
+            Creates or overwrites ``path``.
+        """
 
         Path(path).write_bytes(self.to_bytes())
 
     def manifest(self) -> dict[str, Any]:
-        """Return a JSON-serializable image/side/file inventory."""
+        """Return a JSON-serializable image, side, and file inventory.
+
+        Returns:
+            A dictionary containing source provenance, header status, side count,
+            and nested side manifests.
+        """
 
         return {
             "source": str(self.source_path) if self.source_path else None,
@@ -355,7 +496,17 @@ class FdsImage:
 def combine_images(images: list[FdsImage]) -> FdsImage:
     """Combine complete FDS images while preserving every side byte.
 
-    The result uses the first image's header convention.  Side disk-info
+    Args:
+        images: Complete images in the desired output order.
+
+    Returns:
+        A new image containing deep copies of every side. Mutating the result
+        does not change an input image.
+
+    Raises:
+        ValueError: If ``images`` is empty.
+
+    The result uses the first image's header convention. Side disk-info
     blocks are intentionally left untouched because multi-disk games use
     their own game and disk identifiers when validating an inserted side.
     """

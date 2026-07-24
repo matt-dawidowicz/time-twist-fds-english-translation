@@ -84,7 +84,18 @@ PERSONALITY_QUESTION_IDS = frozenset(
 def _required_dictionary_entries(
     bank_name: str,
 ) -> tuple[tuple[object, ...], ...]:
-    """Return bank-specific entries shared with fixed packed-text tables."""
+    """Encode dictionary entries reserved by a bank's fixed text.
+
+    Args:
+        bank_name: Canonical component name such as ``TT1B`` or ``TT4``.
+
+    Returns:
+        Ordered encoded entries that must precede greedy compression choices.
+        Unknown banks return an empty tuple.
+
+    Raises:
+        EnglishTextError: If a configured entry cannot be encoded.
+    """
 
     return tuple(
         encode_english(text)
@@ -93,13 +104,35 @@ def _required_dictionary_entries(
 
 
 def safe_filename(name: str) -> str:
-    """Replace characters unsafe for extracted filenames with underscores."""
+    """Convert an FDS filename into a conservative local filename component.
+
+    Args:
+        name: Decoded FDS filename.
+
+    Returns:
+        ``name`` with every character except alphanumerics, hyphen, and
+        underscore replaced by an underscore.
+
+    This is a portability transformation, not a reversible encoding. Extracted
+    filenames also include side/index metadata to retain identity.
+    """
 
     return "".join(char if char.isalnum() or char in "-_" else "_" for char in name)
 
 
 def command_manifest(args: argparse.Namespace) -> None:
-    """Write a JSON inventory of image, side, capacity, and file metadata."""
+    """Run the ``manifest`` command.
+
+    Args:
+        args: Namespace with ``image`` and optional ``output`` paths.
+
+    Raises:
+        OSError: If input cannot be read or output cannot be written.
+        FdsFormatError: If the image is malformed.
+
+    Side Effects:
+        Writes UTF-8 JSON to ``args.output`` or prints it to standard output.
+    """
 
     image = FdsImage.read(args.image)
     output = json.dumps(image.manifest(), ensure_ascii=False, indent=2) + "\n"
@@ -110,7 +143,19 @@ def command_manifest(args: argparse.Namespace) -> None:
 
 
 def command_extract(args: argparse.Namespace) -> None:
-    """Extract every named FDS file payload without changing the image."""
+    """Run the ``extract`` command.
+
+    Args:
+        args: Namespace with source ``image`` and destination ``output_dir``.
+
+    Raises:
+        OSError: If files or directories cannot be read or written.
+        FdsFormatError: If the image is malformed.
+
+    Side Effects:
+        Creates the output directory, writes one payload per FDS file, and
+        prints each created path. The source image is never changed.
+    """
 
     image = FdsImage.read(args.image)
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -126,7 +171,19 @@ def command_extract(args: argparse.Namespace) -> None:
 
 
 def command_roundtrip(args: argparse.Namespace) -> None:
-    """Prove that parse/serialize reproduces an image byte-for-byte."""
+    """Run the lossless FDS round-trip proof.
+
+    Args:
+        args: Namespace with source ``image`` and rebuilt ``output`` paths.
+
+    Raises:
+        OSError: If either path cannot be read or written.
+        FdsFormatError: If parsing/rebuilding fails.
+        SystemExit: If rebuilt bytes differ from the source.
+
+    Side Effects:
+        Writes the rebuilt image and prints both SHA-256 hashes plus status.
+    """
 
     source = args.image.read_bytes()
     image = FdsImage.from_bytes(source, args.image)
@@ -142,7 +199,20 @@ def command_roundtrip(args: argparse.Namespace) -> None:
 
 
 def command_combine(args: argparse.Namespace) -> None:
-    """Concatenate all sides from the supplied images in argument order."""
+    """Run the multi-image side-combination command.
+
+    Args:
+        args: Namespace containing ordered ``images`` and an ``output`` path.
+
+    Raises:
+        OSError: If an image cannot be read or output cannot be written.
+        FdsFormatError: If parsing or rebuilding a side fails.
+        ValueError: If no source images are supplied programmatically.
+
+    Side Effects:
+        Creates the output directory, writes the combined image, and prints
+        its path and side count.
+    """
 
     image = combine_images([FdsImage.read(path) for path in args.images])
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -151,7 +221,21 @@ def command_combine(args: argparse.Namespace) -> None:
 
 
 def command_scenario_extract(args: argparse.Namespace) -> None:
-    """Decode one scenario bank to stable-ID JSON, retaining prior English."""
+    """Run scenario extraction while retaining compatible English edits.
+
+    Args:
+        args: Namespace with extracted ``bank`` and destination ``output``.
+
+    Raises:
+        OSError: If either file cannot be read or written.
+        JSONDecodeError: If an existing output file is not valid JSON.
+        ScenarioError: If bank pointers or packed records are invalid.
+
+    Side Effects:
+        Creates parent directories and replaces ``output`` with formatted
+        UTF-8 JSON. Existing English is retained only when group and record
+        coordinates still match; Japanese and raw symbols are always refreshed.
+    """
 
     bank = parse_scenario_bank(args.bank)
     bank_name = args.bank.stem.split("_")[2] if "_" in args.bank.stem else args.bank.stem
@@ -211,7 +295,28 @@ def command_scenario_extract(args: argparse.Namespace) -> None:
 
 
 def command_scenario_insert(args: argparse.Namespace) -> None:
-    """Encode a scenario document and rebuild it inside the fixed RAM region."""
+    """Run scenario insertion with control and RAM-footprint validation.
+
+    Args:
+        args: Namespace with source ``bank``, merged ``translation`` JSON,
+            destination ``output``, and ``no_compress`` flag.
+
+    Raises:
+        OSError: If files cannot be read or written.
+        JSONDecodeError: If translation JSON is malformed.
+        SystemExit: If group/record counts, field types, or control sequences
+            differ from the source.
+        EnglishTextError: If translated text cannot be encoded.
+        ScenarioError: If packed data cannot fit the preserved bank footprint.
+
+    Side Effects:
+        Creates the output directory, writes the rebuilt bank, and prints
+        translation/compression statistics.
+
+    A partial translation retains the Japanese dictionary because untranslated
+    source records may still reference it. A complete translation normally
+    builds a deterministic English dictionary.
+    """
 
     bank = parse_scenario_bank(args.bank)
     bank_name = (
@@ -298,7 +403,25 @@ def merge_translation_document(
     *,
     require_complete: bool = True,
 ) -> dict[str, object]:
-    """Merge an ID-keyed English map into an extracted scenario document."""
+    """Validate and merge English text by stable record ID.
+
+    Args:
+        document: Scenario-extract JSON object.
+        translations: Mapping from stable IDs to nonempty English strings.
+        require_complete: Require every scenario ID to be present.
+
+    Returns:
+        A deep copy of ``document`` with validated ``english`` fields replaced.
+        Neither input mapping is modified.
+
+    Raises:
+        SystemExit: If document IDs are missing/duplicated, translation IDs are
+            unknown/incomplete, values are invalid, controls differ, a segment
+            is display-unsafe, or a character cannot be encoded.
+
+    Personality-test records are the only records allowed to use validated
+    automatic wrapping; all other control-delimited segments must fit one row.
+    """
 
     result = copy.deepcopy(document)
     records_by_id: dict[str, dict[str, object]] = {}
@@ -343,7 +466,21 @@ def merge_translation_document(
 
 
 def command_scenario_merge(args: argparse.Namespace) -> None:
-    """Validate and merge an ID-keyed English map into scenario JSON."""
+    """Run the translation-map merge command.
+
+    Args:
+        args: Namespace with ``scenario``, ``translations``, optional
+            ``output``, and ``allow_partial``.
+
+    Raises:
+        OSError: If input/output files cannot be accessed.
+        JSONDecodeError: If either input is malformed.
+        SystemExit: If either root is not an object or merge validation fails.
+
+    Side Effects:
+        Writes formatted UTF-8 JSON to ``output`` or updates ``scenario`` in
+        place, then prints the destination.
+    """
 
     document = json.loads(args.scenario.read_text(encoding="utf-8"))
     translations = json.loads(args.translations.read_text(encoding="utf-8"))
@@ -364,7 +501,25 @@ def command_scenario_merge(args: argparse.Namespace) -> None:
 
 
 def command_scenario_footprint(args: argparse.Namespace) -> None:
-    """Report the fixed RAM reservation and optional translation progress."""
+    """Report native scenario capacity and optionally simulate compression.
+
+    Args:
+        args: Namespace with source ``bank`` and optional ID-keyed
+            ``translations`` JSON.
+
+    Raises:
+        OSError: If input files cannot be read.
+        ScenarioError: If the bank layout is invalid.
+        SystemExit: If translation IDs/text/controls are invalid or the
+            complete compressed result exceeds the fixed reservation.
+
+    Side Effects:
+        Prints bank layout, translation progress, and final footprint. No files
+        are modified.
+
+    Pointer-table bytes are included in final usage because each group after
+    group zero adds one two-byte loaded address.
+    """
 
     bank = parse_scenario_bank(args.bank)
     text_start_offset = bank.group_addresses[0] - bank.load_address
@@ -453,7 +608,19 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
 
 
 def command_font_patch(args: argparse.Namespace) -> None:
-    """Install the complete translated dialogue font in NOV4."""
+    """Run the deterministic NOV4 dialogue-font patch.
+
+    Args:
+        args: Namespace with source ``nov4`` and destination ``output`` paths.
+
+    Raises:
+        OSError: If files cannot be read or written.
+        FontPatchError: If NOV4 is incompatible or a glyph is unavailable.
+
+    Side Effects:
+        Creates the destination directory, writes patched NOV4, and prints its
+        path.
+    """
 
     patched = patched_nov4_font(args.nov4.read_bytes())
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -462,7 +629,21 @@ def command_font_patch(args: argparse.Namespace) -> None:
 
 
 def command_title_patch(args: argparse.Namespace) -> None:
-    """Build and install the relocated English NOV4 title assets."""
+    """Run the English title-asset conversion and NOV4 relocation.
+
+    Args:
+        args: Namespace with source ``nov4``, reference ``target``, destination
+            ``output``, and subtitle string.
+
+    Raises:
+        OSError: If source/reference/output files cannot be accessed.
+        TitlePatchError: If revision, artwork, capacity, or verification checks
+            fail.
+
+    Side Effects:
+        Creates the destination directory, writes expanded NOV4, and prints its
+        path.
+    """
 
     patched = patched_nov4_title(
         args.nov4.read_bytes(),
@@ -475,7 +656,22 @@ def command_title_patch(args: argparse.Namespace) -> None:
 
 
 def command_ui_patch(args: argparse.Namespace) -> None:
-    """Apply one named fixed-UI/program patch to an extracted component."""
+    """Run the selected fixed-UI/program patch.
+
+    Args:
+        args: Namespace with ``component``, source ``source``, and destination
+            ``output``.
+
+    Raises:
+        OSError: If source/output files cannot be accessed.
+        KeyError: If called programmatically with an unsupported component.
+        UiPatchError: If the component or fixed slots do not match the guarded
+            source.
+
+    Side Effects:
+        Creates the destination directory, writes the patched component, and
+        prints its path.
+    """
 
     patcher = {
         "SON-KOUH": patched_kouhen_boot_guard,
@@ -501,7 +697,23 @@ def command_ui_patch(args: argparse.Namespace) -> None:
 
 
 def command_replace_file(args: argparse.Namespace) -> None:
-    """Replace one unique named FDS file on one zero-based side."""
+    """Run guarded replacement of one named FDS payload.
+
+    Args:
+        args: Namespace with source ``image``, zero-based ``side``, exact
+            ``name``, replacement ``data``, and output image path.
+
+    Raises:
+        OSError: If inputs/output cannot be accessed.
+        SystemExit: If the side index is outside the image.
+        KeyError: If the filename is missing or nonunique on the side.
+        FdsFormatError: If the rebuilt payloads exceed side capacity.
+
+    Side Effects:
+        Mutates the parsed in-memory file entry, writes a new image, and prints
+        its destination. The source image on disk is never overwritten unless
+        the caller explicitly chooses the same output path.
+    """
 
     image = FdsImage.read(args.image)
     if args.side < 0 or args.side >= len(image.sides):
@@ -513,7 +725,15 @@ def command_replace_file(args: argparse.Namespace) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Construct the CLI parser without reading files or changing state."""
+    """Construct the complete command-line parser.
+
+    Returns:
+        Configured parser whose successful subcommand namespaces include a
+        ``function`` callback.
+
+    The function is side-effect free: it does not inspect the filesystem,
+    import user configuration, or parse process arguments.
+    """
 
     parser = argparse.ArgumentParser(
         prog="python -m time_twist.cli",
@@ -752,7 +972,16 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
-    """Parse command-line arguments and dispatch the selected operation."""
+    """Parse process arguments and invoke the selected command.
+
+    Raises:
+        SystemExit: For normal argparse help/errors or any command validation
+            failure expressed as a CLI exit.
+
+    Side Effects:
+        Depends on the selected command and may read, create, or overwrite
+        explicitly supplied paths and write status to standard output.
+    """
 
     args = build_parser().parse_args()
     args.function(args)

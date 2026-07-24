@@ -141,11 +141,31 @@ EXTENDED_TILE_IDS = {
 
 
 class FontPatchError(ValueError):
-    """Raised when a NOV4 font patch cannot be applied safely."""
+    """Report an unsupported glyph, invalid code, or incompatible NOV4 bank.
+
+    The font pipeline raises this exception before mutation when a character has
+    no approved tile, a character-map code is invalid, or the source bank fails
+    compatibility checks.  It prevents silent fallback glyphs from entering the
+    translated game.
+    """
 
 
 def common_tile_id(value: int) -> int:
-    """Map a common packed value to the tile selected by NOV2."""
+    """Map a common packed-text value to NOV2's runtime tile.
+
+    Args:
+        value: Six-bit common-code payload. Only values 0 through 47 are
+            assigned by the renderer.
+
+    Returns:
+        The corresponding tile ID in the expanded NOV4 font.
+
+    Raises:
+        FontPatchError: If ``value`` has no runtime tile.
+
+    Values 46 and 47 use punctuation tiles outside the contiguous
+    ``$C0``-based alphabet.
+    """
 
     if 0 <= value <= 45:
         return 0xC0 + value
@@ -159,9 +179,21 @@ def common_tile_id(value: int) -> int:
 def render_glyph(char: str) -> bytes:
     """Render one crisp glyph in the inverse 1bpp format expanded by NOV4.
 
-    A blank stored row is ``$FF``.  Every ``1`` in the human-readable 5x7
+    Args:
+        char: Exactly one supported English character.
+
+    Returns:
+        Eight inverse one-bit rows in NOV4's stored format.
+
+    Raises:
+        FontPatchError: If ``char`` is not exactly one character or has no
+            pattern in :data:`PIXEL_FONT_5X7`.
+
+    A blank stored row is ``$FF``. Every ``1`` in the human-readable 5x7
     pattern clears the corresponding stored bit, producing an ink pixel when
-    NOV4 expands the table into NES CHR.
+    NOV4 expands the table into NES CHR. Visible patterns begin at x=1 and use
+    rows 0 through 6, leaving deterministic horizontal spacing and a blank
+    bottom row. Space bypasses the pattern table and returns eight blank rows.
     """
 
     if len(char) != 1:
@@ -186,8 +218,22 @@ def patched_nov4_font(
 ) -> bytes:
     """Return a size-identical NOV4 with every translated glyph installed.
 
-    Only recovered font-table rows are changed.  A short/unknown NOV4 is
-    rejected instead of being partially patched.
+    Args:
+        data: Extracted NOV4 overlay containing the recovered font table.
+
+    Returns:
+        New bytes with every common and extended English tile installed. The
+        result has exactly the same length as ``data``.
+
+    Raises:
+        FontPatchError: If the input is too short for tile ``$FE`` or a
+            required English character has no valid tile/glyph mapping.
+
+    Only recovered font-table rows are changed. A short NOV4 is rejected
+    instead of being partially patched.
+
+    The function does not modify ``data``. Multiple packed codes that resolve
+    to one tile intentionally receive the same final glyph.
     """
 
     if len(data) < NOV4_FONT_BASE_OFFSET + (0xFE + 1) * 8:

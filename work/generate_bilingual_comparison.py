@@ -33,7 +33,13 @@ CONTROL_RE = re.compile(r"\{CTRL:(\d+)\}")
 
 @dataclass(frozen=True)
 class ComparisonRow:
-    """One stable source record plus machine-generated review annotations."""
+    """Represent one stable source record and its review-only annotations.
+
+    Fields preserve exact Japanese and current English separately from readable
+    control rendering, mechanical romaji, inferred orthography, voice markers,
+    comparison flags, and editorial review fields. No inferred value replaces
+    the source-of-truth columns.
+    """
 
     sequence: int
     bank: str
@@ -151,13 +157,38 @@ KATAKANA_CANDIDATES = (
 
 
 def _read_source_document(bank: str) -> dict:
-    """Load the decoded scenario document for a named bank."""
+    """Load a bank's decoded scenario document.
+
+    Args:
+        bank: Canonical name from :data:`BANK_ORDER`.
+
+    Returns:
+        Parsed JSON object from ``work/translated_scripts/BANK.json``.
+
+    Raises:
+        OSError: If the source document cannot be read.
+        JSONDecodeError: If it is not valid JSON.
+    """
 
     return json.loads((WORK / "translated_scripts" / f"{bank}.json").read_text(encoding="utf-8"))
 
 
 def _source_path(document: dict) -> Path:
-    """Resolve a decoded document's source bank, including relocated extracts."""
+    """Resolve the binary bank referenced by a decoded document.
+
+    Args:
+        document: Scenario document containing a ``source`` path.
+
+    Returns:
+        Existing source path, or the unique matching relocated extract.
+
+    Raises:
+        KeyError: If ``source`` is absent.
+        FileNotFoundError: If relocation finds zero or multiple candidates.
+
+    Relocation exists because old extraction paths may be absolute or tied to
+    a previous build directory. Ambiguity is rejected rather than guessed.
+    """
 
     path = Path(document["source"])
     if path.exists():
@@ -169,19 +200,41 @@ def _source_path(document: dict) -> Path:
 
 
 def _readable(text: str) -> str:
-    """Expose embedded controls as visible, non-linguistic review markers."""
+    """Render control tags as visually distinct, non-linguistic markers.
+
+    Args:
+        text: Exact Japanese or current English with ``{CTRL:n}`` tags.
+
+    Returns:
+        Text with controls rendered as spaced ``⟦CTRL:n⟧`` markers.
+    """
 
     return CONTROL_RE.sub(lambda match: f" ⟦CTRL:{match.group(1)}⟧ ", text).strip()
 
 
 def _controls(text: str) -> tuple[str, ...]:
-    """Return control-code values in their exact source order."""
+    """Extract control payload strings in their exact textual order.
+
+    Args:
+        text: Decoded text containing zero or more ``{CTRL:n}`` markers.
+
+    Returns:
+        Payload strings without braces or the ``CTRL:`` prefix.
+    """
 
     return tuple(CONTROL_RE.findall(text))
 
 
 def _script_profile(text: str) -> str:
-    """Summarize the visible text's hiragana, katakana, kanji, and Latin use."""
+    """Summarize visible writing-system use without linguistic inference.
+
+    Args:
+        text: Source text with optional control tags.
+
+    Returns:
+        Semicolon-separated counts for hiragana, katakana, kanji, Latin
+        letters, and digits, plus a kana-only observation when applicable.
+    """
 
     clean = CONTROL_RE.sub("", text)
     counts = Counter()
@@ -233,7 +286,19 @@ ROMAJI_DIGRAPHS = {
 
 
 def _to_hiragana(character: str) -> str:
-    """Map a katakana code point to hiragana for mechanical romanization."""
+    """Normalize one katakana code point for shared romanization tables.
+
+    Args:
+        character: Exactly one Unicode code point.
+
+    Returns:
+        The equivalent hiragana code point for standard katakana, or the
+        original character when it is outside that range.
+
+    Raises:
+        TypeError: If ``character`` is empty or contains more than one code
+            point, as enforced by :func:`ord`.
+    """
 
     codepoint = ord(character)
     if 0x30A1 <= codepoint <= 0x30F6:
@@ -242,7 +307,19 @@ def _to_hiragana(character: str) -> str:
 
 
 def _romanize(text: str) -> str:
-    """Produce deterministic review-aid romaji without claiming full parsing."""
+    """Produce deterministic mechanical romaji as a navigation aid.
+
+    Args:
+        text: Exact Japanese with optional control tags.
+
+    Returns:
+        Romanized kana with controls represented by `` / ``; unknown
+        characters, including kanji, remain unchanged and visible.
+
+    The routine handles common digraphs, sokuon gemination, and prolonged
+    vowels but performs no morphology, word segmentation, or name resolution.
+    It must not be treated as a translation.
+    """
 
     clean = CONTROL_RE.sub(" / ", text)
     kana = "".join(_to_hiragana(character) for character in clean)
@@ -278,7 +355,18 @@ def _romanize(text: str) -> str:
 
 
 def _voice_notes(text: str) -> tuple[str, ...]:
-    """Detect boundary-aware pronoun, register, and role-language signals."""
+    """Detect conservative voice, register, and role-language signals.
+
+    Args:
+        text: Exact Japanese with optional controls.
+
+    Returns:
+        De-duplicated explanatory notes in rule order.
+
+    Special boundary rules avoid known substring false positives such as
+    ``じゃ`` inside Jeanne and ``のう`` inside ordinary vocabulary. Results are
+    review prompts, not authoritative dialect classifications.
+    """
 
     clean = CONTROL_RE.sub("", text)
     notes: list[str] = []
@@ -312,7 +400,18 @@ def _voice_notes(text: str) -> tuple[str, ...]:
 
 
 def _orthography_notes(text: str) -> tuple[str, str]:
-    """Return exact kana plus conservative kanji/katakana review suggestions."""
+    """Suggest conservative normalized spellings without rewriting source.
+
+    Args:
+        text: Exact Japanese with optional controls.
+
+    Returns:
+        Control-free exact text and de-duplicated candidate notes.
+
+    Foreign names and loanwords are masked before ordinary lexemes, with
+    longest readings first. This prevents one replacement from creating a
+    false match inside another. No synthetic normalized sentence is produced.
+    """
 
     clean = CONTROL_RE.sub("", text)
     candidates: list[str] = []
@@ -345,7 +444,18 @@ def _orthography_notes(text: str) -> tuple[str, str]:
 
 
 def _comparison_flags(japanese: str, english: str, kind: str, packed_bytes: str) -> tuple[str, ...]:
-    """Identify control, layout, numeral, and punctuation checks for a row."""
+    """Identify concrete technical and translation checks for one row.
+
+    Args:
+        japanese: Exact decoded source.
+        english: Current patch-oriented English.
+        kind: Record type such as ``scenario`` or ``fixed-address``.
+        packed_bytes: Human-readable storage description.
+
+    Returns:
+        Ordered flags covering control drift, source numerals, fixed size,
+        abbreviations, padding, and dramatic ellipses.
+    """
 
     flags: list[str] = []
     source_controls = _controls(japanese)
@@ -367,7 +477,21 @@ def _comparison_flags(japanese: str, english: str, kind: str, packed_bytes: str)
 
 
 def _priority(kind: str, voice: tuple[str, ...], orthography: tuple[str, ...], flags: tuple[str, ...]) -> str:
-    """Assign a review priority from explicit, explainable warning signals."""
+    """Assign a deterministic review priority from explainable signals.
+
+    Args:
+        kind: Record type.
+        voice: Detected voice/register notes.
+        orthography: Normalization candidates.
+        flags: Technical/comparison flags.
+
+    Returns:
+        ``"high"``, ``"medium"``, or ``"low"``.
+
+    The score prioritizes control drift most heavily, then marked voice,
+    ambiguity/context, and fixed-address risk. It does not claim translation
+    quality.
+    """
 
     score = 0
     score += min(4, len(voice) * 2)
@@ -382,7 +506,21 @@ def _make_row(
     *, sequence: int, bank: str, text_id: str, kind: str,
     source_location: str, packed_bytes: str, japanese: str, english: str,
 ) -> ComparisonRow:
-    """Construct a fully annotated comparison row from one source record."""
+    """Construct all deterministic annotations for one source record.
+
+    Args:
+        sequence: One-based global display order.
+        bank: Owning component.
+        text_id: Stable record identifier.
+        kind: Scenario, fixed-address, or graphics text.
+        source_location: Group/address or graphics provenance.
+        packed_bytes: Slot size or compression description.
+        japanese: Exact decoded source.
+        english: Current patch-oriented English.
+
+    Returns:
+        Immutable :class:`ComparisonRow` with blank human-review fields.
+    """
 
     voice = _voice_notes(japanese)
     normalized, orthography = _orthography_notes(japanese)
@@ -414,7 +552,20 @@ def _make_row(
 
 
 def _scenario_rows(start_sequence: int) -> list[ComparisonRow]:
-    """Collect all scenario records and verify translation-map coverage."""
+    """Collect scenario rows and enforce exact translation-map coverage.
+
+    Args:
+        start_sequence: One-based number assigned to the first row.
+
+    Returns:
+        Rows in :data:`BANK_ORDER`, group order, and record order.
+
+    Raises:
+        OSError: If a source or translation file cannot be read.
+        JSONDecodeError: If either JSON file is malformed.
+        ValueError: If a source ID lacks English or a translation map contains
+            an unknown ID.
+    """
 
     rows: list[ComparisonRow] = []
     sequence = start_sequence
@@ -461,7 +612,23 @@ FIXED_SPECS = (
 
 
 def _fixed_rows(start_sequence: int) -> list[ComparisonRow]:
-    """Decode fixed-address record tables through their native dictionaries."""
+    """Decode and annotate every fixed-address packed table.
+
+    Args:
+        start_sequence: One-based number assigned to the first row.
+
+    Returns:
+        Rows preserving bank, table, and record order.
+
+    Raises:
+        OSError: If a referenced bank cannot be read.
+        FileNotFoundError: If a relocated source bank is ambiguous.
+        ValueError: If table decoding does not consume its exact source range.
+        PackedTextError: If a packed record is malformed.
+
+    Individual packed byte sizes are derived from original record boundaries,
+    not estimated from visible text.
+    """
 
     rows: list[ComparisonRow] = []
     sequence = start_sequence
@@ -493,7 +660,18 @@ def _fixed_rows(start_sequence: int) -> list[ComparisonRow]:
 
 
 def _single_packed_japanese(packed: bytes) -> str:
-    """Decode a byte string that must contain exactly one dictionary-free record."""
+    """Decode one complete dictionary-free UI record.
+
+    Args:
+        packed: Exact slot bytes including separator/alignment.
+
+    Returns:
+        Rendered Japanese and explicit control tags.
+
+    Raises:
+        ValueError: If bytes remain after the first aligned record.
+        PackedTextError: If the record is truncated.
+    """
 
     records, end = split_records(packed, limit=1)
     if end != len(packed):
@@ -502,7 +680,19 @@ def _single_packed_japanese(packed: bytes) -> str:
 
 
 def _ui_rows(start_sequence: int) -> list[ComparisonRow]:
-    """Collect quiz, prompt, disk, title, and direct-boot interface records."""
+    """Collect standalone interface and graphics-text rows.
+
+    Args:
+        start_sequence: One-based number assigned to the first row.
+
+    Returns:
+        TT1A choices, engine prompts, disk warnings, title strings, and the
+        Kouhen direct-boot warning in stable order.
+
+    Raises:
+        ValueError: If a configured packed UI slot contains extra records.
+        PackedTextError: If a configured slot is malformed.
+    """
 
     rows: list[ComparisonRow] = []
     sequence = start_sequence
@@ -553,7 +743,16 @@ def _ui_rows(start_sequence: int) -> list[ComparisonRow]:
 
 
 def build_rows() -> list[ComparisonRow]:
-    """Build the ordered corpus and reject duplicate stable record IDs."""
+    """Build the complete ordered Japanese-English comparison corpus.
+
+    Returns:
+        Scenario, fixed-address, interface, and graphics rows in stable order.
+
+    Raises:
+        ValueError: If any source/translation coverage check fails or stable
+            IDs are duplicated.
+        OSError: If required source artifacts cannot be read.
+    """
 
     scenario = _scenario_rows(1)
     fixed = _fixed_rows(len(scenario) + 1)
@@ -565,7 +764,19 @@ def build_rows() -> list[ComparisonRow]:
 
 
 def _write_tsv(rows: list[ComparisonRow], path: Path) -> None:
-    """Write spreadsheet-friendly UTF-8 TSV with a BOM."""
+    """Write comparison rows as spreadsheet-friendly TSV.
+
+    Args:
+        rows: Ordered comparison corpus.
+        path: Destination file, whose parent must already exist.
+
+    Raises:
+        OSError: If the destination cannot be written.
+
+    Side Effects:
+        Creates or replaces ``path`` using UTF-8 with a BOM and Excel-tab
+        quoting rules.
+    """
 
     with path.open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=ComparisonRow.__dataclass_fields__, dialect="excel-tab")
@@ -574,7 +785,19 @@ def _write_tsv(rows: list[ComparisonRow], path: Path) -> None:
 
 
 def _write_json(rows: list[ComparisonRow], path: Path) -> None:
-    """Write the lossless canonical comparison corpus as UTF-8 JSON."""
+    """Write the canonical machine-readable comparison corpus.
+
+    Args:
+        rows: Ordered comparison corpus.
+        path: Destination JSON file.
+
+    Raises:
+        OSError: If the destination cannot be written.
+
+    Side Effects:
+        Creates or replaces ``path`` with schema/provenance metadata and all
+        dataclass fields, preserving Unicode Japanese.
+    """
 
     payload = {
         "schema": "time-twist-bilingual-comparison-v1",
@@ -585,13 +808,36 @@ def _write_json(rows: list[ComparisonRow], path: Path) -> None:
 
 
 def _cell(value: object) -> str:
-    """Escape a value for safe insertion into the generated HTML table."""
+    """Escape arbitrary content for an HTML table cell.
+
+    Args:
+        value: Value whose string representation should be displayed.
+
+    Returns:
+        HTML-escaped text with newline characters converted to ``<br>``.
+
+    Design:
+        Newlines become ``<br>`` only after escaping, so source text cannot
+        inject markup.
+    """
 
     return html.escape(str(value)).replace("\n", "<br>")
 
 
 def _write_html(rows: list[ComparisonRow], path: Path) -> None:
-    """Write the searchable human-review table."""
+    """Write a self-contained searchable human-review interface.
+
+    Args:
+        rows: Ordered comparison corpus.
+        path: Destination HTML file.
+
+    Raises:
+        OSError: If the destination cannot be written.
+
+    Side Effects:
+        Creates or replaces ``path``. Search/filter behavior is embedded as
+        dependency-free JavaScript for local ``file://`` use.
+    """
 
     counts = Counter(row.kind for row in rows)
     priorities = Counter(row.review_priority for row in rows)
@@ -636,7 +882,18 @@ function filter(){{const needle=q.value.toLowerCase();let count=0;for(const row 
 
 
 def _write_guide(rows: list[ComparisonRow], path: Path) -> None:
-    """Write corpus counts, caveats, and a prioritized review checklist."""
+    """Write corpus coverage, evidence boundaries, and review guidance.
+
+    Args:
+        rows: Ordered comparison corpus used to calculate all counts.
+        path: Destination Markdown file.
+
+    Raises:
+        OSError: If the destination cannot be written.
+
+    Side Effects:
+        Creates or replaces ``path``.
+    """
 
     banks = Counter(row.bank for row in rows if row.kind == "scenario")
     priority = Counter(row.review_priority for row in rows)
@@ -684,7 +941,17 @@ The staff roll is graphics/program data rather than part of the decoded packed-t
 
 
 def main() -> None:
-    """Regenerate every bilingual comparison artifact from source documents."""
+    """Regenerate all bilingual comparison artifacts.
+
+    Raises:
+        OSError: If required sources cannot be read or outputs cannot be
+            written.
+        ValueError: If coverage, framing, or ID invariants fail.
+
+    Side Effects:
+        Creates ``outputs`` when needed; replaces TSV, JSON, HTML, and Markdown
+        guide files; and prints the final row count.
+    """
 
     rows = build_rows()
     OUTPUTS.mkdir(parents=True, exist_ok=True)

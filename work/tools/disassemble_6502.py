@@ -29,7 +29,24 @@ SIZES = {"imp":1,"acc":1,"imm":2,"zp":2,"zpx":2,"zpy":2,"inx":2,"iny":2,"rel":2,
 
 
 def operand(mode: str, raw: bytes, pc: int) -> str:
-    """Format an instruction operand, including resolved relative branches."""
+    """Format one decoded 6502 operand using conventional assembly syntax.
+
+    Args:
+        mode: Addressing-mode key from :data:`OPS`.
+        raw: Complete instruction bytes, including the opcode.
+        pc: Runtime address of the opcode.
+
+    Returns:
+        Empty text for implied mode, ``A`` for accumulator mode, or a formatted
+        immediate, zero-page, indirect, indexed, branch, or absolute operand.
+
+    Raises:
+        IndexError: If ``raw`` is shorter than the supplied mode requires.
+
+    Note:
+        Relative displacements are sign-extended and resolved to a 16-bit target.
+        The final indirect fallback is valid only for the known ``ind`` mode.
+    """
 
     if mode == "imp": return ""
     if mode == "acc": return "A"
@@ -50,7 +67,29 @@ def operand(mode: str, raw: bytes, pc: int) -> str:
 
 
 def main() -> None:
-    """Disassemble a selected 6502 binary range to annotated text."""
+    """Disassemble a runtime-address range from one raw 6502 binary.
+
+    Inputs:
+        Accepts a file path, inclusive start address, exclusive end address, and
+        optional runtime load address.  Integers accept decimal or base prefixes.
+
+    Outputs:
+        Prints address, raw bytes, mnemonic, and formatted operand for each
+        decoded official opcode.  Unknown bytes are emitted as ``.byte``.
+
+    Raises:
+        OSError: If the binary cannot be read.
+        IndexError: If the requested start offset lies outside the file.
+        ValueError: If a numeric command-line argument cannot be parsed.
+
+    Side Effects:
+        Reads the input file and writes only to standard output.
+
+    Design:
+        This intentionally small analysis aid recognizes the official opcodes
+        required by the project.  It does not infer code flow or decode unofficial
+        opcodes, and it stops before printing a truncated final instruction.
+    """
 
     parser = argparse.ArgumentParser()
     parser.add_argument("path", type=Path)

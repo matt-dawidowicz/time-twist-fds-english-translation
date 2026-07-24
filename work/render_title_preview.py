@@ -26,7 +26,29 @@ OUTPUT = Path("outputs/Time Twist exact split-title preview.png")
 
 
 def main() -> None:
-    """Build and save the current English title-screen preview image."""
+    """Build the patched title background and overlay captured clock sprites.
+
+    Inputs:
+        Reads the patched NOV4 bank, full-screen reference, CHR capture, and CPU
+        capture configured by module constants.
+
+    Outputs:
+        Saves a 1024-by-960 nearest-neighbor preview and prints its exact
+        background approximation error.
+
+    Raises:
+        OSError: If an input cannot be read or the preview cannot be written.
+        time_twist.title.TitlePatchError: If source validation, asset generation,
+            or background rendering fails.
+
+    Side Effects:
+        Creates the output directory as needed and replaces the preview PNG.
+
+    Design:
+        The eight clock sprites are shifted to match the title patch's placement
+        before overlay.  Using the production asset helpers ensures visual errors
+        identify real patch/layout code rather than a separate mockup pipeline.
+    """
 
     assets = build_title_assets(SOURCE.read_bytes(), REFERENCE)
     background = render_title_background(assets)

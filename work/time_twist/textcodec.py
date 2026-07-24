@@ -13,7 +13,13 @@ from enum import Enum
 
 
 class SymbolKind(str, Enum):
-    """Kinds selected by the native packed-text prefix tree."""
+    """Identify the five token classes in the native prefix tree.
+
+    The enum inherits from :class:`str` so extracted symbols serialize cleanly
+    to JSON. ``SEPARATOR`` is represented separately from ``CONTROL`` even
+    though both use the control-code branch; value 5 has record-boundary
+    semantics and cannot appear inside a record.
+    """
 
     COMMON = "common"
     EXTENDED = "extended"
@@ -26,9 +32,15 @@ class SymbolKind(str, Enum):
 class PackedSymbol:
     """One decoded or to-be-encoded native text token.
 
-    ``start_bit`` and ``end_bit`` retain source positions during decoding.
-    Encoders construct symbols with zero positions; the final writer assigns
-    physical positions implicitly as it emits the stream.
+    Attributes:
+        kind: Prefix-tree branch used to encode the token.
+        value: Numeric payload within that branch.
+        start_bit: Inclusive source bit offset recorded by the decoder.
+        end_bit: Exclusive source bit offset recorded by the decoder.
+
+    Encoders normally construct symbols with zero source positions. The writer
+    determines physical positions from output order rather than modifying the
+    frozen object.
     """
 
     kind: SymbolKind
@@ -38,13 +50,35 @@ class PackedSymbol:
 
 
 class PackedTextError(ValueError):
-    """Raised when a packed-text stream ends in the middle of a symbol."""
+    """Report malformed, truncated, or unrepresentable packed text.
+
+    Decoders raise this exception when a stream ends mid-symbol or contains an
+    impossible code.  Encoders raise it when a symbol or record violates the
+    packed format.  The shared type lets CLI callers reject unsafe data without
+    confusing format failures with unrelated file-system errors.
+    """
 
 
 class BitReader:
-    """Read an MSB-first bitstream and expose its absolute bit position."""
+    """Read an MSB-first bitstream while tracking an absolute bit position.
+
+    The reader holds an immutable byte string and mutates only
+    :attr:`bit_position`. It does not interpret symbols or validate padding;
+    those responsibilities belong to the codec routines.
+    """
 
     def __init__(self, data: bytes, bit_position: int = 0) -> None:
+        """Initialize a reader at an absolute bit offset.
+
+        Args:
+            data: Complete byte stream to read.
+            bit_position: Initial offset from the first byte's most-significant
+                bit. The default begins at bit zero.
+
+        Raises:
+            ValueError: If ``bit_position`` lies outside ``data``.
+        """
+
         if bit_position < 0 or bit_position > len(data) * 8:
             raise ValueError("bit position is outside the stream")
         self.data = data
@@ -52,18 +86,35 @@ class BitReader:
 
     @property
     def byte_position(self) -> int:
-        """Current whole-byte offset (floor of the absolute bit position)."""
+        """Return the byte containing the next unread bit.
+
+        This is the floor of the absolute bit position. A reader at the end of
+        a byte-aligned stream therefore returns ``len(data)``.
+        """
 
         return self.bit_position // 8
 
     @property
     def at_byte_boundary(self) -> bool:
-        """Whether the next bit begins a new byte."""
+        """Return whether the next unread bit begins a byte."""
 
         return self.bit_position % 8 == 0
 
     def read_bit(self) -> int:
-        """Read one bit, advancing from bit 7 toward bit 0 in each byte."""
+        """Read and return the next bit.
+
+        Bits are consumed from bit 7 through bit 0 in each byte, matching the
+        6502 decoder.
+
+        Returns:
+            The integer ``0`` or ``1``.
+
+        Raises:
+            PackedTextError: If no unread bit remains.
+
+        Side Effects:
+            Advances :attr:`bit_position` by one on success.
+        """
 
         if self.bit_position >= len(self.data) * 8:
             raise PackedTextError("unexpected end of packed-text stream")
@@ -72,7 +123,21 @@ class BitReader:
         return (self.data[byte_index] >> (7 - within_byte)) & 1
 
     def read_bits(self, count: int) -> int:
-        """Read ``count`` bits as one big-endian integer."""
+        """Read several bits as one unsigned, big-endian integer.
+
+        Args:
+            count: Number of bits to consume. Zero returns zero.
+
+        Returns:
+            The accumulated integer value.
+
+        Raises:
+            ValueError: If ``count`` is negative.
+            PackedTextError: If the requested range crosses the stream end.
+
+        Side Effects:
+            Advances :attr:`bit_position` by ``count`` on success.
+        """
 
         if count < 0:
             raise ValueError("bit count cannot be negative")
@@ -82,7 +147,11 @@ class BitReader:
         return value
 
     def align_to_next_byte(self) -> None:
-        """Discard unread padding bits in the current record-separator byte."""
+        """Advance past unread padding in the current byte.
+
+        No padding-value check is performed because the original decoder also
+        discards these bits after a record separator.
+        """
 
         remainder = self.bit_position % 8
         if remainder:
@@ -90,14 +159,37 @@ class BitReader:
 
 
 class BitWriter:
-    """Write the packed text stream most-significant bit first."""
+    """Accumulate an MSB-first packed-text stream.
+
+    Newly allocated bytes start at zero, so alignment leaves deterministic
+    zero padding. The writer does not insert record separators automatically.
+    """
 
     def __init__(self) -> None:
+        """Create an empty writer positioned at bit zero.
+
+        Side Effects:
+            Initializes a private mutable byte buffer.  No external objects or
+            files are modified.
+        """
+
         self._bytes = bytearray()
         self.bit_position = 0
 
     def write_bits(self, value: int, count: int) -> None:
-        """Write ``value`` in exactly ``count`` bits, most-significant first."""
+        """Append an unsigned value using an exact bit width.
+
+        Args:
+            value: Non-negative integer to encode.
+            count: Exact number of bits to emit.
+
+        Raises:
+            ValueError: If ``count`` is negative or ``value`` cannot be
+                represented in the requested width.
+
+        Side Effects:
+            Extends the internal byte buffer and advances ``bit_position``.
+        """
 
         if count < 0 or value < 0 or value >= (1 << count):
             raise ValueError(f"value {value} does not fit in {count} bits")
@@ -109,14 +201,24 @@ class BitWriter:
             self.bit_position += 1
 
     def align_to_next_byte(self) -> None:
-        """Leave the rest of the current byte as zero padding."""
+        """Advance to the next byte, retaining zero-valued padding bits.
+
+        Side Effects:
+            Resets the in-byte bit position to zero when the current output byte
+            is partially filled.  The existing unused bits remain zero.
+        """
 
         remainder = self.bit_position % 8
         if remainder:
             self.bit_position += 8 - remainder
 
     def to_bytes(self) -> bytes:
-        """Return an immutable copy of the emitted bytes."""
+        """Return an immutable snapshot of the current output buffer.
+
+        Returns:
+            All bytes written so far, including the final partially filled byte
+            and its zero-valued padding bits.
+        """
 
         return bytes(self._bytes)
 
@@ -131,8 +233,22 @@ def decode_symbol(reader: BitReader) -> PackedSymbol:
         1110xxxxx         dictionary entry
         1111xxx           control code
 
-    Control value 5 is the byte-aligned record separator used by the engine's
-    text lookup routine.
+    Args:
+        reader: Bit reader positioned at the first prefix bit.
+
+    Returns:
+        A symbol containing the decoded kind, payload, and exact source bit
+        interval.
+
+    Raises:
+        PackedTextError: If the stream ends before the complete prefix or
+            payload can be read.
+
+    Side Effects:
+        Advances ``reader`` by six, seven, or nine bits.
+
+    Control value 5 is returned as :attr:`SymbolKind.SEPARATOR`; callers are
+    responsible for applying the engine's following byte alignment.
     """
 
     start = reader.bit_position
@@ -158,7 +274,22 @@ def decode_symbol(reader: BitReader) -> PackedSymbol:
 
 
 def encode_symbol(writer: BitWriter, symbol: PackedSymbol) -> None:
-    """Encode one symbol using NOV2's native prefix tree."""
+    """Append one symbol using NOV2's native prefix tree.
+
+    Args:
+        writer: Destination bitstream.
+        symbol: Token whose ``kind`` and ``value`` should be encoded. Source
+            position fields are ignored.
+
+    Raises:
+        PackedTextError: If the kind is unsupported, a payload is outside its
+            native range, or control value 5 is supplied as an ordinary
+            control.
+
+    Side Effects:
+        Appends bits to ``writer``. It does not perform byte alignment after a
+        separator.
+    """
 
     if symbol.kind is SymbolKind.COMMON:
         if not 0 <= symbol.value <= 47:
@@ -186,10 +317,24 @@ def encode_symbol(writer: BitWriter, symbol: PackedSymbol) -> None:
         raise PackedTextError(f"unsupported symbol kind {symbol.kind}")
 
 
-def pack_records(records: list[tuple[PackedSymbol, ...]] | tuple[tuple[PackedSymbol, ...], ...]) -> bytes:
+def pack_records(
+    records: list[tuple[PackedSymbol, ...]]
+    | tuple[tuple[PackedSymbol, ...], ...],
+) -> bytes:
     """Pack records with control-5 separators and byte-aligned starts.
 
-    Record payloads cannot contain a separator themselves.  The writer emits
+    Args:
+        records: Ordered record payloads without separator tokens.
+
+    Returns:
+        Native packed bytes, including one separator and any alignment padding
+        after every record.
+
+    Raises:
+        PackedTextError: If a payload contains a separator or any symbol is
+            invalid for :func:`encode_symbol`.
+
+    Record payloads cannot contain a separator themselves. The writer emits
     exactly one separator after each record and pads to the next byte exactly
     as the game's lookup routine does.
     """
@@ -214,9 +359,22 @@ def split_records(
 ) -> tuple[list[list[PackedSymbol]], int]:
     """Split byte-aligned packed records at control-code 5 separators.
 
-    Returns the decoded records and the byte offset immediately after the last
-    separator.  This mirrors $8126-$8137, which discards the rest of the byte
-    after a separator before beginning the next record.
+    Args:
+        data: Complete packed byte stream.
+        offset: Byte offset of the first record.
+        limit: Exact number of records to decode.
+
+    Returns:
+        A pair containing mutable symbol lists and the byte offset immediately
+        after the final aligned separator.
+
+    Raises:
+        ValueError: If ``offset`` is outside ``data``.
+        PackedTextError: If fewer than ``limit`` complete records are present.
+
+    A zero limit returns no records and the original offset. This mirrors
+    ``$8126-$8137``, which discards the rest of the separator byte before
+    beginning the next record.
     """
 
     if offset < 0 or offset > len(data):

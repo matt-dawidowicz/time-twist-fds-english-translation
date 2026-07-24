@@ -16,7 +16,20 @@ FONTS = (
 
 
 def render_glyph(font: ImageFont.FreeTypeFont, char: str, threshold: int) -> Image.Image:
-    """Rasterize one character as a thresholded 8x8 monochrome preview."""
+    """Rasterize one font character as an 8-by-8 monochrome candidate.
+
+    Args:
+        font: Loaded Pillow FreeType font at the intended source size.
+        char: Single character to draw.
+        threshold: Inclusive grayscale cutoff converted to white.
+
+    Returns:
+        An 8-by-8 mode-``L`` image containing only values 0 and 255.
+
+    Design:
+        The fixed ``(1, 0)`` origin mirrors the original exploratory comparison.
+        This is a visual selection tool, not the authoritative ROM glyph encoder.
+    """
 
     grayscale = Image.new("L", (8, 8), 0)
     draw = ImageDraw.Draw(grayscale)
@@ -25,7 +38,21 @@ def render_glyph(font: ImageFont.FreeTypeFont, char: str, threshold: int) -> Ima
 
 
 def main() -> None:
-    """Render the configured font sample sheet for visual inspection."""
+    """Render every configured system-font candidate into one sample sheet.
+
+    Inputs:
+        Reads the Windows font files listed in :data:`FONTS`.
+
+    Outputs:
+        Saves ``work/mesen_capture/rendered/english_font_candidates.png`` and
+        prints that path.
+
+    Raises:
+        OSError: If a font cannot be loaded or the PNG cannot be written.
+
+    Side Effects:
+        Replaces the preview PNG.  Its parent directory must already exist.
+    """
 
     scale = 4
     columns = 16

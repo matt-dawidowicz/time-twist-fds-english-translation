@@ -1374,7 +1374,47 @@ GLOSSARY_SEEDS = (
 
 @dataclass
 class WorkbookRow:
-    """Complete linguistic, technical, and localization review of one record."""
+    """Represent one complete linguistic and technical review record.
+
+    The first seventeen fields form the public workbook schema requested for
+    every source record.  The remaining fields retain scene, storage, control,
+    and review metadata needed by filters and by later patch engineering.
+
+    Attributes:
+        sequential_entry_number: One-based source-order position.
+        original_record_id: Stable extraction ID used across all artifacts.
+        bank: Scenario bank or standalone UI/graphics component.
+        record_type: Scenario, fixed-address, or graphics-text classification.
+        exact_japanese_source: Authoritative decoded ROM text, unchanged.
+        romaji: Mechanical reading aid, with explicit overrides where needed.
+        reconstructed_japanese: Conservative editorial normalization.
+        literal_english_meaning: Intelligible structure-preserving translation.
+        linguistic_and_cultural_notes: Evidence and localization commentary.
+        speaker_or_narration_identity: Best contextual voice attribution.
+        current_english: Existing patch text before this review.
+        problems_with_current_english: Specific comparison findings.
+        final_natural_english_translation: Preferred unconstrained localization.
+        patch_safe_english_translation: ROM-character/control-safe candidate.
+        confidence_level: Confidence or required verification category.
+        unresolved_ambiguity: Material uncertainty that remains after review.
+        translation_status: Completion state for filtering and reporting.
+        scene: Human-readable scene or component title.
+        source_location: Extraction provenance supplied by the source corpus.
+        apparent_capacity: Known slot size or recompression estimate.
+        source_control_codes: Ordered source controls for visible auditing.
+        patch_control_codes: Ordered patch controls for visible auditing.
+        control_codes_match: ``"yes"`` only when both sequences are identical.
+        problem_categories: Semicolon-separated normalized QA categories.
+        dialect_or_register: Boundary-aware grammatical voice observations.
+        requires_gameplay_context: ``"yes"`` when a screenshot may resolve context.
+        requires_technical_expansion: ``"yes"`` when fit needs engineering review.
+        nuance_lost_in_patch_safe_version: Fit compromise or expansion rationale.
+
+    Note:
+        This model deliberately keeps exact Japanese, editorial reconstruction,
+        and English interpretation in separate fields.  Callers must never use
+        the reconstructed field as evidence of bytes present in the ROM.
+    """
 
     sequential_entry_number: int
     original_record_id: str
@@ -1407,10 +1447,28 @@ class WorkbookRow:
 
 
 class ReviewTableParser(HTMLParser):
-    """Minimal table parser for the supplied diagnostic review workbook."""
+    """Parse only the tabular content needed from the diagnostic review HTML.
+
+    The supplied review is an input aid, not authoritative source text.  A
+    purpose-built parser avoids browser or third-party HTML dependencies while
+    preserving line breaks within cells.  It intentionally ignores styling,
+    links, nested layout, and text outside table rows.
+
+    Attributes:
+        rows: Completed rows, with decoded and stripped cell text.
+
+    Assumptions:
+        Table rows do not overlap, cells are direct or nested descendants of a
+        row, and ``<br>`` is the only significant inline layout element.
+    """
 
     def __init__(self) -> None:
-        """Initialize row, cell, and text-buffer state."""
+        """Initialize an empty parser.
+
+        Side Effects:
+            Initializes :class:`html.parser.HTMLParser` with character-reference
+            conversion enabled.
+        """
 
         super().__init__(convert_charrefs=True)
         self.rows: list[list[str]] = []
@@ -1419,7 +1477,17 @@ class ReviewTableParser(HTMLParser):
         self._buffer: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        """Start rows/cells and preserve HTML line breaks inside a cell."""
+        """Process structural opening tags relevant to review-table extraction.
+
+        Args:
+            tag: Lowercase HTML element name supplied by ``HTMLParser``.
+            attrs: Parsed attributes; accepted for the callback contract but
+                intentionally ignored.
+
+        Side Effects:
+            Starts a row or cell buffer and appends a newline for ``<br>`` tags
+            encountered inside the active cell.
+        """
 
         if tag == "tr":
             self._row = []
@@ -1430,7 +1498,19 @@ class ReviewTableParser(HTMLParser):
             self._buffer.append("\n")
 
     def handle_endtag(self, tag: str) -> None:
-        """Finalize the current cell or append a completed table row."""
+        """Finalize a cell or row when its closing tag is encountered.
+
+        Args:
+            tag: Lowercase closing-tag name supplied by ``HTMLParser``.
+
+        Side Effects:
+            Appends stripped cell text to the active row or a completed row to
+            :attr:`rows`.
+
+        Raises:
+            AssertionError: If a cell closes without an active row, indicating
+                malformed state or unsupported table markup.
+        """
 
         if tag in {"td", "th"} and self._in_cell:
             assert self._row is not None
@@ -1441,14 +1521,35 @@ class ReviewTableParser(HTMLParser):
             self._row = None
 
     def handle_data(self, data: str) -> None:
-        """Accumulate decoded character data for the current table cell."""
+        """Append decoded text only when a review-table cell is active.
+
+        Args:
+            data: Character data supplied by ``HTMLParser``.
+
+        Side Effects:
+            Extends the current cell buffer.  Text outside cells is discarded.
+        """
 
         if self._in_cell:
             self._buffer.append(data)
 
 
 def sha256(path: Path) -> str:
-    """Return an uppercase SHA-256 fingerprint for provenance reporting."""
+    """Calculate an uppercase SHA-256 fingerprint for one file.
+
+    Args:
+        path: Existing file to read in one-mebibyte chunks.
+
+    Returns:
+        The 64-character hexadecimal digest in uppercase.
+
+    Raises:
+        OSError: If the file cannot be opened or read.
+
+    Design:
+        Streaming keeps source and generated multi-megabyte workbooks out of
+        memory while producing reproducible provenance metadata.
+    """
 
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -1458,19 +1559,49 @@ def sha256(path: Path) -> str:
 
 
 def collapse(text: str) -> str:
-    """Collapse all whitespace runs to one display space."""
+    """Normalize arbitrary whitespace for a single-line editorial field.
+
+    Args:
+        text: Text that may contain tabs, newlines, or repeated spaces.
+
+    Returns:
+        Text with every whitespace run replaced by one ASCII space and leading
+        or trailing whitespace removed.
+    """
 
     return re.sub(r"\s+", " ", text).strip()
 
 
 def without_controls(text: str, separator: str = " ") -> str:
-    """Remove explicit control markers while keeping surrounding words apart."""
+    """Remove control tags without accidentally joining adjacent words.
+
+    Args:
+        text: Decoded text containing zero or more ``{CTRL:n}`` markers.
+        separator: Text inserted for each removed marker before whitespace is
+            collapsed.
+
+    Returns:
+        Control-free, whitespace-normalized visible text.
+    """
 
     return collapse(CONTROL_RE.sub(separator, text))
 
 
 def naturalize_current(text: str) -> str:
-    """Turn terse patch text into readable editorial prose without retranslation."""
+    """Convert patch typography into readable editorial prose.
+
+    Args:
+        text: Existing English that may include control tags, repeated periods,
+            or compact speaker labels.
+
+    Returns:
+        A control-free display string with typographic ellipses and expanded
+        generic speaker labels.
+
+    Note:
+        This function does not translate Japanese or infer missing content.  It
+        is only a presentation fallback when no reviewed replacement exists.
+    """
 
     value = CONTROL_RE.sub(" ", text)
     value = re.sub(r"\.{4,}", "…", value)
@@ -1482,7 +1613,20 @@ def naturalize_current(text: str) -> str:
 
 
 def conservative_reconstruction(exact: str) -> str:
-    """Apply only approved kana-to-normalized-Japanese substitutions."""
+    """Build an editorial Japanese reading from explicitly approved mappings.
+
+    Args:
+        exact: Authoritative decoded Japanese, possibly with control tags.
+
+    Returns:
+        Control-free normalized Japanese after longest-first substitutions from
+        :data:`SAFE_RECONSTRUCTIONS`.
+
+    Design:
+        Longest-first replacement prevents a shorter entry from consuming part
+        of a more specific phrase.  Unmapped kana remain untouched so ambiguity
+        is visible instead of being silently assigned kanji.
+    """
 
     text = CONTROL_RE.sub(" ", exact)
     for source, replacement in sorted(
@@ -1493,13 +1637,37 @@ def conservative_reconstruction(exact: str) -> str:
 
 
 def controls(text: str) -> tuple[str, ...]:
-    """Return control values in exact textual order."""
+    """Extract control payloads in exact source order.
+
+    Args:
+        text: Decoded Japanese or English containing ``{CTRL:n}`` markers.
+
+    Returns:
+        A tuple of payload strings without braces or the ``CTRL:`` prefix.
+    """
 
     return tuple(CONTROL_RE.findall(text))
 
 
 def current_capacity(source_row: dict) -> str:
-    """Describe the known or estimated storage/display constraint for a row."""
+    """Describe the storage evidence available for one extracted record.
+
+    Args:
+        source_row: Source-corpus mapping with ``packed_bytes`` and current
+            English fields.
+
+    Returns:
+        A human-readable fixed-slot size, a scenario recompression/display
+        estimate, or a note that the item is graphics/program text.
+
+    Raises:
+        KeyError: If required source-corpus fields are missing.
+
+    Note:
+        Group-compressed records have no independent byte slot.  Their visible
+        length and longest control-delimited segment are warnings, not proof of
+        final bank fit; native recompression remains authoritative.
+    """
 
     if source_row["packed_bytes"].isdigit():
         return f"{source_row['packed_bytes']} packed bytes (fixed-address slot)"
@@ -1516,7 +1684,25 @@ def current_capacity(source_row: dict) -> str:
 
 
 def parse_review(source_rows: list[dict]) -> tuple[dict[str, dict], Path]:
-    """Load the supplied review HTML and align every row by source order and ID."""
+    """Load and strictly align the optional diagnostic review with the corpus.
+
+    Args:
+        source_rows: Authoritative source rows in extraction order.
+
+    Returns:
+        A pair containing review annotations keyed by stable text ID and the
+        selected review-file path.
+
+    Raises:
+        FileNotFoundError: If none of :data:`REVIEW_CANDIDATES` exists.
+        ValueError: If row count, column count, or source-order IDs differ.
+        OSError: If the review file cannot be read.
+
+    Design:
+        Positional and ID checks prevent plausible-looking annotations from
+        being attached to the wrong ROM record.  Automated review text remains
+        advisory and is interpreted again by later functions.
+    """
 
     review_path = next((path for path in REVIEW_CANDIDATES if path.exists()), None)
     if review_path is None:
@@ -1558,7 +1744,19 @@ def parse_review(source_rows: list[dict]) -> tuple[dict[str, dict], Path]:
 
 
 def direction_is_translation(direction: str) -> bool:
-    """Distinguish a proposed translation from generic reviewer instructions."""
+    """Decide whether review guidance contains usable translated wording.
+
+    Args:
+        direction: Diagnostic review's translation-direction cell.
+
+    Returns:
+        ``True`` when the non-empty text is not one of the known generic
+        instructions.
+
+    Note:
+        This conservative allow-by-exclusion rule prevents prose such as
+        "Retranslate clause by clause" from appearing as game dialogue.
+    """
 
     generic = (
         "Current English is a usable draft",
@@ -1570,7 +1768,23 @@ def direction_is_translation(direction: str) -> bool:
 
 
 def expanded_fixed_meaning(source_row: dict) -> str:
-    """Expand a compact fixed-address label into its natural full meaning."""
+    """Recover a readable natural meaning for a constrained fixed-address label.
+
+    Args:
+        source_row: Fixed-address source mapping containing exact Japanese and
+            the current compact English.
+
+    Returns:
+        A curated phrase, month name, counted-unit phrase, numbered Coyote label,
+        existing readable English, or normalized Japanese fallback.
+
+    Raises:
+        KeyError: If required source fields are absent.
+
+    Design:
+        The result is editorial analysis only.  It does not replace the verified
+        compact patch form or imply that expanded English fits the original slot.
+    """
 
     exact = source_row["japanese_exact"]
     plain = collapse(CONTROL_RE.sub(" ", exact))
@@ -1605,7 +1819,20 @@ def expanded_fixed_meaning(source_row: dict) -> str:
 
 
 def final_natural(source_row: dict, review: dict) -> str:
-    """Select the preferred unconstrained English translation for a record."""
+    """Select the preferred unconstrained English localization.
+
+    Args:
+        source_row: Authoritative source record plus provisional English.
+        review: Aligned diagnostic annotations for the same text ID.
+
+    Returns:
+        Manual translation when available, expanded fixed-address meaning,
+        readable graphics text, a substantive review proposal, or naturalized
+        current English in that priority order.
+
+    Raises:
+        KeyError: If required source or review fields are missing.
+    """
 
     text_id = source_row["text_id"]
     if text_id in MANUAL_FINAL:
@@ -1620,7 +1847,23 @@ def final_natural(source_row: dict, review: dict) -> str:
 
 
 def literal_meaning(source_row: dict, review: dict, final: str) -> str:
-    """Select the closest complete reading available for the literal field."""
+    """Select an intelligible structure-preserving English reading.
+
+    Args:
+        source_row: Authoritative source record and provisional English.
+        review: Aligned diagnostic review annotations.
+        final: Already selected natural translation, retained for call-site
+            symmetry and future context-sensitive comparison.
+
+    Returns:
+        Close reading, expanded fixed meaning, manual correction, substantive
+        review translation, or naturalized draft in decreasing preference.
+
+    Note:
+        A corrected complete reading is preferred over repeating a draft known
+        to omit Japanese information.  "Literal" here exposes information and
+        structure; it is not deliberately ungrammatical word-for-word English.
+    """
 
     if review["close_reading"]:
         return naturalize_current(review["close_reading"])
@@ -1637,7 +1880,22 @@ def literal_meaning(source_row: dict, review: dict, final: str) -> str:
 
 
 def speaker_identity(source_row: dict, final: str) -> str:
-    """Infer speaker/narration identity from overrides, labels, and record type."""
+    """Infer the most defensible speaker or narration identity.
+
+    Args:
+        source_row: Source record containing type, exact Japanese, and stable ID.
+        final: Natural English, used only for explicit English speaker labels.
+
+    Returns:
+        Manual override, interface/graphics identity, semicolon-separated
+        Japanese or English labels, an unidentified-voice marker, or the broad
+        narration/interaction fallback.
+
+    Design:
+        The function never assigns a character merely because an unlabeled line
+        resembles that character's voice.  Uncertainty remains explicit until
+        neighboring records or gameplay provide evidence.
+    """
 
     if source_row["text_id"] in SPEAKER_IDENTITY_OVERRIDES:
         return SPEAKER_IDENTITY_OVERRIDES[source_row["text_id"]]
@@ -1665,7 +1923,20 @@ def speaker_identity(source_row: dict, final: str) -> str:
 
 
 def dialect_register(source_row: dict) -> str:
-    """Describe grammatical voice markers using boundary-aware expressions."""
+    """Describe contextual voice and register markers without substring guesses.
+
+    Args:
+        source_row: Source mapping whose exact Japanese is analyzed.
+
+    Returns:
+        A semicolon-separated list of distinct pronoun, ending, politeness,
+        dialect-cluster, hesitation, and display-timing observations.
+
+    Design:
+        Regular expressions require grammatical boundaries so kana embedded in
+        unrelated words do not create false dialect labels.  Stock role-language
+        such as ``わし``/``じゃ`` is distinguished from clustered regional forms.
+    """
 
     text = CONTROL_RE.sub(" ", source_row["japanese_exact"])
     notes: list[str] = []
@@ -1713,7 +1984,23 @@ def dialect_register(source_row: dict) -> str:
 
 
 def linguistic_notes(source_row: dict, review: dict, register: str) -> str:
-    """Assemble record-specific language, culture, control, and safety notes."""
+    """Assemble evidence-backed linguistic and cultural commentary.
+
+    Args:
+        source_row: Authoritative source and record metadata.
+        review: Aligned review annotations, reserved for context-sensitive
+            extension of the note pipeline.
+        register: Boundary-aware output from :func:`dialect_register`.
+
+    Returns:
+        A prose note covering relevant register, control behavior, fixed-slot
+        constraints, curated line findings, historical content, and the
+        reconstruction evidence boundary.
+
+    Design:
+        Sensitive historical language is described as source characterization,
+        neither endorsed nor silently sanitized.
+    """
 
     notes: list[str] = []
     if register:
@@ -1768,7 +2055,23 @@ def linguistic_notes(source_row: dict, review: dict, register: str) -> str:
 
 
 def problem_categories(qa: str, source_row: dict, final: str) -> tuple[str, ...]:
-    """Map concrete review findings to the workbook's normalized problem labels."""
+    """Map free-form review evidence to normalized QA problem categories.
+
+    Args:
+        qa: Diagnostic review prose for the current record.
+        source_row: Source metadata used to distinguish fixed-address text.
+        final: Selected natural translation for compression comparison.
+
+    Returns:
+        An ordered, duplicate-free tuple of concrete issue labels.  Records with
+        no detected issue receive ``"Accurate"``; constrained labels may instead
+        receive the acceptable-compression category.
+
+    Design:
+        Matching is intentionally limited to English review prose.  It is not
+        used to infer Japanese dialect or grammar, avoiding the unsafe substring
+        behavior found in the earlier diagnostic workbook.
+    """
 
     categories: list[str] = []
     generic_review_boilerplate = (
@@ -1831,7 +2134,24 @@ def problem_categories(qa: str, source_row: dict, final: str) -> tuple[str, ...]
 def current_problems(
     source_row: dict, review: dict, final: str, categories: tuple[str, ...]
 ) -> str:
-    """Explain specifically how the current English differs from the source."""
+    """Explain concrete differences between current and preferred English.
+
+    Args:
+        source_row: Source record and currently installed translation.
+        review: Aligned diagnostic findings.
+        final: Preferred natural English selected for the record.
+        categories: Normalized output from :func:`problem_categories`.
+
+    Returns:
+        A curated finding for known problem lines, a fixed-slot fit explanation,
+        a control-code caveat, a concise accuracy statement, or cleaned review
+        prose.
+
+    Design:
+        Generic "check context" boilerplate is never presented as a specific
+        defect.  Fixed-address abbreviations are documented as technical choices
+        instead of being mislabeled as mistranslations.
+    """
 
     qa = review["qa"]
     manual = {
@@ -1880,7 +2200,26 @@ def current_problems(
 
 
 def insert_controls_by_current_layout(final: str, current_exact: str) -> str:
-    """Redistribute existing controls across new words while preserving order."""
+    """Redistribute existing control tags proportionally across revised words.
+
+    Args:
+        final: Control-free replacement English.
+        current_exact: Existing English whose ordered controls and segment
+            proportions define the timing/layout template.
+
+    Returns:
+        Replacement English with every existing control reinserted in order.
+        If the replacement has no words, only the ordered controls are returned.
+
+    Assumptions:
+        Controls separate display or timing segments, and relative segment
+        lengths are a better automatic fallback than collecting all controls at
+        the end.  Manual patch overrides take precedence for sensitive records.
+
+    Note:
+        This is a proposal generator, not visual proof.  The result still passes
+        control equality, display-width, encoder, and bank recompression checks.
+    """
 
     values = list(controls(current_exact))
     if not values:
@@ -1912,7 +2251,20 @@ def insert_controls_by_current_layout(final: str, current_exact: str) -> str:
 
 
 def patch_charset_safe(text: str) -> str:
-    """Reduce editorial Unicode punctuation to characters supported by the ROM font."""
+    """Replace editorial Unicode punctuation with ROM-font-safe equivalents.
+
+    Args:
+        text: Proposed English that may contain smart quotes, typographic
+            dashes, ellipses, or non-breaking spaces.
+
+    Returns:
+        Text using the patch character set's ASCII punctuation conventions.
+
+    Note:
+        This conversion is deliberately narrow.  Unsupported letters are left
+        visible so the actual encoder can reject them instead of hiding a
+        translation error through lossy transliteration.
+    """
 
     return (
         text.replace("’", "'")
@@ -1927,7 +2279,28 @@ def patch_charset_safe(text: str) -> str:
 
 
 def patch_safe(source_row: dict, final: str, review: dict) -> tuple[str, str, bool]:
-    """Build a charset/control-safe patch candidate and flag likely expansion."""
+    """Build a control-safe patch candidate and estimate technical fit risk.
+
+    Args:
+        source_row: Source metadata and currently installed English.
+        final: Preferred unconstrained translation.
+        review: Aligned diagnostic review annotations.
+
+    Returns:
+        A three-item tuple of patch text, any documented nuance/fit note, and a
+        Boolean indicating that expansion or recompression review is required.
+
+    Raises:
+        ValueError: If the proposed patch changes the source control sequence.
+        KeyError: If required corpus fields are missing.
+
+    Design:
+        Manual overrides win, fixed-address/graphics records retain verified
+        forms, and revised scenario prose inherits the current control layout.
+        Visible-length and 24-column checks are conservative warnings.  A bank
+        listed in :data:`PATCH_FOOTPRINT_RESULTS` overrides that estimate because
+        its finalized map passed native encoding, display, and recompression.
+    """
 
     text_id = source_row["text_id"]
     if text_id in MANUAL_PATCH:
@@ -1990,7 +2363,22 @@ def patch_safe(source_row: dict, final: str, review: dict) -> tuple[str, str, bo
 def ambiguity_and_confidence(
     source_row: dict, review: dict, register: str
 ) -> tuple[str, str, bool]:
-    """Return unresolved context, confidence, and visual-verification status."""
+    """Classify unresolved ambiguity and the evidence needed to resolve it.
+
+    Args:
+        source_row: Source record and stable ID.
+        review: Diagnostic annotations including review priority.
+        register: Analyzed dialect/register description.
+
+    Returns:
+        A tuple containing the ambiguity explanation, confidence label, and
+        whether gameplay or visual verification is requested.
+
+    Design:
+        Known spatial, speaker, punctuation, and control conflicts are handled
+        explicitly.  The function still returns a proposed translation; low
+        confidence never becomes an excuse for an empty workbook field.
+    """
 
     text_id = source_row["text_id"]
     if text_id == "TT3A/g2/r30":
@@ -2041,7 +2429,29 @@ def ambiguity_and_confidence(
 
 
 def make_rows() -> tuple[list[WorkbookRow], dict, Path]:
-    """Create all 2,052 ordered workbook rows from source and review data."""
+    """Create the complete ordered workbook from authoritative source records.
+
+    Returns:
+        A tuple of populated :class:`WorkbookRow` objects, the untouched source
+        payload, and the diagnostic review path used.
+
+    Raises:
+        OSError: If source or review files cannot be read.
+        json.JSONDecodeError: If the source corpus is not valid JSON.
+        ValueError: If the source count is not exactly 2,052, review alignment
+            fails, or a proposed patch changes control codes.
+        KeyError: If required corpus fields, bank scene metadata, or aligned
+            review annotations are missing.
+
+    Side Effects:
+        Reads the authoritative JSON corpus and one diagnostic HTML file.  It
+        does not write artifacts; writing is deferred until validation succeeds.
+
+    Design:
+        Every field is derived in source order.  Natural translation, literal
+        reading, speaker, register, QA, patch fit, and confidence are calculated
+        separately so one inference cannot overwrite authoritative source data.
+    """
 
     payload = json.loads(SOURCE_JSON.read_text(encoding="utf-8"))
     source_rows = payload["rows"]
@@ -2111,7 +2521,20 @@ def make_rows() -> tuple[list[WorkbookRow], dict, Path]:
 
 
 def first_occurrence(rows: list[WorkbookRow], needle: str) -> str:
-    """Find the first stable record ID containing a glossary expression."""
+    """Find a glossary expression's first contiguous source occurrence.
+
+    Args:
+        rows: Workbook rows in authoritative source order.
+        needle: Exact Japanese glossary spelling, possibly with control tags.
+
+    Returns:
+        The first matching stable record ID, or an explanatory sentinel when the
+        spelling does not occur as one contiguous decoded substring.
+
+    Note:
+        Both exact and control-stripped forms are checked.  The function does not
+        perform fuzzy matching because that could silently conflate homophones.
+    """
 
     simplified = CONTROL_RE.sub(" ", needle)
     for row in rows:
@@ -2123,7 +2546,20 @@ def first_occurrence(rows: list[WorkbookRow], needle: str) -> str:
 
 
 def make_glossary(rows: list[WorkbookRow]) -> list[dict]:
-    """Materialize the global terminology table and first-occurrence links."""
+    """Materialize the curated global terminology table.
+
+    Args:
+        rows: Completed workbook rows used to locate first occurrences.
+
+    Returns:
+        Dictionaries containing category, exact and reconstructed Japanese,
+        mechanical romaji, chosen English, alternatives, first occurrence, and
+        editorial notes for every glossary seed.
+
+    Design:
+        Chosen forms come from the centralized seed table so terminology cannot
+        drift silently between HTML, JSON, CSV, and the voice guide.
+    """
 
     output = []
     for category, exact, reconstructed, chosen, alternatives, notes in GLOSSARY_SEEDS:
@@ -2143,7 +2579,14 @@ def make_glossary(rows: list[WorkbookRow]) -> list[dict]:
 
 
 def escape_cell(value: object) -> str:
-    """Escape arbitrary workbook content for HTML while retaining line breaks."""
+    """Escape one value for safe HTML table-cell interpolation.
+
+    Args:
+        value: Any value whose string representation should be displayed.
+
+    Returns:
+        HTML-escaped text with newline characters converted to ``<br>``.
+    """
 
     return html.escape(str(value)).replace("\n", "<br>")
 
@@ -2154,7 +2597,29 @@ def render_html(
     source_payload: dict,
     review_path: Path,
 ) -> str:
-    """Render the searchable, filterable, self-contained workbook page."""
+    """Render the complete searchable workbook as a self-contained HTML page.
+
+    Args:
+        rows: Validated review rows in authoritative order.
+        glossary: Materialized global glossary.
+        source_payload: Source corpus metadata used for provenance.
+        review_path: Diagnostic review file used during generation.
+
+    Returns:
+        A UTF-8-compatible HTML document containing methodology, scene summaries,
+        control legend, voice guide, glossary, all record columns, and client-side
+        filters.  No external scripts or stylesheets are required.
+
+    Raises:
+        OSError: If provenance fingerprints cannot read their source files.
+        KeyError: If expected source metadata, scenes, glossary, or row fields
+            are missing.
+
+    Design:
+        Exact and reconstructed Japanese receive visually distinct styles.
+        Filter metadata is duplicated into escaped ``data-*`` attributes so the
+        static artifact remains searchable without a web server or build step.
+    """
 
     counts = Counter(row.record_type for row in rows)
     footprint_summary = "; ".join(
@@ -2390,7 +2855,20 @@ apply();
 
 
 def write_csv(path: Path, records: Iterable[dict]) -> None:
-    """Write non-empty record dictionaries as Excel-friendly UTF-8 CSV."""
+    """Write homogeneous mappings as Excel-friendly UTF-8 CSV.
+
+    Args:
+        path: Destination file, whose parent directory must already exist.
+        records: Ordered mappings.  The first mapping defines column order.
+
+    Raises:
+        ValueError: If ``records`` is empty.
+        OSError: If the destination cannot be created or written.
+        csv.Error: If the standard-library CSV writer cannot serialize a value.
+
+    Side Effects:
+        Replaces ``path`` with UTF-8-with-BOM CSV and normalized CSV newlines.
+    """
 
     records = list(records)
     if not records:
@@ -2406,7 +2884,22 @@ def write_progress(
     glossary: list[dict],
     review_path: Path,
 ) -> None:
-    """Write completion, capacity, provenance, and ambiguity status in Markdown."""
+    """Write a human-readable project completion and exception report.
+
+    Args:
+        rows: Completed workbook rows.
+        glossary: Materialized glossary, used for the entry count.
+        review_path: Diagnostic input used for provenance fingerprinting.
+
+    Raises:
+        OSError: If a source fingerprint cannot be read or the progress file
+            cannot be written.
+
+    Side Effects:
+        Replaces ``outputs/Time_Twist_translation_progress.md`` with counts,
+        bank coverage, native recompression evidence, screenshot requests,
+        expansion warnings, terminology decisions, and unresolved ambiguities.
+    """
 
     gameplay = [row for row in rows if row.requires_gameplay_context == "yes"]
     technical = [row for row in rows if row.requires_technical_expansion == "yes"]
@@ -2505,7 +2998,18 @@ def write_progress(
 
 
 def write_voice_guide(glossary: list[dict]) -> None:
-    """Write the recurring-character voice reference and terminology guide."""
+    """Write the standalone character-voice and terminology guide.
+
+    Args:
+        glossary: Materialized terminology entries in chosen display order.
+
+    Raises:
+        KeyError: If a speaker or glossary entry lacks a required field.
+        OSError: If the guide cannot be written.
+
+    Side Effects:
+        Replaces ``outputs/Time_Twist_terminology_and_voice_guide.md``.
+    """
 
     lines = [
         "# Time Twist terminology and character-voice guide",
@@ -2559,7 +3063,25 @@ def write_voice_guide(glossary: list[dict]) -> None:
 def validate(
     rows: list[WorkbookRow], source_payload: dict, glossary: list[dict]
 ) -> None:
-    """Enforce corpus count, ID, source, control, translation, and glossary invariants."""
+    """Enforce release-blocking workbook invariants before artifact writes.
+
+    Args:
+        rows: Proposed workbook rows.
+        source_payload: Authoritative extraction payload.
+        glossary: Materialized terminology table.
+
+    Raises:
+        AssertionError: If record count is not 2,052; IDs are duplicated; exact
+            Japanese differs from source; control order drifts; either English
+            field is empty; a known unsafe reconstruction reappears; or the
+            glossary is empty.
+        KeyError: If a workbook ID is absent from the source payload.
+
+    Note:
+        This validation protects structural completeness and evidence boundaries.
+        It cannot prove literary quality or gameplay fit; those require review,
+        encoder/recompression tests, and the listed visual checks.
+    """
 
     source_rows = source_payload["rows"]
     if len(rows) != 2052:
@@ -2588,7 +3110,25 @@ def validate(
 
 
 def write_checkpoints(rows: list[WorkbookRow]) -> None:
-    """Write one detailed JSON checkpoint per bank plus rolling progress."""
+    """Persist resumable per-bank JSON and a rolling generation checkpoint.
+
+    Args:
+        rows: Complete workbook rows, from which each bank is selected in
+            :data:`BANK_ORDER`.
+
+    Raises:
+        KeyError: If a bank lacks scene metadata.
+        OSError: If the checkpoint directory or any output cannot be written.
+
+    Side Effects:
+        Creates ``work/translation_workbook_banks`` as needed, replaces one JSON
+        file per bank/component, and repeatedly replaces the rolling Markdown
+        checkpoint after each bank.
+
+    Design:
+        Checkpoints are written only after aggregate validation.  They support
+        inspection and recovery but are not separate translation authorities.
+    """
 
     directory = WORK / "translation_workbook_banks"
     directory.mkdir(parents=True, exist_ok=True)
@@ -2626,7 +3166,31 @@ def write_checkpoints(rows: list[WorkbookRow]) -> None:
 
 
 def main() -> None:
-    """Generate and validate all workbook, glossary, progress, and checkpoint files."""
+    """Generate, validate, fingerprint, and report every translation artifact.
+
+    Inputs:
+        Reads the authoritative comparison JSON and the first existing diagnostic
+        review candidate configured by this module.
+
+    Outputs:
+        Writes HTML, CSV, and JSON workbooks; CSV and JSON glossaries; a voice
+        guide; a progress report; and per-bank checkpoints.  Prints each primary
+        artifact's filename, byte size, and SHA-256 digest to standard output.
+
+    Side Effects:
+        Creates the output directory if needed and replaces all generated files
+        listed above.
+
+    Raises:
+        Propagates source parsing, alignment, validation, serialization, and I/O
+        failures.  No partially generated aggregate workbook is written before
+        :func:`validate` succeeds.
+
+    Design:
+        The JSON artifact carries source fingerprints and the same scene,
+        speaker, glossary, control, and native-fit evidence shown in HTML so
+        machine-readable and human-readable outputs remain auditable.
+    """
 
     OUTPUTS.mkdir(parents=True, exist_ok=True)
     rows, source_payload, review_path = make_rows()

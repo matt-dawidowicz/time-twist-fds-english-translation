@@ -12,7 +12,24 @@ PALETTE = (0, 85, 170, 255)
 
 
 def render_chr(data: bytes, columns: int = 16, scale: int = 2) -> Image.Image:
-    """Decode NES 2bpp CHR bytes into a scaled tile-sheet image."""
+    """Decode complete NES/FDS 2bpp CHR tiles into a grayscale sheet.
+
+    Args:
+        data: Pattern-table bytes; each complete tile occupies sixteen bytes.
+        columns: Number of tiles per output row.
+        scale: Positive integer nearest-neighbor enlargement factor.
+
+    Returns:
+        A mode-``L`` Pillow image using four evenly spaced grayscale values.
+
+    Raises:
+        ZeroDivisionError: If ``columns`` is zero.
+        ValueError: If dimensions implied by negative values are invalid.
+
+    Assumptions:
+        The first eight bytes of each tile are bitplane 0 and the next eight are
+        bitplane 1.  Trailing bytes that do not form a complete tile are ignored.
+    """
 
     tile_count = len(data) // 16
     rows = (tile_count + columns - 1) // columns
@@ -39,7 +56,23 @@ def render_chr(data: bytes, columns: int = 16, scale: int = 2) -> Image.Image:
 
 
 def main() -> None:
-    """Render a CHR binary selected on the command line to PNG."""
+    """Render selected CHR byte ranges to PNG tile sheets.
+
+    Inputs:
+        Accepts one or more binary paths, a required output directory, and
+        optional column count, scale, byte offset, and byte length.
+
+    Outputs:
+        Writes one PNG per input using the input stem and prints dimensions.
+
+    Raises:
+        OSError: If an input cannot be read or an output cannot be written.
+        ValueError: If numeric arguments or resulting image dimensions are
+            invalid.
+
+    Side Effects:
+        Creates the output directory as needed and replaces same-named PNGs.
+    """
 
     parser = argparse.ArgumentParser()
     parser.add_argument("inputs", nargs="+", type=Path)

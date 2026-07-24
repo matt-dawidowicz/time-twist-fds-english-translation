@@ -11,7 +11,27 @@ from render_chr import render_chr
 
 
 def main() -> None:
-    """Render a CHR tile sheet with hexadecimal tile-index labels."""
+    """Render and label a selected range of CHR tile indices.
+
+    Inputs:
+        Accepts input/output paths plus a starting tile index, tile count,
+        column count, scale, and optional monochrome conversion.
+
+    Outputs:
+        Writes an RGB PNG whose cells contain a scaled tile and its three-digit
+        hexadecimal index, then prints the input/output mapping and dimensions.
+
+    Raises:
+        OSError: If the source cannot be read or the output cannot be written.
+        ValueError: If dimensions derived from command-line values are invalid.
+
+    Side Effects:
+        Creates the output parent directory as needed and replaces the PNG.
+
+    Note:
+        Rendering stops cleanly at the first incomplete tile.  ``--monochrome``
+        isolates NES color index 1, which is useful when locating text glyphs.
+    """
 
     parser = argparse.ArgumentParser()
     parser.add_argument("input", type=Path)

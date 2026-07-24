@@ -9,7 +9,18 @@ from pathlib import Path
 
 
 def entropy(data: bytes) -> float:
-    """Return Shannon entropy in bits per byte for a binary region."""
+    """Calculate Shannon entropy for a binary region.
+
+    Args:
+        data: Bytes whose value-frequency distribution should be measured.
+
+    Returns:
+        Entropy in bits per byte.  Empty input returns ``0.0``.
+
+    Note:
+        Entropy is only a triage signal.  High entropy can indicate compressed
+        text, graphics, code, or unrelated dense data; it is not a format proof.
+    """
 
     counts = collections.Counter(data)
     length = len(data)
@@ -17,7 +28,24 @@ def entropy(data: bytes) -> float:
 
 
 def main() -> None:
-    """Print size and entropy diagnostics for extracted scenario banks."""
+    """Print byte-frequency and rolling entropy diagnostics for binary banks.
+
+    Inputs:
+        Accepts one or more input paths and an optional integer ``--window``
+        using Python's base-prefix syntax, such as ``0x200``.
+
+    Outputs:
+        Prints file size, the sixteen most common byte values, and per-window
+        entropy plus rough text/control/padding ratios to standard output.
+
+    Raises:
+        OSError: If an input file cannot be read.
+        ValueError: If ``--window`` cannot be parsed or is zero/negative when
+            consumed by :class:`range`.
+
+    Side Effects:
+        Reads input files only; no binaries or reports are modified.
+    """
 
     parser = argparse.ArgumentParser()
     parser.add_argument("inputs", nargs="+", type=Path)

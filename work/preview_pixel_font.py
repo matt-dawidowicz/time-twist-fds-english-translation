@@ -19,7 +19,26 @@ SAMPLES = (
 
 
 def main() -> None:
-    """Render the built-in ROM-style pixel font as a labeled preview sheet."""
+    """Render representative strings with the authoritative patched pixel font.
+
+    Inputs:
+        Uses :data:`SAMPLES` and :func:`time_twist.font.render_glyph`; no ROM or
+        emulator state is required.
+
+    Outputs:
+        Saves ``work/build/mixed_case_font_preview.png`` and prints its path.
+
+    Raises:
+        time_twist.font.FontPatchError: If a sample character is unsupported.
+        OSError: If the output directory or PNG cannot be created.
+
+    Side Effects:
+        Creates the output directory as needed and replaces the preview image.
+
+    Design:
+        Nearest-neighbor pixel replication exposes exact 8-by-8 glyph shapes
+        without introducing antialiasing artifacts.
+    """
 
     scale = 4
     margin = 8

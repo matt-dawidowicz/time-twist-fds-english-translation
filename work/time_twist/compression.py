@@ -25,7 +25,17 @@ MAX_CANDIDATES_TO_EVALUATE = 200
 
 
 def symbol_bit_length(symbol: PackedSymbol) -> int:
-    """Return the native encoded width of a non-separator record symbol."""
+    """Return the native encoded width of a record payload symbol.
+
+    Args:
+        symbol: Common, extended, dictionary, or ordinary control token.
+
+    Returns:
+        Encoded width in bits, excluding record alignment.
+
+    Raises:
+        ValueError: If ``symbol`` is a separator or has an unsupported kind.
+    """
 
     if symbol.kind is SymbolKind.COMMON:
         return 6
@@ -40,7 +50,18 @@ def packed_size(
     groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
     dictionary: tuple[tuple[PackedSymbol, ...], ...],
 ) -> int:
-    """Return total bytes for all record groups plus the dictionary stream."""
+    """Measure the complete packed text and dictionary footprint.
+
+    Args:
+        groups: Scenario records grouped in pointer-table order.
+        dictionary: Ordered, one-based dictionary entries.
+
+    Returns:
+        Total byte count after separators and per-record alignment are applied.
+
+    The function deliberately repacks the data instead of summing token widths
+    because separator alignment can change the true byte cost.
+    """
 
     return sum(len(pack_records(group)) for group in groups) + len(
         pack_records(dictionary)
@@ -50,7 +71,19 @@ def packed_size(
 def _candidate_counts(
     groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
 ) -> Counter[tuple[PackedSymbol, ...]]:
-    """Count repeated literal substrings that are legal flat entries."""
+    """Count repeated literal substrings that are legal flat entries.
+
+    Args:
+        groups: Current scenario groups, possibly already containing
+            dictionary references selected during an earlier iteration.
+
+    Returns:
+        Occurrence counts for every two-to-32-token candidate.
+
+    Existing references and control tokens split candidate regions. This
+    prevents nested dictionaries and preserves control placement. Overlapping
+    occurrences are counted for ranking; actual replacement is non-overlapping.
+    """
 
     counts: Counter[tuple[PackedSymbol, ...]] = Counter()
     for group in groups:
@@ -79,7 +112,20 @@ def _replace_candidate(
     candidate: tuple[PackedSymbol, ...],
     reference: PackedSymbol,
 ) -> tuple[tuple[tuple[PackedSymbol, ...], ...], ...]:
-    """Replace non-overlapping occurrences of ``candidate`` in every record."""
+    """Replace leftmost, non-overlapping candidate occurrences.
+
+    Args:
+        groups: Current scenario group structure.
+        candidate: Literal token sequence to replace.
+        reference: One-based dictionary symbol assigned to the candidate.
+
+    Returns:
+        A new immutable group structure. Input tuples and symbols are not
+        modified.
+
+    Replacement restarts after the full match, making the result deterministic
+    even when a candidate overlaps with itself.
+    """
 
     candidate_length = len(candidate)
     rebuilt_groups: list[tuple[tuple[PackedSymbol, ...], ...]] = []
@@ -110,6 +156,19 @@ def compress_english_groups(
 ]:
     """Return compressed groups and a flat native-compatible dictionary.
 
+    Args:
+        groups: Fully encoded English scenario groups with no separators.
+        required_entries: Literal entries that must occupy the first dictionary
+            slots because fixed-address text outside the groups references
+            them.
+
+    Returns:
+        A pair of compressed groups and the ordered flat dictionary.
+
+    Raises:
+        ValueError: If required entries exceed the 31-slot limit, are empty or
+            duplicated, or contain non-literal tokens.
+
     ``required_entries`` lets a bank reserve dictionary slots for packed text
     outside its normal scenario groups.  Those entries are installed first,
     then the remaining slots are selected greedily from the scenario corpus.
@@ -119,8 +178,8 @@ def compress_english_groups(
     dictionary, which accounts for separator alignment.  Selection stops when
     no candidate reduces the final byte count or all 31 slots are occupied.
 
-    The transformation is deterministic: identical input produces identical
-    group symbols, dictionary order, and packed size.
+    The transformation is deterministic and side-effect free: identical input
+    produces identical group symbols, dictionary order, and packed size.
     """
 
     if len(required_entries) > MAX_DICTIONARY_ENTRIES:
@@ -191,8 +250,22 @@ def expand_dictionary_symbols(
 ) -> tuple[PackedSymbol, ...]:
     """Recursively expand references and reject out-of-range values or loops.
 
+    Args:
+        symbols: Record or dictionary-entry symbols to expand.
+        dictionary: Ordered one-based dictionary entries.
+        _stack: Internal recursion path used for cycle detection. Callers
+            should leave this at its default.
+
+    Returns:
+        A flat symbol tuple with every dictionary reference expanded.
+
+    Raises:
+        ValueError: If a reference is zero, exceeds the dictionary, or creates
+            a direct or indirect loop.
+
     English dictionaries are flat, but this accepts nested source dictionaries
-    so verification can compare fully expanded symbols in either form.
+    so verification can compare fully expanded symbols in either form. Inputs
+    are not modified.
     """
 
     expanded: list[PackedSymbol] = []

@@ -549,11 +549,27 @@ TT6C_FIXED_TEXT_RECORDS = (
 
 
 class UiPatchError(ValueError):
-    """Raised when a static UI patch cannot be applied safely."""
+    """Report an incompatible source, fixed-slot overrun, or unsafe UI patch.
+
+    UI patch helpers raise this exception before returning modified bytes when
+    source fingerprints, instruction patterns, encoded sizes, or bank capacity
+    differ from verified assumptions.  Callers should inspect the source version
+    or shorten/recompress text instead of forcing a partial write.
+    """
 
 
 def _encode_kouhen_guard_rle(values: bytes) -> bytes:
-    """Encode the startup nametable with SON-KOUH's native RLE format."""
+    """Encode a SON-KOUH startup nametable fragment.
+
+    Args:
+        values: Decoded tile IDs in PPU upload order.
+
+    Returns:
+        Native count-prefix data terminated by ``$FF``.
+
+    Runs are split at 62 because ``$FF`` terminates the decoder. Single-byte
+    remainders use literals because they are shorter than a two-byte run.
+    """
 
     encoded = bytearray()
     index = 0
@@ -579,7 +595,20 @@ def _encode_kouhen_guard_rle(values: bytes) -> bytes:
 
 
 def _kouhen_boot_guard_assets() -> tuple[bytes, bytes]:
-    """Build the horizontal English tilemap and its private 1bpp glyphs."""
+    """Build the Kouhen direct-boot message tilemap and private glyphs.
+
+    Returns:
+        A fixed-size, padded RLE stream and direct-upload 1bpp glyph rows.
+
+    Raises:
+        UiPatchError: If the message exhausts private tile IDs, falls outside
+            the recovered nametable fragment, or cannot fit the original RLE
+            allocation.
+        FontPatchError: If a message character has no deterministic glyph.
+
+    Glyph bits are inverted relative to NOV4's stored font because SON-KOUH
+    uploads its private patterns directly instead of expanding inverse rows.
+    """
 
     tile_by_character = {
         character: tile
@@ -626,7 +655,19 @@ def _kouhen_boot_guard_assets() -> tuple[bytes, bytes]:
 
 
 def patched_kouhen_boot_guard(data: bytes) -> bytes:
-    """Translate Kouhen's direct-boot warning without changing its program."""
+    """Translate Kouhen's direct-boot warning without changing program code.
+
+    Args:
+        data: Original 739-byte SON-KOUH component.
+
+    Returns:
+        A same-size copy with only the RLE tilemap and private glyph rows
+        replaced.
+
+    Raises:
+        UiPatchError: If size or SHA-256 does not match the recovered source,
+            or generated assets exceed their fixed locations.
+    """
 
     if len(data) != KOUHEN_BOOT_GUARD_SIZE:
         raise UiPatchError(
@@ -644,7 +685,20 @@ def patched_kouhen_boot_guard(data: bytes) -> bytes:
 
 
 def _patched_start_prompt(data: bytes, offset: int, component: str) -> bytes:
-    """Replace one recovered copy of the packed start prompt."""
+    """Replace one unique packed start prompt at a recovered offset.
+
+    Args:
+        data: Extracted component bytes.
+        offset: Expected start of the Japanese packed record.
+        component: Human-readable name used in diagnostics.
+
+    Returns:
+        A same-size patched copy.
+
+    Raises:
+        UiPatchError: If source/replacement sizes differ, the input is short,
+            expected bytes differ, or the source prompt is not globally unique.
+    """
 
     if len(ENGLISH_START_PROMPT) != len(ORIGINAL_START_PROMPT):
         raise UiPatchError("translated start prompt changed packed size")
@@ -664,7 +718,19 @@ def _patched_start_prompt(data: bytes, offset: int, component: str) -> bytes:
 
 
 def _patched_disk_prompts(data: bytes) -> bytes:
-    """Translate the normal FDS side-change message in NOV2."""
+    """Translate every normal NOV2 FDS side-change record.
+
+    Args:
+        data: NOV2 bytes containing all recovered prompt slots.
+
+    Returns:
+        A same-size copy with each prompt replaced independently.
+
+    Raises:
+        UiPatchError: If a replacement changes size, a slot is missing, or its
+            source bytes differ.
+        EnglishTextError: If configured English cannot be encoded.
+    """
 
     result = bytearray(data)
     for offset, original, english in DISK_PROMPT_PATCHES:
@@ -685,7 +751,18 @@ def _patched_disk_prompts(data: bytes) -> bytes:
 
 
 def _patched_wrong_disk_message(data: bytes) -> bytes:
-    """Translate NOV2's fallback warning for an incorrect inserted side."""
+    """Translate each NOV2 wrong-disk fallback record.
+
+    Args:
+        data: NOV2 bytes containing the recovered warning slots.
+
+    Returns:
+        A same-size patched copy.
+
+    Raises:
+        UiPatchError: If any slot size or source bytes differ.
+        EnglishTextError: If configured English cannot be encoded.
+    """
 
     result = bytearray(data)
     for offset, original, english in WRONG_DISK_PATCHES:
@@ -704,7 +781,17 @@ def _patched_wrong_disk_message(data: bytes) -> bytes:
 
 
 def _patched_wait_prompt(data: bytes) -> bytes:
-    """Translate ``しばらく おまちください`` without moving NOV2 data."""
+    """Translate ``しばらく おまちください`` in its fixed NOV2 slot.
+
+    Args:
+        data: NOV2 bytes.
+
+    Returns:
+        A same-size patched copy.
+
+    Raises:
+        UiPatchError: If packed sizes differ or source bytes are unknown.
+    """
 
     if len(ENGLISH_WAIT_PROMPT) != len(ORIGINAL_WAIT_PROMPT):
         raise UiPatchError("translated wait prompt changed packed size")
@@ -717,7 +804,22 @@ def _patched_wait_prompt(data: bytes) -> bytes:
 
 
 def _patched_opaque_text_clears(data: bytes) -> bytes:
-    """Make menu tails opaque while preserving valid dialogue-row uploads."""
+    """Clear complete menu tails without breaking dialogue row copies.
+
+    Args:
+        data: NOV2 bytes with the recovered rendering instructions.
+
+    Returns:
+        A same-size copy with selected clear-mode operands changed.
+
+    Raises:
+        UiPatchError: If a patch byte or the protected dialogue-copy sequence
+            differs from the known source.
+
+    The protected sequence is checked but not changed. This guards against a
+    broad rendering fix that previously restored menu rows at the cost of
+    ordinary dialogue replacement.
+    """
 
     result = bytearray(data)
     for offset, original, replacement, label in NOV2_OPAQUE_CLEAR_PATCHES:
@@ -736,7 +838,20 @@ def _patched_opaque_text_clears(data: bytes) -> bytes:
 
 
 def _patched_single_choice_b_guard(data: bytes) -> bytes:
-    """Make B a no-op on one-choice menus without altering other Back paths."""
+    """Make B a no-op only while a one-choice menu is active.
+
+    Args:
+        data: NOV2 bytes containing the recovered input branches.
+
+    Returns:
+        A same-size copy with guarded branch/code fragments installed.
+
+    Raises:
+        UiPatchError: If a replacement changes size or a source instruction
+            differs.
+
+    Multi-choice Back/Cancel behavior is deliberately left untouched.
+    """
 
     result = bytearray(data)
     for offset, original, replacement, label in NOV2_SINGLE_CHOICE_B_PATCHES:
@@ -752,7 +867,22 @@ def _patched_single_choice_b_guard(data: bytes) -> bytes:
 
 
 def patched_nov2_ui(data: bytes) -> bytes:
-    """Patch NOV2's start selection and normal FDS side-change prompt."""
+    """Apply the complete, ordered NOV2 interface patch set.
+
+    Args:
+        data: Compatible NOV2 component bytes.
+
+    Returns:
+        A same-size copy containing wait/disk/wrong-disk/start translations,
+        opaque menu-tail clearing, and the one-choice B guard.
+
+    Raises:
+        UiPatchError: If any revision guard or size invariant fails.
+        EnglishTextError: If configured prompt text cannot be encoded.
+
+    Patch order is intentional because every helper validates the bytes it
+    owns while leaving disjoint regions available to later helpers.
+    """
 
     with_wait_prompt = _patched_wait_prompt(data)
     with_disk_prompts = _patched_disk_prompts(with_wait_prompt)
@@ -767,6 +897,15 @@ def patched_nov2_ui(data: bytes) -> bytes:
 def patched_nov4_ui(data: bytes) -> bytes:
     """Patch the live-menu NOV4 copy of ``さいしょから`` with ``START``.
 
+    Args:
+        data: Compatible NOV4 component bytes.
+
+    Returns:
+        A same-size patched copy.
+
+    Raises:
+        UiPatchError: If the prompt is missing, nonunique, or size-incompatible.
+
     The Japanese and English records both occupy six packed bytes, so neither
     the following NOV4 data nor any FDS file offsets move.
     """
@@ -775,7 +914,19 @@ def patched_nov4_ui(data: bytes) -> bytes:
 
 
 def patched_tt1a_ui(data: bytes) -> bytes:
-    """Translate TT1A's fixed-address choice tables."""
+    """Translate TT1A blood-type, month, and confirmation choices.
+
+    Args:
+        data: TT1A scenario/program bank containing the Japanese slots.
+
+    Returns:
+        A same-size copy preserving every subsequent fixed address.
+
+    Raises:
+        UiPatchError: If a configured replacement changes packed size, the
+            bank is short, or a source slot differs.
+        EnglishTextError: If configured choice text cannot be encoded.
+    """
 
     result = bytearray(data)
     for offset, original, english in (
@@ -800,7 +951,22 @@ def patched_tt1a_ui(data: bytes) -> bytes:
 
 
 def _tt2_dictionary(data: bytes) -> tuple[tuple[PackedSymbol, ...], ...]:
-    """Decode the rebuilt TT2 flat dictionary used by its fixed text table."""
+    """Decode the bank dictionary shared by all fixed UI table patchers.
+
+    Args:
+        data: Rebuilt scenario bank whose pointer at ``$0016`` is valid.
+
+    Returns:
+        Exactly :data:`TT2_DICTIONARY_ENTRIES` aligned dictionary records.
+
+    Raises:
+        UiPatchError: If the bank is too short or its dictionary pointer lies
+            outside the bank.
+        PackedTextError: If the dictionary stream is truncated.
+
+    The historical function name remains for compatibility, but the layout is
+    shared by TT1B, T22, TT3-TT6, and T25 after scenario insertion.
+    """
 
     pointer_end = TT2_DICTIONARY_POINTER_OFFSET + 2
     if len(data) < pointer_end:
@@ -831,10 +997,23 @@ def _encode_with_dictionary(
 ) -> tuple[PackedSymbol, ...]:
     """Encode one label using the cheapest matching flat dictionary entries.
 
+    Args:
+        text: Supported English label without record separators.
+        dictionary: Ordered flat English dictionary already present in the
+            rebuilt bank.
+
+    Returns:
+        The minimum-bit symbol sequence for ``text`` under that dictionary.
+
+    Raises:
+        EnglishTextError: If ``text`` contains an unsupported character/tag.
+
     Dynamic programming chooses, at each literal position, between emitting
     the next symbol and any dictionary entry that matches the remaining text.
     The cost is measured in native bits, so the result is the shortest symbol
     sequence for the fixed dictionary rather than a greedy word replacement.
+    Ties retain Python's tuple-order minimum, making identical input
+    deterministic.
     """
 
     source = encode_english(text)
@@ -883,7 +1062,20 @@ def _encode_at_exact_record_size(
 ) -> bytes:
     """Encode one label without changing the following record's address.
 
-    The renderer does not display trailing common-space tiles.  Add as many
+    Args:
+        text: Visible English label.
+        dictionary: Bank dictionary used for compression.
+        target_size: Exact packed allocation of the original record.
+
+    Returns:
+        One packed record of exactly ``target_size`` bytes.
+
+    Raises:
+        UiPatchError: If the shortest representation already exceeds the slot
+            or zero-or-more trailing spaces cannot reach the exact allocation.
+        EnglishTextError: If the label cannot be encoded.
+
+    The renderer does not display trailing common-space tiles. Add as many
     as are necessary to consume the record's original byte allocation after
     the shortest dictionary-aware encoding has been chosen.
     """
@@ -911,6 +1103,24 @@ def _patched_fixed_record_table(
     component: str,
 ) -> bytes:
     """Translate a fixed table while preserving every record boundary.
+
+    Args:
+        data: Rebuilt scenario bank with its final English dictionary.
+        start: File offset of the fixed table.
+        end: Exclusive fixed-table boundary.
+        source_sha256: Expected hash of the complete Japanese source table.
+        records: English replacements in exact record order.
+        component: Bank name used in diagnostics.
+
+    Returns:
+        A same-size bank copy preserving the complete fixed-table footprint and
+        every record start.
+
+    Raises:
+        UiPatchError: If the table is missing/unknown, record framing differs,
+            any translation cannot fit its exact slot, or total size changes.
+        PackedTextError: If source or replacement packing is invalid.
+        EnglishTextError: If configured text cannot be encoded.
 
     The complete Japanese table is hash-checked, decoded into byte-aligned
     record slots, and rebuilt with the bank's already-generated English
@@ -951,7 +1161,18 @@ def _patched_fixed_record_table(
 
 
 def _record_starts(data: bytes, count: int) -> tuple[int, ...]:
-    """Return byte offsets for the records in a byte-aligned packed table."""
+    """Locate each record start in an aligned packed table.
+
+    Args:
+        data: Packed table beginning at record zero.
+        count: Number of records to locate.
+
+    Returns:
+        ``count`` byte offsets relative to ``data``.
+
+    Raises:
+        PackedTextError: If fewer than ``count`` complete records exist.
+    """
 
     starts: list[int] = []
     offset = 0
@@ -962,7 +1183,18 @@ def _record_starts(data: bytes, count: int) -> tuple[int, ...]:
 
 
 def patched_tt2_ui(data: bytes) -> bytes:
-    """Translate TT2's fixed command, object, and history-quiz table."""
+    """Translate TT2's fixed command, object, and history-quiz table.
+
+    Args:
+        data: Rebuilt TT2 bank with its final English dictionary.
+
+    Returns:
+        A same-size bank preserving every fixed record address.
+
+    Raises:
+        UiPatchError: If the Japanese table is unknown or any record cannot
+            occupy its exact original slot.
+    """
 
     return _patched_fixed_record_table(
         data,
@@ -975,7 +1207,18 @@ def patched_tt2_ui(data: bytes) -> bytes:
 
 
 def patched_tt1b_ui(data: bytes) -> bytes:
-    """Translate TT1B's fixed command, object, and interaction table."""
+    """Translate TT1B's fixed command, object, and interaction table.
+
+    Args:
+        data: Rebuilt TT1B bank with its final English dictionary.
+
+    Returns:
+        A same-size bank preserving every fixed record address.
+
+    Raises:
+        UiPatchError: If the Japanese table is unknown or any record cannot
+            occupy its exact original slot.
+    """
 
     return _patched_fixed_record_table(
         data,
@@ -988,7 +1231,17 @@ def patched_tt1b_ui(data: bytes) -> bytes:
 
 
 def patched_t22_ui(data: bytes) -> bytes:
-    """Translate T22's fixed command and object-name table."""
+    """Translate T22's fixed command and object-name table.
+
+    Args:
+        data: Rebuilt T22 bank with its final English dictionary.
+
+    Returns:
+        A same-size bank preserving every fixed record address.
+
+    Raises:
+        UiPatchError: If the table revision or fixed-slot layout differs.
+    """
 
     return _patched_fixed_record_table(
         data,
@@ -1001,7 +1254,17 @@ def patched_t22_ui(data: bytes) -> bytes:
 
 
 def patched_tt3a_ui(data: bytes) -> bytes:
-    """Translate TT3A's fixed command, object, and history-quiz table."""
+    """Translate TT3A's fixed command, object, and history-quiz table.
+
+    Args:
+        data: Rebuilt TT3A bank with its final English dictionary.
+
+    Returns:
+        A same-size bank preserving every fixed record address.
+
+    Raises:
+        UiPatchError: If the table revision or fixed-slot layout differs.
+    """
 
     return _patched_fixed_record_table(
         data,
@@ -1014,7 +1277,17 @@ def patched_tt3a_ui(data: bytes) -> bytes:
 
 
 def patched_tt3b_ui(data: bytes) -> bytes:
-    """Translate TT3B's fixed command, object, and battle-action table."""
+    """Translate TT3B's fixed command, object, and battle-action table.
+
+    Args:
+        data: Rebuilt TT3B bank with its final English dictionary.
+
+    Returns:
+        A same-size bank preserving every fixed record address.
+
+    Raises:
+        UiPatchError: If the table revision or fixed-slot layout differs.
+    """
 
     return _patched_fixed_record_table(
         data,
@@ -1027,7 +1300,17 @@ def patched_tt3b_ui(data: bytes) -> bytes:
 
 
 def patched_tt4_ui(data: bytes) -> bytes:
-    """Translate TT4's fixed command, treatment, and quiz table."""
+    """Translate TT4's fixed command, treatment, and quiz table.
+
+    Args:
+        data: Rebuilt TT4 bank with its final English dictionary.
+
+    Returns:
+        A same-size bank preserving every fixed record address.
+
+    Raises:
+        UiPatchError: If the table revision or fixed-slot layout differs.
+    """
 
     return _patched_fixed_record_table(
         data,
@@ -1040,7 +1323,17 @@ def patched_tt4_ui(data: bytes) -> bytes:
 
 
 def patched_tt5_ui(data: bytes) -> bytes:
-    """Translate TT5's fixed command, puzzle, and history-quiz table."""
+    """Translate TT5's fixed command, puzzle, and history-quiz table.
+
+    Args:
+        data: Rebuilt TT5 bank with its final English dictionary.
+
+    Returns:
+        A same-size bank preserving every fixed record address.
+
+    Raises:
+        UiPatchError: If the table revision or fixed-slot layout differs.
+    """
 
     return _patched_fixed_record_table(
         data,
@@ -1053,7 +1346,17 @@ def patched_tt5_ui(data: bytes) -> bytes:
 
 
 def patched_t25_ui(data: bytes) -> bytes:
-    """Translate T25's fixed mansion and flooded-island action table."""
+    """Translate T25's fixed mansion and flooded-island action table.
+
+    Args:
+        data: Rebuilt T25 bank with its final English dictionary.
+
+    Returns:
+        A same-size bank preserving every fixed record address.
+
+    Raises:
+        UiPatchError: If the table revision or fixed-slot layout differs.
+    """
 
     return _patched_fixed_record_table(
         data,
@@ -1066,7 +1369,17 @@ def patched_t25_ui(data: bytes) -> bytes:
 
 
 def patched_tt6a_ui(data: bytes) -> bytes:
-    """Translate TT6A's fixed donkey-action and Nazareth object table."""
+    """Translate TT6A's fixed donkey-action and Nazareth object table.
+
+    Args:
+        data: Rebuilt TT6A bank with its final English dictionary.
+
+    Returns:
+        A same-size bank preserving every fixed record address.
+
+    Raises:
+        UiPatchError: If the table revision or fixed-slot layout differs.
+    """
 
     return _patched_fixed_record_table(
         data,
@@ -1079,7 +1392,17 @@ def patched_tt6a_ui(data: bytes) -> bytes:
 
 
 def patched_tt6b_ui(data: bytes) -> bytes:
-    """Translate TT6B's fixed travel, quiz, and animal-action table."""
+    """Translate TT6B's fixed travel, quiz, and animal-action table.
+
+    Args:
+        data: Rebuilt TT6B bank with its final English dictionary.
+
+    Returns:
+        A same-size bank preserving every fixed record address.
+
+    Raises:
+        UiPatchError: If the table revision or fixed-slot layout differs.
+    """
 
     return _patched_fixed_record_table(
         data,
@@ -1092,7 +1415,17 @@ def patched_tt6b_ui(data: bytes) -> bytes:
 
 
 def patched_tt6c_ui(data: bytes) -> bytes:
-    """Translate TT6C's fixed finale-action and retrospective-quiz table."""
+    """Translate TT6C's fixed finale-action and retrospective-quiz table.
+
+    Args:
+        data: Rebuilt TT6C bank with its final English dictionary.
+
+    Returns:
+        A same-size bank preserving every fixed record address.
+
+    Raises:
+        UiPatchError: If the table revision or fixed-slot layout differs.
+    """
 
     return _patched_fixed_record_table(
         data,
