@@ -106,12 +106,18 @@ Control codes, message ordering, dictionary shape, fixed-address UI text, and
 bank footprints must remain stable unless a deliberate code relocation makes
 additional space available.
 
-## Legal
+## License and third-party materials
+
+The original code, tools, tests, documentation, and other contributor-created
+materials in this repository are licensed under the [MIT License](LICENSE).
+
+The MIT License does **not** grant rights to the original game or to any
+third-party software, story, dialogue, characters, names, logos, graphics,
+music, audio, trademarks, or other copyrighted materials. Those materials
+remain the property of their respective rights holders. See
+[`THIRD_PARTY_NOTICE.md`](THIRD_PARTY_NOTICE.md) for the complete boundary.
 
 This is an unofficial fan-translation and reverse-engineering project. It is
-not affiliated with or endorsed by Nintendo or the original rights holders.
-Game software and firmware are not distributed in this repository.
-
-No open-source license has been selected yet. All original-game names,
-graphics, text, and other assets remain the property of their respective
-rights holders.
+not affiliated with, authorized by, or endorsed by Nintendo or the original
+rights holders. Game software and firmware are not distributed in this
+repository, and users must provide their own legally obtained source files.
