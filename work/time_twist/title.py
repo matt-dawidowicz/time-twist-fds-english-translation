@@ -70,6 +70,10 @@ BACKGROUND_TAIL_SIZE = 0
 NINTENDO_FIRST_TILE = 0xB0
 NINTENDO_TILE_COUNT = 0x26
 NINTENDO_CHR_SIZE = NINTENDO_TILE_COUNT * 16
+# The first 27 tile columns of the English wordmark fit in the phase-zero
+# pattern budget.  The remaining five columns arrive from the adjacent final
+# nametable during NOV4's original horizontal title swipe.
+SLIDE_TITLE_TILE_COLUMNS = 27
 INITIAL_CHR_LOADER_SIZE = 12
 TITLE_TRANSITION_SIZE = 97
 TITLE_EXIT_SIZE = 27
@@ -940,25 +944,23 @@ def build_title_assets(
         color=2,
     )
 
-    # The second nametable contains the Nintendo phase and the pieces used by
-    # the title swipe. Keep only the original title-bearing tile positions,
-    # but fill those positions with the corresponding English title tiles.
-    # Its lower Nintendo area is supplied by a separate phase-zero pattern
-    # table and therefore does not compete for final-title patterns.
-    blank_pattern = bytes(16)
+    # The second nametable shares a horizontal scroll with the final one.
+    # Its Japanese title tile occupancy cannot be reused as an English mask:
+    # the two wordmarks have different letter geometry, which turns a scroll
+    # frame into unrelated fragments.  Instead, copy a tile-aligned leading
+    # segment of the actual English logo.  The native swipe reveals the
+    # remaining columns from the neighboring final nametable.
+    #
+    # The omitted columns are also necessary: the Nintendo phase temporarily
+    # occupies 38 upper-title IDs, so phase zero may use at most 187 distinct
+    # upper patterns.  Twenty-seven columns require 185 and leave enough safe
+    # host IDs for the reversible Nintendo overlay.
     slide_target = Image.new("L", (256, 240), 0)
-    slide_pixels = slide_target.load()
     for tile_y in range(12):
-        for tile_x in range(32):
-            if _tile_bytes(original_second, tile_x, tile_y) == blank_pattern:
-                continue
-            for pixel_y in range(8):
-                for pixel_x in range(8):
-                    screen_x = tile_x * 8 + pixel_x
-                    screen_y = tile_y * 8 + pixel_y
-                    slide_pixels[screen_x, screen_y] = final_pixels[
-                        screen_x, screen_y
-                    ]
+        for tile_x in range(SLIDE_TITLE_TILE_COLUMNS):
+            left = tile_x * 8
+            top = tile_y * 8
+            slide_target.paste(final_target.crop((left, top, left + 8, top + 8)), (left, top))
 
     # The exact upper title and exact lower machine/text art need 278 distinct
     # patterns together, more than one NES background table can contain.  NOV4

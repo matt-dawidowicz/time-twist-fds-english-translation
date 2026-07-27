@@ -25,7 +25,12 @@ from time_twist.english import (
     render_english,
     validate_display_width,
 )
-from time_twist.font import EXTENDED_TILE_IDS, patched_nov4_font, render_glyph
+from time_twist.font import (
+    EXTENDED_TILE_IDS,
+    PIXEL_FONT_5X7,
+    patched_nov4_font,
+    render_glyph,
+)
 from time_twist.scenario import (
     ScenarioError,
     parse_scenario_bank,
@@ -169,6 +174,11 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(accented[2:7], plain[2:7])
         self.assertEqual(accented[7], 0xFF)
         self.assertNotEqual(accented[:2], b"\xFF\xFF")
+        self.assertEqual(PIXEL_FONT_5X7["é"][:2], ("00010", "00100"))
+
+    def test_lowercase_p_uses_the_shared_lowercase_x_height(self) -> None:
+        self.assertEqual(PIXEL_FONT_5X7["p"][:2], ("00000", "00000"))
+        self.assertEqual(PIXEL_FONT_5X7["p"][-2:], ("10000", "10000"))
 
     def test_tt1b_sky_line_is_natural_and_width_safe(self) -> None:
         path = Path("work/translations/TT1B.json")
