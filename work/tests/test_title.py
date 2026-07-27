@@ -152,6 +152,21 @@ class TitlePatchTests(unittest.TestCase):
             title.NINTENDO_FIRST_TILE + title.NINTENDO_TILE_COUNT,
         ))
         self.assertTrue(reserved_ids.isdisjoint(assets.second_nametable[:384]))
+        final_top = title._render_indexed_nametable(
+            assets.final_nametable,
+            assets.background_chr,
+        )
+        slide_right = title.SLIDE_TITLE_TILE_COLUMNS * 8
+        self.assertEqual(
+            phase_zero.crop((0, 0, slide_right, 96)).tobytes(),
+            final_top.crop((0, 0, slide_right, 96)).tobytes(),
+        )
+        self.assertTrue(
+            all(
+                pixel == 0
+                for pixel in phase_zero.crop((slide_right, 0, 256, 96)).get_flattened_data()
+            )
+        )
         self.assertEqual(
             phase_zero.crop((0, 96, 256, 240)).tobytes(),
             original.crop((0, 96, 256, 240)).tobytes(),
