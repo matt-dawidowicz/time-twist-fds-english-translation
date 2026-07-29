@@ -208,4 +208,4 @@ This guide accompanies the complete translation workbook. Exact Japanese always 
 
 ## Control-code policy
 
-Control tags are never translated. Their exact order is preserved in every patch-safe record. The legend in the HTML workbook describes observed behavior without pretending each value has one universal linguistic meaning.
+Control tags are never translated. Their exact order is preserved in scenario records. A documented fixed-interface exception may retain the already validated playable control layout. The legend in the HTML workbook describes observed behavior without pretending each value has one universal linguistic meaning.

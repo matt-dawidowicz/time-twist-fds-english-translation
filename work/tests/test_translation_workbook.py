@@ -7,9 +7,11 @@ import unittest
 from pathlib import Path
 
 from generate_translation_workbook import (
+    CONTROL_OVERRIDE_IDS,
     OUTPUTS,
     PATCH_FOOTPRINT_RESULTS,
     controls,
+    load_playable_scenario_text,
     make_glossary,
     make_rows,
     validate,
@@ -69,13 +71,30 @@ class TranslationWorkbookTests(unittest.TestCase):
                 value = getattr(row, field)
                 self.assertNotEqual(value, "", f"{row.original_record_id}: {field}")
 
-    def test_patch_controls_match_source_controls_exactly(self) -> None:
+    def test_patch_controls_match_source_except_documented_ui_override(self) -> None:
+        mismatches = {
+            row.original_record_id
+            for row in self.rows
+            if controls(row.patch_safe_english_translation)
+            != controls(row.exact_japanese_source)
+        }
+        self.assertEqual(mismatches, set(CONTROL_OVERRIDE_IDS))
+
+    def test_patch_safe_text_matches_playable_authority(self) -> None:
+        scenario = load_playable_scenario_text()
         for row in self.rows:
-            self.assertEqual(
-                controls(row.patch_safe_english_translation),
-                controls(row.exact_japanese_source),
-                row.original_record_id,
-            )
+            if row.record_type == "scenario":
+                self.assertEqual(
+                    row.patch_safe_english_translation,
+                    scenario[row.original_record_id],
+                    row.original_record_id,
+                )
+            elif row.record_type in {"fixed-address", "graphics-text"}:
+                self.assertEqual(
+                    row.patch_safe_english_translation,
+                    row.current_english,
+                    row.original_record_id,
+                )
 
     def test_every_scenario_patch_is_encodable_by_the_rom_font(self) -> None:
         for row in self.rows:

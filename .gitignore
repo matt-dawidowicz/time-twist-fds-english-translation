@@ -3,20 +3,27 @@
 *.nes
 *.rom
 
-# Extracted or rebuilt ROM banks and emulator memory captures.
+# Extracted or rebuilt ROM banks and emulator captures.
 *.bin
 *.dmp
 work/baseline/
+work/build/
 work/extracted_*/
 work/translated_banks/
+work/mesen_capture/
 
 # Third-party emulator packages and machine-local settings.
 work/Mesen_*.zip
 work/mesen_settings*.json
 
-# Python caches and test artifacts.
+# Python caches, packaging output, environments, and test artifacts.
 **/__pycache__/
 *.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
 .pytest_cache/
 .coverage
 
@@ -30,4 +37,3 @@ Thumbs.db
 desktop.ini
 *.swp
 *.tmp
-

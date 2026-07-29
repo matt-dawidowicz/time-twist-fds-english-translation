@@ -2,182 +2,213 @@
 
 ## Environment
 
-- Python 3.11 or newer is recommended.
+- Python 3.11 or newer is required.
 - Core parsing/patching uses the standard library.
 - Pillow is required for title and image-rendering code.
 - Mesen is optional and used only for manual playtesting/debugging.
 
-The package is intentionally run from `work/` without installation:
+Install from the repository root:
 
 ```powershell
-cd work
-python -m time_twist.cli --help
+python -m pip install -e ".[dev]"
+time-twist --help
 ```
 
-## Test suite
+The wheel contains the Python package only. Translation maps, title assets,
+source locks, and ROM inputs remain project-checkout data. An installed command
+can drive any checkout with `--project-root PATH`.
 
-Run:
+## Test suites
+
+### Public unit suite
 
 ```powershell
-python -m unittest discover -s tests -v
+python work/run_tests.py unit
 ```
 
-Test modules are organized by contract:
+This suite is fixture-free, runs in public CI, and currently contains 38 tests.
+It covers codecs, synthetic FDS behavior, comparison/workbook integrity, and
+release-control logic. Skips are treated as failures.
 
-| Test module | Contract |
-| --- | --- |
-| `test_fds.py` | Lossless FDS parsing, side order, changed-file scope, padding |
-| `test_textcodec.py` | Prefix tree, separators, bit ordering, encoder symmetry |
-| `test_scenario.py` | Character map, dictionaries, bank rebuilds, font, footprint |
-| `test_ui.py` | Exact source guards, fixed tables, menu/input/UI behavior |
-| `test_title.py` | Title assets, palettes, split, Nintendo phase, clock preservation |
-| `test_comparison.py` | Bilingual comparison coverage and control sequences |
-| `test_translation_workbook.py` | 2,052-record workbook integrity and patch safety |
+### Private integration suite
 
-ROM-derived fixtures are not committed. Tests that need them call
-`skipTest(...)` when the local fixture is absent. A high skip count in a fresh
-clone is expected; a release build should run with the complete local fixture
-set.
+```powershell
+python work/run_tests.py integration
+```
+
+This suite currently contains 67 exact-ROM tests. Before discovery, the runner
+validates the private local overlay against `work/integration_fixtures.json`.
+Missing or changed fixtures stop the run as a setup error; integration tests do
+not quietly disappear behind `skipTest()`.
+
+Run both suites with:
+
+```powershell
+python work/run_tests.py all
+```
+
+See [`PRIVATE_FIXTURES.md`](PRIVATE_FIXTURES.md) for the public/private split.
+
+## CI and wheel checks
+
+Public CI performs:
+
+```powershell
+python work/tools/check_public_tree.py
+python -m pip install -e ".[dev]"
+python work/run_tests.py unit
+python -m build
+python -m pip install --force-reinstall dist/*.whl
+time-twist --help
+time-twist release-build --help
+```
+
+This catches both source-tree import accidents and incomplete wheel packaging.
+The release command itself requires a project checkout and user-supplied
+baselines; those data are intentionally not embedded in the wheel.
 
 ## Adding or changing a binary patch
 
 1. **Identify the owning FDS file.** Do not search the combined ROM and patch
    the first matching byte sequence.
-2. **Record the load address and file offset.** Name constants so it is clear
-   which coordinate system they use.
+2. **Record the load address and file offset.** Name constants so the coordinate
+   system is unambiguous.
 3. **Capture the expected source.** Use exact bytes for a short instruction or
    SHA-256 for a complete fixed table/asset.
-4. **State the invariant.** Examples: individual record sizes, total file size,
-   tail address, clock bytes, or one-choice-only input behavior.
+4. **State the invariant.** Examples: record sizes, file size, tail address,
+   clock bytes, or one-choice-only input behavior.
 5. **Write a pure patch function.** Accept `bytes`, validate first, return new
    `bytes`, and avoid filesystem/emulator state.
 6. **Verify the output.** Re-decode data or assert the exact changed range.
 7. **Add rejection coverage.** A deliberately modified source must raise the
-   patch's error class.
-8. **Add scope coverage.** When possible, compare the rebuilt FDS image and
-   prove that only the named FDS file changed.
-9. **Run all tests and playtest.**
+   patch's domain error.
+8. **Add scope coverage.** With private fixtures, prove that only the intended
+   FDS file changed.
+9. **Run both supported suites and playtest.**
 
 Never weaken a source check because a patch fails on a different build. Add an
-explicit supported revision with its own evidence instead.
+explicit supported revision with evidence instead.
 
 ## Editing packed text safely
 
-Use the highest-level representation available:
+Use the highest-level playable source:
 
-- story dialogue: edit `work/translations/BANK.json`;
-- detailed linguistic analysis: edit/regenerate workbook bank data;
-- fixed UI labels: edit the named record tuple in `ui.py` and its required
-  dictionary terms;
-- font glyph: edit `PIXEL_FONT_5X7` and mapping tables;
-- title art: edit the target image and title conversion, not raw CHR by hand.
+- story dialogue: `work/translations/BANK.json`;
+- fixed UI labels: the named record definition in `work/time_twist/ui.py`;
+- font glyphs: `PIXEL_FONT_5X7` and mapping tables;
+- title art: the title reference image and conversion code.
+
+The complete workbook is regenerated review output. Its patch-safe field mirrors
+the playable text; the natural-translation field may preserve a less constrained
+editorial alternative.
 
 After changing text:
 
-1. run `scenario-merge`;
-2. run `scenario-footprint`;
-3. rebuild the scenario;
-4. run the matching fixed-table UI patch;
-5. run tests;
-6. inspect the rendered output and playtest.
+1. run `scenario-merge` and `scenario-footprint` for the bank;
+2. regenerate the workbook;
+3. run the public and private tests available to you;
+4. refresh the approved source lock intentionally;
+5. create a candidate release;
+6. inspect and playtest the affected scenes;
+7. promote the exact reviewed candidate.
 
 ## Dictionary debugging
 
 When a bank no longer fits:
 
 - compare literal and compressed sizes from `scenario-footprint`;
-- inspect repeated complete words/speaker prefixes;
-- check bank-specific `BANK_REQUIRED_DICTIONARY_TEXT`;
+- inspect repeated complete words and speaker prefixes;
+- check bank-specific required dictionary entries;
 - remember that a dictionary reference costs 9 bits;
-- remember that the encoded dictionary entry itself consumes bytes;
-- avoid nested English entries, which the compressor intentionally forbids;
+- remember that the encoded dictionary entry consumes bytes;
+- avoid nested English entries, which the compressor forbids;
 - verify that fixed tables still have the words they require.
 
-Changing a required entry can save scenario space but make a two-byte fixed
-record impossible to encode. Treat scenario and fixed-table use as one budget.
+A dictionary change can save scenario space while making a tiny fixed record
+impossible to encode. Treat scenario and fixed-table use as one budget.
 
 ## Display debugging
-
-Text problems usually belong to one of four layers:
 
 | Symptom | Likely layer |
 | --- | --- |
 | Wrong letters everywhere | Font or English tile mapping |
-| Japanese renders as English gibberish | Untranslated packed record using English font |
-| End of old line remains visible | Menu/dialogue clearing or transparent tail behavior |
+| Japanese renders as English gibberish | Untranslated record using English font |
+| End of old line remains visible | Menu/dialogue clearing or transparent-tail behavior |
 | Final character wraps/gets overwritten | 24-column segmentation or control placement |
 
-Do not solve a line-clearing bug by padding every dialogue line with visible
-or opaque spaces. The typewriter renderer may process them as silent
-characters and alter timing. NOV2 menu clearing and dialogue scrolling use
-different paths.
+Do not solve a line-clearing bug by padding every line with visible or opaque
+spaces. The typewriter renderer can process them as silent characters and
+alter timing.
 
 ## Title debugging
 
-Use deterministic rendered previews and the title tests before emulator work.
 Check separately:
 
 - palette-index assignment;
-- tile border/diagonal fidelity;
-- exact upper/lower pattern counts;
+- upper/lower exact tile counts;
 - second-nametable slide positions;
 - Nintendo overlay/restore ranges;
 - clock background center;
-- clock sprite origin and unchanged animation bytes;
-- transition and exit helper call/stack semantics.
+- unchanged clock sprite/animation bytes;
+- transition and exit helper call/stack behavior.
 
-The title code appends data and patches 6502 control flow. A visually correct
-static image is not enough; START, B, the swipe, raster split shutdown, and the
-next game state must all be tested.
+A correct static preview does not prove START, B, the swipe, raster-split
+shutdown, or the next game state.
 
-## Python documentation standard
+## Release lifecycle
 
-Production Python follows PEP 257 structure and uses PEP 8 explanatory-comment
-style. A public or non-obvious class/function contract should state the parts
-that a maintainer cannot safely infer from its name:
+`work/release_sources.json` locks all approved non-code inputs. Strict builds
+also require `work/release_target.json`, whose hashes are tied to that exact
+source lock.
 
-- purpose and project context;
-- arguments and return value;
-- accepted coordinate system, byte layout, or source assumptions;
-- deliberate side effects and generated files;
-- domain exceptions and the invariant each one protects;
-- why a non-obvious implementation strategy was chosen;
-- what the function validates and what still requires recompression, rendering,
-  or gameplay verification.
+Verify the current target:
 
-Use an imperative, standalone summary line ending in punctuation. Separate a
-multi-line description from that summary with a blank line. Keep exact ROM
-evidence distinct from inferred editorial data in both prose and identifiers.
-Simple properties may use a concise one-line docstring when their complete
-contract is genuinely obvious from the documented owning class.
+```powershell
+time-twist release-lock
+time-twist release-build
+```
 
-Comments explain constraints, causality, or design intent. They are complete
-phrases or sentences, begin with `# `, and appear immediately above the code
-they illuminate. Do not narrate syntax. If a comment must explain a public
-caller contract, failure condition, or side effect, move that information into
-the docstring so documentation tools can expose it.
+Promote a deliberate change:
+
+```powershell
+time-twist release-lock --update
+time-twist release-build --candidate --output-dir build/candidate
+# Review/playtest build/candidate.
+time-twist release-promote build/candidate/release_manifest.json `
+  --release-id english-playtest-YYYY-MM-DD
+time-twist release-build
+```
+
+Candidate output is not approval. `release-promote` re-hashes every candidate
+file and verifies its active source lock. A strict build stages everything and
+publishes only after target validation succeeds.
+
+External source-lock paths are supported. Manifests record a project-relative
+path when possible and an absolute path otherwise.
 
 ## Generated and ignored files
 
-The following remain local:
+Keep these local:
 
 - original/patched `.fds` images;
 - extracted and rebuilt `.bin` banks;
 - emulator `.dmp` captures;
-- Mesen archives/settings;
-- Python caches.
+- emulator archives/settings;
+- build/dist directories and Python caches.
 
-Commit source, tests, translation JSON, documentation, review workbooks, and
-small reference/preview images. Do not commit ROMs or firmware.
+Commit code, fixture-free tests, integration-test source, translation JSON,
+source/target manifests, documentation, review workbooks, and permissible
+reference/preview images.
 
 ## Review checklist
 
-- [ ] Public functions/classes have clear docstrings.
-- [ ] New offsets specify component and coordinate system.
+- [ ] New offsets identify component and coordinate system.
 - [ ] Source bytes or hashes are validated.
-- [ ] Error messages identify the component and failed invariant.
-- [ ] Control-code order is unchanged.
-- [ ] Fixed record/table/bank sizes are preserved.
-- [ ] Tests include success, rejection, and scope where possible.
-- [ ] Full test suite passes.
+- [ ] Error messages identify the failed invariant.
+- [ ] Control-code order is unchanged or the exception is documented/tested.
+- [ ] Fixed record/table/bank sizes and tail addresses are preserved.
+- [ ] Public tests pass with zero skips.
+- [ ] Private integration tests pass with zero skips when fixtures are available.
+- [ ] Wheel build/install smoke test passes.
+- [ ] Candidate manifest and outputs were reviewed before promotion.
 - [ ] Manual playtest covers the affected scene and adjacent transitions.

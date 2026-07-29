@@ -301,8 +301,10 @@ def encode_symbol(writer: BitWriter, symbol: PackedSymbol) -> None:
         writer.write_bits(0b110, 3)
         writer.write_bits(symbol.value, 6)
     elif symbol.kind is SymbolKind.DICTIONARY:
-        if not 0 <= symbol.value <= 31:
-            raise PackedTextError(f"dictionary value {symbol.value} is out of range")
+        if not 1 <= symbol.value <= 31:
+            raise PackedTextError(
+                f"dictionary value {symbol.value} is out of one-based range"
+            )
         writer.write_bits(0b1110, 4)
         writer.write_bits(symbol.value, 5)
     elif symbol.kind in (SymbolKind.CONTROL, SymbolKind.SEPARATOR):

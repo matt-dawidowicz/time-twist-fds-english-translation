@@ -4,7 +4,7 @@ Checkpoint date: July 22, 2026
 
 ## Completed foundation
 
-- Preserved immutable workspace copies of both original FDS images. The originals in `D:\Famicom Disk System Games` were not modified.
+- Preserved immutable local copies of both original FDS images; the source images were not modified.
 - Implemented a lossless FDS parser/rebuilder and verified byte-identical round trips.
 - Reverse-engineered the packed text codec, dictionary references, control codes, pointers, and Japanese character map.
 - Extracted all 13 scenario banks: 1,299 records and about 131,000 Japanese characters.

@@ -1,0 +1,644 @@
+{
+  "schema": "Time Twist public source archive manifest v1",
+  "archive": {
+    "filename": "Time-Twist-FDS-English-translation-public-source.zip",
+    "bytes": 5215488,
+    "sha256": "CD5E9064BBE7F499DF10BAE1FA0A6B14EF14938D166318FCFE88476CC6D9E006"
+  },
+  "source_files": {
+    "count": 146,
+    "bytes": 29922973,
+    "files": {
+      ".github/workflows/tests.yml": {
+        "bytes": 600,
+        "sha256": "D50169357C2A86BD2B13018465C17413CF15A62E3E6B99A7E49F97B5E954ED11"
+      },
+      ".gitignore": {
+        "bytes": 647,
+        "sha256": "080D6F17F7A9E267AEE586B551278D560817BB58A12CF4064CEDCC550D37B75D"
+      },
+      "CHATGPT_REVIEW_GUIDE.md": {
+        "bytes": 1799,
+        "sha256": "DAEBF3DE5F5AF97585396EF53C3161E64D4DBB8EC09DC2751D899AA9B1FB0947"
+      },
+      "CONTRIBUTING.md": {
+        "bytes": 2989,
+        "sha256": "5FDFE188BCB38C0B774AC55EBB106FD1614D9487F0F2CF8F3D2A41EFA23DBE7F"
+      },
+      "FIXES_APPLIED.md": {
+        "bytes": 3699,
+        "sha256": "789632A1A6BC74850C818F016AF3694E8E7ABE3C39A318FEB95F1A4DA582E5B9"
+      },
+      "LICENSE": {
+        "bytes": 1093,
+        "sha256": "F97C9141BB20200B68D04FFAE82753EA7D66E440CE49063C9A658D25B44BD556"
+      },
+      "README.md": {
+        "bytes": 6037,
+        "sha256": "089804D1A842FA2A4C125BCB4AD189EF0BA4179413E42E830CD12934948893FA"
+      },
+      "THIRD_PARTY_NOTICE.md": {
+        "bytes": 1155,
+        "sha256": "E999E327940F6FF714C6A0104DFD13A6F47BFD28CF1469FAF594C7517C5907C2"
+      },
+      "docs/ARCHITECTURE.md": {
+        "bytes": 8271,
+        "sha256": "E5F761E28FC6528B2964AEB2D1F23E3D31628E53EE6D061BA3948B19D7A179BD"
+      },
+      "docs/CLI_REFERENCE.md": {
+        "bytes": 4758,
+        "sha256": "7FC04149E5FF4BE4C03026CD3880A1F6F83FF40AEB9E7BC33B82911ED5EADF43"
+      },
+      "docs/DEVELOPMENT.md": {
+        "bytes": 7363,
+        "sha256": "39427AD020290FB21B74B20291FC705C94003F7A4A381DBD0E00A67C96D559ED"
+      },
+      "docs/FORMATS.md": {
+        "bytes": 7641,
+        "sha256": "9A81871A8EFED2DDFE356E43D84BD52405A577F5291285DFE7EA8C09FD3376F3"
+      },
+      "docs/PRIVATE_FIXTURES.md": {
+        "bytes": 1988,
+        "sha256": "FCE102BF826F896226AC1035E8D87131C4877954285810915F38FEC6A8331CED"
+      },
+      "docs/README.md": {
+        "bytes": 2837,
+        "sha256": "01AFFD8A68F7C1F0F239E0EA3EE65ACB10D0F981AE7C1802A196380553EAD4E9"
+      },
+      "docs/TRANSLATION_WORKFLOW.md": {
+        "bytes": 5189,
+        "sha256": "B0073826BCB45673670AB7CD953FE9244C987848B3612A26C99D9AF7956FB7BD"
+      },
+      "docs/WORKBOOK_PIPELINE.md": {
+        "bytes": 5408,
+        "sha256": "C5EBDAB137ABEEC41B89C3C516A713ADC4FD9E3E818346215A00607EFD397364"
+      },
+      "outputs/Time Twist Japanese-English script comparison.html": {
+        "bytes": 1345314,
+        "sha256": "27964ED8FD07F7BACABBF11E450B89E8802B7A36BAE4E71E505FAD3033F36C84"
+      },
+      "outputs/Time Twist Japanese-English script comparison.json": {
+        "bytes": 2593005,
+        "sha256": "9BCFA7CB47E852C47D8ED4C48829EFA44B575C2FC3C5F991BD34E617113F8FE9"
+      },
+      "outputs/Time Twist Japanese-English script comparison.tsv": {
+        "bytes": 1243275,
+        "sha256": "E94D1590E95B336CC8465E232AB88C438F7535604FDD5CC61D85B50BE6E12965"
+      },
+      "outputs/Time Twist bilingual comparison guide.md": {
+        "bytes": 3014,
+        "sha256": "AF20551D40E5B22ABC68E9A918F542DB6D94FB0B24102B9AD8BCC9DF60AE7E10"
+      },
+      "outputs/Time Twist clean title Nintendo and slide preview.png": {
+        "bytes": 3500,
+        "sha256": "4B0A22DF9C19BB73C3105005AEF0308D6D48334E8933A53F719E3F9571F25183"
+      },
+      "outputs/Time Twist clock and time machine preview.png": {
+        "bytes": 11520,
+        "sha256": "0F41B8D05044B1DBC3838D2ABF04F60C469157BDBA471D21C0E3FFD5A214F91A"
+      },
+      "outputs/Time Twist exact split-title preview.png": {
+        "bytes": 10995,
+        "sha256": "E7077033914E128414C40480D7A0F371AEBE21F525E5728C5355186A02B45411"
+      },
+      "outputs/Time Twist progress checkpoint.md": {
+        "bytes": 37702,
+        "sha256": "0DF148C846F9147DB94E22161942AB7B4AEC5F9CF83C6DA1779485511F09BE89"
+      },
+      "outputs/Time Twist translation starter report.md": {
+        "bytes": 9830,
+        "sha256": "F700352D7E29B5875FB952189223CD085A9A2B6CB878E4BD0ADB87BA92E0A598"
+      },
+      "outputs/Time_Twist_complete_translation_workbook.csv": {
+        "bytes": 2034283,
+        "sha256": "A19F2EA3F5A4A8763DD9E343F85455B646054167F8CDDAC7C4033FFF8AFB4CC4"
+      },
+      "outputs/Time_Twist_complete_translation_workbook.html": {
+        "bytes": 3377253,
+        "sha256": "6994FF986FF797099ECD562552E8022032EEF4B6BB6600D3C527F8D6204C4729"
+      },
+      "outputs/Time_Twist_complete_translation_workbook.json": {
+        "bytes": 3990869,
+        "sha256": "D9E1AA84857C2BE5D728E86047E199D562C78F27E08FF77CA1F9877762275E10"
+      },
+      "outputs/Time_Twist_terminology_and_voice_guide.md": {
+        "bytes": 14973,
+        "sha256": "D7854E4076BC9D0436747DAD7D77DAF5CB6223FDC36A42BB6E5C19489BA968D3"
+      },
+      "outputs/Time_Twist_translation_glossary.csv": {
+        "bytes": 7732,
+        "sha256": "5465D444D34C52B58739C66F816BBE5DFC288914FE0268E2C558B91C556AEEFD"
+      },
+      "outputs/Time_Twist_translation_glossary.json": {
+        "bytes": 21080,
+        "sha256": "6D098353EF16208B6C584C4DCB40092CF0197845B729242C2EA335B9AD59331F"
+      },
+      "outputs/Time_Twist_translation_progress.md": {
+        "bytes": 4020,
+        "sha256": "E83E35BBC3BE833377278471857EF8CAB3976080CC9AAB84B807A89114C6C458"
+      },
+      "pyproject.toml": {
+        "bytes": 573,
+        "sha256": "37E34FB5057F1822382250010E430C0E941F24AAEB4A58DC264D3413AC722152"
+      },
+      "work/Time_Twist_translation_progress.checkpoint.md": {
+        "bytes": 332,
+        "sha256": "B318DFCC58D6EC3A69D65938ACD51900624FB9AA9BACD54B64D8DBE3C5D25670"
+      },
+      "work/analyze_banks.py": {
+        "bytes": 2484,
+        "sha256": "BD398B1D5A555BDF81C693A9CE584A1F15FB9BD917151D38EBE753AEE0A137C2"
+      },
+      "work/generate_bilingual_comparison.py": {
+        "bytes": 43830,
+        "sha256": "DDD9C430A1E21C6734B6517874576D0FBB1912ADC1B77586CFC99F7335452513"
+      },
+      "work/generate_translation_workbook.py": {
+        "bytes": 141807,
+        "sha256": "57FC6A3E7511250093E9CA1610C26DD50EC535098016ECF4A150FB85C9F95AD1"
+      },
+      "work/integration_fixtures.json": {
+        "bytes": 15361,
+        "sha256": "E9A6F65DF97BCBE84F21EA64DF9181DFB780E12284D8E9E6BCFCC7349A42A1D5"
+      },
+      "work/integration_tests/__init__.py": {
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "work/integration_tests/test_comparison_generation.py": {
+        "bytes": 689,
+        "sha256": "87411C393174802BBE25B50AA333150F3014B6DA1301A3E9DEB60F719D1D4977"
+      },
+      "work/integration_tests/test_fds.py": {
+        "bytes": 7745,
+        "sha256": "F768E6503DFEF6CDB5C6133E035AABF920AB4F4AF58FEA2C4AA6020FD6FDAF8D"
+      },
+      "work/integration_tests/test_release.py": {
+        "bytes": 2352,
+        "sha256": "BED297F04DD0F1A880AD05590047589A5B4946EF71829DFD1B1415BE4A7117D3"
+      },
+      "work/integration_tests/test_scenario.py": {
+        "bytes": 20635,
+        "sha256": "ADD7BD9CD382A5FBFE52B501BA10A63D271E4565BF2CAA467E4D86F744DF3439"
+      },
+      "work/integration_tests/test_title.py": {
+        "bytes": 14330,
+        "sha256": "8B956AE82C2E829EA48AF57C3A0CFC6B8BC36DF7F37BB37334E17F94F71DAC59"
+      },
+      "work/integration_tests/test_ui.py": {
+        "bytes": 35829,
+        "sha256": "21253AEE7E3917B1FDC8EF450115F0CE41CD224F834BD51CA774EE2CA3DC7C49"
+      },
+      "work/manifests/kouhen.json": {
+        "bytes": 9585,
+        "sha256": "D865CEC05B43BC7B2F48EA1B2AE6497E144993AB0FF70CCA91EC561BE1C08F99"
+      },
+      "work/manifests/zenpen.json": {
+        "bytes": 8401,
+        "sha256": "73862916EE93BED293C6E40C6F37BC90EDDADC5173D443C4DFE8E38610AD0ABF"
+      },
+      "work/mesen_hold_a.lua": {
+        "bytes": 298,
+        "sha256": "326AC19073DFF563DB2C27EA3572E24803485B505EA4CB40FE779682A5C542A5"
+      },
+      "work/mesen_hold_start.lua": {
+        "bytes": 293,
+        "sha256": "2A0E40F94927D6C719BA077EE6EF7F9DF6D47242E70F13DCB48D5ABB11E9615A"
+      },
+      "work/mesen_input_diag.lua": {
+        "bytes": 742,
+        "sha256": "FBB9492690190DABE99E635515D3D4D40B4BCD69422F904BCC96698EC4F7E568"
+      },
+      "work/mesen_log_nametable.lua": {
+        "bytes": 743,
+        "sha256": "5EF1ECEFFB26EF6519D5C9D3ACAF97AB2293A8C169BC3457B29D39E45914F3A6"
+      },
+      "work/mesen_log_prompt_sprites.lua": {
+        "bytes": 958,
+        "sha256": "63D66ADB4692497BC4F3674CE46264949C5CEE45F71B9135901D9960A21033FC"
+      },
+      "work/mesen_log_prompt_tiles.lua": {
+        "bytes": 768,
+        "sha256": "E3488FF4CBC5FA36757A3B26C4AFE0CC26E083804EDE22521D6D7D329A1C3739"
+      },
+      "work/mesen_log_ui_tiles.lua": {
+        "bytes": 867,
+        "sha256": "7B8041D327867B45A624F2EC9339949F875EE0E38BFD2BD65C981B977FE3B56B"
+      },
+      "work/mesen_probe.lua": {
+        "bytes": 1297,
+        "sha256": "2517BEF6E47CA164A7D806D6078246E930175B507D074E6BC7FB9A209BA74F22"
+      },
+      "work/mesen_smoke.lua": {
+        "bytes": 110,
+        "sha256": "9A45EE1E154998723F5B050AC0C059363B6DF1DC2DCF203C1151876F45DA9668"
+      },
+      "work/preview_font.py": {
+        "bytes": 3255,
+        "sha256": "CDBF8172B533473A0DE28FB5CA84A0B1D0F5BB4FBBEC61ABE208F0EFCF642B2C"
+      },
+      "work/preview_pixel_font.py": {
+        "bytes": 2220,
+        "sha256": "7AAE985F0C61883662F17286D243659434162AE0B1591CD5EE2131B028105F90"
+      },
+      "work/release_sources.json": {
+        "bytes": 2813,
+        "sha256": "630E451F64D882DDED36C07622F4D42DDD4F892C15F01A902072935B1699A4AD"
+      },
+      "work/release_target.json": {
+        "bytes": 698,
+        "sha256": "0CA570C24896A318AC64656904D3D06374D2FF104BED5524BD1A90E4B108DCD7"
+      },
+      "work/render_chr.py": {
+        "bytes": 3341,
+        "sha256": "41281A989CC566A032DDE37D272FD975C6C0506B8CF197F770C89174E4B331F4"
+      },
+      "work/render_chr_labeled.py": {
+        "bytes": 2810,
+        "sha256": "80B4AAA33ABB4CA2177D6C7B1B4F27D53E3137B324A9D3E27C791B42A8DB4720"
+      },
+      "work/render_title_preview.py": {
+        "bytes": 2440,
+        "sha256": "3AB07E0BD2530D15777D94700B95A793853556C1A4A41DB4DD65B4DD9D3C28EB"
+      },
+      "work/run_tests.py": {
+        "bytes": 3674,
+        "sha256": "04F00806D6E79319F92380B42F8F6B96DFFF33A5CD86C88E4548DEAC51F38D0B"
+      },
+      "work/tests/__init__.py": {
+        "bytes": 0,
+        "sha256": "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+      },
+      "work/tests/test_comparison.py": {
+        "bytes": 2982,
+        "sha256": "571C17F2B8B895BEA84AA1015246DFEB38344CD812846DB3F53757750F4F0E87"
+      },
+      "work/tests/test_fds_synthetic.py": {
+        "bytes": 2766,
+        "sha256": "C8A350BFCE494B54C6C7F35A5503750B9675808CD8AF70991B0445EADC9662F5"
+      },
+      "work/tests/test_project.py": {
+        "bytes": 1092,
+        "sha256": "D83AE72CC56DE13C44B68DCE7E0E49A12821A1BAD3F7431D8033CD5A0EBA2559"
+      },
+      "work/tests/test_public_tree.py": {
+        "bytes": 1577,
+        "sha256": "186618ABD3499BB3A9DB6E955256DC91680579AC5D679D261D39C72296F7319A"
+      },
+      "work/tests/test_release_unit.py": {
+        "bytes": 6071,
+        "sha256": "72598891BF7B3C7CDAFC2BB68B9AC8073F35FD3F83632BB25AA9AE6BFAB1F2B2"
+      },
+      "work/tests/test_textcodec.py": {
+        "bytes": 3140,
+        "sha256": "B2F90AA711F45C9C06B4BAC22C57296FC86D9EE4F170384E5A9F2F72628844F4"
+      },
+      "work/tests/test_translation_workbook.py": {
+        "bytes": 6080,
+        "sha256": "01F6E0B9FBBA3CBA49C31942CEC22421AA1102AAD0B8DEE827710E0FC0E2975D"
+      },
+      "work/time_twist/__init__.py": {
+        "bytes": 149,
+        "sha256": "4946E413ED9F4B5B0468F5F9B0F7A03AFD4CD1D804CD4357875BDEAA0E69EE1D"
+      },
+      "work/time_twist/charmap.py": {
+        "bytes": 3322,
+        "sha256": "72606061C4D5A7CF38AA5CEBE00C47B86B6266DB93FFB4E3A02D7BB238AC51E7"
+      },
+      "work/time_twist/cli.py": {
+        "bytes": 40324,
+        "sha256": "075C0B8337771F29298BD399F7AFE947398C4895B2FDB438EC0DBCA896016B06"
+      },
+      "work/time_twist/compression.py": {
+        "bytes": 13441,
+        "sha256": "D7E46E1CE2E6B0ADEDC1E3CAE4B69C56C1665A2D8D1849A621303EC4A862B9C2"
+      },
+      "work/time_twist/english.py": {
+        "bytes": 8560,
+        "sha256": "747ED4D942D10102B7F7A1BFAFD03411639BB255B7BCC204A10A2335E20FB3CF"
+      },
+      "work/time_twist/fds.py": {
+        "bytes": 17715,
+        "sha256": "0BE6EECD1E9A6D028E095463429F2B3A6A9C7E199F299836C27BEB9E3D5F3D76"
+      },
+      "work/time_twist/font.py": {
+        "bytes": 11501,
+        "sha256": "682086F6AE5B0F8B6098BD42FAB36832FE24BAA21B28F40B1952BCDE62397293"
+      },
+      "work/time_twist/project.py": {
+        "bytes": 2202,
+        "sha256": "161DED678918D961CC4F66A740FD2838D8D8B4450F60A8C3527263B9361CB226"
+      },
+      "work/time_twist/release.py": {
+        "bytes": 27922,
+        "sha256": "C753BF3BFB6A78DCB6AF537A2A883752A94D67CDF6904066E7C62019C2372AA1"
+      },
+      "work/time_twist/scenario.py": {
+        "bytes": 17942,
+        "sha256": "E5183CF97F44DDFFCAC93A2157B47F58B0663E2A8275BE1F9376BA22C4E5C1CF"
+      },
+      "work/time_twist/textcodec.py": {
+        "bytes": 13356,
+        "sha256": "CCADF60D68D1495FB021646122D3CEA700E568313FB5762192B7E6FDB55E4694"
+      },
+      "work/time_twist/title.py": {
+        "bytes": 53028,
+        "sha256": "8F644E085B72B67C4637B70C7C6C2FB48EE2753CB134111BD879C14A8FA6A972"
+      },
+      "work/time_twist/ui.py": {
+        "bytes": 50291,
+        "sha256": "429059F6F9DC8402AA7C408D556C24311B365A20F53E0F22CD58704815108DEE"
+      },
+      "work/title_assets/Time Twist English title target.png": {
+        "bytes": 931584,
+        "sha256": "338F7354E35E9CBDC79CB49531A8E36C45F0ADDB2BBB0AE45D0879E31E108273"
+      },
+      "work/title_assets/Time Twist exact logo target.png": {
+        "bytes": 561714,
+        "sha256": "FD4B2304FB400DE43ABB240405849EE6FF1B38B67D57915789F7FA719AA9818B"
+      },
+      "work/title_assets/Time Twist full-screen logo reference.png": {
+        "bytes": 1360489,
+        "sha256": "1901C920CDCBCFD6783CBF7D5C6B18C963C8AB2E868039D0C32142EA1FC2A530"
+      },
+      "work/tools/check_public_tree.py": {
+        "bytes": 3568,
+        "sha256": "2C26073A1BAEB267E3E9D0469EA45B10B0D3A718CD965723750E1F9A6B393F29"
+      },
+      "work/tools/disassemble_6502.py": {
+        "bytes": 6643,
+        "sha256": "C2175658BAC314487D023EC01ECD2296A5E26E12AA7A69F17BCA63C98DC8F148"
+      },
+      "work/translated_scripts/T22.json": {
+        "bytes": 181201,
+        "sha256": "CFC61948B4B794931429FFCFEFAE5C54FC5BC606EA0D2CB8734E9A779FF63B4F"
+      },
+      "work/translated_scripts/T22_english.json": {
+        "bytes": 184417,
+        "sha256": "FCF29F09715480F348F1044F3C19B544845424CF9E4743F475867520D418A4FA"
+      },
+      "work/translated_scripts/T25.json": {
+        "bytes": 252286,
+        "sha256": "1A64500A73109E76EBA5FBB1CADDFFE8A9907D25B0E449864FD098576EF460AB"
+      },
+      "work/translated_scripts/T25_english.json": {
+        "bytes": 256473,
+        "sha256": "F6D2B2A76B81A993A73B0267233BEB2902984F33104F2CD7A2B59F0C9F988224"
+      },
+      "work/translated_scripts/TT1A.json": {
+        "bytes": 163416,
+        "sha256": "020C94C74297A1B18CB0170A65BFAF0448DDAC0BC76352CE91FD5B92F0F6D273"
+      },
+      "work/translated_scripts/TT1A_english.json": {
+        "bytes": 163416,
+        "sha256": "00AAF0DE07442E40A02F01C2CF45782A845D95C010157FD0CC770A25B0FD5A53"
+      },
+      "work/translated_scripts/TT1B.json": {
+        "bytes": 404676,
+        "sha256": "086A5F62B435DB861FCBC7E645CE7D4C46AF17CA1D27E3110D8D6CBEA42A3587"
+      },
+      "work/translated_scripts/TT1B_partial.json": {
+        "bytes": 399614,
+        "sha256": "5A55E18420E567451EA749850699AC6083B761A1508CFFFE3186539196BD0D30"
+      },
+      "work/translated_scripts/TT2.json": {
+        "bytes": 397695,
+        "sha256": "98919C7258CE5D061114F3A84CBDC7A9C30A9DE61CB088BE5415C1A89BFFF733"
+      },
+      "work/translated_scripts/TT2_english.json": {
+        "bytes": 404530,
+        "sha256": "C7DC12BF944E49563D90CAFCA6C5F9E45A05DEA8197B82D28E2FF6D778E57BA6"
+      },
+      "work/translated_scripts/TT3A.json": {
+        "bytes": 388219,
+        "sha256": "1B98AAF5E793F8FFC1D2AEFCF36FBEAB8F0939DE15D61F961CD356154EFC843E"
+      },
+      "work/translated_scripts/TT3A_english.json": {
+        "bytes": 394700,
+        "sha256": "D19712346BF716917A7867CAF63D985EC69CD9B4EDF1CF5BB1F274E0439B997A"
+      },
+      "work/translated_scripts/TT3B.json": {
+        "bytes": 181766,
+        "sha256": "7DAC3514E1540681B93EE160D170E7DD74DCB9816406FE3D23D1539157A60561"
+      },
+      "work/translated_scripts/TT3B_english.json": {
+        "bytes": 185195,
+        "sha256": "D78A58B7C88966C318FA10CED5C20E7F27C7814D602C2A2F06A3C18233457DA3"
+      },
+      "work/translated_scripts/TT4.json": {
+        "bytes": 501236,
+        "sha256": "42B43FCA47578DBB16E9999CDD87B718C6548D60509AC30CA05B709471C30C9F"
+      },
+      "work/translated_scripts/TT4_english.json": {
+        "bytes": 509664,
+        "sha256": "6E629D52A93EE428020FFD3786E0A638B0BA5371735DEF5C2BA94846419527A2"
+      },
+      "work/translated_scripts/TT5.json": {
+        "bytes": 388636,
+        "sha256": "BBEAF3D4AB0585F6738B24A85E5745520FCDFD0D04F4C04A90F21CBCBD5FC8B4"
+      },
+      "work/translated_scripts/TT5_english.json": {
+        "bytes": 395290,
+        "sha256": "1048886270AFBA26EA12D099309E861FD8F5FFFA2BF95089BF38EE04A4D63062"
+      },
+      "work/translated_scripts/TT6A.json": {
+        "bytes": 291774,
+        "sha256": "803A4798C9482A26979EB82B949F01CB1913EED7C5DAC2E73FAE68DA9EB7FD35"
+      },
+      "work/translated_scripts/TT6A_english.json": {
+        "bytes": 296630,
+        "sha256": "853C926F29BDE66EC4FF4E9BE1A662288FCCC578F0CA0071A919C3B7DA716A3E"
+      },
+      "work/translated_scripts/TT6B.json": {
+        "bytes": 235774,
+        "sha256": "E0BE34648270E0A6BCF427108F41C51826783CD4B9BEBAED7805879AD5A1CAD2"
+      },
+      "work/translated_scripts/TT6B_english.json": {
+        "bytes": 239873,
+        "sha256": "5673C7AFA9555B4960DCE47F8BFA11FC9612116E6A7AAEF63811DEE85E8D5C1E"
+      },
+      "work/translated_scripts/TT6C.json": {
+        "bytes": 366122,
+        "sha256": "7363E3E453E9E8E43AEA3955FCF5B5581B025D9ACB28374AC489294BE1E2EC18"
+      },
+      "work/translated_scripts/TT6C_english.json": {
+        "bytes": 372777,
+        "sha256": "030FDB710FBCE881DEB92653D93F0BE90392564559F46DE740050CD2AA362132"
+      },
+      "work/translated_scripts/TT6D.json": {
+        "bytes": 33165,
+        "sha256": "8A9001DD6A0D4C1A39AECFD47DF9263BAE45269C721D6A83A09D44E102F914E3"
+      },
+      "work/translated_scripts/TT6D_english.json": {
+        "bytes": 33793,
+        "sha256": "78893453BA87FB1AA64603CBBA8E3EF86D63628E1CFC4FED7BA2F80B591FF973"
+      },
+      "work/translation_workbook_banks/NOV2.json": {
+        "bytes": 17467,
+        "sha256": "55A9423E4CA3C41D8BC9C9A255FE07AAF7B92F2F68DA13CBC7C76D7616991418"
+      },
+      "work/translation_workbook_banks/NOV4.json": {
+        "bytes": 2013,
+        "sha256": "ED2D7F310A393E993931DD010926F6708513FA6C5CB5BDBD0F1E2A43FC2E66FA"
+      },
+      "work/translation_workbook_banks/SON-KOUH.json": {
+        "bytes": 1945,
+        "sha256": "250140901011321BD57413AC2E72D5D8B1038D0325108A71F472F98648F131C8"
+      },
+      "work/translation_workbook_banks/T22.json": {
+        "bytes": 177920,
+        "sha256": "EFF47CDB4028FC20A914FE27CCFA5BFD457429DC74FB0F9139346FA43304FD87"
+      },
+      "work/translation_workbook_banks/T25.json": {
+        "bytes": 232421,
+        "sha256": "8267FD51B22E1F94C9F1DADFE79451441CD9E710547F8B558BFED0019C4770C2"
+      },
+      "work/translation_workbook_banks/TITLE.json": {
+        "bytes": 3317,
+        "sha256": "DC2EE94DAB27D9B50A0690161F5BFFA08E343891D54E020E83A577C96D90BFEF"
+      },
+      "work/translation_workbook_banks/TT1A.json": {
+        "bytes": 112857,
+        "sha256": "1AFAA6C445ABEAFB7F7792E63D2C7B4D49404699994966CC304593AD31485872"
+      },
+      "work/translation_workbook_banks/TT1B.json": {
+        "bytes": 382381,
+        "sha256": "CB09886E8A8C125F91771C03E69FB07988203F08E378C09DB77B4B8378A500C8"
+      },
+      "work/translation_workbook_banks/TT2.json": {
+        "bytes": 447538,
+        "sha256": "1E359794289761608479065F6D08B08C55F1DA9375A861BEE4E4BFAD4199A6E6"
+      },
+      "work/translation_workbook_banks/TT3A.json": {
+        "bytes": 462456,
+        "sha256": "A3A0CBB4615BB3FBD76889D7CB0A25C8BCA94E79590A22C3A3D6D31F3A2D96B9"
+      },
+      "work/translation_workbook_banks/TT3B.json": {
+        "bytes": 160441,
+        "sha256": "23AA058AA9E33E770F35DBA74018EE4581E64D6D17784B536627FFCFA4758601"
+      },
+      "work/translation_workbook_banks/TT4.json": {
+        "bytes": 531053,
+        "sha256": "0B24891D161A88651172317465C91A92E1F780AB2FAFE06CB4C7C0AA952215B1"
+      },
+      "work/translation_workbook_banks/TT5.json": {
+        "bytes": 450458,
+        "sha256": "B5A10C248AFE6798EA03552C7DDD322640086FF42AD12BBB49BAC301FF8D64CA"
+      },
+      "work/translation_workbook_banks/TT6A.json": {
+        "bytes": 274454,
+        "sha256": "80B52137211EF6072F6560815C2DD1FEDEEBCC5E3A33A728A3DD8DE64F74F815"
+      },
+      "work/translation_workbook_banks/TT6B.json": {
+        "bytes": 294933,
+        "sha256": "46960BCF36FFE81DF22E7CDCB19376D44A6839F64D38E6CA6645F8FBAEAF6979"
+      },
+      "work/translation_workbook_banks/TT6C.json": {
+        "bytes": 389333,
+        "sha256": "2DF2E3EBAB6F2731183B173A654990374C0A45AC0404B5AE75D356CC21CA19C9"
+      },
+      "work/translation_workbook_banks/TT6D.json": {
+        "bytes": 19535,
+        "sha256": "119BBE43D5E5483F85075EB70288205EDCC8590A670E9C8BD5DEBC20FF6708BF"
+      },
+      "work/translations/T22.json": {
+        "bytes": 4359,
+        "sha256": "570A68B066FB441333BC457836AA98BE58CEA884268ED90F82048B5F71685C3E"
+      },
+      "work/translations/T25.json": {
+        "bytes": 5682,
+        "sha256": "437048AD44941194EBAD8BAC38B90703527AB44079EF9C1A3F6AB90282340FF7"
+      },
+      "work/translations/TT1A.json": {
+        "bytes": 3706,
+        "sha256": "131215B79EF8D3AADF4E453BA46BA5DB1AD0E88208422109482B90589C0C60E2"
+      },
+      "work/translations/TT1B.json": {
+        "bytes": 9643,
+        "sha256": "069D1AEE9D7CEDF2E5F9FCB855179859AC9657BD878C6D192C92706A18CD513A"
+      },
+      "work/translations/TT2.json": {
+        "bytes": 10159,
+        "sha256": "7CB02DED6258B112AAD932E8925CC8AF12EC26C6C06647E82FF991E72F492A35"
+      },
+      "work/translations/TT3A.json": {
+        "bytes": 9626,
+        "sha256": "9A7428436053B32217BAAB92B32862A53D11B1FD95DBDAEA5517F6C4C94618D6"
+      },
+      "work/translations/TT3B.json": {
+        "bytes": 4630,
+        "sha256": "54B965F688942E88E94A59EED94406E182258E86AD8D71918DBDAB5A2957710F"
+      },
+      "work/translations/TT4.json": {
+        "bytes": 12036,
+        "sha256": "CDDAA722890F9BD60A7FC502F0097CEBC2C8ECC1A3466958D9E69FD416EADEF3"
+      },
+      "work/translations/TT5.json": {
+        "bytes": 9080,
+        "sha256": "DECDAEE86E60091DB513AC89AE2FB86CF068E9C1A7042D6EAFFC8C15FD28DDD0"
+      },
+      "work/translations/TT6A.json": {
+        "bytes": 6928,
+        "sha256": "BBC3AECD3425368FD8FAEF94B1A050FDDF138A5913875F665F2A21FFCCD8CF02"
+      },
+      "work/translations/TT6B.json": {
+        "bytes": 6048,
+        "sha256": "9883CF3B496EB9000C5210AD6729B5C0CDF96B1C66B555610CD228E853004A7A"
+      },
+      "work/translations/TT6C.json": {
+        "bytes": 8847,
+        "sha256": "FCED68F2C8D2E06F2CC15418B1ED710287D43CC3737BE7F13E0C3BB9F8E135A0"
+      },
+      "work/translations/TT6D.json": {
+        "bytes": 791,
+        "sha256": "1A4E90FECA82C599D7D0A0EB1B6EABDB720515C2962590175F0D6EECC7C5CE41"
+      }
+    }
+  },
+  "verification": {
+    "public_tests": 38,
+    "private_integration_tests": 67,
+    "combined_tests": 105,
+    "skipped": 0,
+    "public_tree_policy": "PASS"
+  },
+  "matching_private_fixture_overlay": {
+    "filename": "Time-Twist-FDS-English-translation-private-test-fixtures.zip",
+    "bytes": 1133257,
+    "sha256": "DE6E5539137B39C8950B07D9A972D4FF4E656A2C4E4CEB0DB3A8CB1ECB3FE917"
+  },
+  "additional_artifacts": {
+    "wheel": {
+      "filename": "time_twist_fds_tools-0.2.0-py3-none-any.whl",
+      "bytes": 81012,
+      "sha256": "4F384D1C7F9813456C28A08498B4DB7245434A327609CFED6A8494C3602C0A60",
+      "members": 19,
+      "contains_project_data": false
+    },
+    "private_fixture_overlay": {
+      "filename": "Time-Twist-FDS-English-translation-private-test-fixtures.zip",
+      "bytes": 1133257,
+      "sha256": "DE6E5539137B39C8950B07D9A972D4FF4E656A2C4E4CEB0DB3A8CB1ECB3FE917",
+      "validated_fixture_files": 92
+    },
+    "verified_release_bundle": {
+      "filename": "Time-Twist-English-hardened-release.zip",
+      "bytes": 292468,
+      "sha256": "7B5FD0C2F5AFA09986ACFE55A1B7203659A31572D473B9946A1F3ED9661A18B2"
+    }
+  },
+  "verified_release_outputs": {
+    "zenpen": {
+      "bytes": 131000,
+      "sha256": "60F646296635B13391A8666BA99F8B025D4A75865BD25DFD830F540BBE51F3FE"
+    },
+    "kouhen": {
+      "bytes": 131000,
+      "sha256": "18445D6DA88278F5C52A8EBFC001F00FD00261D640EBDCD66D6AE2147A2A4421"
+    },
+    "four_side": {
+      "bytes": 262000,
+      "sha256": "21A48E6F0B955E7E970E3AAF86F147B366BB5AC02AFCEB681169ADD17E7C657F"
+    }
+  }
+}

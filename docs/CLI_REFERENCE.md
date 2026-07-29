@@ -1,127 +1,131 @@
 # CLI reference
 
-Run commands from `work/`:
+Install from the repository root:
 
 ```powershell
-python -m time_twist.cli --help
-python -m time_twist.cli COMMAND --help
+python -m pip install -e .
+time-twist --help
+time-twist COMMAND --help
 ```
+
+Release commands auto-discover a checkout from the current directory and its
+parents. From elsewhere, pass `--project-root PATH`.
 
 ## FDS container commands
 
 ### `manifest IMAGE [--output PATH]`
 
-Parses an FDS image and emits JSON containing:
-
-- header convention and side count;
-- disk identifiers;
-- used/padding bytes;
-- every file's number, ID, name, load address, size, kind, and offsets.
-
-Use it before and after a build to review layout changes.
+Emits JSON describing the header convention, side count, disk identifiers,
+used/padding bytes, and every named FDS file.
 
 ### `extract IMAGE OUTPUT_DIR`
 
-Writes each FDS file payload to a descriptive `.bin` filename. Extraction does
-not modify the image.
+Writes each named FDS payload to a descriptive `.bin` file without modifying
+the image.
 
 ### `roundtrip IMAGE OUTPUT`
 
-Parses and serializes the image, prints source/rebuilt SHA-256 values, and
-fails unless every byte matches.
+Parses and serializes the image and fails unless every byte matches.
 
 ### `combine IMAGE [IMAGE ...] --output PATH`
 
-Combines all sides from multiple images in argument order. The first image
-determines whether the output has a 16-byte FDS header.
+Combines all sides in argument order. The first image determines whether the
+result has a 16-byte FDS header.
 
 ### `replace-file IMAGE SIDE NAME DATA OUTPUT`
 
-Replaces one named file on a zero-based side and rebuilds the image. The file
-header size is updated; the side must still fit 65,500 bytes.
+Replaces one named file on a zero-based side and rebuilds the image. The side
+must still fit 65,500 bytes.
 
 ## Scenario commands
 
 ### `scenario-extract BANK OUTPUT`
 
 Decodes group pointers, packed records, dictionary references, and Japanese
-text into a JSON scenario document. Existing English at matching group/record
-coordinates is retained.
+text to JSON. Existing English at matching group/record coordinates is kept.
 
 ### `scenario-merge SCENARIO TRANSLATIONS [--output PATH] [--allow-partial]`
 
-Merges an ID-keyed English JSON object into an extracted scenario document.
-Without `--allow-partial`, every record ID is required. It validates controls,
-font support, and display width.
+Merges an ID-keyed English map. Without `--allow-partial`, every record ID is
+required. It validates controls, glyph support, and display width.
 
 ### `scenario-footprint BANK [--translations PATH]`
 
-Reports the bank's fixed text reservation and tail. With a complete
-translation map it performs dictionary compression and reports remaining
-bytes.
+Reports the fixed text reservation and, with a complete translation map,
+compressed use and remaining bytes.
 
-### `scenario-insert BANK TRANSLATION OUTPUT [--no-compress]`
+### `scenario-insert BANK TRANSLATION OUTPUT [--no-compress] [--bank-name NAME]`
 
-Rebuilds scenario groups and pointers. A fully translated bank receives a new
-English dictionary unless `--no-compress` is supplied. A partial bank
-preserves the Japanese dictionary.
-
-`--no-compress` is a diagnostic option, not a way around the fixed memory
-limit.
+Rebuilds scenario groups and pointers. Complete translations receive a new
+English dictionary; partial work keeps the Japanese dictionary. `--bank-name`
+is available when the input filename does not safely identify its bank.
 
 ## Asset and UI commands
 
 ### `font-patch NOV4 OUTPUT`
 
-Installs every common and extended English glyph into the recovered NOV4 font
-table. The patch is size-neutral.
+Installs the translated dialogue font after validating the supported NOV4
+source revision.
 
 ### `title-patch NOV4 TARGET OUTPUT [--subtitle TEXT]`
 
-Builds the translated title assets from an image, preserves the moving clock
-sprites, relocates the compressed nametable stream/helpers, and appends data
-without overlapping resident NOV3.
-
-The default subtitle is `On the Outskirts of History...`.
+Builds and installs the English title assets while preserving the clock and
+recovered raster-split behavior.
 
 ### `ui-patch SOURCE OUTPUT [--component NAME]`
 
-Applies one source-verified UI/fixed-table patch.
+Applies one source-verified fixed UI/text-table patch. Supported components are
+`SON-KOUH`, `NOV2`, `NOV4`, `TT1A`, `TT1B`, `TT2`, `T22`, `TT3A`, `TT3B`,
+`TT4`, `TT5`, `T25`, `TT6A`, `TT6B`, and `TT6C`.
 
-Supported components:
+The command rejects source-byte, record-count, table-hash, dictionary, and
+exact-slot mismatches.
 
-| Component | Content |
-| --- | --- |
-| `SON-KOUH` | Kouhen direct-boot warning |
-| `NOV2` | Shared start/disk/wait/wrong-disk text and one-choice B guard |
-| `NOV4` | Live START prompt |
-| `TT1A` | Blood type, month, and confirmation choices |
-| `TT1B` | Museum commands, objects, and interactions |
-| `TT2` | Commands, objects, and quiz labels |
-| `T22` | Commands and objects |
-| `TT3A` | Commands, objects, and quiz labels |
-| `TT3B` | Commands, objects, and battle actions |
-| `TT4` | Commands, treatment, and quiz labels |
-| `TT5` | Commands, puzzle, and quiz labels |
-| `T25` | Mansion and flooded-island actions |
-| `TT6A` | Donkey actions and Nazareth objects |
-| `TT6B` | Travel, quiz, and animal actions |
-| `TT6C` | Finale actions and retrospective quiz |
+## Release commands
 
-The command fails if the source bytes, record count, table hash, dictionary, or
-exact slot sizes do not match expectations.
+All release commands accept `--project-root PATH`.
+
+### `release-lock [--lock PATH] [--update]`
+
+Without `--update`, verifies the Japanese baselines, all 13 playable scenario
+maps, and the title asset against the source lock. The default is
+`PROJECT/work/release_sources.json`.
+
+`--update` rewrites the lock from the current project inputs. It approves input
+changes only; it does not approve new output hashes.
+
+### `release-build [--output-dir PATH] [--lock PATH] [--target PATH] [--candidate]`
+
+Rebuilds all 13 scenario banks, applies fixed UI/font/title patches, produces
+Zenpen and Kouhen, combines four sides, and writes `release_manifest.json`.
+
+Default strict mode verifies `PROJECT/work/release_target.json`, including its
+tie to the active source-lock SHA-256. It stages output and does not publish a
+new build when target verification fails.
+
+`--candidate` skips target approval and publishes a candidate manifest for
+review. Candidate mode is required after an intentional source/output change.
+
+### `release-promote CANDIDATE_MANIFEST [--target PATH] [--release-id ID]`
+
+Accepts only a candidate-mode manifest. It verifies the candidate's active
+source lock, output paths, sizes, and SHA-256 hashes, then atomically writes the
+versioned release target. A subsequent strict `release-build` must reproduce
+that target.
 
 ## Failure interpretation
 
-| Error class/message | Meaning |
+| Error | Meaning |
 | --- | --- |
 | `FdsFormatError` | Container/block/side layout is invalid |
 | `PackedTextError` | Bitstream ended early or a symbol is out of range |
 | `ScenarioError` | Pointer, group, dictionary, or RAM footprint is invalid |
-| `EnglishTextError` | Unsupported glyph/control tag or unsafe row width |
-| `UiPatchError` | Fixed source bytes/table/slot constraints did not match |
-| `FontPatchError` | Font table/glyph/tile mapping is invalid |
-| `TitlePatchError` | NOV4 source assets, capacity, tile counts, or verification failed |
+| `EnglishTextError` | Unsupported glyph/control tag or unsafe width |
+| `UiPatchError` | Fixed source/table/slot constraints did not match |
+| `FontPatchError` | Font source/layout/glyph constraint failed |
+| `TitlePatchError` | NOV4 asset, capacity, tile-count, or verification failed |
+| `ReleaseBuildError` | Checkout, lock, target, candidate, or output approval failed |
 
-Treat these as evidence that an invariant was violated. Do not catch and ignore
+Known command errors are rendered as concise `time-twist: error: ...` messages
+without a Python traceback. Treat them as violated invariants; do not suppress
 them in a production build.

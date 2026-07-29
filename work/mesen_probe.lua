@@ -2,7 +2,7 @@
 -- It periodically presses Start/A, then captures the screen, CHR RAM, and
 -- CPU RAM so the font/text decoder can be checked against actual execution.
 
-local outputRoot = "C:/Users/thema/Documents/Codex/2026-07-18/i-want-this-sega-cd-game/work/mesen_capture"
+local outputRoot = os.getenv("TIME_TWIST_CAPTURE_DIR") or "work/mesen_capture"
 local frame = 0
 
 local function writeBinary(path, data)

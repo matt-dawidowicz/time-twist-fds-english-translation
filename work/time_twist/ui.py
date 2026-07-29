@@ -260,7 +260,8 @@ TT2_FIXED_TEXT_SOURCE_SHA256 = (
 )
 TT2_DICTIONARY_POINTER_OFFSET = 0x0016
 TT2_LOAD_ADDRESS = 0xA200
-TT2_DICTIONARY_ENTRIES = 31
+FIXED_UI_DICTIONARY_ENTRY_COUNT = 31
+TT2_DICTIONARY_ENTRIES = FIXED_UI_DICTIONARY_ENTRY_COUNT
 TT2_FIXED_TEXT_RECORDS = (
     "SE",
     "SAY",
@@ -1027,7 +1028,8 @@ def _encode_with_dictionary(
     best[len(source)] = (0, ())
     for position in range(len(source) - 1, -1, -1):
         suffix = best[position + 1]
-        assert suffix is not None
+        if suffix is None:
+            raise UiPatchError("dictionary encoder reached an impossible suffix state")
         choices = [
             (
                 symbol_bit_length(source[position]) + suffix[0],
@@ -1039,7 +1041,8 @@ def _encode_with_dictionary(
             if tuple(source[position:end]) != entry:
                 continue
             tail = best[end]
-            assert tail is not None
+            if tail is None:
+                raise UiPatchError("dictionary encoder reached an impossible tail state")
             choices.append(
                 (
                     9 + tail[0],
@@ -1051,7 +1054,8 @@ def _encode_with_dictionary(
             )
         best[position] = min(choices, key=lambda choice: choice[0])
     encoded = best[0]
-    assert encoded is not None
+    if encoded is None:
+        raise UiPatchError("dictionary encoder produced no result")
     return encoded[1]
 
 

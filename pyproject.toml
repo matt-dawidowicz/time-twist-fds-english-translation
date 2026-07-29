@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "time-twist-fds-tools"
+version = "0.2.0"
+description = "Reproducible FDS analysis and English translation build tools for Time Twist"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+dependencies = [
+  "Pillow>=10,<13",
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2,<2",
+]
+
+[project.scripts]
+time-twist = "time_twist.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "work"}
+packages = ["time_twist"]
+include-package-data = false
