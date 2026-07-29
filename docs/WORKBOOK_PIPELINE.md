@@ -1,136 +1,114 @@
 # Translation workbook pipeline
 
-This document explains how the large review artifacts are generated and where
-to make each kind of edit. The workbook is a review and localization artifact;
-it is not itself the packed byte stream inserted into the game.
+The workbook is the complete review surface for 2,052 extracted records. It is
+not the packed byte stream inserted into the game, but its patch-safe field is
+generated from and must mirror the playable sources.
 
 ## Data flow
 
 ```text
-decoded Japanese bank records        current patch-oriented English maps
-              |                                      |
-              +------------------+-------------------+
-                                 |
-             generate_bilingual_comparison.py
-                                 |
-          immutable 2,052-record comparison corpus
-                                 |
-             linguistic review HTML + manual decisions
-                                 |
-             generate_translation_workbook.py
-                                 |
-       HTML / CSV / JSON workbook, glossary, voice guide,
-                 progress report, bank checkpoints
+decoded Japanese records             playable English sources
+          |                         scenario maps + fixed UI code
+          +-------------------------+--------------------------+
+                                    |
+                 generate_bilingual_comparison.py
+                                    |
+                    ordered 2,052-record corpus
+                                    |
+                 generate_translation_workbook.py
+                                    |
+          HTML / CSV / JSON workbook, glossary, voice guide,
+                    progress report, bank checkpoints
 ```
 
-The exact Japanese column is copied from decoded source-bank records and must
-never be normalized in place. Romaji, reconstructed Japanese, linguistic
-labels, literal readings, and English translations are editorial layers.
+The exact-Japanese column is copied from decoded source records and is never
+normalized in place. Romaji, reconstructed Japanese, linguistic labels,
+literal readings, and natural English are editorial layers.
 
 ## Source locations
 
 | Path | Role |
 | --- | --- |
-| `work/translated_scripts/BANK.json` | Decoded Japanese scenario records and their stable IDs |
-| `work/translations/BANK.json` | Current patch-oriented English scenario maps |
-| `work/time_twist/ui.py` | Fixed-address and graphics-text definitions |
-| `outputs/Time Twist Japanese-English script comparison.json` | Canonical ordered comparison corpus |
-| `work/translation_workbook_banks/BANK.json` | Per-bank completed workbook checkpoints |
-| `outputs/Time_Twist_complete_translation_workbook.*` | Searchable and machine-readable aggregate workbook |
+| `work/translated_scripts/BANK.json` | Decoded scenario records and stable IDs |
+| `work/translations/BANK.json` | Authoritative playable scenario English |
+| `work/time_twist/ui.py` | Authoritative fixed-address and graphics text |
+| `outputs/Time Twist Japanese-English script comparison.json` | Ordered comparison corpus |
+| `work/translation_workbook_banks/BANK.json` | Per-bank workbook checkpoints |
+| `outputs/Time_Twist_complete_translation_workbook.*` | Aggregate review output |
 
-## Comparison-corpus generator
+## Generate the corpus and workbook
 
-Run from `work/`:
-
-```powershell
-python generate_bilingual_comparison.py
-```
-
-`generate_bilingual_comparison.py`:
-
-1. walks scenario banks in `BANK_ORDER`;
-2. verifies that every decoded record has exactly one translation-map entry;
-3. decodes fixed-address tables through the real dictionary and record parser;
-4. adds standalone interface and graphics text;
-5. records control-code sequences, source location, storage type, script
-   profile, mechanical romaji, and conservative review hints;
-6. rejects duplicate IDs;
-7. emits TSV, JSON, HTML, and a review guide.
-
-Its linguistic detection is intentionally conservative. Marker detection is a
-review aid, not a substitute for reading a full record group. In particular,
-the code masks names and loanwords before suggesting kanji, and it uses
-grammatical boundaries for voice markers that are prone to substring false
-positives.
-
-## Complete-workbook generator
-
-Run from `work/`:
+From the repository root:
 
 ```powershell
-python generate_translation_workbook.py
+python work/generate_bilingual_comparison.py
+python work/generate_translation_workbook.py
 ```
 
-`generate_translation_workbook.py` separates decisions into several layers:
+The corpus generator walks banks in canonical order, verifies one playable
+scenario entry per decoded record, decodes fixed tables through the real
+parser/dictionary, records controls and source locations, and rejects duplicate
+IDs.
 
-- `MANUAL_FINAL` holds human-reviewed natural translations that override the
-  provisional draft.
-- `MANUAL_PATCH` holds tested, control-code-preserving versions intended for
-  the byte-constrained patch.
-- `MANUAL_NOTES`, speaker overrides, scene metadata, and glossary seeds record
-  analysis that should remain globally consistent.
-- safe reconstruction tables may restore likely kanji or katakana only in the
-  editorial reconstruction field.
-- fixed-address expansion rules explain terse UI labels without changing the
-  bytes used by the actual fixed record.
+The workbook generator applies editorial layers such as:
 
-The generator then creates every `WorkbookRow`, emits the aggregate artifacts,
-writes one checkpoint per bank, and validates:
+- human-reviewed natural translations;
+- notes, speaker/scene metadata, and glossary decisions;
+- conservative reconstructed Japanese;
+- fixed-address explanations.
 
-- exactly 2,052 rows;
-- unique record IDs;
+It then derives patch-safe text under this policy:
+
+- scenario rows come directly from `work/translations/*.json`;
+- fixed-address and graphics rows retain the exact installed English from the
+  patch definitions;
+- natural-translation alternatives stay editorial and cannot silently enter a
+  ROM build.
+
+The generator validates:
+
+- exactly 2,052 unique rows;
 - byte-for-byte exact Japanese source retention;
-- control-code sequence retention in patch-safe English;
-- non-empty final and patch-safe translations;
-- non-empty glossary output;
+- complete playable scenario coverage;
+- patch-safe/playable equality;
+- ordered control-code retention;
+- nonempty natural and patch-safe translations;
+- nonempty glossary output;
 - absence of known unsafe reconstruction patterns.
 
-## Adding or correcting a translation
+`NOV2/wait` is the one documented fixed-UI control-layout exception: the engine
+patch intentionally changes its display segmentation. It is explicit in code
+and tests rather than treated as unexplained drift.
 
-Choose the smallest authoritative layer:
+## Correcting a translation
 
-1. If the decoded Japanese is wrong, fix the parser or source extraction and
-   investigate why. Do not hand-edit the workbook's exact-source field.
-2. If the natural interpretation is wrong, update the relevant reviewed/manual
-   translation decision.
-3. If only the in-game line needs shortening, update the patch-safe decision
-   while preserving the natural translation.
-4. If the term recurs, update the glossary and every affected occurrence.
-5. Regenerate the comparison corpus only when its underlying decoded sources or
-   current translation maps changed.
-6. Regenerate the complete workbook and inspect the affected bank checkpoint.
-7. Insert the bank translation using the workflow in
-   [`TRANSLATION_WORKFLOW.md`](TRANSLATION_WORKFLOW.md).
+Choose the true source layer:
 
-Never edit generated HTML, CSV, or JSON as the only change. Regeneration will
-overwrite it and leave the real source of the decision unchanged.
+1. If decoded Japanese is wrong, fix extraction/parsing and investigate the
+   binary evidence.
+2. If the in-game scenario line is wrong, edit `work/translations/BANK.json`.
+3. If fixed UI text is wrong, edit the source-verified definition in `ui.py`.
+4. If only the unconstrained interpretation changes, update the editorial
+   natural-translation decision.
+5. If a term recurs, update the glossary and all affected records.
+6. Regenerate the workbook and inspect the affected bank checkpoint.
+7. Run tests, rebuild a candidate, and playtest.
+
+Never edit generated HTML, CSV, JSON, or a checkpoint as the only source
+change; regeneration will overwrite it.
 
 ## Control codes
 
-The corpus generator renders controls as explicit `{CTRL:n}` or `⟦CTRL:n⟧`
-markers depending on the output context. The workbook generator compares the
-ordered sequence in exact Japanese with the ordered sequence in patch-safe
-English. A mismatch aborts generation.
+Controls are rendered as `{CTRL:n}` or `⟦CTRL:n⟧` depending on output context.
+The generator compares their ordered sequence. A mismatch aborts generation
+unless it is the single documented fixed-UI override.
 
-`insert_controls_by_current_layout()` is a fallback that distributes existing
-controls across a revised sentence according to the current record's segment
-proportions. It preserves control order, but it cannot prove that each control
-has the ideal dramatic placement. Important lines should use an explicit
-manual patch decision and be checked in gameplay.
+`insert_controls_by_current_layout()` can preserve control order while
+redistributing controls according to an existing record's segment proportions.
+It cannot prove ideal dramatic placement. Important lines still require
+explicit editorial review and gameplay inspection.
 
 ## Generated files
-
-The main outputs are:
 
 - `outputs/Time_Twist_complete_translation_workbook.html`
 - `outputs/Time_Twist_complete_translation_workbook.csv`
@@ -139,26 +117,25 @@ The main outputs are:
 - `outputs/Time_Twist_terminology_and_voice_guide.md`
 - `work/translation_workbook_banks/*.json`
 
-The HTML is for browsing and filtering. CSV is convenient for spreadsheet
-review. JSON is the lossless machine-readable form and should be preferred by
-new tooling.
+HTML is for browsing/filtering, CSV for spreadsheet review, and JSON for
+lossless tooling.
 
-## Review checklist
-
-After changing workbook logic:
+## Verification
 
 ```powershell
-python generate_bilingual_comparison.py
-python generate_translation_workbook.py
-python -m unittest discover -s tests -v
+python work/generate_bilingual_comparison.py
+python work/generate_translation_workbook.py
+python work/run_tests.py unit
 ```
 
-Then check:
+Then confirm:
 
-- the generator reports 2,052 records;
-- no source fingerprints changed unexpectedly;
-- the affected bank checkpoint contains the intended wording;
-- exact Japanese and control sequences did not drift;
-- repeated names and terminology remain consistent;
-- patch-safe records still pass native character, display-width, and bank
-  recompression checks.
+- 2,052 rows were emitted;
+- no source fingerprint changed unexpectedly;
+- the affected checkpoint contains the intended natural and patch-safe text;
+- every scenario patch-safe field equals its playable map;
+- controls, terminology, width, and bank recompression remain valid.
+
+A playable revision becomes an approved release only through the source-lock,
+candidate, review, and promotion workflow described in
+[`TRANSLATION_WORKFLOW.md`](TRANSLATION_WORKFLOW.md).

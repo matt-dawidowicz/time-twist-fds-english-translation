@@ -1,5 +1,5 @@
 {
-  "source": "C:\\Users\\thema\\Documents\\Codex\\2026-07-18\\i-want-this-sega-cd-game\\work\\extracted_zenpen\\side1_00_TT1B_A200.bin",
+  "source": "work/extracted_zenpen/side1_00_TT1B_A200.bin",
   "load_address": "0xA200",
   "dictionary_address": "0xBCDA",
   "group_table_address": "0xBCD2",

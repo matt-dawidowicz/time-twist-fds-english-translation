@@ -68,6 +68,75 @@ def packed_size(
     )
 
 
+def _record_packed_size(record: tuple[PackedSymbol, ...]) -> int:
+    """Return exact aligned bytes for one payload plus its separator."""
+
+    bits = sum(symbol_bit_length(symbol) for symbol in record) + 7
+    return (bits + 7) // 8
+
+
+def _symbol_key(symbol: PackedSymbol) -> int:
+    """Map every native symbol kind/value to one collision-free byte."""
+
+    if symbol.kind is SymbolKind.COMMON:
+        return symbol.value
+    if symbol.kind is SymbolKind.EXTENDED:
+        return 0x40 + symbol.value
+    if symbol.kind is SymbolKind.DICTIONARY:
+        return 0x80 + symbol.value
+    if symbol.kind is SymbolKind.CONTROL:
+        return 0xC0 + symbol.value
+    raise ValueError(f"unsupported record symbol {symbol.kind}")
+
+
+def _prepared_records(
+    groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
+) -> tuple[tuple[bytes, int], ...]:
+    """Cache byte-search keys and payload bit lengths for one iteration."""
+
+    return tuple(
+        (
+            bytes(_symbol_key(symbol) for symbol in record),
+            sum(symbol_bit_length(symbol) for symbol in record),
+        )
+        for group in groups
+        for record in group
+    )
+
+
+def _non_overlapping_byte_occurrences(haystack: bytes, needle: bytes) -> int:
+    """Count deterministic leftmost non-overlapping matches using C-level find."""
+
+    count = 0
+    position = 0
+    while True:
+        position = haystack.find(needle, position)
+        if position < 0:
+            return count
+        count += 1
+        position += len(needle)
+
+
+def _candidate_packed_size(
+    prepared_records: tuple[tuple[bytes, int], ...],
+    dictionary_size: int,
+    candidate: tuple[PackedSymbol, ...],
+) -> int:
+    """Measure a candidate exactly without rebuilding and repacking all groups."""
+
+    candidate_key = bytes(_symbol_key(symbol) for symbol in candidate)
+    literal_bits = sum(symbol_bit_length(symbol) for symbol in candidate)
+    delta_bits = literal_bits - 9
+    group_size = 0
+    for record_key, old_bits in prepared_records:
+        replacements = _non_overlapping_byte_occurrences(
+            record_key, candidate_key
+        )
+        new_bits = old_bits - replacements * delta_bits
+        group_size += (new_bits + 14) // 8
+    return group_size + dictionary_size + _record_packed_size(candidate)
+
+
 def _candidate_counts(
     groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
 ) -> Counter[tuple[PackedSymbol, ...]]:
@@ -224,14 +293,22 @@ def compress_english_groups(
         reference = PackedSymbol(
             SymbolKind.DICTIONARY, len(dictionary) + 1, 0, 0
         )
+        prepared_records = _prepared_records(compressed)
+        dictionary_size = sum(
+            _record_packed_size(entry) for entry in dictionary
+        )
         for _, candidate in ranked[:MAX_CANDIDATES_TO_EVALUATE]:
-            candidate_groups = _replace_candidate(compressed, candidate, reference)
-            candidate_dictionary = (*dictionary, candidate)
-            candidate_size = packed_size(candidate_groups, candidate_dictionary)
+            candidate_size = _candidate_packed_size(
+                prepared_records, dictionary_size, candidate
+            )
             if candidate_size < best_size:
-                best_groups = candidate_groups
                 best_candidate = candidate
                 best_size = candidate_size
+
+        if best_candidate is not None:
+            best_groups = _replace_candidate(
+                compressed, best_candidate, reference
+            )
 
         if best_groups is None or best_candidate is None:
             break

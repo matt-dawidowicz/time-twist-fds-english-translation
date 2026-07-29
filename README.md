@@ -3,98 +3,132 @@
 This repository contains the reverse-engineering tools, translation data,
 tests, and review workbooks for an English translation of Nintendo's 1991
 Famicom Disk System adventure game *Time Twist: Rekishi no Katasumi de...*
-(`タイムツイスト 歴史のかたすみで…`).
-
-The project covers both halves of the game:
+(`タイムツイスト 歴史のかたすみで…`). It covers both halves:
 
 - `Zenpen` (first part)
 - `Kouhen` (second part)
 
 ## Current status
 
-- All 2,052 extracted text records are represented in the translation
+- All **2,052 extracted text records** are represented in the translation
   workbook.
-- Scenario, interface, font, title-screen, and FDS container tooling is under
-  `work/time_twist/`.
-- Bank-by-bank translation sources are under `work/translations/`,
-  `work/translated_scripts/`, and `work/translation_workbook_banks/`.
-- The current playable builds are still **playtest builds**. Manual end-to-end
-  testing and translation correction remain release gates.
-- The complete reviewed workbook is not yet guaranteed to be fully inserted
-  into the playable ROMs.
+- All **1,299 scenario records** have playable English entries.
+- Scenario, fixed UI, font, title, and FDS-container changes are built by one
+  source-locked release pipeline.
+- The workbook's patch-safe field now mirrors the actual playable sources;
+  alternative editorial rewrites remain in the natural-translation field.
+- The generated images remain **playtest builds**. A complete emulator
+  playthrough is still required before calling the translation final.
+
+## Source of truth
+
+| Material | Authority |
+| --- | --- |
+| `work/translations/*.json` | Playable scenario dialogue and narration |
+| `work/time_twist/ui.py` | Playable fixed-address/interface text |
+| `work/time_twist/font.py` and `title.py` | Playable font/title transformations |
+| `work/release_sources.json` | Approved non-code release inputs and hashes |
+| `work/release_target.json` | Promoted output sizes and SHA-256 hashes |
+| `outputs/Time_Twist_complete_translation_workbook.*` | Review surface; patch-safe text mirrors the playable sources |
+
+Do not edit generated ROMs or rebuilt banks as source material.
 
 ## Repository layout
 
 | Path | Contents |
 | --- | --- |
-| `docs/` | Architecture, formats, CLI, editing workflow, and development guides |
-| `work/time_twist/` | FDS parsing, compression, text, font, title, and UI patch code |
-| `work/tests/` | Regression and format-safety tests |
-| `work/translations/` | Patch-oriented bank translation maps |
-| `work/translated_scripts/` | Extracted and revised script records |
-| `work/translation_workbook_banks/` | Completed linguistic review by bank |
-| `work/title_assets/` | English title reference art |
-| `outputs/` | Translation workbooks, glossary, reports, and visual previews |
+| `docs/` | Architecture, formats, CLI, workflow, and development guides |
+| `work/time_twist/` | FDS parsing, compression, text, font, title, UI, and release code |
+| `work/tests/` | Fixture-free public unit tests |
+| `work/integration_tests/` | ROM-derived integration tests for maintainers |
+| `work/translations/` | Authoritative playable scenario maps |
+| `work/translated_scripts/` | Extracted/review-oriented scenario records |
+| `work/translation_workbook_banks/` | Per-bank linguistic review checkpoints |
+| `work/title_assets/` | Contributor-created English title reference art |
+| `outputs/` | Workbooks, glossary, reports, and previews |
 
-The searchable translation workbook is:
+The searchable workbook is
+[`outputs/Time_Twist_complete_translation_workbook.html`](outputs/Time_Twist_complete_translation_workbook.html).
+CSV and JSON versions sit beside it.
 
-[`outputs/Time_Twist_complete_translation_workbook.html`](outputs/Time_Twist_complete_translation_workbook.html)
+## Install and test
 
-Machine-readable versions are provided as CSV and JSON beside it.
-
-## Documentation
-
-Start with [`docs/README.md`](docs/README.md). The documentation is organized
-by the kind of work you want to do:
-
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) explains the complete data
-  flow and module boundaries.
-- [`docs/FORMATS.md`](docs/FORMATS.md) documents the FDS container, scenario
-  pointers, packed-text prefix tree, dictionary references, fixed tables,
-  font layout, and title assets.
-- [`docs/TRANSLATION_WORKFLOW.md`](docs/TRANSLATION_WORKFLOW.md) is a
-  bank-by-bank extraction, editing, rebuilding, and verification tutorial.
-- [`docs/CLI_REFERENCE.md`](docs/CLI_REFERENCE.md) lists every command and its
-  safety role.
-- [`docs/WORKBOOK_PIPELINE.md`](docs/WORKBOOK_PIPELINE.md) explains how the
-  immutable comparison corpus becomes the review workbook and bank checkpoints.
-- [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) covers tests, fixtures,
-  debugging, and safe ways to add a new patch.
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) summarizes the invariants a contribution
-  must preserve.
-
-## Running the tools
-
-Most parsing and patching code uses Python's standard library. Pillow is also
-required for the title-screen and image-preview commands exposed by the CLI.
-From `work/`:
+Python 3.11 or newer is required.
 
 ```powershell
-python -m time_twist.cli --help
-python -m unittest discover -s tests -v
+python work/tools/check_public_tree.py
+python -m pip install -e ".[dev]"
+time-twist --help
+python work/run_tests.py unit
 ```
 
-The command-line interface supports FDS inventory/extraction, byte-identical
-round trips, four-side combination, scenario extraction/insertion, fixed-bank
-footprint checks, font/title/UI patches, and file replacement.
+The public suite contains **38 fixture-free tests** and permits no skips.
+Public CI also builds the wheel, force-installs it, and smoke-tests the
+installed `time-twist` command.
 
-Run `python -m time_twist.cli COMMAND --help` for command-specific examples and
-argument descriptions.
+Maintainers with legally obtained local ROM-derived fixtures can overlay the
+private fixture bundle at the repository root and run:
 
-## Required game files
+```powershell
+python work/run_tests.py integration
+python work/run_tests.py all
+```
 
-No original or patched ROM images, extracted ROM banks, BIOS/firmware, emulator
-packages, or memory dumps are committed here.
+The integration suite contains **67 tests** and also permits no skips. The
+runner validates every fixture against `work/integration_fixtures.json` before
+test discovery, so missing fixtures produce an explicit setup failure rather
+than a misleading green run with skipped tests. See
+[`docs/PRIVATE_FIXTURES.md`](docs/PRIVATE_FIXTURES.md).
 
-To work with the project locally, provide legally obtained copies of the two
-Japanese FDS images at:
+## Build and promote a release
+
+Place legally obtained Japanese images at:
 
 ```text
 work/baseline/time_twist_zenpen_japan.fds
 work/baseline/time_twist_kouhen_japan.fds
 ```
 
-Generated `.fds` and `.bin` files remain ignored by Git.
+Verify the approved inputs and reproduce the promoted build:
+
+```powershell
+time-twist release-lock
+time-twist release-build
+```
+
+An intentional translation or asset change uses a candidate/promotion cycle:
+
+```powershell
+time-twist release-lock --update
+time-twist release-build --candidate --output-dir build/candidate
+# Review and playtest the candidate.
+time-twist release-promote build/candidate/release_manifest.json `
+  --release-id english-playtest-YYYY-MM-DD
+time-twist release-build
+```
+
+Strict builds are staged and hash-checked before publication. A target mismatch
+fails without publishing new ROMs to the requested output directory.
+
+The installed wheel contains code only. It intentionally does not package
+translation project data, title assets, ROMs, or generated banks. From outside
+the checkout, point it at the project explicitly:
+
+```powershell
+time-twist release-build --project-root C:\path\to\time-twist
+```
+
+## Documentation
+
+Start with [`docs/README.md`](docs/README.md). Important guides:
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- [`docs/FORMATS.md`](docs/FORMATS.md)
+- [`docs/TRANSLATION_WORKFLOW.md`](docs/TRANSLATION_WORKFLOW.md)
+- [`docs/CLI_REFERENCE.md`](docs/CLI_REFERENCE.md)
+- [`docs/WORKBOOK_PIPELINE.md`](docs/WORKBOOK_PIPELINE.md)
+- [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)
+- [`docs/PRIVATE_FIXTURES.md`](docs/PRIVATE_FIXTURES.md)
 
 ## Translation constraints
 
@@ -102,22 +136,18 @@ Time Twist uses packed bitstream text, per-bank dictionaries, fixed record
 addresses, and strict RAM/storage limits. Translation changes are validated
 against those constraints; raw byte replacement is not sufficient.
 
-Control codes, message ordering, dictionary shape, fixed-address UI text, and
-bank footprints must remain stable unless a deliberate code relocation makes
-additional space available.
+Control codes, message ordering, fixed-address slots, dictionary contracts,
+scenario tails, and bank footprints must remain stable unless a deliberate,
+source-verified relocation creates space.
 
-## License and third-party materials
+## Copyright and license
 
-The original code, tools, tests, documentation, and other contributor-created
-materials in this repository are licensed under the [MIT License](LICENSE).
-
-The MIT License does **not** grant rights to the original game or to any
-third-party software, story, dialogue, characters, names, logos, graphics,
-music, audio, trademarks, or other copyrighted materials. Those materials
-remain the property of their respective rights holders. See
-[`THIRD_PARTY_NOTICE.md`](THIRD_PARTY_NOTICE.md) for the complete boundary.
+Contributor-created code, tests, documentation, and other original materials
+are licensed under the [MIT License](LICENSE). The license does not grant
+rights to the original game or any third-party software or assets. See
+[`THIRD_PARTY_NOTICE.md`](THIRD_PARTY_NOTICE.md).
 
 This is an unofficial fan-translation and reverse-engineering project. It is
 not affiliated with, authorized by, or endorsed by Nintendo or the original
-rights holders. Game software and firmware are not distributed in this
-repository, and users must provide their own legally obtained source files.
+rights holders. The public source archive contains no original or patched ROM
+images, extracted ROM banks, firmware, emulator packages, or memory dumps.

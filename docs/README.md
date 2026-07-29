@@ -1,83 +1,87 @@
 # Documentation index
 
-The project has two audiences:
+The project serves translators, reverse engineers, and release maintainers.
+Choose the shortest path for your task.
 
-1. translators who need to revise wording without corrupting the game; and
-2. reverse engineers who need to understand or extend the binary patching
-   code.
-
-Use the shortest path below that matches your task.
-
-## I want to change dialogue
+## Change dialogue
 
 Read:
 
 1. [Translation workflow](TRANSLATION_WORKFLOW.md)
-2. [Translation workbook pipeline](WORKBOOK_PIPELINE.md)
-3. [Packed text and scenario banks](FORMATS.md#scenario-bank-layout)
-4. [Translation constraints](../README.md#translation-constraints)
+2. [Workbook pipeline](WORKBOOK_PIPELINE.md)
+3. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
 
-The important rule is that a translated scenario bank is not a list of
-ordinary strings. It is a packed bitstream whose group pointers, dictionary,
-control codes, fixed tail, and RAM reservation must remain valid.
+Playable scenario text lives in `work/translations/*.json`. The workbook's
+patch-safe field mirrors it; the natural field can retain a more expansive
+editorial translation.
 
-## I want to change a menu, item, or quiz label
+## Change a menu, item, or quiz label
 
 Read:
 
 1. [Fixed-address text](FORMATS.md#fixed-address-packed-text)
-2. [UI patch module](ARCHITECTURE.md#patch-layers)
-3. [Adding or changing a binary patch](DEVELOPMENT.md#adding-or-changing-a-binary-patch)
+2. [Patch layers](ARCHITECTURE.md#patch-layers)
+3. [Adding a binary patch](DEVELOPMENT.md#adding-or-changing-a-binary-patch)
 
-Most of these labels live outside the normal scenario groups. Their individual
-record addresses are referenced by 6502 code, so the project preserves each
-record's original packed byte length.
+These records are often referenced directly by 6502 code, so individual packed
+slot boundaries must remain fixed.
 
-## I want to understand the binary format
+## Understand the binary format
 
 Read:
 
 1. [Architecture](ARCHITECTURE.md)
 2. [Formats](FORMATS.md)
-3. The source modules in this order:
-   `fds.py`, `textcodec.py`, `scenario.py`, `english.py`, `compression.py`
+3. `fds.py`, `textcodec.py`, `scenario.py`, `english.py`, then `compression.py`
 
-## I want to work on the title screen or font
+## Work on the title or font
 
 Read:
 
-1. [Font and title formats](FORMATS.md#font-and-title-assets)
+1. [Font/title formats](FORMATS.md#font-and-title-assets)
 2. [Patch layers](ARCHITECTURE.md#patch-layers)
 3. `work/time_twist/font.py`
 4. `work/time_twist/title.py`
-5. `work/tests/test_title.py`
+5. `work/integration_tests/test_title.py`
 
-The title conversion reuses the game's existing pattern-table split and
-animated clock sprites. It is intentionally guarded by source hashes and
-exact-size checks.
+The title conversion reuses the existing pattern-table split and animated
+clock sprites and is guarded by source hashes and size checks.
 
-## I want to add code
+## Add code or tests
 
 Read:
 
 1. [Development guide](DEVELOPMENT.md)
-2. [Contributing](../CONTRIBUTING.md)
-3. [CLI reference](CLI_REFERENCE.md)
+2. [Private fixtures](PRIVATE_FIXTURES.md)
+3. [Contributing](../CONTRIBUTING.md)
+4. [CLI reference](CLI_REFERENCE.md)
 
-Run the entire regression suite before and after a change. A successful unit
-test run is necessary but does not replace an end-to-end emulator playtest.
+Run `python work/run_tests.py unit` for public work and the integration/all
+suite when the private overlay is available. Supported suites allow no skips.
 
-## Source of truth
+## Build or promote a release
 
-The repository contains several related representations:
+Read:
+
+1. [Release lifecycle](DEVELOPMENT.md#release-lifecycle)
+2. [Release commands](CLI_REFERENCE.md#release-commands)
+3. [Translation workflow](TRANSLATION_WORKFLOW.md)
+
+A source-lock refresh approves inputs; a candidate build exposes new outputs;
+promotion approves the exact reviewed hashes; a strict build reproduces them.
+
+## Authority map
 
 | Representation | Purpose |
 | --- | --- |
-| `work/translations/*.json` | Compact ID-to-English maps used for patching |
-| `work/translated_scripts/*.json` | Extracted scenario records with Japanese, symbols, and English |
-| `work/translation_workbook_banks/*.json` | Detailed linguistic review records |
-| `outputs/Time_Twist_complete_translation_workbook.*` | Searchable and machine-readable full review |
-| Original FDS/bank bytes | Authoritative binary layout; supplied locally and not committed |
+| `work/translations/*.json` | Playable scenario source |
+| `work/time_twist/ui.py` | Playable fixed/interface source |
+| `work/release_sources.json` | Approved non-code input hashes |
+| `work/release_target.json` | Promoted output hashes |
+| `work/translated_scripts/*.json` | Decoded/review scenario records |
+| `work/translation_workbook_banks/*.json` | Detailed per-bank review |
+| `outputs/Time_Twist_complete_translation_workbook.*` | Aggregate review artifacts |
+| User-supplied FDS bytes | Authoritative original binary layout |
 
-Never replace the exact Japanese source in the workbook with reconstructed
-kanji. Reconstructed Japanese is editorial context, not recovered ROM data.
+Never replace exact Japanese evidence with reconstructed kanji. Reconstruction
+is editorial context, not recovered ROM data.

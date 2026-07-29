@@ -10,6 +10,7 @@ high-confidence lexical units, names, titles, and place names.
 
 from __future__ import annotations
 
+import argparse
 import csv
 import hashlib
 import html
@@ -28,10 +29,10 @@ ROOT = Path(__file__).resolve().parent.parent
 WORK = ROOT / "work"
 OUTPUTS = ROOT / "outputs"
 SOURCE_JSON = OUTPUTS / "Time Twist Japanese-English script comparison.json"
-REVIEW_CANDIDATES = (
-    Path(r"C:\Users\thema\Downloads\Time_Twist_full_Japanese_English_translation_review_revised.html"),
-    Path(r"C:\Users\thema\Downloads\Time_Twist_full_Japanese_English_translation_review.html"),
-)
+TRANSLATIONS = WORK / "translations"
+CONTROL_OVERRIDE_IDS = frozenset({"NOV2/wait"})
+REVIEW_CANDIDATES: tuple[Path, ...] = ()
+
 CONTROL_RE = re.compile(r"\{CTRL:(\d+)\}")
 JP_LABEL_RE = re.compile(
     r"(?:^|\s)([\u3041-\u3096\u30A1-\u30F6\u30FC\u30FB0-9]+)\u300C"
@@ -1508,12 +1509,13 @@ class ReviewTableParser(HTMLParser):
             :attr:`rows`.
 
         Raises:
-            AssertionError: If a cell closes without an active row, indicating
+            ValueError: If a cell closes without an active row, indicating
                 malformed state or unsupported table markup.
         """
 
         if tag in {"td", "th"} and self._in_cell:
-            assert self._row is not None
+            if self._row is None:
+                raise ValueError("review table cell closed without an active row")
             self._row.append("".join(self._buffer).strip())
             self._in_cell = False
         elif tag == "tr" and self._row is not None:
@@ -1683,7 +1685,10 @@ def current_capacity(source_row: dict) -> str:
     return "graphics/program text; no scenario slot"
 
 
-def parse_review(source_rows: list[dict]) -> tuple[dict[str, dict], Path]:
+def parse_review(
+    source_rows: list[dict],
+    review_path: Path | None = None,
+) -> tuple[dict[str, dict], Path | None]:
     """Load and strictly align the optional diagnostic review with the corpus.
 
     Args:
@@ -1704,9 +1709,19 @@ def parse_review(source_rows: list[dict]) -> tuple[dict[str, dict], Path]:
         advisory and is interpreted again by later functions.
     """
 
-    review_path = next((path for path in REVIEW_CANDIDATES if path.exists()), None)
     if review_path is None:
-        raise FileNotFoundError("no supplied translation-review HTML found")
+        review_path = next((path for path in REVIEW_CANDIDATES if path.exists()), None)
+    if review_path is None:
+        neutral = {
+            "qa": "",
+            "direction": "",
+            "close_reading": "",
+            "review_priority": "medium",
+            "raw_notes": "",
+        }
+        return {row["text_id"]: dict(neutral) for row in source_rows}, None
+    if not review_path.is_file():
+        raise FileNotFoundError(f"diagnostic review file not found: {review_path}")
     parser = ReviewTableParser()
     parser.feed(review_path.read_text(encoding="utf-8"))
     data_rows = parser.rows[1:]
@@ -1852,6 +1867,7 @@ def literal_meaning(source_row: dict, review: dict, final: str) -> str:
     Args:
         source_row: Authoritative source record and provisional English.
         review: Aligned diagnostic review annotations.
+        playable_scenario_text: Release-authoritative ID-keyed scenario text.
         final: Already selected natural translation, retained for call-site
             symmetry and future context-sensitive comparison.
 
@@ -2278,13 +2294,36 @@ def patch_charset_safe(text: str) -> str:
     )
 
 
-def patch_safe(source_row: dict, final: str, review: dict) -> tuple[str, str, bool]:
+def load_playable_scenario_text() -> dict[str, str]:
+    """Load the ID-keyed scenario maps that define the playable release."""
+
+    output: dict[str, str] = {}
+    for path in sorted(TRANSLATIONS.glob("*.json")):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError(f"playable translation map is not an object: {path}")
+        for text_id, text in payload.items():
+            if not isinstance(text_id, str) or not isinstance(text, str):
+                raise ValueError(f"playable translation map has non-string data: {path}")
+            if text_id in output:
+                raise ValueError(f"duplicate playable translation ID: {text_id}")
+            output[text_id] = text
+    return output
+
+
+def patch_safe(
+    source_row: dict,
+    final: str,
+    review: dict,
+    playable_scenario_text: dict[str, str],
+) -> tuple[str, str, bool]:
     """Build a control-safe patch candidate and estimate technical fit risk.
 
     Args:
         source_row: Source metadata and currently installed English.
         final: Preferred unconstrained translation.
         review: Aligned diagnostic review annotations.
+        playable_scenario_text: Authoritative record-ID-to-English scenario map.
 
     Returns:
         A three-item tuple of patch text, any documented nuance/fit note, and a
@@ -2295,18 +2334,24 @@ def patch_safe(source_row: dict, final: str, review: dict) -> tuple[str, str, bo
         KeyError: If required corpus fields are missing.
 
     Design:
-        Manual overrides win, fixed-address/graphics records retain verified
-        forms, and revised scenario prose inherits the current control layout.
+        Playable scenario maps are authoritative, fixed-address/graphics records
+        retain their installed forms, and editorial alternatives remain in the
+        natural-translation field.
         Visible-length and 24-column checks are conservative warnings.  A bank
         listed in :data:`PATCH_FOOTPRINT_RESULTS` overrides that estimate because
         its finalized map passed native encoding, display, and recompression.
     """
 
     text_id = source_row["text_id"]
-    if text_id in MANUAL_PATCH:
-        patch = MANUAL_PATCH[text_id]
+    if source_row["kind"] == "scenario":
+        try:
+            patch = playable_scenario_text[text_id]
+        except KeyError as error:
+            raise ValueError(f"playable scenario translation is missing: {text_id}") from error
     elif source_row["kind"] in {"fixed-address", "graphics-text"}:
         patch = source_row["current_english_exact"]
+    elif text_id in MANUAL_PATCH:
+        patch = MANUAL_PATCH[text_id]
     elif direction_is_translation(review["direction"]) or text_id in MANUAL_FINAL:
         patch = insert_controls_by_current_layout(
             final.replace("Protagonist:", "Me:"),
@@ -2315,7 +2360,10 @@ def patch_safe(source_row: dict, final: str, review: dict) -> tuple[str, str, bo
     else:
         patch = source_row["current_english_exact"]
     patch = patch_charset_safe(patch)
-    if controls(patch) != controls(source_row["japanese_exact"]):
+    if (
+        controls(patch) != controls(source_row["japanese_exact"])
+        and text_id not in CONTROL_OVERRIDE_IDS
+    ):
         raise ValueError(
             f"control mismatch in proposed patch for {text_id}: "
             f"{controls(source_row['japanese_exact'])} != {controls(patch)}"
@@ -2428,7 +2476,9 @@ def ambiguity_and_confidence(
     return "", "High", False
 
 
-def make_rows() -> tuple[list[WorkbookRow], dict, Path]:
+def make_rows(
+    review_file: Path | None = None,
+) -> tuple[list[WorkbookRow], dict, Path | None]:
     """Create the complete ordered workbook from authoritative source records.
 
     Returns:
@@ -2457,7 +2507,8 @@ def make_rows() -> tuple[list[WorkbookRow], dict, Path]:
     source_rows = payload["rows"]
     if len(source_rows) != 2052:
         raise ValueError(f"expected 2052 source rows, got {len(source_rows)}")
-    review_map, review_path = parse_review(source_rows)
+    review_map, review_path = parse_review(source_rows, review_file)
+    playable_scenario_text = load_playable_scenario_text()
     output: list[WorkbookRow] = []
     for source_row in source_rows:
         review = review_map[source_row["text_id"]]
@@ -2467,7 +2518,9 @@ def make_rows() -> tuple[list[WorkbookRow], dict, Path]:
         notes = linguistic_notes(source_row, review, register)
         categories = problem_categories(review["qa"], source_row, final)
         problems = current_problems(source_row, review, final, categories)
-        patch, nuance, expansion = patch_safe(source_row, final, review)
+        patch, nuance, expansion = patch_safe(
+            source_row, final, review, playable_scenario_text
+        )
         ambiguity, confidence, gameplay = ambiguity_and_confidence(
             source_row, review, register
         )
@@ -2595,7 +2648,7 @@ def render_html(
     rows: list[WorkbookRow],
     glossary: list[dict],
     source_payload: dict,
-    review_path: Path,
+    review_path: Path | None,
 ) -> str:
     """Render the complete searchable workbook as a self-contained HTML page.
 
@@ -2626,6 +2679,12 @@ def render_html(
         f"{bank} {result['used']}/{result['capacity']} bytes "
         f"({result['remaining']} free)"
         for bank, result in PATCH_FOOTPRINT_RESULTS.items()
+    )
+    review_provenance = (
+        f" Diagnostic review: {escape_cell(review_path.name)} "
+        f"(SHA-256 {sha256(review_path)})."
+        if review_path is not None
+        else " Diagnostic review: none supplied; neutral diagnostics used."
     )
     bank_options = "".join(
         f'<option value="{html.escape(bank)}">{html.escape(bank)}</option>'
@@ -2803,7 +2862,7 @@ th{{position:sticky;top:0;background:#292c40;z-index:2;text-align:left}} tbody t
 <div class="card"><b>{gameplay_count:,}</b>gameplay/visual checks</div>
 <div class="card"><b>{technical_count:,}</b>storage overflows / expansion checks</div>
 </div>
-<p class="small">Authoritative source: {escape_cell(SOURCE_JSON.name)} (SHA-256 {sha256(SOURCE_JSON)}). Diagnostic review: {escape_cell(review_path.name)} (SHA-256 {sha256(review_path)}). Exact/source order: {escape_cell(source_payload['source_of_truth'])}</p>
+<p class="small">Authoritative source: {escape_cell(SOURCE_JSON.name)} (SHA-256 {sha256(SOURCE_JSON)}).{review_provenance} Exact/source order: {escape_cell(source_payload['source_of_truth'])}</p>
 <details open><summary><b>Method and field interpretation</b></summary>
 <div class="summary"><p>All 2,052 records have a proposed final and patch-safe English field. Short simple lines may have identical literal and natural translations. Fixed-address natural meanings are expanded for analysis; their patch-safe forms retain the verified compact slot text. Every scenario patch passed the ROM character encoder and 24-column display validator. The materially revised banks passed native dictionary recompression: {escape_cell(footprint_summary)}. Unchanged banks retain the already-tested installed English maps.</p>
 <p>The supplied diagnostic review was consulted for line-specific corrections, but its unsafe substring-based Japanese reconstruction was not copied. Speaker identity is derived from explicit labels, neighboring English speaker turns, and scene grouping. Ambiguity is recorded without leaving the line untranslated.</p></div></details>
@@ -2874,7 +2933,11 @@ def write_csv(path: Path, records: Iterable[dict]) -> None:
     if not records:
         raise ValueError("cannot write empty CSV")
     with path.open("w", encoding="utf-8-sig", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=list(records[0]))
+        writer = csv.DictWriter(
+            stream,
+            fieldnames=list(records[0]),
+            lineterminator="\n",
+        )
         writer.writeheader()
         writer.writerows(records)
 
@@ -2882,7 +2945,7 @@ def write_csv(path: Path, records: Iterable[dict]) -> None:
 def write_progress(
     rows: list[WorkbookRow],
     glossary: list[dict],
-    review_path: Path,
+    review_path: Path | None,
 ) -> None:
     """Write a human-readable project completion and exception report.
 
@@ -2920,7 +2983,11 @@ def write_progress(
         "## Source fingerprints",
         "",
         f"- `{SOURCE_JSON.name}` — SHA-256 `{sha256(SOURCE_JSON)}`",
-        f"- `{review_path.name}` — SHA-256 `{sha256(review_path)}`",
+        *(
+            [f"- `{review_path.name}` — SHA-256 `{sha256(review_path)}`"]
+            if review_path is not None
+            else ["- Diagnostic review: not supplied (neutral diagnostics used)"]
+        ),
         "",
         "## Bank coverage",
         "",
@@ -3049,9 +3116,10 @@ def write_voice_guide(glossary: list[dict]) -> None:
             "## Control-code policy",
             "",
             "Control tags are never translated. Their exact order is preserved in "
-            "every patch-safe record. The legend in the HTML workbook describes "
-            "observed behavior without pretending each value has one universal "
-            "linguistic meaning.",
+            "scenario records. A documented fixed-interface exception may retain "
+            "the already validated playable control layout. The legend in the HTML "
+            "workbook describes observed behavior without pretending each value has "
+            "one universal linguistic meaning.",
             "",
         ]
     )
@@ -3095,8 +3163,10 @@ def validate(
         source = source_by_id[row.original_record_id]
         if row.exact_japanese_source != source["japanese_exact"]:
             raise AssertionError(f"Japanese source drift: {row.original_record_id}")
-        if controls(row.exact_japanese_source) != controls(
-            row.patch_safe_english_translation
+        if (
+            controls(row.exact_japanese_source)
+            != controls(row.patch_safe_english_translation)
+            and row.original_record_id not in CONTROL_OVERRIDE_IDS
         ):
             raise AssertionError(f"control drift: {row.original_record_id}")
         if not row.final_natural_english_translation:
@@ -3192,8 +3262,18 @@ def main() -> None:
         machine-readable and human-readable outputs remain auditable.
     """
 
+    parser = argparse.ArgumentParser(
+        description="Generate the Time Twist translation-review workbook."
+    )
+    parser.add_argument(
+        "--review-file",
+        type=Path,
+        help="optional diagnostic review HTML; no personal paths are searched",
+    )
+    args = parser.parse_args()
+
     OUTPUTS.mkdir(parents=True, exist_ok=True)
-    rows, source_payload, review_path = make_rows()
+    rows, source_payload, review_path = make_rows(args.review_file)
     glossary = make_glossary(rows)
     validate(rows, source_payload, glossary)
     write_checkpoints(rows)
@@ -3213,8 +3293,12 @@ def main() -> None:
                 "source_of_truth": source_payload["source_of_truth"],
                 "source_file": SOURCE_JSON.name,
                 "source_sha256": sha256(SOURCE_JSON),
-                "diagnostic_review_file": review_path.name,
-                "diagnostic_review_sha256": sha256(review_path),
+                "diagnostic_review_file": (
+                    review_path.name if review_path is not None else None
+                ),
+                "diagnostic_review_sha256": (
+                    sha256(review_path) if review_path is not None else None
+                ),
                 "exact_japanese_policy": (
                     "Exact Japanese is copied from the decoded ROM corpus. "
                     "Reconstructed Japanese is editorial and conservative."

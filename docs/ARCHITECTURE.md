@@ -156,3 +156,34 @@ When adding a constant, document:
 - how the source bytes were established;
 - what must remain fixed after the patch; and
 - which test detects a mismatch.
+
+## Release-control architecture
+
+The release layer separates three approvals that were previously conflated:
+
+1. `work/release_sources.json` approves non-code inputs: both Japanese
+   baselines, all playable scenario maps, and the title reference asset.
+2. `release-build --candidate` deterministically composes an unapproved build
+   and records scenario capacities, component hashes, and final image hashes.
+3. `release-promote` revalidates the exact candidate files and writes
+   `work/release_target.json`, tying output hashes to the active source-lock
+   SHA-256.
+
+A strict `release-build` requires that tie and reproduces the promoted sizes and
+hashes. Build files are prepared in a sibling staging directory and are not
+published when source or target validation fails.
+
+Release commands operate on a project checkout rather than package data. This
+keeps the wheel free of translation project artifacts and all proprietary ROM
+material. Checkout discovery searches the current directory and parents;
+`--project-root` makes the dependency explicit for an installed command run
+elsewhere.
+
+## Public/private test boundary
+
+Fixture-free tests use synthetic FDS data and generated workbook inputs and run
+in public CI. Exact tests against original or derived game bytes live under
+`work/integration_tests/`. Their local inputs are described only by hashes in
+`work/integration_fixtures.json` and are validated before discovery. This
+prevents a missing private fixture from turning a critical exact-output test
+into an unnoticed skip.

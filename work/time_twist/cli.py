@@ -1,12 +1,8 @@
-"""Compose the lossless parsers and guarded patch layers as a command-line tool.
+"""Compose the lossless parsers and guarded patch layers as ``time-twist``.
 
-Run from the repository's ``work`` directory:
-
-``python -m time_twist.cli --help``
-
-Commands are deliberately small and explicit.  Intermediate extracted banks,
-translation JSON, rebuilt banks, and FDS images remain inspectable instead of
-being hidden inside one irreversible build command.
+Individual patch commands remain small and explicit. Release commands discover
+a project checkout from the current directory or accept ``--project-root``, so
+the installed console command does not depend on package-bundled project data.
 """
 
 from __future__ import annotations
@@ -29,9 +25,19 @@ from .font import patched_nov4_font
 from .scenario import parse_scenario_bank, rebuild_scenario_bank, render_symbols
 from .textcodec import pack_records
 from .title import DEFAULT_SUBTITLE, patched_nov4_title
+from .project import (
+    PERSONALITY_QUESTION_IDS,
+    infer_bank_name,
+    required_dictionary_entries,
+)
+from .release import (
+    build_release,
+    discover_project_root,
+    promote_release_target,
+    validate_source_lock,
+    write_source_lock,
+)
 from .ui import (
-    T22_REQUIRED_DICTIONARY_TEXT,
-    TT1B_REQUIRED_DICTIONARY_TEXT,
     patched_kouhen_boot_guard,
     patched_nov2_ui,
     patched_nov4_ui,
@@ -48,59 +54,6 @@ from .ui import (
     patched_tt6b_ui,
     patched_tt6c_ui,
 )
-
-
-BANK_REQUIRED_DICTIONARY_TEXT = {
-    "TT1B": TT1B_REQUIRED_DICTIONARY_TEXT,
-    "TT2": ("CROWD", "Bishop"),
-    "T22": T22_REQUIRED_DICTIONARY_TEXT,
-    "TT3B": ("Cougar",),
-    # TT4 repeats these dialogue prefixes heavily. Reserving them produces a
-    # substantially smaller flat dictionary than fragment-only greedy picks.
-    "TT4": (
-        "Cerberus: ",
-        "Soldier: ",
-        "Fisher: ",
-        "Man: ",
-        "Me: ",
-        "Merchant: ",
-        "Devil: ",
-        "Dario: ",
-        "Girl: ",
-        "Youth: ",
-        "Priest: ",
-    ),
-    # TT5 uses Tom's speaker prefix often enough that reserving it beats the
-    # greedy fragment it replaces and keeps the rebuilt scenario in RAM.
-    "TT5": ("Tom: ",),
-}
-
-
-PERSONALITY_QUESTION_IDS = frozenset(
-    f"TT1A/g0/r{record}" for record in range(6, 21)
-)
-
-
-def _required_dictionary_entries(
-    bank_name: str,
-) -> tuple[tuple[object, ...], ...]:
-    """Encode dictionary entries reserved by a bank's fixed text.
-
-    Args:
-        bank_name: Canonical component name such as ``TT1B`` or ``TT4``.
-
-    Returns:
-        Ordered encoded entries that must precede greedy compression choices.
-        Unknown banks return an empty tuple.
-
-    Raises:
-        EnglishTextError: If a configured entry cannot be encoded.
-    """
-
-    return tuple(
-        encode_english(text)
-        for text in BANK_REQUIRED_DICTIONARY_TEXT.get(bank_name, ())
-    )
 
 
 def safe_filename(name: str) -> str:
@@ -238,7 +191,7 @@ def command_scenario_extract(args: argparse.Namespace) -> None:
     """
 
     bank = parse_scenario_bank(args.bank)
-    bank_name = args.bank.stem.split("_")[2] if "_" in args.bank.stem else args.bank.stem
+    bank_name = infer_bank_name(args.bank, getattr(args, "bank_name", None))
     existing_english: dict[tuple[int, int], str] = {}
     if args.output.is_file():
         previous = json.loads(args.output.read_text(encoding="utf-8"))
@@ -319,11 +272,7 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
     """
 
     bank = parse_scenario_bank(args.bank)
-    bank_name = (
-        args.bank.stem.split("_")[2]
-        if "_" in args.bank.stem
-        else args.bank.stem
-    )
+    bank_name = infer_bank_name(args.bank, getattr(args, "bank_name", None))
     document = json.loads(args.translation.read_text(encoding="utf-8"))
     json_groups = document.get("groups")
     if not isinstance(json_groups, list) or len(json_groups) != len(bank.group_addresses):
@@ -366,7 +315,7 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
         original_size = packed_size(packed_groups, ())
         packed_groups, dictionary = compress_english_groups(
             packed_groups,
-            required_entries=_required_dictionary_entries(bank_name),
+            required_entries=required_dictionary_entries(bank_name),
         )
         compressed_size = packed_size(packed_groups, dictionary)
         print(
@@ -545,11 +494,7 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
     translations = json.loads(args.translations.read_text(encoding="utf-8"))
     if not isinstance(translations, dict):
         raise SystemExit("translation file must contain an ID-keyed JSON object")
-    bank_name = (
-        args.bank.stem.split("_")[2]
-        if "_" in args.bank.stem
-        else args.bank.stem
-    )
+    bank_name = infer_bank_name(args.bank, getattr(args, "bank_name", None))
     records_by_id = {
         f"{bank_name}/g{record.group_index}/r{record.record_index}": record
         for record in bank.records
@@ -596,7 +541,7 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
     )
     compressed_groups, dictionary = compress_english_groups(
         groups,
-        required_entries=_required_dictionary_entries(bank_name),
+        required_entries=required_dictionary_entries(bank_name),
     )
     used = packed_size(compressed_groups, dictionary) + 2 * (len(groups) - 1)
     print(
@@ -724,6 +669,51 @@ def command_replace_file(args: argparse.Namespace) -> None:
     print(args.output)
 
 
+
+def command_release_lock(args: argparse.Namespace) -> None:
+    """Validate or intentionally refresh the approved release-source lock."""
+
+    project_root = discover_project_root(args.project_root)
+    lock_path = args.lock or project_root / "work" / "release_sources.json"
+    if args.update:
+        payload = write_source_lock(lock_path, project_root=project_root)
+        print(f"updated {lock_path} ({len(payload['files'])} approved files)")
+    else:
+        payload = validate_source_lock(lock_path, project_root=project_root)
+        print(f"release source lock: PASS ({len(payload['files'])} files)")
+
+
+def command_release_build(args: argparse.Namespace) -> None:
+    """Build all release images and write a hash manifest."""
+
+    project_root = discover_project_root(args.project_root)
+    output_directory = args.output_dir or project_root / "build" / "release"
+    manifest = build_release(
+        output_directory,
+        project_root=project_root,
+        source_lock=args.lock,
+        release_target=args.target,
+        verify_target=not args.candidate,
+    )
+    print(f"mode: {manifest['mode']}")
+    for name, record in manifest["outputs"].items():
+        print(f"{name}: {record['path']} SHA-256 {record['sha256']}")
+    print(output_directory.resolve() / "release_manifest.json")
+
+
+def command_release_promote(args: argparse.Namespace) -> None:
+    """Promote a reviewed candidate manifest into the strict release target."""
+
+    project_root = discover_project_root(args.project_root)
+    target = promote_release_target(
+        args.candidate_manifest,
+        target_path=args.target,
+        project_root=project_root,
+        release_id=args.release_id,
+    )
+    target_path = args.target or project_root / "work" / "release_target.json"
+    print(f"promoted {target_path} ({target['release_id']})")
+
 def build_parser() -> argparse.ArgumentParser:
     """Construct the complete command-line parser.
 
@@ -736,7 +726,7 @@ def build_parser() -> argparse.ArgumentParser:
     """
 
     parser = argparse.ArgumentParser(
-        prog="python -m time_twist.cli",
+        prog="time-twist",
         description=(
             "Inspect, extract, translate, rebuild, and verify Time Twist "
             "Famicom Disk System images."
@@ -825,6 +815,14 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     scenario_extract.add_argument("bank", type=Path, help="extracted scenario .bin")
+    scenario_extract.add_argument(
+        "--bank-name",
+        choices=(
+            "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B",
+            "TT4", "TT5", "T25", "TT6A", "TT6B", "TT6C", "TT6D",
+        ),
+        help="explicit bank name when the filename is nonstandard",
+    )
     scenario_extract.add_argument("output", type=Path, help="scenario JSON path")
     scenario_extract.set_defaults(function=command_scenario_extract)
 
@@ -838,6 +836,14 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     scenario_insert.add_argument("bank", type=Path, help="clean extracted bank")
+    scenario_insert.add_argument(
+        "--bank-name",
+        choices=(
+            "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B",
+            "TT4", "TT5", "T25", "TT6A", "TT6B", "TT6C", "TT6D",
+        ),
+        help="explicit bank name when the filename is nonstandard",
+    )
     scenario_insert.add_argument(
         "translation",
         type=Path,
@@ -891,6 +897,14 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     scenario_footprint.add_argument("bank", type=Path, help="clean extracted bank")
+    scenario_footprint.add_argument(
+        "--bank-name",
+        choices=(
+            "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B",
+            "TT4", "TT5", "T25", "TT6A", "TT6B", "TT6C", "TT6D",
+        ),
+        help="explicit bank name when the filename is nonstandard",
+    )
     scenario_footprint.add_argument(
         "--translations",
         type=Path,
@@ -968,23 +982,110 @@ def build_parser() -> argparse.ArgumentParser:
     replace_file.add_argument("data", type=Path, help="replacement payload .bin")
     replace_file.add_argument("output", type=Path, help="rebuilt output .fds")
     replace_file.set_defaults(function=command_replace_file)
+
+    release_lock = subparsers.add_parser(
+        "release-lock",
+        help="validate or update the approved release-input lock",
+        description=(
+            "Check all baseline, translation-map, and title-asset hashes. "
+            "Use --update only when intentionally promoting edited sources."
+        ),
+    )
+    release_lock.add_argument(
+        "--project-root",
+        type=Path,
+        help="project checkout (auto-discovered from the current directory by default)",
+    )
+    release_lock.add_argument(
+        "--lock",
+        type=Path,
+        help="source-lock JSON path (default: PROJECT/work/release_sources.json)",
+    )
+    release_lock.add_argument(
+        "--update",
+        action="store_true",
+        help="rewrite the lock from the current approved source files",
+    )
+    release_lock.set_defaults(function=command_release_lock)
+
+    release_build = subparsers.add_parser(
+        "release-build",
+        help="build Zenpen, Kouhen, and a combined four-side image",
+        description=(
+            "Validate the approved source lock, rebuild every scenario bank, "
+            "apply fixed UI/font/title patches, and emit output hashes."
+        ),
+    )
+    release_build.add_argument(
+        "--project-root",
+        type=Path,
+        help="project checkout (auto-discovered from the current directory by default)",
+    )
+    release_build.add_argument(
+        "--output-dir",
+        type=Path,
+        help="output directory (default: PROJECT/build/release)",
+    )
+    release_build.add_argument(
+        "--lock",
+        type=Path,
+        help="approved source-lock JSON path (default: PROJECT/work/release_sources.json)",
+    )
+    release_build.add_argument(
+        "--target",
+        type=Path,
+        help="promoted output target (default: PROJECT/work/release_target.json)",
+    )
+    release_build.add_argument(
+        "--candidate",
+        action="store_true",
+        help="publish an unpromoted candidate instead of verifying the release target",
+    )
+    release_build.set_defaults(function=command_release_build)
+
+    release_promote = subparsers.add_parser(
+        "release-promote",
+        help="promote a reviewed candidate manifest into the release target",
+        description=(
+            "Verify every candidate output and its active source lock, then write "
+            "the versioned target used by strict release builds."
+        ),
+    )
+    release_promote.add_argument(
+        "candidate_manifest",
+        type=Path,
+        help="candidate release_manifest.json produced by release-build --candidate",
+    )
+    release_promote.add_argument(
+        "--project-root",
+        type=Path,
+        help="project checkout (auto-discovered from the current directory by default)",
+    )
+    release_promote.add_argument(
+        "--target",
+        type=Path,
+        help="target JSON path (default: PROJECT/work/release_target.json)",
+    )
+    release_promote.add_argument(
+        "--release-id",
+        help="human-readable target identifier (default: english-playtest)",
+    )
+    release_promote.set_defaults(function=command_release_promote)
     return parser
 
 
-def main() -> None:
-    """Parse process arguments and invoke the selected command.
+def main(argv: list[str] | None = None) -> None:
+    """Parse arguments, run one command, and present expected failures cleanly."""
 
-    Raises:
-        SystemExit: For normal argparse help/errors or any command validation
-            failure expressed as a CLI exit.
-
-    Side Effects:
-        Depends on the selected command and may read, create, or overwrite
-        explicitly supplied paths and write status to standard output.
-    """
-
-    args = build_parser().parse_args()
-    args.function(args)
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    try:
+        args.function(args)
+    except (OSError, ValueError, KeyError, OverflowError, json.JSONDecodeError) as error:
+        message = str(error)
+        if isinstance(error, KeyError) and len(message) >= 2:
+            message = message.strip("'\"")
+        parser.exit(2, f"{parser.prog}: error: {message}\n")
 
 
 if __name__ == "__main__":

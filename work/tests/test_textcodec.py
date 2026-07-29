@@ -66,6 +66,14 @@ class PackedTextTests(unittest.TestCase):
             [(symbol.kind, symbol.value) for symbol in symbols],
         )
 
+    def test_encoder_rejects_zero_dictionary_reference(self) -> None:
+        writer = BitWriter()
+        with self.assertRaisesRegex(Exception, "one-based"):
+            encode_symbol(
+                writer,
+                PackedSymbol(SymbolKind.DICTIONARY, 0, 0, 0),
+            )
+
     def test_pack_records_writes_aligned_separators(self) -> None:
         records = (
             (PackedSymbol(SymbolKind.COMMON, 1, 0, 0),),

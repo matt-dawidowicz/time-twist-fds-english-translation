@@ -310,7 +310,10 @@ def parse_scenario_bank(
         for offset in range(0, table_size, 2)
     )
     group_addresses = (group_zero_address, *extra_group_addresses)
-    if tuple(sorted(group_addresses)) != group_addresses:
+    if any(
+        first >= second
+        for first, second in zip(group_addresses, group_addresses[1:])
+    ):
         raise ScenarioError("text-group pointers are not strictly ordered")
 
     group_offsets = tuple(

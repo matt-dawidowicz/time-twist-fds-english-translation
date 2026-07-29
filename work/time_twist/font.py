@@ -11,10 +11,18 @@ matching glyph and regression coverage here.
 
 from __future__ import annotations
 
+import hashlib
+
 from .english import COMMON_CHARACTERS, EXTENDED_CHARACTERS
 
 
 NOV4_FONT_BASE_OFFSET = 0x1B7D
+SUPPORTED_NOV4_FONT_SOURCE_SHA256 = frozenset({
+    # Clean Japanese NOV4.
+    "89F50DA5A0BD2CE318DD9DBBAF3CE976F353E5EC0AC6357FD91438CDAC927694",
+    # The same bank after the size-neutral NOV4 UI patch.
+    "B20913B933C9AC2E225B2A0E2CEF465C28AD9BA391171671FDAF808E4C5E0046",
+})
 
 # A deterministic 5x7 pixel alphabet.  The previous milestone rasterized an
 # antialiased desktop font at only eight pixels high, leaving broken diagonals
@@ -238,6 +246,12 @@ def patched_nov4_font(
 
     if len(data) < NOV4_FONT_BASE_OFFSET + (0xFE + 1) * 8:
         raise FontPatchError("NOV4 is too short for its recovered font table")
+    source_hash = hashlib.sha256(data).hexdigest().upper()
+    if source_hash not in SUPPORTED_NOV4_FONT_SOURCE_SHA256:
+        raise FontPatchError(
+            "NOV4 does not match a supported pre-font source; "
+            f"SHA-256 {source_hash}"
+        )
     result = bytearray(data)
 
     tile_characters: dict[int, str] = {}

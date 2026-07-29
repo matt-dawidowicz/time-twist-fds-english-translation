@@ -1,0 +1,374 @@
+{
+  "schema": "Time Twist private integration fixtures v1",
+  "description": "Hash manifest for local ROM-derived integration fixtures. The public source repository intentionally does not distribute these files.",
+  "files": {
+    "work/baseline/time_twist_kouhen_japan.fds": {
+      "sha256": "F62A7424FE489CBE479C3EBAABE4CE62D85127601FFD3D08ABD4E5A0DC39442A",
+      "bytes": 131000
+    },
+    "work/baseline/time_twist_zenpen_japan.fds": {
+      "sha256": "B9424DD29EE195A9FA9AC4F844F058C380E30F7ACA741218789FA8611F741916",
+      "bytes": 131000
+    },
+    "work/extracted_zenpen/side0_00_KYODAKU-_2800.bin": {
+      "sha256": "0FF60F81F193B001ECCCC6A280CDDBA4B99830755AA658C089D566046ADFB034",
+      "bytes": 224
+    },
+    "work/extracted_zenpen/side0_01_TT3A_A200.bin": {
+      "sha256": "390F87E332642B832B7718A374CD192947F300C35862AC4FE631911D8F3404EC",
+      "bytes": 13456
+    },
+    "work/extracted_zenpen/side0_02_TT3B_A200.bin": {
+      "sha256": "4125A4E7DAACBAA1773617B51CF18D8F2B01402B48CA1CD15A4F5F578038C587",
+      "bytes": 3056
+    },
+    "work/extracted_zenpen/side0_03_OB3_0000.bin": {
+      "sha256": "71AD36C3C4B192D342BE2C0CBEE081DA88C3870FFF0E57CC28DF4922F3D71375",
+      "bytes": 2624
+    },
+    "work/extracted_zenpen/side0_04_BG3_1100.bin": {
+      "sha256": "51A6CC9991AB50E1BCD6026486CE66949B688156028FED89AB2ADBE6085FD85A",
+      "bytes": 3744
+    },
+    "work/extracted_zenpen/side0_05_NOV1_0390.bin": {
+      "sha256": "5B6FB58E61FA475939767D68A446F97F1BFF02C0E5935A3EA8BB51E6515783D8",
+      "bytes": 80
+    },
+    "work/extracted_zenpen/side0_06_NOV2_6000.bin": {
+      "sha256": "C2E9855C0E4829C528CE30D05AE8E6CBEDC386920D3743E80458A7C7051EB2BE",
+      "bytes": 16896
+    },
+    "work/extracted_zenpen/side0_07_NOV3_D7B5.bin": {
+      "sha256": "9AAACEED114E9D5FC8F50011A65B4C08A8FBC28DCC8DB98377D260C0B66735D8",
+      "bytes": 2123
+    },
+    "work/extracted_zenpen/side0_08_NOV4_A200.bin": {
+      "sha256": "89F50DA5A0BD2CE318DD9DBBAF3CE976F353E5EC0AC6357FD91438CDAC927694",
+      "bytes": 9077
+    },
+    "work/extracted_zenpen/side0_09_SAVE_0390.bin": {
+      "sha256": "5B6FB58E61FA475939767D68A446F97F1BFF02C0E5935A3EA8BB51E6515783D8",
+      "bytes": 80
+    },
+    "work/extracted_zenpen/side1_00_TT1B_A200.bin": {
+      "sha256": "D5D5FFB50EA3A73202423CB0C096AB020F804E5191F674697660E60BF3E25A8C",
+      "bytes": 13360
+    },
+    "work/extracted_zenpen/side1_01_TT1A_A200.bin": {
+      "sha256": "74E129ECE905385430F4EA2F2B6025A1182E81710BC890176BFDA2C39E4CA7F7",
+      "bytes": 2416
+    },
+    "work/extracted_zenpen/side1_02_TT2_A200.bin": {
+      "sha256": "9C64E7F83E061860AA020B7E95EFCEB496269187F8BCE8784B3B385859FB6890",
+      "bytes": 13568
+    },
+    "work/extracted_zenpen/side1_03_T22_A200.bin": {
+      "sha256": "AABBF0F104FC97438C6230F30C70594D3F11BA222C6DDBCB3BACDC76A3152656",
+      "bytes": 4096
+    },
+    "work/extracted_zenpen/side1_04_OB1B_0000.bin": {
+      "sha256": "B2F9FFB8213EA2DBC271A86D8C2B5C3FD062D49E41155BCC2CC050796047046B",
+      "bytes": 2176
+    },
+    "work/extracted_zenpen/side1_05_BG1B_1100.bin": {
+      "sha256": "70BA705C4D205620AB09041122CD38ED23374EC787BAEDE7594EB55BA0E56983",
+      "bytes": 2800
+    },
+    "work/extracted_zenpen/side1_06_OB1A_0000.bin": {
+      "sha256": "180F13A1275EC84310DDD0C0C5FF23598BB9115A4FD083945C56A8A6407979FE",
+      "bytes": 176
+    },
+    "work/extracted_zenpen/side1_07_BG1A_1100.bin": {
+      "sha256": "A189959F37CBB8A3E578E66818C78C14F2D34D6BB3FB2BDBE5C4CC42BA88BC4B",
+      "bytes": 1168
+    },
+    "work/extracted_zenpen/side1_08_OBJ2_0000.bin": {
+      "sha256": "E888B35CC4E8652D6F34EA6F5EE60F248D632BC9C29463429639464C989B3DBD",
+      "bytes": 2624
+    },
+    "work/extracted_zenpen/side1_09_BG2_1200.bin": {
+      "sha256": "A6F10941FF48CBD1B97F1922238BF2D3C35273E4608F8A59125D6BB8937F1B3E",
+      "bytes": 2496
+    },
+    "work/extracted_kouhen/side0_00_KYODAKU-_2800.bin": {
+      "sha256": "0FF60F81F193B001ECCCC6A280CDDBA4B99830755AA658C089D566046ADFB034",
+      "bytes": 224
+    },
+    "work/extracted_kouhen/side0_01_SON-KOUH_DD1D.bin": {
+      "sha256": "EE32CD2462B224A55B875694D8C34A362754A92630DCDB1A40451AA331C43847",
+      "bytes": 739
+    },
+    "work/extracted_kouhen/side0_02_TT6C_A200.bin": {
+      "sha256": "BC5E3E70D37310FD6981D33B8EA3DCAFB5B3C744D1F2019A0EE54EED887BCF53",
+      "bytes": 12720
+    },
+    "work/extracted_kouhen/side0_03_TT6B_A200.bin": {
+      "sha256": "13079BDD91B9579647F9BF7E98884CD88641C4D035CC619FF41A69CF4EF0B4CA",
+      "bytes": 8832
+    },
+    "work/extracted_kouhen/side0_04_TT6A_A200.bin": {
+      "sha256": "FFB7B5D1179308712E55CACCC31E349E23DF3852A796DD14732F37B48382276F",
+      "bytes": 6256
+    },
+    "work/extracted_kouhen/side0_05_TT6D_A200.bin": {
+      "sha256": "9931CB7AA41D95FC9E7081BE70141693E9C6A4E10E50C62A57C2FBE5FDB572E5",
+      "bytes": 4096
+    },
+    "work/extracted_kouhen/side0_06_OB6C_0000.bin": {
+      "sha256": "EE8BDE963290C7B7A0DA943227BE2ED8F088AF658B051CF0E6505DCFC3506817",
+      "bytes": 2544
+    },
+    "work/extracted_kouhen/side0_07_BG6C_1100.bin": {
+      "sha256": "B58CCD4A75067FB49454EB7941471DFE868D3DC9999C82E535482B73C1A4142B",
+      "bytes": 2784
+    },
+    "work/extracted_kouhen/side0_08_OB6B_0000.bin": {
+      "sha256": "030F951091FE77DA2D37413FB0F235ED9CF4BE8A86127B8C7D2D5442625F68DA",
+      "bytes": 1712
+    },
+    "work/extracted_kouhen/side0_09_BG6B_1100.bin": {
+      "sha256": "3047E5BD8EBD610E3ADA512959C96EDF314429C3293702A31FBA567316289765",
+      "bytes": 3584
+    },
+    "work/extracted_kouhen/side0_10_OB6A_0000.bin": {
+      "sha256": "1F6CC74C5798A01637EF2F6DFD0C098E3AD51C76DC54497CFF32B13AAD6479DD",
+      "bytes": 1360
+    },
+    "work/extracted_kouhen/side0_11_BG6A_1100.bin": {
+      "sha256": "BCE10384FC5210217C3CBD20A6FE845C4197444331F8556A80C43698C4986EE0",
+      "bytes": 2224
+    },
+    "work/extracted_kouhen/side0_12_OBJ6D_0000.bin": {
+      "sha256": "3FA0244B1A3120372E4F7145AC43DF6850C8E4CF1B90BBA77BC15F44C790EC2E",
+      "bytes": 2608
+    },
+    "work/extracted_kouhen/side0_13_BG6D_1840.bin": {
+      "sha256": "412DCDEB0961977D5C886D2309A75E90E8FA6C8822EFEEDEC71D52B332E4B5F7",
+      "bytes": 864
+    },
+    "work/extracted_kouhen/side1_00_TT4_A200.bin": {
+      "sha256": "2BBB2670CDB4BE15E59FF970588F6BEB8BBA4E410E333C7F34D0CE6267351CE7",
+      "bytes": 13744
+    },
+    "work/extracted_kouhen/side1_01_TT5_A200.bin": {
+      "sha256": "AE05F7B32E2755767DB6C035C2FE9D165F118AB52E77ED61F3BC18EDF157790A",
+      "bytes": 12544
+    },
+    "work/extracted_kouhen/side1_02_T25_A200.bin": {
+      "sha256": "821DB08B9B6BBF7A93EE0BC8A3C6DB8F3D9B0F6129C9831EB547C374E0344D59",
+      "bytes": 8192
+    },
+    "work/extracted_kouhen/side1_03_OBJ4_0000.bin": {
+      "sha256": "68FC66640E588C28ECBF70137EAE8F1EA78B7FDDA95A9AC86F3E1876A95D41CF",
+      "bytes": 2624
+    },
+    "work/extracted_kouhen/side1_04_BG4_1100.bin": {
+      "sha256": "64E0850D01C0CACFC9BB5124D98CF762108A5A38B2DA8D58A2A91514E5EAF626",
+      "bytes": 3840
+    },
+    "work/extracted_kouhen/side1_05_OBJ5_0000.bin": {
+      "sha256": "F5DFC9767C46361408EC54C735326F1643B3A10CF0294C5882E64BCF1751C94B",
+      "bytes": 2224
+    },
+    "work/extracted_kouhen/side1_06_BG5_1200.bin": {
+      "sha256": "67D1A49477347928C8B4165FE8966E9071A910B8538F9D741F0F20D9321714D4",
+      "bytes": 3232
+    },
+    "work/extracted_kouhen/side1_07_OBJ52_0260.bin": {
+      "sha256": "4BF8957326E0B3BD0311C0C812584078F5B09334FAFF06A68B401A78FD179D2A",
+      "bytes": 1312
+    },
+    "work/extracted_kouhen/side1_08_BG52_1250.bin": {
+      "sha256": "DCFD6E250B45573B1A9738A81EC6305D9D62E0E4C49C6B9775D9581A8325CFC0",
+      "bytes": 2752
+    },
+    "work/translated_banks/T22_fixed_footprint.bin": {
+      "sha256": "57660E975C4055BF09964429D93148E63B2CAE60CF7FE5235E313F68766145B7",
+      "bytes": 4096
+    },
+    "work/translated_banks/T25_fixed_footprint.bin": {
+      "sha256": "145802FC777423CE3A1DB227B48D181FD232B0FF70166DB22618DDC8B0737E71",
+      "bytes": 8192
+    },
+    "work/translated_banks/TT1A_fixed_footprint.bin": {
+      "sha256": "A2FC62EA8D2C9117FCFC5BBF8B089BDB88547DCD55675E47D010F37DF15FD473",
+      "bytes": 2416
+    },
+    "work/translated_banks/TT1B_fixed_footprint.bin": {
+      "sha256": "CA81A85924D06F08910CDDD296FCB999DC49BB1ACF6A80ADD706A461391EE61A",
+      "bytes": 13360
+    },
+    "work/translated_banks/TT2_fixed_footprint.bin": {
+      "sha256": "7B3A5C1BD74D9497A866A6845C3E8216392989FC806C50A0DC4DA10A2CF5D756",
+      "bytes": 13568
+    },
+    "work/translated_banks/TT3A_fixed_footprint.bin": {
+      "sha256": "CAA064895722477041ADF700CC3238C92B23023F09DF4A97C15BED230D3A7B92",
+      "bytes": 13456
+    },
+    "work/translated_banks/TT3B_fixed_footprint.bin": {
+      "sha256": "71BDD3C29B2B82FAA9433D67C7A0410E1A151D2F21939ADDA3195DC7CA20A53D",
+      "bytes": 3056
+    },
+    "work/translated_banks/TT4_fixed_footprint.bin": {
+      "sha256": "B5D5BB9EE08C6482A1E007E1122F7A496A4D7598E850D0FAF72740B051AFAC26",
+      "bytes": 13744
+    },
+    "work/translated_banks/TT5_fixed_footprint.bin": {
+      "sha256": "C94137F93CCA3543E789D88C140684E1DF34FF31980815A0669F3611C781F8F9",
+      "bytes": 12544
+    },
+    "work/translated_banks/TT6A_fixed_footprint.bin": {
+      "sha256": "094559DB356127C7E0CFE2C054783286C0E4030A2389E9111C2AE5661C839D07",
+      "bytes": 6256
+    },
+    "work/translated_banks/TT6B_fixed_footprint.bin": {
+      "sha256": "C15A76C9A59A9224CEAFB16BABD0A4911906057A7AAF10C9C45DE57F61AA79C3",
+      "bytes": 8832
+    },
+    "work/translated_banks/TT6C_fixed_footprint.bin": {
+      "sha256": "6842652A2B5FF14B9575D898EBF14CF52233081C3738605A397297E7F730BC58",
+      "bytes": 12720
+    },
+    "work/translated_banks/TT6D_fixed_footprint.bin": {
+      "sha256": "C3F88A5E57A6048377FBD823653B7B0A401420A5048BD84BB6EFE58493097ECC",
+      "bytes": 4096
+    },
+    "work/build/NOV2_english_ui_v7.bin": {
+      "sha256": "620F951FCF650924BAC927AF2155DCE435B6C316C15BB37852EA2A1FB29F4AF3",
+      "bytes": 16896
+    },
+    "work/build/NOV2_english_ui_v8.bin": {
+      "sha256": "77F21B4A67F937659068EDE9C6D10E829C79A99F11A7185002809B4D741C9BCF",
+      "bytes": 16896
+    },
+    "work/build/NOV2_english_ui_v9.bin": {
+      "sha256": "4450C063B939CFBF2F307E758BF9CC0E1089B8446A67049B6204CA677360A206",
+      "bytes": 16896
+    },
+    "work/build/NOV4_accented_font_ui.bin": {
+      "sha256": "B55FC32F42E2CBB515C2D8FC1C972DD5A7D47678B8B4C126DD48765BFD6F8563",
+      "bytes": 9077
+    },
+    "work/build/NOV4_english_title_v13.bin": {
+      "sha256": "FAE46089D0F50177505A26DBBD3E4BBA0958371130B91ACC15D8106E4820241A",
+      "bytes": 11418
+    },
+    "work/build/NOV4_english_title_v14.bin": {
+      "sha256": "6EEB704C1BF8D9EB0D1A5B75AC1E3DD962CA24CD82A4CC6D2767D7AA82DBE05A",
+      "bytes": 11375
+    },
+    "work/build/NOV4_english_title_v15.bin": {
+      "sha256": "DA20F7C99215D1798F9DB60B03EB0DB25C082BCF6A36E3FF7A3D7136A6BEE559",
+      "bytes": 11992
+    },
+    "work/build/NOV4_english_title_v16.bin": {
+      "sha256": "CD6EF0F6D3A756AE1ED98B3E3D897A7247BA5EF69ECEB1565AB930AC11B03C88",
+      "bytes": 11995
+    },
+    "work/build/NOV4_english_title_v17.bin": {
+      "sha256": "0C559D9B67B318D9132B246FC7C57D38BD506DA100C95F245A2CBA0B488996CF",
+      "bytes": 11997
+    },
+    "work/build/SON-KOUH_english.bin": {
+      "sha256": "99D913F6C055A360C57BD2972ACABE5F377446385CF3289A9EA4FE58A1B553AC",
+      "bytes": 739
+    },
+    "work/build/T22_english_scenario.bin": {
+      "sha256": "B4397BAEE77F7BFB7EA8DEBDBBF6D4FBF5048E6B2070720F04E53C7F88888E0E",
+      "bytes": 4096
+    },
+    "work/build/T25_english_scenario.bin": {
+      "sha256": "CC5DD997EE07892BC5673E78A21BB6EA80421DBFCF0AC06E69476C6470CC03A7",
+      "bytes": 8192
+    },
+    "work/build/TT1A_accented_question_scenario.bin": {
+      "sha256": "98B9A06EEF8E8D169991B658AD8EE8753F656C76CEC1BC221725734F8822460D",
+      "bytes": 2416
+    },
+    "work/build/TT1A_english_punctuation.bin": {
+      "sha256": "A2FC62EA8D2C9117FCFC5BBF8B089BDB88547DCD55675E47D010F37DF15FD473",
+      "bytes": 2416
+    },
+    "work/build/TT1A_english_punctuation_scenario.bin": {
+      "sha256": "22BE635BA2D43F562717930032D5DD69FDB98BB93141BEBF3F95AB13270EC8C8",
+      "bytes": 2416
+    },
+    "work/build/TT1B_english_scenario.bin": {
+      "sha256": "A5C4CB15C0B6BD2A64E8C09AB725879763EFF96AE88A39B56BC04C998EB08AF8",
+      "bytes": 13360
+    },
+    "work/build/TT2_english_scenario.bin": {
+      "sha256": "E6CB17182550318D8E91160CE1EAB72BC29B190B22244888C349D9F124BAD8E9",
+      "bytes": 13568
+    },
+    "work/build/TT3A_english_scenario.bin": {
+      "sha256": "9B479A96BEF17E69060EEB1C4F79750539C7905EDF2EF5421B09AA69332F3C52",
+      "bytes": 13456
+    },
+    "work/build/TT3B_english_scenario.bin": {
+      "sha256": "18E95E5EFB0CA1C060892D70A00860751352D7DFCA6E1F6977608BF94E01E722",
+      "bytes": 3056
+    },
+    "work/build/TT4_english_scenario.bin": {
+      "sha256": "1651226E687D6F26FEA1E14322F50A096EB239548C489D0C3856F40AFCE667ED",
+      "bytes": 13744
+    },
+    "work/build/TT5_english_scenario.bin": {
+      "sha256": "E677407205B018B80471C87503A946423575AA6F2804326F479C40A83B7B45BA",
+      "bytes": 12544
+    },
+    "work/build/TT6A_english_scenario.bin": {
+      "sha256": "AEDE4192AC8B65B82BAB46CC9C07FCDFE68A8FF4D8A9F546AACE3B2B33AEB3FD",
+      "bytes": 6256
+    },
+    "work/build/TT6B_english_scenario.bin": {
+      "sha256": "1CD7F8A7CC092CD9F748A8AF030572CEC36B3F4E051C4DF03D79551757D9C145",
+      "bytes": 8832
+    },
+    "work/build/TT6C_english_scenario.bin": {
+      "sha256": "6D5C9B888048C2E705979F801BE9F2E41283CB091CBFA20EBCF9DBC04FC31150",
+      "bytes": 12720
+    },
+    "work/build/TT6D_english_scenario.bin": {
+      "sha256": "C3F88A5E57A6048377FBD823653B7B0A401420A5048BD84BB6EFE58493097ECC",
+      "bytes": 4096
+    },
+    "work/mesen_capture/zenpen_opening_chr.dmp": {
+      "sha256": "45AB1AD06BEFB18DD2B1EB94ED5262A34215B9EF6D7F5B6F657FD5685313FE9C",
+      "bytes": 8192
+    },
+    "work/mesen_capture/zenpen_opening_cpu.dmp": {
+      "sha256": "53DADA0E545661802821C6BE1B7B44548F5A7B15A880D703A84B84B555BFA158",
+      "bytes": 65536
+    },
+    "work/mesen_capture/zenpen_title_chr.dmp": {
+      "sha256": "31A81C7F587FCB5A3E597F2E763F3F2A4119FC1DB9806D77937E561911B19C2F",
+      "bytes": 8192
+    },
+    "work/mesen_capture/zenpen_title_cpu.dmp": {
+      "sha256": "FB125B76190935AE8565A42E223AE7F1CEF127D9A69C219286C5B469AEB822A7",
+      "bytes": 65536
+    },
+    "outputs/Time Twist - complete English four-side START menu B-button fix playtest.fds": {
+      "sha256": "076BF174047C58185AB85BE6C8BA5E94A6BE9D90FA262A8F95D154B2673701C0",
+      "bytes": 262000
+    },
+    "outputs/Time Twist - complete English four-side playtest.fds": {
+      "sha256": "50682BEF5617B176431E875AE05DCABD0314C0BE1BD0F42215849B59B4A282EB",
+      "bytes": 262000
+    },
+    "outputs/Time Twist Kouhen - complete English playtest.fds": {
+      "sha256": "18445D6DA88278F5C52A8EBFC001F00FD00261D640EBDCD66D6AE2147A2A4421",
+      "bytes": 131000
+    },
+    "outputs/Time Twist Zenpen - START menu B-button fix playtest.fds": {
+      "sha256": "2E0BFB3237F4AEDC79A5B41CA3B9C456A5F93049FEBB143A25E5E7A3D724FEC1",
+      "bytes": 131000
+    },
+    "outputs/Time Twist Zenpen - complete English playtest.fds": {
+      "sha256": "17C63945D029DFCA204A5FFC78935692CB2E241780A07EC28B0DC434E2C2FF39",
+      "bytes": 131000
+    }
+  }
+}
