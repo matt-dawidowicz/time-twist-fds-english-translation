@@ -32,6 +32,9 @@ reproducibility, public packaging, tests, and editorial/build authority.
   target.
 - Strict `release-build` stages all files and publishes only after source-lock
   and target validation.
+- Publication now atomically replaces files from destination-local temporary
+  files, preserving the output directory's Windows ACL inheritance so desktop
+  emulators can open newly built ROMs.
 - External `--lock` paths are handled safely in manifests.
 - Intentional source updates no longer dead-end on hashes hardcoded in Python.
 - Known CLI failures produce concise `time-twist: error:` messages.
@@ -52,14 +55,36 @@ reproducibility, public packaging, tests, and editorial/build authority.
 ## Tests
 
 - Public tests and ROM-derived integration tests are separated.
-- `python work/run_tests.py unit` runs 38 fixture-free tests in CI.
-- `python work/run_tests.py integration` runs 67 exact tests with the private
+- `python work/run_tests.py unit` runs 39 fixture-free tests in CI.
+- `python work/run_tests.py integration` runs 73 exact tests with the private
   overlay.
 - The fixture manifest is validated before discovery.
 - Supported suites reject all skips.
-- The combined overlay run passes 105 tests with zero skips.
+- The current candidate run discovers 112 tests with zero skips: 111 pass and
+  the sole expected release-target gate rejects the intentionally unpromoted
+  title candidate.
 - Four obsolete intermediate-build tests were removed rather than retained as
   permanent skips.
+
+## Title-sequence candidate
+
+- The final title uses a reviewed 256-by-240 indexed native asset derived from
+  the approved target geometry; production never resizes or requantizes it.
+- The upper title fits exactly in 236 patterns, the lower title remains exactly
+  55 patterns, and the clock-source tail `$EC-$FF` remains byte-identical.
+- Both swipe nametables contain all 32 mechanically derived logo columns.
+- Nintendo's temporary `$B0-$D5` patterns are restored before the swipe, so no
+  stale opening-logo patterns can leak into the English title.
+- The original 21 nine-bit scroll origins and attribute-mask reveal are
+  preserved. The first reconstructed frame is blank and the last contains all
+  9,348 approved nontransparent logo pixels.
+- NOV4 offset `$0995` is source-guarded and changed from `$0F` to `$30`, making
+  the settled monochrome outline match the final colored geometry.
+- The preserved hand sprites are moved 16 pixels left and 8 pixels up to remain
+  centered in the corrected clock face; their source graphics and animation
+  tables are unchanged.
+- Patched NOV4 is 12,209 bytes, ends at CPU `$D1B1`, and retains 1,540 bytes of
+  space before resident NOV3 at `$D7B5`.
 
 ## Workbook/build authority
 
@@ -80,3 +105,15 @@ reproducibility, public packaging, tests, and editorial/build authority.
 
 Static and reproducible verification does not replace a complete emulator
 playthrough.
+
+## Unpromoted title test candidate
+
+Two independent source builds produced byte-identical manifests and images.
+The Zenpen candidate was also cold-booted twice through the complete title
+sequence in Mesen with byte-identical frame evidence.
+
+| Image | SHA-256 |
+| --- | --- |
+| Zenpen | `10C893513CC97C3D8657DDF3BF1DC333DC9B0960D0061A227B5D89621F35769B` |
+| Kouhen | `EA56360D36730FDE372F7FC118B81D3C7C2937FD54D30288B7F56D6BCA7DD718` |
+| Four-side | `908A73606DFDC08D8A3F88BF5C389BB82D10BE866196A0677F4BE1ED6EAC7856` |

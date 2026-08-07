@@ -928,7 +928,7 @@ def build_parser() -> argparse.ArgumentParser:
         "title-patch",
         help="build and install the English title assets",
         description=(
-            "Convert a logo/full-screen reference to exact NES assets, retain "
+            "Install a reviewed native 256x240 indexed NES title asset, retain "
             "the animated clock sprites, and append relocated NOV4 helpers "
             "and nametables below resident NOV3."
         ),
@@ -937,7 +937,7 @@ def build_parser() -> argparse.ArgumentParser:
     title_patch.add_argument(
         "target",
         type=Path,
-        help="logo crop or full-screen reference image",
+        help="approved 256x240 indexed title image",
     )
     title_patch.add_argument("output", type=Path, help="expanded NOV4 .bin")
     title_patch.add_argument(

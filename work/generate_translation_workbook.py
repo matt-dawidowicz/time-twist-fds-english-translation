@@ -44,15 +44,24 @@ BANK_ORDER = (
     "NOV2", "NOV4", "TITLE", "SON-KOUH",
 )
 
-# Rebuilt with the project's native dictionary compressor after patch-safe
-# wording was finalized. Unchanged banks retain the already-tested installed
-# English maps; these are the four banks whose workbook wording materially
-# changed.
+# Rebuilt with the project's native dictionary compressor after the playable
+# wording and corpus-wide ellipsis pass were finalized.  All scenario banks
+# were measured from the same candidate manifest; the fixed tails and every
+# original RAM footprint remain preserved.
 PATCH_FOOTPRINT_RESULTS = {
-    "TT1A": {"used": 1618, "capacity": 1669, "remaining": 51},
-    "TT1B": {"used": 4021, "capacity": 4026, "remaining": 5},
-    "TT3A": {"used": 3740, "capacity": 3741, "remaining": 1},
-    "TT6A": {"used": 2696, "capacity": 2833, "remaining": 137},
+    "TT1A": {"used": 1660, "capacity": 1669, "remaining": 9},
+    "TT1B": {"used": 4024, "capacity": 4026, "remaining": 2},
+    "TT2": {"used": 3819, "capacity": 3847, "remaining": 28},
+    "T22": {"used": 1797, "capacity": 1812, "remaining": 15},
+    "TT3A": {"used": 3724, "capacity": 3741, "remaining": 17},
+    "TT3B": {"used": 1830, "capacity": 1840, "remaining": 10},
+    "TT4": {"used": 4738, "capacity": 4741, "remaining": 3},
+    "TT5": {"used": 3700, "capacity": 3702, "remaining": 2},
+    "T25": {"used": 2287, "capacity": 2374, "remaining": 87},
+    "TT6A": {"used": 2691, "capacity": 2833, "remaining": 142},
+    "TT6B": {"used": 2304, "capacity": 2336, "remaining": 32},
+    "TT6C": {"used": 3518, "capacity": 3536, "remaining": 18},
+    "TT6D": {"used": 323, "capacity": 332, "remaining": 9},
 }
 
 SCENES = {
@@ -1140,6 +1149,7 @@ FIXED_NATURAL = {
 }
 
 MANUAL_FINAL = {
+    "TT1B/g0/r1": "When was the last time I saw a blue sky?",
     "TT1B/g0/r28": (
         "Protagonist: Um… / Girl: Have you seen all the exhibits? / "
         "Protagonist: No…"
@@ -1210,7 +1220,7 @@ MANUAL_PATCH = {
         "A magic charm?{CTRL:6}{CTRL:4}{CTRL:3}"
         "Well--act while I can!"
     ),
-    "TT1B/g0/r1": "When last saw blue sky?",
+    "TT1B/g0/r1": "A blue sky... how long?",
     "TT1B/g0/r17": (
         "\"Devil's Hand\"{CTRL:0}{CTRL:2}A bronze statue, emblem{CTRL:0}"
         "of a 19th-century cult.{CTRL:4}{CTRL:3}Its claws tore hearts{CTRL:4}"

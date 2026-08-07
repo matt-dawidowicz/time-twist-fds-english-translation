@@ -51,6 +51,16 @@ The searchable workbook is
 [`outputs/Time_Twist_complete_translation_workbook.html`](outputs/Time_Twist_complete_translation_workbook.html).
 CSV and JSON versions sit beside it.
 
+The workbook deliberately preserves two English versions when hardware limits
+force a compromise. `final_natural_english_translation` is the complete,
+unconstrained translation that a future engine expansion or bank-optimization
+effort should aim to display. `patch_safe_english_translation` is the exact
+wording used by the current playable build after accounting for line width,
+control-code layout, compression, and fixed bank footprints. A shortened
+patch-safe line therefore does **not** mean that the full translation was lost.
+See [`docs/WORKBOOK_PIPELINE.md`](docs/WORKBOOK_PIPELINE.md#preserving-the-full-translation)
+before moving natural-field text into the ROM.
+
 ## Install and test
 
 Python 3.11 or newer is required.
@@ -62,7 +72,7 @@ time-twist --help
 python work/run_tests.py unit
 ```
 
-The public suite contains **38 fixture-free tests** and permits no skips.
+The public suite contains **39 fixture-free tests** and permits no skips.
 Public CI also builds the wheel, force-installs it, and smoke-tests the
 installed `time-twist` command.
 
@@ -74,7 +84,7 @@ python work/run_tests.py integration
 python work/run_tests.py all
 ```
 
-The integration suite contains **67 tests** and also permits no skips. The
+The integration suite contains **73 tests** and also permits no skips. The
 runner validates every fixture against `work/integration_fixtures.json` before
 test discovery, so missing fixtures produce an explicit setup failure rather
 than a misleading green run with skipped tests. See
@@ -129,6 +139,7 @@ Start with [`docs/README.md`](docs/README.md). Important guides:
 - [`docs/WORKBOOK_PIPELINE.md`](docs/WORKBOOK_PIPELINE.md)
 - [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)
 - [`docs/PRIVATE_FIXTURES.md`](docs/PRIVATE_FIXTURES.md)
+- [`docs/PROJECT_RETROSPECTIVE.md`](docs/PROJECT_RETROSPECTIVE.md)
 
 ## Translation constraints
 

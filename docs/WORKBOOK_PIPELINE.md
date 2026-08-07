@@ -65,6 +65,59 @@ It then derives patch-safe text under this policy:
 - natural-translation alternatives stay editorial and cannot silently enter a
   ROM build.
 
+## Preserving the full translation
+
+The workbook is also the preservation layer for English that is accurate but
+cannot yet be installed within the original FDS constraints. Two fields must
+remain distinct:
+
+| Field | Meaning |
+| --- | --- |
+| `final_natural_english_translation` | The complete natural English reading, without treating the current row width or compressed-bank budget as an editorial limit |
+| `patch_safe_english_translation` | The exact English currently safe to encode and use in the playable ROM |
+
+This distinction lets future contributors improve the renderer, recover
+compressed space, or relocate data without having to translate the Japanese
+again. It also prevents a compact gameplay line from becoming the only
+surviving record of the intended meaning.
+
+For example, record `TT1B/g0/r1` preserves:
+
+```text
+Japanese:     さいごにあおぞらをみたのは いつだっけ
+Full English: When was the last time I saw a blue sky?
+ROM-safe:     A blue sky... how long?
+```
+
+The full English is 40 visible characters, but the current message segment is
+limited to 24 columns. In the current TT1B build, substituting that text also
+exceeds the compressed bank footprint by 9 bytes. Inserting a new line or page
+control is not merely punctuation: this source record has no such control, so
+the change must be verified against the object's rendering, clearing, and
+repeat-inspection behavior.
+
+### Using a full translation in a future build
+
+Do not copy a natural-field value directly into a generated ROM or workbook
+artifact. Instead:
+
+1. Copy the intended wording into the authoritative playable source in
+   `work/translations/BANK.json` (or the relevant fixed-UI definition).
+2. Check every visible segment against the renderer's width limit.
+3. Preserve the source control sequence unless a source-verified engine change
+   deliberately supports a new layout.
+4. Recompress the entire affected bank and prove that it stays within its
+   original footprint, or implement and document a safe relocation.
+5. Rebuild a candidate and playtest entry, clearing, repetition, progression,
+   save/reload, and disk switching where applicable.
+6. Regenerate the workbook so the patch-safe field mirrors the newly proven
+   playable source while the natural field retains the editorial target.
+
+If those checks cannot yet pass, keep the full wording in
+`final_natural_english_translation` and use the best accurate compact wording
+in `patch_safe_english_translation`. That is a documented hardware compromise,
+not an incomplete translation.
+
 The generator validates:
 
 - exactly 2,052 unique rows;

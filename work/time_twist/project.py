@@ -19,6 +19,10 @@ BANK_REQUIRED_DICTIONARY_TEXT = {
     "TT2": ("CROWD", "Bishop"),
     "T22": T22_REQUIRED_DICTIONARY_TEXT,
     "TT3B": ("Cougar",),
+    # TT6C repeats this name in its fixed-address retrospective quiz.  Its
+    # five-byte record cannot hold the six literal glyphs, so reserve the same
+    # dictionary token even if scenario-corpus scoring would otherwise evict it.
+    "TT6C": ("Cougar",),
     "TT4": (
         "Cerberus: ",
         "Soldier: ",

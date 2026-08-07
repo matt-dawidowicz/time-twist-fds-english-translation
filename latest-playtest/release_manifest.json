@@ -1,0 +1,138 @@
+{
+  "schema": "Time Twist reproducible release manifest v2",
+  "mode": "candidate",
+  "project_source_lock": "work/release_sources.json",
+  "source_lock_sha256": "630E451F64D882DDED36C07622F4D42DDD4F892C15F01A902072935B1699A4AD",
+  "release_target": null,
+  "release_target_sha256": null,
+  "release_id": null,
+  "subtitle": "On the Outskirts of History...",
+  "scenario_banks": {
+    "TT3A": {
+      "records": 152,
+      "dictionary_entries": 31,
+      "packed_bytes": 3736,
+      "capacity_bytes": 3741,
+      "remaining_bytes": 5,
+      "sha256": "CAA064895722477041ADF700CC3238C92B23023F09DF4A97C15BED230D3A7B92"
+    },
+    "TT3B": {
+      "records": 58,
+      "dictionary_entries": 31,
+      "packed_bytes": 1837,
+      "capacity_bytes": 1840,
+      "remaining_bytes": 3,
+      "sha256": "71BDD3C29B2B82FAA9433D67C7A0410E1A151D2F21939ADDA3195DC7CA20A53D"
+    },
+    "TT1B": {
+      "records": 137,
+      "dictionary_entries": 31,
+      "packed_bytes": 4023,
+      "capacity_bytes": 4026,
+      "remaining_bytes": 3,
+      "sha256": "CA81A85924D06F08910CDDD296FCB999DC49BB1ACF6A80ADD706A461391EE61A"
+    },
+    "TT1A": {
+      "records": 35,
+      "dictionary_entries": 31,
+      "packed_bytes": 1652,
+      "capacity_bytes": 1669,
+      "remaining_bytes": 17,
+      "sha256": "A2FC62EA8D2C9117FCFC5BBF8B089BDB88547DCD55675E47D010F37DF15FD473"
+    },
+    "TT2": {
+      "records": 169,
+      "dictionary_entries": 31,
+      "packed_bytes": 3841,
+      "capacity_bytes": 3847,
+      "remaining_bytes": 6,
+      "sha256": "7B3A5C1BD74D9497A866A6845C3E8216392989FC806C50A0DC4DA10A2CF5D756"
+    },
+    "T22": {
+      "records": 58,
+      "dictionary_entries": 31,
+      "packed_bytes": 1784,
+      "capacity_bytes": 1812,
+      "remaining_bytes": 28,
+      "sha256": "57660E975C4055BF09964429D93148E63B2CAE60CF7FE5235E313F68766145B7"
+    },
+    "TT6C": {
+      "records": 106,
+      "dictionary_entries": 31,
+      "packed_bytes": 3519,
+      "capacity_bytes": 3536,
+      "remaining_bytes": 17,
+      "sha256": "6842652A2B5FF14B9575D898EBF14CF52233081C3738605A397297E7F730BC58"
+    },
+    "TT6B": {
+      "records": 94,
+      "dictionary_entries": 31,
+      "packed_bytes": 2300,
+      "capacity_bytes": 2336,
+      "remaining_bytes": 36,
+      "sha256": "C15A76C9A59A9224CEAFB16BABD0A4911906057A7AAF10C9C45DE57F61AA79C3"
+    },
+    "TT6A": {
+      "records": 100,
+      "dictionary_entries": 31,
+      "packed_bytes": 2700,
+      "capacity_bytes": 2833,
+      "remaining_bytes": 133,
+      "sha256": "094559DB356127C7E0CFE2C054783286C0E4030A2389E9111C2AE5661C839D07"
+    },
+    "TT6D": {
+      "records": 8,
+      "dictionary_entries": 6,
+      "packed_bytes": 323,
+      "capacity_bytes": 332,
+      "remaining_bytes": 9,
+      "sha256": "C3F88A5E57A6048377FBD823653B7B0A401420A5048BD84BB6EFE58493097ECC"
+    },
+    "TT4": {
+      "records": 183,
+      "dictionary_entries": 31,
+      "packed_bytes": 4740,
+      "capacity_bytes": 4741,
+      "remaining_bytes": 1,
+      "sha256": "B5D5BB9EE08C6482A1E007E1122F7A496A4D7598E850D0FAF72740B051AFAC26"
+    },
+    "TT5": {
+      "records": 123,
+      "dictionary_entries": 31,
+      "packed_bytes": 3695,
+      "capacity_bytes": 3702,
+      "remaining_bytes": 7,
+      "sha256": "C94137F93CCA3543E789D88C140684E1DF34FF31980815A0669F3611C781F8F9"
+    },
+    "T25": {
+      "records": 76,
+      "dictionary_entries": 31,
+      "packed_bytes": 2286,
+      "capacity_bytes": 2374,
+      "remaining_bytes": 88,
+      "sha256": "145802FC777423CE3A1DB227B48D181FD232B0FF70166DB22618DDC8B0737E71"
+    }
+  },
+  "component_sha256": {
+    "NOV2": "4450C063B939CFBF2F307E758BF9CC0E1089B8446A67049B6204CA677360A206",
+    "NOV4": "1005C9758FBD1157BE77368155B4E6613480A82DFA1E782D72FD29AF3502ED9E",
+    "SON-KOUH": "99D913F6C055A360C57BD2972ACABE5F377446385CF3289A9EA4FE58A1B553AC"
+  },
+  "outputs": {
+    "zenpen": {
+      "path": "Time Twist Zenpen - reproducible English playtest.fds",
+      "bytes": 131000,
+      "sha256": "60F646296635B13391A8666BA99F8B025D4A75865BD25DFD830F540BBE51F3FE"
+    },
+    "kouhen": {
+      "path": "Time Twist Kouhen - reproducible English playtest.fds",
+      "bytes": 131000,
+      "sha256": "18445D6DA88278F5C52A8EBFC001F00FD00261D640EBDCD66D6AE2147A2A4421"
+    },
+    "four_side": {
+      "path": "Time Twist - reproducible English four-side playtest.fds",
+      "bytes": 262000,
+      "sha256": "21A48E6F0B955E7E970E3AAF86F147B366BB5AC02AFCEB681169ADD17E7C657F"
+    }
+  }
+}
