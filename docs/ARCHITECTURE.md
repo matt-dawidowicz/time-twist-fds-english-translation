@@ -171,7 +171,10 @@ The release layer separates three approvals that were previously conflated:
 
 A strict `release-build` requires that tie and reproduces the promoted sizes and
 hashes. Build files are prepared in a sibling staging directory and are not
-published when source or target validation fails.
+published when source or target validation fails. Verified files are copied to
+destination-local temporary files before atomic replacement so Windows outputs
+inherit the emulator user's directory permissions rather than the staging
+directory's private ACL.
 
 Release commands operate on a project checkout rather than package data. This
 keeps the wheel free of translation project artifacts and all proprietary ROM

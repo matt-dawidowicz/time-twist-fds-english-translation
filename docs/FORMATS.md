@@ -191,6 +191,14 @@ Because `$FF` is reserved, the largest legal run prefix is `$FE`, representing
 62 copies. The final relocated title stream contains two decoded 1 KiB
 nametables followed by one `$FF`.
 
+### Native title authority
+
+The production title image is a 256x240 indexed PNG with values 0-3. Only
+rows 0-95 may contain pixels. No production crop, scale, or palette search is
+performed: those indices become exact 2bpp tile pixels. The first twelve rows
+of the second nametable are generated from all 32 columns of those same final
+pixels, making completed-slide geometry identical to the final title.
+
 ### Title split and animated clock
 
 The translated final title uses different CHR sources above and below tile row
@@ -198,6 +206,10 @@ The translated final title uses different CHR sources above and below tile row
 of the background, while the moving blue hands remain the game's original
 sprites. The patch may adjust metasprite origins but must not alter the source
 hand tiles, frame layouts, or animation timing.
+
+Background IDs `$00-$EB` belong to the title; `$EC-$FF` remain the original
+hand source. Nintendo temporarily owns `$B0-$D5`, which are restored from base
+CHR immediately before the swipe.
 
 ## Source guards
 

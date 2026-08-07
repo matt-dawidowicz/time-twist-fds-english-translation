@@ -69,8 +69,8 @@ source revision.
 
 ### `title-patch NOV4 TARGET OUTPUT [--subtitle TEXT]`
 
-Builds and installs the English title assets while preserving the clock and
-recovered raster-split behavior.
+Builds and installs the English title assets from an exact 256x240 indexed
+native image while preserving the clock and recovered raster-split behavior.
 
 ### `ui-patch SOURCE OUTPUT [--component NAME]`
 

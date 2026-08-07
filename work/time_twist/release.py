@@ -10,6 +10,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -62,9 +63,9 @@ DEFAULT_RELEASE_TARGET = (
     else Path("work/release_target.json")
 )
 DEFAULT_TITLE_ASSET = (
-    DEFAULT_PROJECT_ROOT / "work" / "title_assets" / "Time Twist full-screen logo reference.png"
+    DEFAULT_PROJECT_ROOT / "work" / "title_assets" / "Time Twist approved native title.png"
     if DEFAULT_PROJECT_ROOT is not None
-    else Path("work/title_assets/Time Twist full-screen logo reference.png")
+    else Path("work/title_assets/Time Twist approved native title.png")
 )
 DEFAULT_ZENPEN_BASELINE = (
     DEFAULT_PROJECT_ROOT / "work" / "baseline" / "time_twist_zenpen_japan.fds"
@@ -144,7 +145,7 @@ class ReleasePaths:
             work_root=work,
             source_lock=work / "release_sources.json",
             release_target=work / "release_target.json",
-            title_asset=work / "title_assets" / "Time Twist full-screen logo reference.png",
+            title_asset=work / "title_assets" / "Time Twist approved native title.png",
             zenpen_baseline=work / "baseline" / "time_twist_zenpen_japan.fds",
             kouhen_baseline=work / "baseline" / "time_twist_kouhen_japan.fds",
             translations=work / "translations",
@@ -560,14 +561,47 @@ def _target_mismatches(
     return mismatches
 
 
+def _atomic_publish_file(source: Path, destination: Path) -> None:
+    """Atomically publish a staged file with destination-directory access.
+
+    The temporary file is created directly inside the destination directory.
+    This matters on Windows: moving a file out of ``TemporaryDirectory`` keeps
+    that private directory's ACL and can make the published ROM inaccessible
+    to the interactive emulator account. A destination-local temporary file
+    inherits the intended directory ACL before the final atomic replacement.
+    """
+
+    with tempfile.NamedTemporaryFile(
+        mode="wb",
+        dir=destination.parent,
+        prefix=f".{destination.name}.",
+        suffix=".tmp",
+        delete=False,
+    ) as handle:
+        temporary = Path(handle.name)
+        with source.open("rb") as staged:
+            shutil.copyfileobj(staged, handle)
+        handle.flush()
+        os.fsync(handle.fileno())
+    try:
+        temporary.chmod(source.stat().st_mode)
+        os.replace(temporary, destination)
+    except BaseException:
+        temporary.unlink(missing_ok=True)
+        raise
+
+
 def _publish_staged_release(staging: Path, output_directory: Path) -> None:
     """Publish verified staged files, writing the manifest last."""
 
     output_directory.mkdir(parents=True, exist_ok=True)
     for name in RELEASE_OUTPUT_KEYS:
         filename = RELEASE_FILENAMES[name]
-        os.replace(staging / filename, output_directory / filename)
-    os.replace(staging / "release_manifest.json", output_directory / "release_manifest.json")
+        _atomic_publish_file(staging / filename, output_directory / filename)
+    _atomic_publish_file(
+        staging / "release_manifest.json",
+        output_directory / "release_manifest.json",
+    )
 
 
 def build_release(

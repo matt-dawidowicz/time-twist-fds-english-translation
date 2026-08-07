@@ -45,8 +45,13 @@ PHASE_ZERO_UPLOAD_OFFSET = 0x02AC
 PHASE_ZERO_UPLOAD_SOURCE = bytes.fromhex(
     "A0 0F A9 B0 A2 04 20 AF EB 92 BA"
 )
+SLIDE_PREP_CALL_OFFSET = 0x02E4
+SLIDE_PREP_CALL_SOURCE = bytes.fromhex("20 74 AB")
 TITLE_TRANSITION_CALL_OFFSET = 0x038E
 TITLE_TRANSITION_CALL_SOURCE = bytes.fromhex("A9 01 8D E1 07 20 E0 6F")
+SLIDE_PALETTE_COLOR1_OFFSET = 0x0995
+SLIDE_PALETTE_COLOR1_SOURCE = bytes((0x0F,))
+SLIDE_PALETTE_COLOR1_PATCH = bytes((0x30,))
 FINAL_NAMETABLE_START = 0x065E
 FINAL_NAMETABLE_END = 0x0809
 SECOND_NAMETABLE_START = 0x0809
@@ -60,23 +65,51 @@ CLOCK_METASPRITE_START = 0x047A
 CLOCK_METASPRITE_END = 0x059A
 CLOCK_HAND_ORIGINS_OFFSET = 0x03CA
 CLOCK_HAND_ORIGINS_SOURCE = bytes.fromhex("78 00 37 04 80 00 3F")
-CLOCK_HAND_ORIGINS_PATCH = bytes.fromhex("70 00 31 04 78 00 39")
+CLOCK_HAND_ORIGINS_PATCH = bytes.fromhex("68 00 2F 04 70 00 37")
 NOV3_LOAD_ADDRESS = 0xD7B5
 SPLIT_TILE_ROW = 16
-TOP_TILE_COUNT = 0xE1
+# Every background slot below the clock-owned $EC-$FF tail is now used.  The
+# approved native artwork is deliberately tile-harmonized to this exact limit.
+TOP_TILE_COUNT = CLOCK_SOURCE_TILE
 BOTTOM_TILE_COUNT = 0x37
 BOTTOM_CHR_SIZE = BOTTOM_TILE_COUNT * 16
 BACKGROUND_TAIL_SIZE = 0
 NINTENDO_FIRST_TILE = 0xB0
 NINTENDO_TILE_COUNT = 0x26
 NINTENDO_CHR_SIZE = NINTENDO_TILE_COUNT * 16
-# The first 27 tile columns of the English wordmark fit in the phase-zero
-# pattern budget.  The remaining five columns arrive from the adjacent final
-# nametable during NOV4's original horizontal title swipe.
-SLIDE_TITLE_TILE_COLUMNS = 27
+# The slide nametable contains the complete native wordmark.  Its temporary
+# Nintendo tile IDs are restored once, immediately before the original swipe.
+SLIDE_TITLE_TILE_COLUMNS = 32
 INITIAL_CHR_LOADER_SIZE = 12
+SLIDE_PREP_SIZE = 43
 TITLE_TRANSITION_SIZE = 97
 TITLE_EXIT_SIZE = 27
+
+# Exact horizontal origins written by NOV4 states 3-5.  $57 supplies the fine
+# scroll and bit zero of $58 selects the neighboring horizontal nametable.
+SLIDE_SCROLL_ORIGINS = (
+    0x1F0,
+    0x01C,
+    0x1D8,
+    0x034,
+    0x1C0,
+    0x04C,
+    0x1A8,
+    0x064,
+    0x190,
+    0x07C,
+    0x178,
+    0x094,
+    0x160,
+    0x0AC,
+    0x148,
+    0x0C4,
+    0x130,
+    0x0DC,
+    0x118,
+    0x0F4,
+    0x100,
+)
 
 FINAL_NAMETABLE_SOURCE_SHA256 = (
     "F01695FBF94A623BF2ADFD2172B6DB05415B33C0AB12DC4239B0C34167E06363"
@@ -117,6 +150,21 @@ SPRITE_PALETTE = (
     (100, 176, 255),
     (21, 95, 217),
 )
+# State 3 queues the 32 bytes at ROM address $AB7B. The resident palette
+# uploader writes that buffer backwards, so these are the four background
+# palettes in the order the PPU actually sees them. Palette 1 is the moving
+# logo's attribute-selected monochrome palette. The one-byte ROM patch at
+# $AB95 makes all three nonzero pattern indices white, so the completed
+# monochrome logo has exactly the final colored logo's visible geometry. The
+# other three attribute palettes deliberately hide the still-unassembled parts
+# of the two scrolled nametables.
+SLIDE_BACKGROUND_PALETTES = (
+    (0x0F, 0x0F, 0x0F, 0x0F),
+    (0x0F, 0x30, 0x30, 0x30),
+    (0x0F, 0x0F, 0x0F, 0x0F),
+    (0x0F, 0x0F, 0x0F, 0x0F),
+)
+SLIDE_WHITE_COLOR = 0x30
 
 
 class TitlePatchError(ValueError):
@@ -360,62 +408,43 @@ def _render_split_nametable(
 
 
 def _target_to_indices(path: Path) -> Image.Image:
-    """Normalize a logo crop or full-screen reference to NES palette indices.
+    """Load the approved native NES title authority without resampling it.
 
     Args:
-        path: Tight logo crop or complete title-screen reference image.
+        path: Exact 256-by-240 indexed title asset.
 
     Returns:
         A 256-by-240 indexed image using the title/gray palette conventions.
 
     Raises:
         OSError: If Pillow cannot read the image.
+        TitlePatchError: If dimensions, mode, or palette indices differ from
+            the reviewed native contract.
 
-    Blue clock-hand pixels are removed because the live game draws the moving
-    hands as sprites.  The returned image is 256x240 indexed data; source art
-    occupies the visible 224-line reference area.
-
-    A width-to-height ratio greater than two selects the legacy crop placement
-    path. Otherwise the source is treated as a full-screen reference.
+    The production path intentionally performs no crop, resize, color
+    distance, or hand-erasure operation.  Those subjective steps were used
+    once while reconstructing Image 2; their reviewed result is now the source
+    of truth.  The clock interior in that asset is already clear for the live
+    hand sprites.
     """
 
-    source = Image.open(path).convert("RGB")
-    logo_crop = source.width / source.height > 2
-    if logo_crop:
-        # The final user reference is an exact crop of the logo.  Preserve its
-        # aspect ratio and leave the subtitle/lower title regions untouched.
-        # The live hand origins are corrected separately for runtime scroll.
-        placed = Image.new("RGB", (256, 224), (0, 0, 0))
-        placed.paste(
-            source.resize((254, 87), Image.Resampling.NEAREST),
-            (7, 6),
-        )
-        source = placed
-    else:
-        source = source.resize((256, 224), Image.Resampling.NEAREST)
-    result = Image.new("L", (256, 240), 0)
-    source_pixels = source.load()
-    result_pixels = result.load()
-    for y in range(224):
-        palette = GRAY_PALETTE if 128 <= y < 192 else TITLE_PALETTE
-        for x in range(256):
-            pixel = source_pixels[x, y]
-            # The reference screenshots include one frozen blue clock-hand
-            # frame.  NOV4 supplies the moving blue hands with sprites, so
-            # remove those distinctly blue source pixels before reducing the
-            # background to its four-color title palette.  Pink and purple
-            # logo pixels have far smaller blue/red separation and are not
-            # affected by this test.
-            if pixel[2] - pixel[0] > 100 and pixel[2] - pixel[1] > 60:
-                result_pixels[x, y] = 0
-                continue
-            result_pixels[x, y] = min(
-                range(4),
-                key=lambda index: sum(
-                    (left - right) ** 2
-                    for left, right in zip(pixel, palette[index])
-                ),
+    with Image.open(path) as source:
+        if source.size != (256, 240) or source.mode not in {"L", "P"}:
+            raise TitlePatchError(
+                "title authority must be a 256x240 indexed PNG"
             )
+        result = source.convert("L") if source.mode == "L" else Image.new(
+            "L", source.size
+        )
+        if source.mode == "P":
+            result.putdata(source.get_flattened_data())
+        else:
+            result = source.copy()
+    values = set(result.get_flattened_data())
+    if not values <= {0, 1, 2, 3}:
+        raise TitlePatchError("title authority uses indices outside 0-3")
+    if any(result.crop((0, 96, 256, 240)).get_flattened_data()):
+        raise TitlePatchError("native title authority must own only rows 0-95")
     return result
 
 
@@ -813,9 +842,19 @@ def _validate_source(data: bytes) -> None:
             "phase-zero upload",
         ),
         (
+            SLIDE_PREP_CALL_OFFSET,
+            SLIDE_PREP_CALL_SOURCE,
+            "pre-slide palette call",
+        ),
+        (
             TITLE_TRANSITION_CALL_OFFSET,
             TITLE_TRANSITION_CALL_SOURCE,
             "title transition call",
+        ),
+        (
+            SLIDE_PALETTE_COLOR1_OFFSET,
+            SLIDE_PALETTE_COLOR1_SOURCE,
+            "slide palette color 1",
         ),
     )
     for offset, expected, label in instruction_checks:
@@ -877,7 +916,7 @@ def build_title_assets(
 
     Args:
         data: Original, revision-checked NOV4 overlay.
-        target: Tight logo crop or complete title-screen reference image.
+        target: Approved native 256-by-240 indexed title image.
         subtitle: Localized subtitle redrawn with the deterministic pixel font.
 
     Returns:
@@ -889,8 +928,9 @@ def build_title_assets(
             wider than the screen, exact pattern counts differ, temporary tile
             IDs are exhausted, or clock-source preservation fails.
 
-    ``target`` may be a tight logo crop or a complete title-screen reference.
-    The supplied subtitle is always redrawn by the deterministic pixel font.
+    ``target`` is the reviewed native title authority; production never
+    resamples a display screenshot. The supplied subtitle is always redrawn by
+    the deterministic pixel font.
     The returned upper/lower pattern sets must match their recovered capacity,
     Nintendo-phase tiles receive reversible host IDs, and the original clock
     tile tail is preserved byte-for-byte. The function does not write files or
@@ -906,8 +946,6 @@ def build_title_assets(
     original_final = _render_indexed_nametable(final_nametable, source_chr)
     original_second = _render_indexed_nametable(second_nametable, source_chr)
     recovered = _target_to_indices(target)
-    with Image.open(target) as reference:
-        logo_crop = reference.width / reference.height > 2
 
     final_target = original_final.copy()
     final_pixels = final_target.load()
@@ -916,21 +954,9 @@ def build_title_assets(
         for x in range(256):
             final_pixels[x, y] = recovered_pixels[x, y]
 
-    if logo_crop:
-        # Legacy tight crops need two tiny cleanup points and replacement
-        # numerals after their much larger downscale.  A complete title-screen
-        # reference already arrives at the intended on-screen scale, so its
-        # circle and numeral pixels remain authoritative.
-        _remove_reference_hand(final_target)
-        _draw_clock_numerals(final_target)
-    else:
-        _remove_full_reference_hand(final_target)
-
-    # Full-screen references already contain a subtitle.  Clear it completely
-    # before redrawing the project's retained wording; the title logo itself
-    # ends at row 91 in the supplied reference.
-    subtitle_clear_start = 96 if logo_crop else 92
-    for y in range(subtitle_clear_start, 106):
+    # The native asset ends at row 91.  Keep the established four-pixel gap and
+    # redraw the retained wording from code so it cannot drift with the logo.
+    for y in range(92, 106):
         for x in range(256):
             final_pixels[x, y] = 0
     subtitle_width = sum(4 if character == " " else 6 for character in subtitle) - 1
@@ -951,10 +977,9 @@ def build_title_assets(
     # segment of the actual English logo.  The native swipe reveals the
     # remaining columns from the neighboring final nametable.
     #
-    # The omitted columns are also necessary: the Nintendo phase temporarily
-    # occupies 38 upper-title IDs, so phase zero may use at most 187 distinct
-    # upper patterns.  Twenty-seven columns require 185 and leave enough safe
-    # host IDs for the reversible Nintendo overlay.
+    # All 32 columns are copied.  State 3 restores the 38 Nintendo-temporary
+    # CHR IDs before the first swipe frame, so the slide may use every safe
+    # background ID below the clock-owned $EC-$FF tail.
     slide_target = Image.new("L", (256, 240), 0)
     for tile_y in range(12):
         for tile_x in range(SLIDE_TITLE_TILE_COLUMNS):
@@ -962,7 +987,7 @@ def build_title_assets(
             top = tile_y * 8
             slide_target.paste(final_target.crop((left, top, left + 8, top + 8)), (left, top))
 
-    # The exact upper title and exact lower machine/text art need 278 distinct
+    # The exact upper title and exact lower machine/text art need 291 distinct
     # patterns together, more than one NES background table can contain.  NOV4
     # already owns a two-stage FDS timer split for normal scene/dialogue
     # rendering.  Reuse that native mechanism at the blank band between PUSH
@@ -995,11 +1020,6 @@ def build_title_assets(
             f"exact lower title needs {len(bottom_patterns)} tiles, expected {BOTTOM_TILE_COUNT}"
         )
 
-    slide_patterns = {
-        _tile_bytes(slide_target, tile_x, tile_y)
-        for tile_y in range(12)
-        for tile_x in range(32)
-    }
     nintendo_frequency: Counter[bytes] = Counter(
         _tile_bytes(original_second, tile_x, tile_y)
         for tile_y in range(12, 30)
@@ -1011,26 +1031,11 @@ def build_title_assets(
     )
     if len(nintendo_patterns) != NINTENDO_TILE_COUNT:
         raise TitlePatchError("Nintendo logo tile count changed")
-    available_hosts = sorted(
-        top_patterns - slide_patterns,
+    ordered_top_patterns = sorted(
+        top_patterns,
         key=lambda pattern: (-top_frequency[pattern], pattern),
     )
-    if len(available_hosts) < NINTENDO_TILE_COUNT:
-        raise TitlePatchError("Nintendo overlay exhausts phase-safe title IDs")
-    nintendo_to_center = dict(
-        zip(nintendo_patterns, available_hosts[:NINTENDO_TILE_COUNT])
-    )
-    reserved_ids = list(
-        range(NINTENDO_FIRST_TILE, NINTENDO_FIRST_TILE + NINTENDO_TILE_COUNT)
-    )
-    host_centers = list(nintendo_to_center.values())
-    center_to_id = dict(zip(host_centers, reserved_ids))
-    remaining_centers = sorted(
-        top_patterns - set(host_centers),
-        key=lambda pattern: (-top_frequency[pattern], pattern),
-    )
-    remaining_ids = sorted(set(range(TOP_TILE_COUNT)) - set(reserved_ids))
-    center_to_id.update(zip(remaining_centers, remaining_ids))
+    center_to_id = dict(zip(ordered_top_patterns, range(TOP_TILE_COUNT)))
     if (
         len(center_to_id) != TOP_TILE_COUNT
         or len(set(center_to_id.values())) != TOP_TILE_COUNT
@@ -1039,7 +1044,8 @@ def build_title_assets(
 
     # NOV4 copies the first $EC source tiles into background table 1 before it
     # constructs the hand sprites in table 0 from the untouched $EC-$FF tail.
-    # All 225 exact upper patterns deliberately fit below $EC, so the original
+    # All 236 exact upper patterns deliberately fill the slots below $EC, so
+    # the original
     # animated-hand source remains byte-identical.
     background_chr = bytearray(source_chr)
     background_chr[:CLOCK_SOURCE_TILE * 16] = bytes(CLOCK_SOURCE_TILE * 16)
@@ -1056,12 +1062,13 @@ def build_title_assets(
         raise TitlePatchError("exact lower-title CHR has an unexpected size")
 
     nintendo_chr = bytearray(NINTENDO_CHR_SIZE)
-    nintendo_to_id: dict[bytes, int] = {}
-    for pattern, center in nintendo_to_center.items():
-        tile_id = center_to_id[center]
+    nintendo_to_id = {
+        pattern: NINTENDO_FIRST_TILE + index
+        for index, pattern in enumerate(nintendo_patterns)
+    }
+    for pattern, tile_id in nintendo_to_id.items():
         block_offset = (tile_id - NINTENDO_FIRST_TILE) * 16
         nintendo_chr[block_offset:block_offset + 16] = pattern
-        nintendo_to_id[pattern] = tile_id
     restore_chr = background_chr[
         NINTENDO_FIRST_TILE * 16:
         (NINTENDO_FIRST_TILE + NINTENDO_TILE_COUNT) * 16
@@ -1116,23 +1123,23 @@ def patched_nov4_title(
 
     Args:
         data: Original NOV4 overlay accepted by :func:`_validate_source`.
-        target: Logo or full-screen reference image.
+        target: Approved native 256-by-240 indexed title image.
         subtitle: Localized subtitle to retain under the wordmark.
 
     Returns:
         Expanded NOV4 bytes containing title assets and verified helper code.
 
     Raises:
-        OSError: If the reference image cannot be read.
+        OSError: If the native title image cannot be read.
         TitlePatchError: If asset generation fails, helper sizes change, the
             expanded overlay would overlap NOV3, a source patch site differs,
             or any post-build verification fails.
 
-    The function appends lower-title CHR, Nintendo overlay/restore CHR, three
+    The function appends lower-title CHR, Nintendo overlay/restore CHR, four
     small 6502 helpers, and two compressed nametables.  It rewrites only the
-    recovered call/pointer/origin sites and the background CHR region.  The
-    expanded overlay must finish below resident NOV3 at ``$D7B5``. Inputs and
-    the reference file are not modified.
+    recovered palette/call/pointer/origin sites and the background CHR region.
+    The expanded overlay must finish below resident NOV3 at ``$D7B5``. Inputs
+    and the native title file are not modified.
     """
 
     assets = build_title_assets(data, target, subtitle=subtitle)
@@ -1140,7 +1147,8 @@ def patched_nov4_title(
     nintendo_chr_offset = bottom_chr_offset + BOTTOM_CHR_SIZE
     restore_chr_offset = nintendo_chr_offset + NINTENDO_CHR_SIZE
     initial_loader_offset = restore_chr_offset + NINTENDO_CHR_SIZE
-    transition_offset = initial_loader_offset + INITIAL_CHR_LOADER_SIZE
+    slide_prep_offset = initial_loader_offset + INITIAL_CHR_LOADER_SIZE
+    transition_offset = slide_prep_offset + SLIDE_PREP_SIZE
     exit_offset = transition_offset + TITLE_TRANSITION_SIZE
     title_stream_offset = exit_offset + TITLE_EXIT_SIZE
 
@@ -1164,19 +1172,39 @@ def patched_nov4_title(
     nintendo_chr_address = loaded_address(nintendo_chr_offset)
     restore_chr_address = loaded_address(restore_chr_offset)
     initial_loader_address = loaded_address(initial_loader_offset)
+    slide_prep_address = loaded_address(slide_prep_offset)
     transition_address = loaded_address(transition_offset)
     exit_address = loaded_address(exit_offset)
     title_stream_address = loaded_address(title_stream_offset)
 
     # The native loader has already copied the exact upper title into pattern
-    # table 1.  Temporarily overlay the Nintendo patterns on IDs unused by the
-    # slide-in phase.
+    # table 1. Temporarily overlay the Nintendo patterns on IDs $B0-$D5.  A
+    # one-shot state-3 helper restores the underlying title patterns before
+    # any slide pixels become visible.
     initial_loader = bytes.fromhex("A0 1B A9 00 A2 26 20 AF EB") + bytes(
         (nintendo_chr_address & 0xFF, nintendo_chr_address >> 8)
     )
     initial_loader += b"\x60"
     if len(initial_loader) != INITIAL_CHR_LOADER_SIZE:
         raise TitlePatchError("initial title loader has an unexpected size")
+
+    # Preserve the original state-3 monochrome-palette call, then blank the
+    # PPU/NMI while restoring the 38 Nintendo-temporary patterns directly from
+    # the patched base CHR in this bank.  The helper returns before the native
+    # code arms its first $01F0 scroll origin, so timing and 12-pixel motion
+    # remain native and no Nintendo pattern can enter the logo.
+    slide_restore_address = loaded_address(
+        TITLE_CHR_OFFSET + NINTENDO_FIRST_TILE * 16
+    )
+    slide_prep = bytes.fromhex(
+        "20 74 AB "
+        "A9 00 8D 01 20 A5 FF 48 29 7F 8D 00 20 "
+        "A0 1B A9 00 A2 26 20 AF EB"
+    ) + slide_restore_address.to_bytes(2, "little") + bytes.fromhex(
+        "68 85 FF 09 10 85 FF 8D 00 20 A5 1C 8D 01 20 60"
+    )
+    if len(slide_prep) != SLIDE_PREP_SIZE:
+        raise TitlePatchError("pre-slide CHR restore helper has an unexpected size")
 
     # State $17 restores the exact upper patterns, installs the independent
     # exact lower set in pattern table 0, and enables NOV4's existing
@@ -1222,6 +1250,7 @@ def patched_nov4_title(
             assets.nintendo_chr,
             assets.restore_chr,
             initial_loader,
+            slide_prep,
             transition,
             exit_helper,
             assets.encoded_final,
@@ -1233,6 +1262,10 @@ def patched_nov4_title(
         raise TitlePatchError("expanded NOV4 would overlap resident NOV3 memory")
 
     result = bytearray(data)
+    result[
+        SLIDE_PALETTE_COLOR1_OFFSET:
+        SLIDE_PALETTE_COLOR1_OFFSET + len(SLIDE_PALETTE_COLOR1_SOURCE)
+    ] = SLIDE_PALETTE_COLOR1_PATCH
     result[TITLE_POINTER_OFFSET : TITLE_POINTER_OFFSET + 4] = bytes(
         (0xA9, title_stream_address & 0xFF, 0xA2, title_stream_address >> 8)
     )
@@ -1241,6 +1274,10 @@ def patched_nov4_title(
     ] = bytes(
         (0x20, initial_loader_address & 0xFF, initial_loader_address >> 8)
     ) + b"\xEA" * 8
+    result[
+        SLIDE_PREP_CALL_OFFSET:
+        SLIDE_PREP_CALL_OFFSET + len(SLIDE_PREP_CALL_SOURCE)
+    ] = bytes((0x20, slide_prep_address & 0xFF, slide_prep_address >> 8))
     # Preserve the original tail-call structure here.  The source branch JMPs
     # to $6119, whose RTS returns directly to the main engine.  Using JSR for
     # this detour leaves an extra return address on the stack, so $6119's RTS
@@ -1254,10 +1291,9 @@ def patched_nov4_title(
     ] = bytes((0x20, transition_address & 0xFF, transition_address >> 8)) + (
         b"\xEA" * (len(TITLE_TRANSITION_CALL_SOURCE) - 3)
     )
-    # The reference face is centered at about (133,69) in the translated
-    # nametable.  Move both original metasprite origins by -8,-6 so their
-    # shared elbow lands on that center.  Frame layouts, tiles, and animation
-    # timing remain unchanged.
+    # The approved face is centered at about (125,67) in native pixels. Move
+    # both original metasprite origins by -16,-8 so their shared elbow lands on
+    # that center. Frame layouts, tiles, order, and timing remain unchanged.
     result[
         CLOCK_HAND_ORIGINS_OFFSET:
         CLOCK_HAND_ORIGINS_OFFSET + len(CLOCK_HAND_ORIGINS_PATCH)
@@ -1285,6 +1321,11 @@ def patched_nov4_title(
         raise TitlePatchError("Nintendo overlay tiles failed verification")
     if result[restore_chr_offset:initial_loader_offset] != assets.restore_chr:
         raise TitlePatchError("English restore tiles failed verification")
+    if result[
+        SLIDE_PALETTE_COLOR1_OFFSET:
+        SLIDE_PALETTE_COLOR1_OFFSET + len(SLIDE_PALETTE_COLOR1_PATCH)
+    ] != SLIDE_PALETTE_COLOR1_PATCH:
+        raise TitlePatchError("slide palette color-1 patch failed verification")
     if result[CLOCK_SOURCE_OFFSET:CLOCK_SOURCE_END] != data[
         CLOCK_SOURCE_OFFSET:CLOCK_SOURCE_END
     ]:
@@ -1299,6 +1340,95 @@ def patched_nov4_title(
     ] != CLOCK_HAND_ORIGINS_PATCH:
         raise TitlePatchError("clock-hand origin correction failed verification")
     return bytes(result)
+
+
+def render_slide_logo_frame(
+    assets: TitleAssets,
+    scroll_origin: int,
+) -> Image.Image:
+    """Reconstruct one exact 256-by-96 native swipe viewport.
+
+    Args:
+        assets: ROM-bound title CHR and nametables.
+        scroll_origin: Nine-bit horizontal origin formed by ``$58:$57``.
+
+    Returns:
+        Attribute-masked geometry for the twelve moving tile rows. Visible
+        pixels retain their native nonzero 2bpp value (1, 2, or 3); pixels
+        whose selected runtime palette entry is black are returned as zero.
+
+    Raises:
+        TitlePatchError: If the origin is outside the two-nametable world.
+
+    NT0 is the final map at $2000 and NT1 is the slide/Nintendo map at $2400.
+    The resident NMI writes the low eight bits to PPUSCROLL and bit eight to
+    PPUCTRL. Sampling their 512-pixel concatenation therefore models the
+    actual wrap boundary without relying on a static mockup. Each physical
+    nametable's attribute table is applied before scrolling. This is essential:
+    the state-3 palette uses attribute palette 1 as a visibility mask, making
+    origin $1F0 blank and revealing alternating strips as the origin settles.
+    """
+
+    if not 0 <= scroll_origin < 0x200:
+        raise TitlePatchError("title scroll origin must be a nine-bit value")
+    def runtime_mask(nametable: bytes) -> Image.Image:
+        """Apply NOV4's state-3 attribute palettes to one physical map."""
+
+        indexed = _render_indexed_nametable(
+            nametable,
+            assets.background_chr,
+        ).crop((0, 0, 256, 96))
+        source = indexed.load()
+        masked = Image.new("L", indexed.size, 0)
+        target = masked.load()
+        attributes = nametable[960:1024]
+        for y in range(96):
+            for x in range(256):
+                attribute = attributes[(y // 32) * 8 + (x // 32)]
+                shift = ((y // 16) & 1) * 4 + ((x // 16) & 1) * 2
+                palette_id = (attribute >> shift) & 3
+                pattern_index = source[x, y]
+                if (
+                    SLIDE_BACKGROUND_PALETTES[palette_id][pattern_index]
+                    == SLIDE_WHITE_COLOR
+                ):
+                    target[x, y] = pattern_index
+        return masked
+
+    final = runtime_mask(assets.final_nametable)
+    slide = runtime_mask(assets.second_nametable)
+    world = Image.new("L", (512, 96), 0)
+    world.paste(final, (0, 0))
+    world.paste(slide, (256, 0))
+    frame = Image.new("L", (256, 96), 0)
+    first_width = min(256, 512 - scroll_origin)
+    frame.paste(
+        world.crop((scroll_origin, 0, scroll_origin + first_width, 96)),
+        (0, 0),
+    )
+    if first_width < 256:
+        frame.paste(
+            world.crop((0, 0, 256 - first_width, 96)),
+            (first_width, 0),
+        )
+    return frame
+
+
+def render_monochrome_slide_frame(
+    assets: TitleAssets,
+    scroll_origin: int,
+) -> Image.Image:
+    """Colorize one attribute-masked swipe frame as black and white."""
+
+    indexed = render_slide_logo_frame(assets, scroll_origin)
+    image = Image.new("RGB", (256, 240), TITLE_PALETTE[0])
+    source = indexed.load()
+    target = image.load()
+    for y in range(96):
+        for x in range(256):
+            if source[x, y]:
+                target[x, y] = TITLE_PALETTE[1]
+    return image
 
 
 def render_title_background(assets: TitleAssets) -> Image.Image:

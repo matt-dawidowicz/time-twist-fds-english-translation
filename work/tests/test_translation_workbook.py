@@ -105,6 +105,15 @@ class TranslationWorkbookTests(unittest.TestCase):
                     allow_wrap=row.original_record_id in PERSONALITY_QUESTION_IDS,
                 )
 
+    def test_visible_words_after_ellipses_have_a_space(self) -> None:
+        missing_space = re.compile(r"\.\.\.(?=[A-Za-z0-9])")
+        for row in self.rows:
+            if row.record_type == "scenario":
+                self.assertIsNone(
+                    missing_space.search(row.patch_safe_english_translation),
+                    row.original_record_id,
+                )
+
     def test_reconstruction_avoids_known_substring_corruption(self) -> None:
         for row in self.rows:
             self.assertNotIn("き声る", row.reconstructed_japanese)

@@ -11,7 +11,7 @@
 
 ## Source fingerprints
 
-- `Time Twist Japanese-English script comparison.json` — SHA-256 `9BCFA7CB47E852C47D8ED4C48829EFA44B575C2FC3C5F991BD34E617113F8FE9`
+- `Time Twist Japanese-English script comparison.json` — SHA-256 `5228F9845A12D19D8C25C234AAD848EC3A1A487E53634052170C60A26EF28826`
 - Diagnostic review: not supplied (neutral diagnostics used)
 
 ## Bank coverage
@@ -38,10 +38,19 @@
 
 Every patch-safe scenario line passed the ROM character encoder and 24-column display validator. The four materially revised banks also passed native dictionary recompression:
 
-- TT1A: 1618/1669 bytes used; 51 bytes remain.
-- TT1B: 4021/4026 bytes used; 5 bytes remain.
-- TT3A: 3740/3741 bytes used; 1 byte remain.
-- TT6A: 2696/2833 bytes used; 137 bytes remain.
+- TT1A: 1660/1669 bytes used; 9 bytes remain.
+- TT1B: 4024/4026 bytes used; 2 bytes remain.
+- TT2: 3819/3847 bytes used; 28 bytes remain.
+- T22: 1797/1812 bytes used; 15 bytes remain.
+- TT3A: 3724/3741 bytes used; 17 bytes remain.
+- TT3B: 1830/1840 bytes used; 10 bytes remain.
+- TT4: 4738/4741 bytes used; 3 bytes remain.
+- TT5: 3700/3702 bytes used; 2 bytes remain.
+- T25: 2287/2374 bytes used; 87 bytes remain.
+- TT6A: 2691/2833 bytes used; 142 bytes remain.
+- TT6B: 2304/2336 bytes used; 32 bytes remain.
+- TT6C: 3518/3536 bytes used; 18 bytes remain.
+- TT6D: 323/332 bytes used; 9 bytes remain.
 
 ## Records requiring gameplay screenshots or visual verification
 

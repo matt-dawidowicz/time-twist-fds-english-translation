@@ -147,6 +147,8 @@ Check separately:
 - palette-index assignment;
 - upper/lower exact tile counts;
 - second-nametable slide positions;
+- all 21 recovered nine-bit swipe origins and the NT0/NT1 wrap boundary;
+- the one-shot post-Nintendo `$B0-$D5` CHR restoration before state 3;
 - Nintendo overlay/restore ranges;
 - clock background center;
 - unchanged clock sprite/animation bytes;

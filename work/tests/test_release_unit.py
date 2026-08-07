@@ -3,15 +3,18 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from time_twist.cli import build_parser, main
 from time_twist.project import KNOWN_SCENARIO_BANKS
 from time_twist.release import (
     RELEASE_FILENAMES,
     ReleaseBuildError,
+    _publish_staged_release,
     discover_project_root,
     display_path,
     promote_release_target,
@@ -26,6 +29,44 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 class ReleaseConfigurationUnitTests(unittest.TestCase):
+    def test_publisher_replaces_from_destination_local_temporary_files(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            staging = root / "private-stage"
+            output = root / "published"
+            staging.mkdir()
+            payloads = {
+                RELEASE_FILENAMES[name]: f"{name} payload".encode("ascii")
+                for name in ("zenpen", "kouhen", "four_side")
+            }
+            payloads["release_manifest.json"] = b"{}\n"
+            for filename, payload in payloads.items():
+                (staging / filename).write_bytes(payload)
+
+            replacements: list[tuple[Path, Path]] = []
+            real_replace = os.replace
+
+            def recording_replace(source: str | Path, destination: str | Path) -> None:
+                replacements.append((Path(source), Path(destination)))
+                real_replace(source, destination)
+
+            with mock.patch(
+                "time_twist.release.os.replace",
+                side_effect=recording_replace,
+            ):
+                _publish_staged_release(staging, output)
+
+            self.assertEqual(len(replacements), len(payloads))
+            self.assertTrue(
+                all(source.parent == output for source, _ in replacements)
+            )
+            self.assertTrue(
+                all(destination.parent == output for _, destination in replacements)
+            )
+            for filename, payload in payloads.items():
+                self.assertEqual((output / filename).read_bytes(), payload)
+            self.assertFalse(any(output.glob(".*.tmp")))
+
     def test_project_root_is_discovered_from_nested_directory(self) -> None:
         self.assertEqual(
             discover_project_root(start=PROJECT_ROOT / "work" / "tests"),
@@ -92,7 +133,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             (root / "pyproject.toml").write_text("[project]\nname='test'\n", encoding="utf-8")
             for bank in KNOWN_SCENARIO_BANKS:
                 (translations / f"{bank}.json").write_text("{}\n", encoding="utf-8")
-            (title_assets / "Time Twist full-screen logo reference.png").write_bytes(b"title")
+            (title_assets / "Time Twist approved native title.png").write_bytes(b"title")
             (baseline / "time_twist_zenpen_japan.fds").write_bytes(b"zenpen")
             (baseline / "time_twist_kouhen_japan.fds").write_bytes(b"kouhen")
 

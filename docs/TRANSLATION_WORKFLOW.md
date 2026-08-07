@@ -67,6 +67,18 @@ Rules:
 - keep ordinary segments within 24 columns;
 - review neighboring records and the workbook context.
 
+Ellipsis style:
+
+- use three ASCII periods (`...`) for an ellipsis;
+- put one space between an ellipsis and a visible word in the same segment
+  (`Well... this` and `... Wait`), including a word that begins a leading
+  hesitation;
+- do not add a space solely around a `{CTRL:n}` boundary: `Well...{CTRL:0}this`
+  is rendered on separate lines/pages and the control order must remain exact;
+- lowercase the following word when the ellipsis continues the same sentence;
+- retain a capital when grammar independently requires it, including `I`, a
+  proper noun, a new speaker label, or a genuinely new sentence.
+
 The workbook's exact-Japanese field is immutable recovered evidence. Put
 probable kanji or expanded interpretation in editorial fields, not the source
 field.
@@ -107,13 +119,15 @@ time-twist ui-patch work/NOV4.bin work/NOV4_ui.bin --component NOV4
 time-twist font-patch work/NOV4_ui.bin work/NOV4_font_ui.bin
 time-twist title-patch `
   work/NOV4_font_ui.bin `
-  "work/title_assets/Time Twist full-screen logo reference.png" `
+  "work/title_assets/Time Twist approved native title.png" `
   work/NOV4_english_title.bin `
   --subtitle "On the Outskirts of History..."
 ```
 
-The title step deliberately relocates data and should be last. Do not reapply a
-patch to its own output; source guards expect the known pre-patch bytes.
+The title step deliberately relocates data and should be last. Its input image
+is already the approved 256x240 indexed NES authority; the production path
+does not resize or requantize a display screenshot. Do not reapply a patch to
+its own output; source guards expect the known pre-patch bytes.
 
 These low-level commands are useful for diagnosis. The authoritative complete
 composition path is `release-build`.
