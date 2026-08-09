@@ -16,7 +16,9 @@ from time_twist.textcodec import (
 
 def bits_to_bytes(bits: str) -> bytes:
     padding = (-len(bits)) % 8
-    return int(bits + "0" * padding, 2).to_bytes((len(bits) + padding) // 8, "big")
+    return int(bits + "0" * padding, 2).to_bytes(
+        (len(bits) + padding) // 8, "big"
+    )
 
 
 class PackedTextTests(unittest.TestCase):
@@ -41,7 +43,10 @@ class PackedTextTests(unittest.TestCase):
         data = bits_to_bytes("000001" "1111101" "000" "000010" "1111101")
         records, next_offset = split_records(data, limit=2)
         self.assertEqual(
-            [[(symbol.kind, symbol.value) for symbol in record] for record in records],
+            [
+                [(symbol.kind, symbol.value) for symbol in record]
+                for record in records
+            ],
             [
                 [(SymbolKind.COMMON, 1)],
                 [(SymbolKind.COMMON, 2)],

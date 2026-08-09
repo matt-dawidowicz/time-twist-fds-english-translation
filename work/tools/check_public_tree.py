@@ -10,7 +10,6 @@ import argparse
 import re
 from pathlib import Path
 
-
 FORBIDDEN_SUFFIXES = {".fds", ".nes", ".rom", ".bin", ".dmp", ".pyc", ".pyo"}
 FORBIDDEN_DIRECTORY_NAMES = {"build", "dist", "__pycache__"}
 PERSONAL_PATH_PATTERNS = (
@@ -30,12 +29,13 @@ REQUIRED_PUBLIC_MARKERS = (
 
 def check_public_tree(root: Path) -> list[str]:
     """Return human-readable public-source policy violations beneath ``root``."""
-
     root = root.expanduser().resolve()
     problems: list[str] = []
     for marker in REQUIRED_PUBLIC_MARKERS:
         if not (root / marker).exists():
-            problems.append(f"missing required public source path: {marker.as_posix()}")
+            problems.append(
+                f"missing required public source path: {marker.as_posix()}"
+            )
 
     for path in root.rglob("*"):
         try:
@@ -45,8 +45,12 @@ def check_public_tree(root: Path) -> list[str]:
         if ".git" in relative.parts:
             continue
         if path.is_dir():
-            if path.name in FORBIDDEN_DIRECTORY_NAMES or path.name.endswith(".egg-info"):
-                problems.append(f"generated/private directory present: {relative.as_posix()}")
+            if path.name in FORBIDDEN_DIRECTORY_NAMES or path.name.endswith(
+                ".egg-info"
+            ):
+                problems.append(
+                    f"generated/private directory present: {relative.as_posix()}"
+                )
             continue
         if not path.is_file():
             continue
@@ -54,13 +58,19 @@ def check_public_tree(root: Path) -> list[str]:
             continue
         lower_name = path.name.lower()
         if path.suffix.lower() in FORBIDDEN_SUFFIXES:
-            problems.append(f"private/generated file present: {relative.as_posix()}")
+            problems.append(
+                f"private/generated file present: {relative.as_posix()}"
+            )
             continue
         if lower_name.startswith("mesen_") and lower_name.endswith(".zip"):
             problems.append(f"emulator archive present: {relative.as_posix()}")
             continue
-        if lower_name.startswith("mesen_settings") and lower_name.endswith(".json"):
-            problems.append(f"machine-local emulator settings present: {relative.as_posix()}")
+        if lower_name.startswith("mesen_settings") and lower_name.endswith(
+            ".json"
+        ):
+            problems.append(
+                f"machine-local emulator settings present: {relative.as_posix()}"
+            )
             continue
         if path.stat().st_size > 8_000_000:
             continue
@@ -80,7 +90,6 @@ def check_public_tree(root: Path) -> list[str]:
 
 def main(argv: list[str] | None = None) -> int:
     """Check a source checkout and print a concise pass/fail report."""
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--root",

@@ -14,16 +14,15 @@ animation bytes remain unchanged.
 
 from __future__ import annotations
 
+import hashlib
 from collections import Counter
 from dataclasses import dataclass
 from functools import lru_cache
-import hashlib
 from pathlib import Path
 
 from PIL import Image, ImageDraw
 
 from .font import PIXEL_FONT_5X7
-
 
 # ---------------------------------------------------------------------------
 # Recovered NOV4 memory/file layout and source guards
@@ -42,9 +41,7 @@ BACKGROUND_TAIL_UPLOAD_SOURCE = bytes.fromhex(
     "A0 1F A9 B0 A2 04 20 AF EB 92 BA"
 )
 PHASE_ZERO_UPLOAD_OFFSET = 0x02AC
-PHASE_ZERO_UPLOAD_SOURCE = bytes.fromhex(
-    "A0 0F A9 B0 A2 04 20 AF EB 92 BA"
-)
+PHASE_ZERO_UPLOAD_SOURCE = bytes.fromhex("A0 0F A9 B0 A2 04 20 AF EB 92 BA")
 SLIDE_PREP_CALL_OFFSET = 0x02E4
 SLIDE_PREP_CALL_SOURCE = bytes.fromhex("20 74 AB")
 TITLE_TRANSITION_CALL_OFFSET = 0x038E
@@ -220,7 +217,6 @@ def _sha256(data: bytes) -> str:
     Returns:
         The 64-character SHA-256 hexadecimal digest in uppercase.
     """
-
     return hashlib.sha256(data).hexdigest().upper()
 
 
@@ -245,7 +241,6 @@ def decode_title_rle(
         TitlePatchError: If the stream ends early, terminates before ``size``,
             contains an invalid run, or expands past the target.
     """
-
     output = bytearray()
     offset = start
     while len(output) < size:
@@ -266,7 +261,9 @@ def decode_title_rle(
         else:
             output.append(value)
         if len(output) > size:
-            raise TitlePatchError("title nametable run exceeds its 1 KB target")
+            raise TitlePatchError(
+                "title nametable run exceeds its 1 KB target"
+            )
     return bytes(output), offset
 
 
@@ -287,7 +284,6 @@ def decode_title_stream(data: bytes, start: int) -> tuple[bytes, int]:
     Unlike :func:`decode_title_rle`, this form does not impose a nametable
     boundary and is used to verify combined relocated streams.
     """
-
     output = bytearray()
     offset = start
     while True:
@@ -322,7 +318,6 @@ def encode_title_rle(data: bytes) -> bytes:
     cannot distinguish them from literal run markers. Runs are split at 62
     bytes because ``$FF`` is reserved for stream termination.
     """
-
     output = bytearray()
     offset = 0
     while offset < len(data):
@@ -344,7 +339,9 @@ def encode_title_rle(data: bytes) -> bytes:
     return bytes(output)
 
 
-def _render_indexed_nametable(nametable: bytes, chr_data: bytes) -> Image.Image:
+def _render_indexed_nametable(
+    nametable: bytes, chr_data: bytes
+) -> Image.Image:
     """Render one nametable through a single NES pattern table.
 
     Args:
@@ -357,7 +354,6 @@ def _render_indexed_nametable(nametable: bytes, chr_data: bytes) -> Image.Image:
     Raises:
         IndexError: If a referenced tile is missing from ``chr_data``.
     """
-
     image = Image.new("L", (256, 240), 0)
     pixels = image.load()
     for tile_y in range(30):
@@ -370,9 +366,8 @@ def _render_indexed_nametable(nametable: bytes, chr_data: bytes) -> Image.Image:
                 for x in range(8):
                     shift = 7 - x
                     pixels[tile_x * 8 + x, tile_y * 8 + y] = (
-                        ((low >> shift) & 1)
-                        | (((high >> shift) & 1) << 1)
-                    )
+                        (low >> shift) & 1
+                    ) | (((high >> shift) & 1) << 1)
     return image
 
 
@@ -397,13 +392,14 @@ def _render_split_nametable(
     Missing lower slots are padded with blank patterns for deterministic
     preview behavior.
     """
-
     if len(bottom_chr) > TITLE_CHR_SIZE:
         raise TitlePatchError("bottom title CHR exceeds one NES pattern table")
     padded_bottom = bottom_chr + bytes(TITLE_CHR_SIZE - len(bottom_chr))
     top = _render_indexed_nametable(nametable, top_chr)
     bottom = _render_indexed_nametable(nametable, padded_bottom)
-    top.paste(bottom.crop((0, SPLIT_TILE_ROW * 8, 256, 240)), (0, SPLIT_TILE_ROW * 8))
+    top.paste(
+        bottom.crop((0, SPLIT_TILE_ROW * 8, 256, 240)), (0, SPLIT_TILE_ROW * 8)
+    )
     return top
 
 
@@ -427,14 +423,15 @@ def _target_to_indices(path: Path) -> Image.Image:
     of truth.  The clock interior in that asset is already clear for the live
     hand sprites.
     """
-
     with Image.open(path) as source:
         if source.size != (256, 240) or source.mode not in {"L", "P"}:
             raise TitlePatchError(
                 "title authority must be a 256x240 indexed PNG"
             )
-        result = source.convert("L") if source.mode == "L" else Image.new(
-            "L", source.size
+        result = (
+            source.convert("L")
+            if source.mode == "L"
+            else Image.new("L", source.size)
         )
         if source.mode == "P":
             result.putdata(source.get_flattened_data())
@@ -457,7 +454,6 @@ def _remove_reference_hand(image: Image.Image) -> None:
     Side Effects:
         Clears recovered hand polygons and two quantization remnants in place.
     """
-
     clock = ImageDraw.Draw(image)
     clock.polygon(((114, 77), (118, 82), (134, 68), (131, 64)), fill=0)
     clock.polygon(((129, 64), (134, 69), (138, 64), (135, 60)), fill=0)
@@ -475,7 +471,6 @@ def _remove_full_reference_hand(image: Image.Image) -> None:
     Side Effects:
         Draws three black cleanup strokes directly into ``image``.
     """
-
     clock = ImageDraw.Draw(image)
     clock.line(((122, 74), (132, 65)), fill=0, width=4)
     clock.line(((120, 82), (133, 68)), fill=0, width=4)
@@ -494,7 +489,6 @@ def _draw_clock_numerals(image: Image.Image) -> None:
     This helper is used only for the heavily downscaled legacy crop. A
     full-screen reference keeps its authoritative numeral pixels.
     """
-
     clock = ImageDraw.Draw(image)
     for bounds in (
         (124, 48, 140, 58),
@@ -574,7 +568,6 @@ def _draw_text(
         Writes glyph pixels directly into ``image``. Characters advance six
         pixels; spaces advance four and draw nothing.
     """
-
     pixels = image.load()
     cursor = x
     for character in text:
@@ -605,7 +598,6 @@ def _tile_bytes(image: Image.Image, tile_x: int, tile_y: int) -> bytes:
     Returns:
         Sixteen bytes: eight low-plane rows followed by eight high-plane rows.
     """
-
     pixels = image.load()
     low = bytearray(8)
     high = bytearray(8)
@@ -630,7 +622,6 @@ def _pattern_values(pattern: bytes) -> tuple[int, ...]:
     Raises:
         IndexError: If ``pattern`` is shorter than 16 bytes.
     """
-
     values: list[int] = []
     for y in range(8):
         for x in range(8):
@@ -663,7 +654,6 @@ def _pattern_distance(left: bytes, right: bytes) -> int:
         Weighted per-pixel error. Replacing a white source pixel receives a
         prohibitive penalty; other pink/purple differences remain finite.
     """
-
     return sum(
         _COLOR_DISTANCE[a][b]
         for a, b in zip(_pattern_values(left), _pattern_values(right))
@@ -682,7 +672,6 @@ def _values_to_pattern(values: list[int]) -> bytes:
     Raises:
         IndexError: If fewer than 64 values are supplied.
     """
-
     low = bytearray(8)
     high = bytearray(8)
     for y in range(8):
@@ -723,7 +712,6 @@ def _refine_title_centers(
     tile that minimizes its total per-pixel color error.  This uses the same
     number of CHR slots while avoiding those visibly borrowed fragments.
     """
-
     target_count = len(centers)
     fixed = sorted(exact_patterns)
     dynamic = [center for center in centers if center not in exact_patterns]
@@ -735,7 +723,10 @@ def _refine_title_centers(
         for pattern in sorted(represented_patterns):
             center = min(
                 all_centers,
-                key=lambda candidate: (_pattern_distance(pattern, candidate), candidate),
+                key=lambda candidate: (
+                    _pattern_distance(pattern, candidate),
+                    candidate,
+                ),
             )
             index = dynamic_index.get(center)
             if index is not None:
@@ -748,7 +739,11 @@ def _refine_title_centers(
                 continue
             values: list[int] = []
             expanded = [
-                (pattern, _pattern_values(pattern), weighted_frequency[pattern])
+                (
+                    pattern,
+                    _pattern_values(pattern),
+                    weighted_frequency[pattern],
+                )
                 for pattern in cluster
             ]
             for pixel in range(64):
@@ -757,7 +752,8 @@ def _refine_title_centers(
                         range(4),
                         key=lambda candidate: (
                             sum(
-                                weight * _COLOR_DISTANCE[source[pixel]][candidate]
+                                weight
+                                * _COLOR_DISTANCE[source[pixel]][candidate]
                                 for _, source, weight in expanded
                             ),
                             candidate,
@@ -771,13 +767,16 @@ def _refine_title_centers(
         while len(all_centers) < target_count:
             minimum_distance = {
                 pattern: min(
-                    _pattern_distance(pattern, center) for center in all_centers
+                    _pattern_distance(pattern, center)
+                    for center in all_centers
                 )
                 for pattern in represented_patterns
             }
             candidates = represented_patterns - set(all_centers)
             if not candidates:
-                raise TitlePatchError("title-center refinement exhausted candidates")
+                raise TitlePatchError(
+                    "title-center refinement exhausted candidates"
+                )
             selected = max(
                 candidates,
                 key=lambda candidate: (
@@ -803,7 +802,9 @@ def _refine_title_centers(
 
     result = fixed + dynamic
     if len(result) != target_count or len(set(result)) != target_count:
-        raise TitlePatchError("title-center refinement changed the CHR tile count")
+        raise TitlePatchError(
+            "title-center refinement changed the CHR tile count"
+        )
     return result
 
 
@@ -821,13 +822,17 @@ def _validate_source(data: bytes) -> None:
     The function performs no mutation. These strict guards prevent absolute
     offsets and injected 6502 helpers from being applied to an unknown build.
     """
-
     if len(data) != NOV4_SOURCE_SIZE:
         raise TitlePatchError(
             f"NOV4 must be the original 0x{NOV4_SOURCE_SIZE:X}-byte layout"
         )
-    if data[TITLE_POINTER_OFFSET : TITLE_POINTER_OFFSET + 4] != TITLE_POINTER_SOURCE:
-        raise TitlePatchError("NOV4 title pointer code does not match the source")
+    if (
+        data[TITLE_POINTER_OFFSET : TITLE_POINTER_OFFSET + 4]
+        != TITLE_POINTER_SOURCE
+    ):
+        raise TitlePatchError(
+            "NOV4 title pointer code does not match the source"
+        )
     instruction_checks = (
         (PPUCTRL_INIT_OFFSET, PPUCTRL_INIT_SOURCE, "PPUCTRL setup"),
         (TITLE_EXIT_OFFSET, TITLE_EXIT_SOURCE, "title exit"),
@@ -858,22 +863,30 @@ def _validate_source(data: bytes) -> None:
         ),
     )
     for offset, expected, label in instruction_checks:
-        if data[offset:offset + len(expected)] != expected:
+        if data[offset : offset + len(expected)] != expected:
             raise TitlePatchError(f"NOV4 {label} does not match the source")
-    if data[
-        CLOCK_HAND_ORIGINS_OFFSET:
-        CLOCK_HAND_ORIGINS_OFFSET + len(CLOCK_HAND_ORIGINS_SOURCE)
-    ] != CLOCK_HAND_ORIGINS_SOURCE:
-        raise TitlePatchError("NOV4 clock-hand origins do not match the source")
+    if (
+        data[
+            CLOCK_HAND_ORIGINS_OFFSET : CLOCK_HAND_ORIGINS_OFFSET
+            + len(CLOCK_HAND_ORIGINS_SOURCE)
+        ]
+        != CLOCK_HAND_ORIGINS_SOURCE
+    ):
+        raise TitlePatchError(
+            "NOV4 clock-hand origins do not match the source"
+        )
     combined, combined_end = decode_title_stream(data, FINAL_NAMETABLE_START)
     if (
-        combined != (
+        combined
+        != (
             decode_title_rle(data, FINAL_NAMETABLE_START)[0]
             + decode_title_rle(data, SECOND_NAMETABLE_START)[0]
         )
         or combined_end != SECOND_NAMETABLE_END + 1
     ):
-        raise TitlePatchError("NOV4 title stream framing does not match the source")
+        raise TitlePatchError(
+            "NOV4 title stream framing does not match the source"
+        )
     checks = (
         (
             data[FINAL_NAMETABLE_START:FINAL_NAMETABLE_END],
@@ -903,7 +916,9 @@ def _validate_source(data: bytes) -> None:
     )
     for source, expected, label in checks:
         if _sha256(source) != expected:
-            raise TitlePatchError(f"NOV4 {label} does not match the recovered source")
+            raise TitlePatchError(
+                f"NOV4 {label} does not match the recovered source"
+            )
 
 
 def build_title_assets(
@@ -936,10 +951,11 @@ def build_title_assets(
     tile tail is preserved byte-for-byte. The function does not write files or
     mutate ``data``.
     """
-
     _validate_source(data)
     final_nametable, final_end = decode_title_rle(data, FINAL_NAMETABLE_START)
-    second_nametable, second_end = decode_title_rle(data, SECOND_NAMETABLE_START)
+    second_nametable, second_end = decode_title_rle(
+        data, SECOND_NAMETABLE_START
+    )
     if final_end != FINAL_NAMETABLE_END or second_end != SECOND_NAMETABLE_END:
         raise TitlePatchError("NOV4 title nametable boundaries changed")
     source_chr = data[TITLE_CHR_OFFSET : TITLE_CHR_OFFSET + TITLE_CHR_SIZE]
@@ -959,7 +975,9 @@ def build_title_assets(
     for y in range(92, 106):
         for x in range(256):
             final_pixels[x, y] = 0
-    subtitle_width = sum(4 if character == " " else 6 for character in subtitle) - 1
+    subtitle_width = (
+        sum(4 if character == " " else 6 for character in subtitle) - 1
+    )
     if subtitle_width > 256:
         raise TitlePatchError("title subtitle is wider than the screen")
     _draw_text(
@@ -985,7 +1003,9 @@ def build_title_assets(
         for tile_x in range(SLIDE_TITLE_TILE_COLUMNS):
             left = tile_x * 8
             top = tile_y * 8
-            slide_target.paste(final_target.crop((left, top, left + 8, top + 8)), (left, top))
+            slide_target.paste(
+                final_target.crop((left, top, left + 8, top + 8)), (left, top)
+            )
 
     # The exact upper title and exact lower machine/text art need 291 distinct
     # patterns together, more than one NES background table can contain.  NOV4
@@ -1048,15 +1068,19 @@ def build_title_assets(
     # the original
     # animated-hand source remains byte-identical.
     background_chr = bytearray(source_chr)
-    background_chr[:CLOCK_SOURCE_TILE * 16] = bytes(CLOCK_SOURCE_TILE * 16)
+    background_chr[: CLOCK_SOURCE_TILE * 16] = bytes(CLOCK_SOURCE_TILE * 16)
     for pattern, tile_id in center_to_id.items():
-        background_chr[tile_id * 16:(tile_id + 1) * 16] = pattern
+        background_chr[tile_id * 16 : (tile_id + 1) * 16] = pattern
 
     bottom_to_id = {
-        pattern: tile_id for tile_id, pattern in enumerate(sorted(bottom_patterns))
+        pattern: tile_id
+        for tile_id, pattern in enumerate(sorted(bottom_patterns))
     }
     bottom_chr = b"".join(
-        pattern for pattern, _ in sorted(bottom_to_id.items(), key=lambda item: item[1])
+        pattern
+        for pattern, _ in sorted(
+            bottom_to_id.items(), key=lambda item: item[1]
+        )
     )
     if len(bottom_chr) != BOTTOM_CHR_SIZE:
         raise TitlePatchError("exact lower-title CHR has an unexpected size")
@@ -1068,15 +1092,21 @@ def build_title_assets(
     }
     for pattern, tile_id in nintendo_to_id.items():
         block_offset = (tile_id - NINTENDO_FIRST_TILE) * 16
-        nintendo_chr[block_offset:block_offset + 16] = pattern
+        nintendo_chr[block_offset : block_offset + 16] = pattern
     restore_chr = background_chr[
-        NINTENDO_FIRST_TILE * 16:
-        (NINTENDO_FIRST_TILE + NINTENDO_TILE_COUNT) * 16
+        NINTENDO_FIRST_TILE
+        * 16 : (NINTENDO_FIRST_TILE + NINTENDO_TILE_COUNT)
+        * 16
     ]
 
     patched_chr = bytearray(background_chr)
-    if patched_chr[CLOCK_SOURCE_TILE * 16:] != source_chr[CLOCK_SOURCE_TILE * 16:]:
-        raise TitlePatchError("title conversion altered the clock source tiles")
+    if (
+        patched_chr[CLOCK_SOURCE_TILE * 16 :]
+        != source_chr[CLOCK_SOURCE_TILE * 16 :]
+    ):
+        raise TitlePatchError(
+            "title conversion altered the clock source tiles"
+        )
 
     patched_final = bytearray(final_nametable)
     patched_second = bytearray(second_nametable)
@@ -1141,7 +1171,6 @@ def patched_nov4_title(
     The expanded overlay must finish below resident NOV3 at ``$D7B5``. Inputs
     and the native title file are not modified.
     """
-
     assets = build_title_assets(data, target, subtitle=subtitle)
     bottom_chr_offset = len(data)
     nintendo_chr_offset = bottom_chr_offset + BOTTOM_CHR_SIZE
@@ -1165,7 +1194,6 @@ def patched_nov4_title(
             The enclosing function validates the final expanded address against
             NOV3 residency after all appended regions have been laid out.
         """
-
         return NOV4_LOAD_ADDRESS + offset
 
     bottom_chr_address = loaded_address(bottom_chr_offset)
@@ -1196,15 +1224,19 @@ def patched_nov4_title(
     slide_restore_address = loaded_address(
         TITLE_CHR_OFFSET + NINTENDO_FIRST_TILE * 16
     )
-    slide_prep = bytes.fromhex(
-        "20 74 AB "
-        "A9 00 8D 01 20 A5 FF 48 29 7F 8D 00 20 "
-        "A0 1B A9 00 A2 26 20 AF EB"
-    ) + slide_restore_address.to_bytes(2, "little") + bytes.fromhex(
-        "68 85 FF 09 10 85 FF 8D 00 20 A5 1C 8D 01 20 60"
+    slide_prep = (
+        bytes.fromhex(
+            "20 74 AB "
+            "A9 00 8D 01 20 A5 FF 48 29 7F 8D 00 20 "
+            "A0 1B A9 00 A2 26 20 AF EB"
+        )
+        + slide_restore_address.to_bytes(2, "little")
+        + bytes.fromhex("68 85 FF 09 10 85 FF 8D 00 20 A5 1C 8D 01 20 60")
     )
     if len(slide_prep) != SLIDE_PREP_SIZE:
-        raise TitlePatchError("pre-slide CHR restore helper has an unexpected size")
+        raise TitlePatchError(
+            "pre-slide CHR restore helper has an unexpected size"
+        )
 
     # State $17 restores the exact upper patterns, installs the independent
     # exact lower set in pattern table 0, and enables NOV4's existing
@@ -1255,90 +1287,118 @@ def patched_nov4_title(
             exit_helper,
             assets.encoded_final,
             assets.encoded_second,
-            b"\xFF",
+            b"\xff",
         )
     )
     if loaded_address(len(data) + len(append)) > NOV3_LOAD_ADDRESS:
-        raise TitlePatchError("expanded NOV4 would overlap resident NOV3 memory")
+        raise TitlePatchError(
+            "expanded NOV4 would overlap resident NOV3 memory"
+        )
 
     result = bytearray(data)
     result[
-        SLIDE_PALETTE_COLOR1_OFFSET:
-        SLIDE_PALETTE_COLOR1_OFFSET + len(SLIDE_PALETTE_COLOR1_SOURCE)
+        SLIDE_PALETTE_COLOR1_OFFSET : SLIDE_PALETTE_COLOR1_OFFSET
+        + len(SLIDE_PALETTE_COLOR1_SOURCE)
     ] = SLIDE_PALETTE_COLOR1_PATCH
     result[TITLE_POINTER_OFFSET : TITLE_POINTER_OFFSET + 4] = bytes(
         (0xA9, title_stream_address & 0xFF, 0xA2, title_stream_address >> 8)
     )
     result[
-        BACKGROUND_TAIL_UPLOAD_OFFSET:BACKGROUND_TAIL_UPLOAD_OFFSET + 11
-    ] = bytes(
-        (0x20, initial_loader_address & 0xFF, initial_loader_address >> 8)
-    ) + b"\xEA" * 8
+        BACKGROUND_TAIL_UPLOAD_OFFSET : BACKGROUND_TAIL_UPLOAD_OFFSET + 11
+    ] = (
+        bytes(
+            (0x20, initial_loader_address & 0xFF, initial_loader_address >> 8)
+        )
+        + b"\xea" * 8
+    )
     result[
-        SLIDE_PREP_CALL_OFFSET:
-        SLIDE_PREP_CALL_OFFSET + len(SLIDE_PREP_CALL_SOURCE)
+        SLIDE_PREP_CALL_OFFSET : SLIDE_PREP_CALL_OFFSET
+        + len(SLIDE_PREP_CALL_SOURCE)
     ] = bytes((0x20, slide_prep_address & 0xFF, slide_prep_address >> 8))
     # Preserve the original tail-call structure here.  The source branch JMPs
     # to $6119, whose RTS returns directly to the main engine.  Using JSR for
     # this detour leaves an extra return address on the stack, so $6119's RTS
     # falls back into the middle of NOV4 and crashes immediately after START.
-    result[TITLE_EXIT_OFFSET:TITLE_EXIT_OFFSET + len(TITLE_EXIT_SOURCE)] = bytes(
-        (0x4C, exit_address & 0xFF, exit_address >> 8)
-    ) + b"\xEA" * (len(TITLE_EXIT_SOURCE) - 3)
+    result[TITLE_EXIT_OFFSET : TITLE_EXIT_OFFSET + len(TITLE_EXIT_SOURCE)] = (
+        bytes((0x4C, exit_address & 0xFF, exit_address >> 8))
+        + b"\xea" * (len(TITLE_EXIT_SOURCE) - 3)
+    )
     result[
-        TITLE_TRANSITION_CALL_OFFSET:
-        TITLE_TRANSITION_CALL_OFFSET + len(TITLE_TRANSITION_CALL_SOURCE)
+        TITLE_TRANSITION_CALL_OFFSET : TITLE_TRANSITION_CALL_OFFSET
+        + len(TITLE_TRANSITION_CALL_SOURCE)
     ] = bytes((0x20, transition_address & 0xFF, transition_address >> 8)) + (
-        b"\xEA" * (len(TITLE_TRANSITION_CALL_SOURCE) - 3)
+        b"\xea" * (len(TITLE_TRANSITION_CALL_SOURCE) - 3)
     )
     # The approved face is centered at about (125,67) in native pixels. Move
     # both original metasprite origins by -16,-8 so their shared elbow lands on
     # that center. Frame layouts, tiles, order, and timing remain unchanged.
     result[
-        CLOCK_HAND_ORIGINS_OFFSET:
-        CLOCK_HAND_ORIGINS_OFFSET + len(CLOCK_HAND_ORIGINS_PATCH)
+        CLOCK_HAND_ORIGINS_OFFSET : CLOCK_HAND_ORIGINS_OFFSET
+        + len(CLOCK_HAND_ORIGINS_PATCH)
     ] = CLOCK_HAND_ORIGINS_PATCH
-    result[TITLE_CHR_OFFSET : TITLE_CHR_OFFSET + TITLE_CHR_SIZE] = assets.chr_data
+    result[TITLE_CHR_OFFSET : TITLE_CHR_OFFSET + TITLE_CHR_SIZE] = (
+        assets.chr_data
+    )
     result.extend(append)
 
-    decoded_final, second_offset = decode_title_rle(result, title_stream_offset)
+    decoded_final, second_offset = decode_title_rle(
+        result, title_stream_offset
+    )
     decoded_second, terminator_offset = decode_title_rle(result, second_offset)
     decoded_combined, end = decode_title_stream(result, title_stream_offset)
     if decoded_final != assets.final_nametable:
-        raise TitlePatchError("relocated final title nametable failed verification")
+        raise TitlePatchError(
+            "relocated final title nametable failed verification"
+        )
     if decoded_second != assets.second_nametable:
-        raise TitlePatchError("relocated second title nametable failed verification")
+        raise TitlePatchError(
+            "relocated second title nametable failed verification"
+        )
     if terminator_offset >= len(result) or result[terminator_offset] != 0xFF:
         raise TitlePatchError("relocated title stream lost its $FF terminator")
     if (
         decoded_combined != assets.final_nametable + assets.second_nametable
         or end != len(result)
     ):
-        raise TitlePatchError("relocated combined title stream failed verification")
+        raise TitlePatchError(
+            "relocated combined title stream failed verification"
+        )
     if result[bottom_chr_offset:nintendo_chr_offset] != assets.bottom_chr:
         raise TitlePatchError("exact lower-title tiles failed verification")
     if result[nintendo_chr_offset:restore_chr_offset] != assets.nintendo_chr:
         raise TitlePatchError("Nintendo overlay tiles failed verification")
     if result[restore_chr_offset:initial_loader_offset] != assets.restore_chr:
         raise TitlePatchError("English restore tiles failed verification")
-    if result[
-        SLIDE_PALETTE_COLOR1_OFFSET:
-        SLIDE_PALETTE_COLOR1_OFFSET + len(SLIDE_PALETTE_COLOR1_PATCH)
-    ] != SLIDE_PALETTE_COLOR1_PATCH:
-        raise TitlePatchError("slide palette color-1 patch failed verification")
-    if result[CLOCK_SOURCE_OFFSET:CLOCK_SOURCE_END] != data[
-        CLOCK_SOURCE_OFFSET:CLOCK_SOURCE_END
-    ]:
+    if (
+        result[
+            SLIDE_PALETTE_COLOR1_OFFSET : SLIDE_PALETTE_COLOR1_OFFSET
+            + len(SLIDE_PALETTE_COLOR1_PATCH)
+        ]
+        != SLIDE_PALETTE_COLOR1_PATCH
+    ):
+        raise TitlePatchError(
+            "slide palette color-1 patch failed verification"
+        )
+    if (
+        result[CLOCK_SOURCE_OFFSET:CLOCK_SOURCE_END]
+        != data[CLOCK_SOURCE_OFFSET:CLOCK_SOURCE_END]
+    ):
         raise TitlePatchError("clock-hand source bytes changed")
-    if result[CLOCK_METASPRITE_START:CLOCK_METASPRITE_END] != data[
-        CLOCK_METASPRITE_START:CLOCK_METASPRITE_END
-    ]:
+    if (
+        result[CLOCK_METASPRITE_START:CLOCK_METASPRITE_END]
+        != data[CLOCK_METASPRITE_START:CLOCK_METASPRITE_END]
+    ):
         raise TitlePatchError("clock metasprite animation bytes changed")
-    if result[
-        CLOCK_HAND_ORIGINS_OFFSET:
-        CLOCK_HAND_ORIGINS_OFFSET + len(CLOCK_HAND_ORIGINS_PATCH)
-    ] != CLOCK_HAND_ORIGINS_PATCH:
-        raise TitlePatchError("clock-hand origin correction failed verification")
+    if (
+        result[
+            CLOCK_HAND_ORIGINS_OFFSET : CLOCK_HAND_ORIGINS_OFFSET
+            + len(CLOCK_HAND_ORIGINS_PATCH)
+        ]
+        != CLOCK_HAND_ORIGINS_PATCH
+    ):
+        raise TitlePatchError(
+            "clock-hand origin correction failed verification"
+        )
     return bytes(result)
 
 
@@ -1368,12 +1428,11 @@ def render_slide_logo_frame(
     the state-3 palette uses attribute palette 1 as a visibility mask, making
     origin $1F0 blank and revealing alternating strips as the origin settles.
     """
-
     if not 0 <= scroll_origin < 0x200:
         raise TitlePatchError("title scroll origin must be a nine-bit value")
+
     def runtime_mask(nametable: bytes) -> Image.Image:
         """Apply NOV4's state-3 attribute palettes to one physical map."""
-
         indexed = _render_indexed_nametable(
             nametable,
             assets.background_chr,
@@ -1419,7 +1478,6 @@ def render_monochrome_slide_frame(
     scroll_origin: int,
 ) -> Image.Image:
     """Colorize one attribute-masked swipe frame as black and white."""
-
     indexed = render_slide_logo_frame(assets, scroll_origin)
     image = Image.new("RGB", (256, 240), TITLE_PALETTE[0])
     source = indexed.load()
@@ -1443,7 +1501,6 @@ def render_title_background(assets: TitleAssets) -> Image.Image:
     This preview omits animated clock-hand sprites. Use
     :func:`overlay_clock_sprites` with a runtime capture to inspect a frame.
     """
-
     indexed = _render_split_nametable(
         assets.final_nametable,
         assets.background_chr,
@@ -1486,9 +1543,10 @@ def overlay_clock_sprites(
     honored. Sprite priority and palette-number bits are intentionally ignored
     because the captured hand uses one known verification palette.
     """
-
     if len(chr_dump) != 0x2000 or len(oam) < 0x20:
-        raise TitlePatchError("clock preview needs 8 KB CHR and eight OAM sprites")
+        raise TitlePatchError(
+            "clock preview needs 8 KB CHR and eight OAM sprites"
+        )
     image = background.copy().convert("RGB")
     pixels = image.load()
     for sprite in range(8):

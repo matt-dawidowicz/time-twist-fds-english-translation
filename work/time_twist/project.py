@@ -8,10 +8,20 @@ from pathlib import Path
 from .english import encode_english
 from .ui import T22_REQUIRED_DICTIONARY_TEXT, TT1B_REQUIRED_DICTIONARY_TEXT
 
-
 KNOWN_SCENARIO_BANKS = (
-    "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B",
-    "TT4", "TT5", "T25", "TT6A", "TT6B", "TT6C", "TT6D",
+    "TT1A",
+    "TT1B",
+    "TT2",
+    "T22",
+    "TT3A",
+    "TT3B",
+    "TT4",
+    "TT5",
+    "T25",
+    "TT6A",
+    "TT6B",
+    "TT6C",
+    "TT6D",
 )
 
 BANK_REQUIRED_DICTIONARY_TEXT = {
@@ -45,9 +55,10 @@ PERSONALITY_QUESTION_IDS = frozenset(
 )
 
 
-def required_dictionary_entries(bank_name: str) -> tuple[tuple[object, ...], ...]:
+def required_dictionary_entries(
+    bank_name: str,
+) -> tuple[tuple[object, ...], ...]:
     """Encode dictionary entries reserved by a bank's fixed-address text."""
-
     return tuple(
         encode_english(text)
         for text in BANK_REQUIRED_DICTIONARY_TEXT.get(bank_name, ())
@@ -62,7 +73,6 @@ def infer_bank_name(path: Path, explicit: str | None = None) -> str:
     ``TT1A_fixed_footprint.bin``. Ambiguous or unknown names are rejected rather
     than silently selecting an underscore-delimited token.
     """
-
     if explicit is not None:
         candidate = explicit.upper()
         if candidate not in KNOWN_SCENARIO_BANKS:

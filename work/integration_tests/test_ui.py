@@ -3,17 +3,14 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-
-WORK_DIR = Path(__file__).resolve().parents[1]
-
 from time_twist.compression import expand_dictionary_symbols
 from time_twist.english import encode_english, render_english
 from time_twist.scenario import parse_scenario_bank
 from time_twist.textcodec import pack_records, split_records
 from time_twist.ui import (
     DISK_PROMPT_PATCHES,
-    ENGLISH_WAIT_PROMPT,
     ENGLISH_START_PROMPT,
+    ENGLISH_WAIT_PROMPT,
     KOUHEN_BOOT_GUARD_BLANK_TILE,
     KOUHEN_BOOT_GUARD_CHR_OFFSET,
     KOUHEN_BOOT_GUARD_DECODED_SIZE,
@@ -23,11 +20,11 @@ from time_twist.ui import (
     KOUHEN_BOOT_GUARD_TILE_COUNT,
     KOUHEN_BOOT_GUARD_TILEMAP_END,
     KOUHEN_BOOT_GUARD_TILEMAP_OFFSET,
-    NOV4_START_PROMPT_OFFSET,
     NOV2_BLANK_TILE,
     NOV2_DIALOGUE_ROW_COPY,
     NOV2_OPAQUE_CLEAR_PATCHES,
     NOV2_SINGLE_CHOICE_B_PATCHES,
+    NOV4_START_PROMPT_OFFSET,
     ORIGINAL_START_PROMPT,
     ORIGINAL_WAIT_PROMPT,
     START_PROMPT_OFFSET,
@@ -37,6 +34,15 @@ from time_twist.ui import (
     T25_FIXED_TEXT_END_OFFSET,
     T25_FIXED_TEXT_RECORDS,
     T25_FIXED_TEXT_START_OFFSET,
+    TT1A_BLOOD_TYPE_PATCHES,
+    TT1A_CONFIRMATION_PATCHES,
+    TT1A_MONTH_PATCHES,
+    TT1B_FIXED_TEXT_END_OFFSET,
+    TT1B_FIXED_TEXT_RECORDS,
+    TT1B_FIXED_TEXT_START_OFFSET,
+    TT2_FIXED_TEXT_END_OFFSET,
+    TT2_FIXED_TEXT_RECORDS,
+    TT2_FIXED_TEXT_START_OFFSET,
     TT3A_FIXED_TEXT_END_OFFSET,
     TT3A_FIXED_TEXT_RECORDS,
     TT3A_FIXED_TEXT_START_OFFSET,
@@ -58,15 +64,6 @@ from time_twist.ui import (
     TT6C_FIXED_TEXT_END_OFFSET,
     TT6C_FIXED_TEXT_RECORDS,
     TT6C_FIXED_TEXT_START_OFFSET,
-    TT1A_BLOOD_TYPE_PATCHES,
-    TT1A_CONFIRMATION_PATCHES,
-    TT1A_MONTH_PATCHES,
-    TT1B_FIXED_TEXT_END_OFFSET,
-    TT1B_FIXED_TEXT_RECORDS,
-    TT1B_FIXED_TEXT_START_OFFSET,
-    TT2_FIXED_TEXT_END_OFFSET,
-    TT2_FIXED_TEXT_RECORDS,
-    TT2_FIXED_TEXT_START_OFFSET,
     WAIT_PROMPT_OFFSET,
     WRONG_DISK_PATCHES,
     UiPatchError,
@@ -87,10 +84,11 @@ from time_twist.ui import (
     patched_tt6c_ui,
 )
 
+WORK_DIR = Path(__file__).resolve().parents[1]
+
 
 def _record_ends(data: bytes, start: int, count: int) -> tuple[int, ...]:
     """Return every absolute record end in a byte-aligned packed table."""
-
     ends: list[int] = []
     offset = start
     for _ in range(count):
@@ -101,7 +99,6 @@ def _record_ends(data: bytes, start: int, count: int) -> tuple[int, ...]:
 
 def _decode_kouhen_guard_tilemap(data: bytes) -> bytes:
     """Decode SON-KOUH's small $C0-$FE run format for assertions."""
-
     decoded = bytearray()
     offset = KOUHEN_BOOT_GUARD_TILEMAP_OFFSET
     while data[offset] != 0xFF:
@@ -126,9 +123,13 @@ class StaticUiTests(unittest.TestCase):
 
         self.assertEqual(len(patched), len(original))
         permitted = set(
-            range(KOUHEN_BOOT_GUARD_TILEMAP_OFFSET, KOUHEN_BOOT_GUARD_TILEMAP_END)
+            range(
+                KOUHEN_BOOT_GUARD_TILEMAP_OFFSET, KOUHEN_BOOT_GUARD_TILEMAP_END
+            )
         )
-        chr_end = KOUHEN_BOOT_GUARD_CHR_OFFSET + KOUHEN_BOOT_GUARD_TILE_COUNT * 8
+        chr_end = (
+            KOUHEN_BOOT_GUARD_CHR_OFFSET + KOUHEN_BOOT_GUARD_TILE_COUNT * 8
+        )
         permitted.update(range(KOUHEN_BOOT_GUARD_CHR_OFFSET, chr_end))
         changed = {
             index
@@ -150,9 +151,11 @@ class StaticUiTests(unittest.TestCase):
             column = (32 - len(text)) // 2
             start = row * 32 + column - nametable_start
             expected = bytes(
-                KOUHEN_BOOT_GUARD_BLANK_TILE
-                if character == " "
-                else tile_by_character[character]
+                (
+                    KOUHEN_BOOT_GUARD_BLANK_TILE
+                    if character == " "
+                    else tile_by_character[character]
+                )
                 for character in text
             )
             self.assertEqual(tilemap[start : start + len(text)], expected)
@@ -162,10 +165,16 @@ class StaticUiTests(unittest.TestCase):
                 if character != " "
             )
         self.assertEqual(
-            {index for index, tile in enumerate(tilemap) if tile != KOUHEN_BOOT_GUARD_BLANK_TILE},
+            {
+                index
+                for index, tile in enumerate(tilemap)
+                if tile != KOUHEN_BOOT_GUARD_BLANK_TILE
+            },
             expected_nonblank,
         )
-        blank_start = KOUHEN_BOOT_GUARD_CHR_OFFSET + KOUHEN_BOOT_GUARD_BLANK_TILE * 8
+        blank_start = (
+            KOUHEN_BOOT_GUARD_CHR_OFFSET + KOUHEN_BOOT_GUARD_BLANK_TILE * 8
+        )
         self.assertEqual(patched[blank_start : blank_start + 8], b"\x00" * 8)
 
     def test_kouhen_direct_boot_guard_rejects_unknown_source(self) -> None:
@@ -191,7 +200,9 @@ class StaticUiTests(unittest.TestCase):
         end = START_PROMPT_OFFSET + len(ORIGINAL_START_PROMPT)
 
         self.assertEqual(len(patched), len(original))
-        self.assertEqual(patched[START_PROMPT_OFFSET:end], ENGLISH_START_PROMPT)
+        self.assertEqual(
+            patched[START_PROMPT_OFFSET:end], ENGLISH_START_PROMPT
+        )
 
     def test_zenpen_nov2_disk_prompt_patch_is_size_neutral(self) -> None:
         path = WORK_DIR / "extracted_zenpen/side0_06_NOV2_6000.bin"
@@ -210,12 +221,20 @@ class StaticUiTests(unittest.TestCase):
             for index in range(offset, offset + len(source))
         )
         expected_changed.update(
-            range(START_PROMPT_OFFSET, START_PROMPT_OFFSET + len(ORIGINAL_START_PROMPT))
+            range(
+                START_PROMPT_OFFSET,
+                START_PROMPT_OFFSET + len(ORIGINAL_START_PROMPT),
+            )
         )
         expected_changed.update(
-            range(WAIT_PROMPT_OFFSET, WAIT_PROMPT_OFFSET + len(ORIGINAL_WAIT_PROMPT))
+            range(
+                WAIT_PROMPT_OFFSET,
+                WAIT_PROMPT_OFFSET + len(ORIGINAL_WAIT_PROMPT),
+            )
         )
-        expected_changed.update(offset for offset, _, _, _ in NOV2_OPAQUE_CLEAR_PATCHES)
+        expected_changed.update(
+            offset for offset, _, _, _ in NOV2_OPAQUE_CLEAR_PATCHES
+        )
         expected_changed.update(
             index
             for offset, source, _, _ in NOV2_SINGLE_CHOICE_B_PATCHES
@@ -225,17 +244,31 @@ class StaticUiTests(unittest.TestCase):
         for offset, source, english in DISK_PROMPT_PATCHES:
             replacement = pack_records([encode_english(english)])
             self.assertEqual(len(replacement), len(source))
-            self.assertEqual(patched[offset : offset + len(source)], replacement)
+            self.assertEqual(
+                patched[offset : offset + len(source)], replacement
+            )
         for offset, source, english in WRONG_DISK_PATCHES:
             replacement = pack_records([encode_english(english)])
             self.assertEqual(len(replacement), len(source))
-            self.assertEqual(patched[offset : offset + len(source)], replacement)
+            self.assertEqual(
+                patched[offset : offset + len(source)], replacement
+            )
         self.assertEqual(
-            {index for index, pair in enumerate(zip(original, patched)) if pair[0] != pair[1]},
-            {index for index in expected_changed if original[index] != patched[index]},
+            {
+                index
+                for index, pair in enumerate(zip(original, patched))
+                if pair[0] != pair[1]
+            },
+            {
+                index
+                for index in expected_changed
+                if original[index] != patched[index]
+            },
         )
 
-    def test_zenpen_nov2_preserves_dialogue_rows_and_transparent_tails(self) -> None:
+    def test_zenpen_nov2_preserves_dialogue_rows_and_transparent_tails(
+        self,
+    ) -> None:
         path = WORK_DIR / "extracted_zenpen/side0_06_NOV2_6000.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
@@ -270,7 +303,9 @@ class StaticUiTests(unittest.TestCase):
         self.assertEqual(render_english(records[0]).rstrip(), "PLEASE WAIT...")
         self.assertNotIn("{CTRL:", render_english(records[0]))
 
-    def test_zenpen_nov2_b_ignores_one_choice_but_keeps_normal_back(self) -> None:
+    def test_zenpen_nov2_b_ignores_one_choice_but_keeps_normal_back(
+        self,
+    ) -> None:
         path = WORK_DIR / "extracted_zenpen/side0_06_NOV2_6000.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
@@ -286,7 +321,9 @@ class StaticUiTests(unittest.TestCase):
 
         # $99DC-$99E0 retains the original saved-destination guard.  Its
         # nonzero path now detours to $6A2E.
-        self.assertEqual(patched[0x39DC:0x39E1], bytes.fromhex("A5 9C D0 01 60"))
+        self.assertEqual(
+            patched[0x39DC:0x39E1], bytes.fromhex("A5 9C D0 01 60")
+        )
         self.assertEqual(patched[0x39E1:0x39E4], bytes.fromhex("4C 2E 6A"))
 
         # The helper loads the visible-choice count from $98 and decrements Y
@@ -300,7 +337,9 @@ class StaticUiTests(unittest.TestCase):
         helper_address = 0x6A2E
         branch_pc_after_operand = helper_address + 5
         self.assertEqual(branch_pc_after_operand + helper[4], 0x6A93)
-        self.assertEqual(patched[0x1DB8:0x1DBD], bytes.fromhex("A9 22 4C 09 61"))
+        self.assertEqual(
+            patched[0x1DB8:0x1DBD], bytes.fromhex("A9 22 4C 09 61")
+        )
 
     def test_zenpen_nov4_live_start_prompt_patch(self) -> None:
         path = WORK_DIR / "extracted_zenpen/side0_08_NOV4_A200.bin"
@@ -335,11 +374,21 @@ class StaticUiTests(unittest.TestCase):
         ):
             replacement = pack_records([encode_english(english)])
             self.assertEqual(len(replacement), len(source))
-            self.assertEqual(patched[offset : offset + len(source)], replacement)
+            self.assertEqual(
+                patched[offset : offset + len(source)], replacement
+            )
             expected_changed.update(range(offset, offset + len(source)))
         self.assertEqual(
-            {index for index, pair in enumerate(zip(original, patched)) if pair[0] != pair[1]},
-            {index for index in expected_changed if original[index] != patched[index]},
+            {
+                index
+                for index, pair in enumerate(zip(original, patched))
+                if pair[0] != pair[1]
+            },
+            {
+                index
+                for index in expected_changed
+                if original[index] != patched[index]
+            },
         )
 
     def test_translated_tt1a_contains_english_blood_type_choices(self) -> None:
@@ -357,17 +406,32 @@ class StaticUiTests(unittest.TestCase):
         path = WORK_DIR / "translated_banks/TT1A_fixed_footprint.bin"
         if not path.exists():
             self.fail("translated TT1A fixture is not available")
-        records, end = split_records(path.read_bytes(), offset=0x026A, limit=13)
+        records, end = split_records(
+            path.read_bytes(), offset=0x026A, limit=13
+        )
         self.assertEqual(end, 0x02A4)
         self.assertEqual(
             [render_english(record).rstrip() for record in records],
             [
-                "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL-DEC",
-                "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+                "JAN",
+                "FEB",
+                "MAR",
+                "APR",
+                "MAY",
+                "JUN",
+                "JUL-DEC",
+                "JUL",
+                "AUG",
+                "SEP",
+                "OCT",
+                "NOV",
+                "DEC",
             ],
         )
 
-    def test_translated_tt1a_contains_english_confirmation_choices(self) -> None:
+    def test_translated_tt1a_contains_english_confirmation_choices(
+        self,
+    ) -> None:
         path = WORK_DIR / "translated_banks/TT1A_fixed_footprint.bin"
         if not path.exists():
             self.fail("translated TT1A fixture is not available")
@@ -395,10 +459,14 @@ class StaticUiTests(unittest.TestCase):
         )
         self.assertEqual(
             _record_ends(
-                patched, TT1B_FIXED_TEXT_START_OFFSET, len(TT1B_FIXED_TEXT_RECORDS)
+                patched,
+                TT1B_FIXED_TEXT_START_OFFSET,
+                len(TT1B_FIXED_TEXT_RECORDS),
             ),
             _record_ends(
-                original, TT1B_FIXED_TEXT_START_OFFSET, len(TT1B_FIXED_TEXT_RECORDS)
+                original,
+                TT1B_FIXED_TEXT_START_OFFSET,
+                len(TT1B_FIXED_TEXT_RECORDS),
             ),
         )
 
@@ -412,7 +480,9 @@ class StaticUiTests(unittest.TestCase):
         )
         dictionary = parse_scenario_bank(path).dictionary
         rendered = tuple(
-            render_english(expand_dictionary_symbols(record, dictionary)).rstrip()
+            render_english(
+                expand_dictionary_symbols(record, dictionary)
+            ).rstrip()
             for record in records
         )
         self.assertEqual(rendered, TT1B_FIXED_TEXT_RECORDS)
@@ -422,10 +492,19 @@ class StaticUiTests(unittest.TestCase):
         self.assertEqual(rendered[4], "AROUND")
         self.assertEqual(rendered[40], "GROUND")
         self.assertEqual(rendered[48], "MEMBER")
-        self.assertEqual(rendered[45:53], (
-            "ASK", "CHURCH", "PRIEST", "MEMBER", "SERMON", "DEVIL",
-            "BELT", "RUN",
-        ))
+        self.assertEqual(
+            rendered[45:53],
+            (
+                "ASK",
+                "CHURCH",
+                "PRIEST",
+                "MEMBER",
+                "SERMON",
+                "DEVIL",
+                "BELT",
+                "RUN",
+            ),
+        )
 
     def test_tt1b_fixed_table_rejects_unknown_source(self) -> None:
         path = WORK_DIR / "build/TT1B_english_scenario.bin"
@@ -453,10 +532,14 @@ class StaticUiTests(unittest.TestCase):
         )
         self.assertEqual(
             _record_ends(
-                patched, TT2_FIXED_TEXT_START_OFFSET, len(TT2_FIXED_TEXT_RECORDS)
+                patched,
+                TT2_FIXED_TEXT_START_OFFSET,
+                len(TT2_FIXED_TEXT_RECORDS),
             ),
             _record_ends(
-                original, TT2_FIXED_TEXT_START_OFFSET, len(TT2_FIXED_TEXT_RECORDS)
+                original,
+                TT2_FIXED_TEXT_START_OFFSET,
+                len(TT2_FIXED_TEXT_RECORDS),
             ),
         )
 
@@ -470,7 +553,9 @@ class StaticUiTests(unittest.TestCase):
         )
         dictionary = parse_scenario_bank(path).dictionary
         rendered = tuple(
-            render_english(expand_dictionary_symbols(record, dictionary)).rstrip()
+            render_english(
+                expand_dictionary_symbols(record, dictionary)
+            ).rstrip()
             for record in records
         )
         self.assertEqual(rendered, TT2_FIXED_TEXT_RECORDS)
@@ -509,10 +594,14 @@ class StaticUiTests(unittest.TestCase):
         )
         self.assertEqual(
             _record_ends(
-                patched, T22_FIXED_TEXT_START_OFFSET, len(T22_FIXED_TEXT_RECORDS)
+                patched,
+                T22_FIXED_TEXT_START_OFFSET,
+                len(T22_FIXED_TEXT_RECORDS),
             ),
             _record_ends(
-                original, T22_FIXED_TEXT_START_OFFSET, len(T22_FIXED_TEXT_RECORDS)
+                original,
+                T22_FIXED_TEXT_START_OFFSET,
+                len(T22_FIXED_TEXT_RECORDS),
             ),
         )
 
@@ -526,7 +615,9 @@ class StaticUiTests(unittest.TestCase):
         )
         dictionary = parse_scenario_bank(path).dictionary
         rendered = tuple(
-            render_english(expand_dictionary_symbols(record, dictionary)).rstrip()
+            render_english(
+                expand_dictionary_symbols(record, dictionary)
+            ).rstrip()
             for record in records
         )
         self.assertEqual(rendered, T22_FIXED_TEXT_RECORDS)
@@ -565,10 +656,14 @@ class StaticUiTests(unittest.TestCase):
         )
         self.assertEqual(
             _record_ends(
-                patched, TT3A_FIXED_TEXT_START_OFFSET, len(TT3A_FIXED_TEXT_RECORDS)
+                patched,
+                TT3A_FIXED_TEXT_START_OFFSET,
+                len(TT3A_FIXED_TEXT_RECORDS),
             ),
             _record_ends(
-                original, TT3A_FIXED_TEXT_START_OFFSET, len(TT3A_FIXED_TEXT_RECORDS)
+                original,
+                TT3A_FIXED_TEXT_START_OFFSET,
+                len(TT3A_FIXED_TEXT_RECORDS),
             ),
         )
         records, end = split_records(
@@ -581,7 +676,9 @@ class StaticUiTests(unittest.TestCase):
         )
         dictionary = parse_scenario_bank(path).dictionary
         rendered = tuple(
-            render_english(expand_dictionary_symbols(record, dictionary)).rstrip()
+            render_english(
+                expand_dictionary_symbols(record, dictionary)
+            ).rstrip()
             for record in records
         )
         self.assertEqual(rendered, TT3A_FIXED_TEXT_RECORDS)
@@ -607,10 +704,14 @@ class StaticUiTests(unittest.TestCase):
         )
         self.assertEqual(
             _record_ends(
-                patched, TT3B_FIXED_TEXT_START_OFFSET, len(TT3B_FIXED_TEXT_RECORDS)
+                patched,
+                TT3B_FIXED_TEXT_START_OFFSET,
+                len(TT3B_FIXED_TEXT_RECORDS),
             ),
             _record_ends(
-                original, TT3B_FIXED_TEXT_START_OFFSET, len(TT3B_FIXED_TEXT_RECORDS)
+                original,
+                TT3B_FIXED_TEXT_START_OFFSET,
+                len(TT3B_FIXED_TEXT_RECORDS),
             ),
         )
         records, end = split_records(
@@ -623,7 +724,9 @@ class StaticUiTests(unittest.TestCase):
         )
         dictionary = parse_scenario_bank(path).dictionary
         rendered = tuple(
-            render_english(expand_dictionary_symbols(record, dictionary)).rstrip()
+            render_english(
+                expand_dictionary_symbols(record, dictionary)
+            ).rstrip()
             for record in records
         )
         self.assertEqual(rendered, TT3B_FIXED_TEXT_RECORDS)
@@ -671,10 +774,14 @@ class StaticUiTests(unittest.TestCase):
         )
         self.assertEqual(
             _record_ends(
-                patched, TT4_FIXED_TEXT_START_OFFSET, len(TT4_FIXED_TEXT_RECORDS)
+                patched,
+                TT4_FIXED_TEXT_START_OFFSET,
+                len(TT4_FIXED_TEXT_RECORDS),
             ),
             _record_ends(
-                original, TT4_FIXED_TEXT_START_OFFSET, len(TT4_FIXED_TEXT_RECORDS)
+                original,
+                TT4_FIXED_TEXT_START_OFFSET,
+                len(TT4_FIXED_TEXT_RECORDS),
             ),
         )
         records, end = split_records(
@@ -687,7 +794,9 @@ class StaticUiTests(unittest.TestCase):
         )
         dictionary = parse_scenario_bank(path).dictionary
         rendered = tuple(
-            render_english(expand_dictionary_symbols(record, dictionary)).rstrip()
+            render_english(
+                expand_dictionary_symbols(record, dictionary)
+            ).rstrip()
             for record in records
         )
         self.assertEqual(rendered, TT4_FIXED_TEXT_RECORDS)
@@ -722,10 +831,14 @@ class StaticUiTests(unittest.TestCase):
         )
         self.assertEqual(
             _record_ends(
-                patched, TT5_FIXED_TEXT_START_OFFSET, len(TT5_FIXED_TEXT_RECORDS)
+                patched,
+                TT5_FIXED_TEXT_START_OFFSET,
+                len(TT5_FIXED_TEXT_RECORDS),
             ),
             _record_ends(
-                original, TT5_FIXED_TEXT_START_OFFSET, len(TT5_FIXED_TEXT_RECORDS)
+                original,
+                TT5_FIXED_TEXT_START_OFFSET,
+                len(TT5_FIXED_TEXT_RECORDS),
             ),
         )
         records, end = split_records(
@@ -738,7 +851,9 @@ class StaticUiTests(unittest.TestCase):
         )
         dictionary = parse_scenario_bank(path).dictionary
         rendered = tuple(
-            render_english(expand_dictionary_symbols(record, dictionary)).rstrip()
+            render_english(
+                expand_dictionary_symbols(record, dictionary)
+            ).rstrip()
             for record in records
         )
         self.assertEqual(rendered, TT5_FIXED_TEXT_RECORDS)
@@ -777,10 +892,14 @@ class StaticUiTests(unittest.TestCase):
         )
         self.assertEqual(
             _record_ends(
-                patched, T25_FIXED_TEXT_START_OFFSET, len(T25_FIXED_TEXT_RECORDS)
+                patched,
+                T25_FIXED_TEXT_START_OFFSET,
+                len(T25_FIXED_TEXT_RECORDS),
             ),
             _record_ends(
-                original, T25_FIXED_TEXT_START_OFFSET, len(T25_FIXED_TEXT_RECORDS)
+                original,
+                T25_FIXED_TEXT_START_OFFSET,
+                len(T25_FIXED_TEXT_RECORDS),
             ),
         )
         records, end = split_records(
@@ -793,7 +912,9 @@ class StaticUiTests(unittest.TestCase):
         )
         dictionary = parse_scenario_bank(path).dictionary
         rendered = tuple(
-            render_english(expand_dictionary_symbols(record, dictionary)).rstrip()
+            render_english(
+                expand_dictionary_symbols(record, dictionary)
+            ).rstrip()
             for record in records
         )
         self.assertEqual(rendered, T25_FIXED_TEXT_RECORDS)
@@ -814,16 +935,25 @@ class StaticUiTests(unittest.TestCase):
     def test_tt6_fixed_tables_preserve_every_record_address(self) -> None:
         fixtures = (
             (
-                "TT6A", TT6A_FIXED_TEXT_START_OFFSET, TT6A_FIXED_TEXT_END_OFFSET,
-                TT6A_FIXED_TEXT_RECORDS, patched_tt6a_ui,
+                "TT6A",
+                TT6A_FIXED_TEXT_START_OFFSET,
+                TT6A_FIXED_TEXT_END_OFFSET,
+                TT6A_FIXED_TEXT_RECORDS,
+                patched_tt6a_ui,
             ),
             (
-                "TT6B", TT6B_FIXED_TEXT_START_OFFSET, TT6B_FIXED_TEXT_END_OFFSET,
-                TT6B_FIXED_TEXT_RECORDS, patched_tt6b_ui,
+                "TT6B",
+                TT6B_FIXED_TEXT_START_OFFSET,
+                TT6B_FIXED_TEXT_END_OFFSET,
+                TT6B_FIXED_TEXT_RECORDS,
+                patched_tt6b_ui,
             ),
             (
-                "TT6C", TT6C_FIXED_TEXT_START_OFFSET, TT6C_FIXED_TEXT_END_OFFSET,
-                TT6C_FIXED_TEXT_RECORDS, patched_tt6c_ui,
+                "TT6C",
+                TT6C_FIXED_TEXT_START_OFFSET,
+                TT6C_FIXED_TEXT_END_OFFSET,
+                TT6C_FIXED_TEXT_RECORDS,
+                patched_tt6c_ui,
             ),
         )
         for bank_name, start, end_offset, labels, patcher in fixtures:

@@ -12,7 +12,6 @@ extracted JSON and prevents silent source-text corruption.
 
 from __future__ import annotations
 
-
 # Common values are written as tile $C0 + value by NOV2.  Only 0-47 are
 # representable by the common prefix; 46/47 are remapped to punctuation tiles.
 COMMON_KANA = tuple(
@@ -38,7 +37,6 @@ def decode_common(value: int) -> str:
     punctuation tiles selected by NOV2 rather than entries in ``COMMON_KANA``.
     The function is deliberately total and never raises for an unknown value.
     """
-
     if 0 <= value < len(COMMON_KANA):
         return COMMON_KANA[value]
     if value == 46:
@@ -127,7 +125,6 @@ def decode_extended(value: int) -> str:
     The function is deliberately total so extraction exposes unknown values
     without losing their identity.
     """
-
     if value in _DAKUTEN:
         return _DAKUTEN[value]
     if value in _HANDAKUTEN:

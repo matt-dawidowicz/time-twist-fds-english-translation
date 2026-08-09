@@ -16,7 +16,6 @@ from time_twist.release import (
     validate_source_lock,
 )
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -46,15 +45,21 @@ class ReleaseBuildTests(unittest.TestCase):
             for name, record in target["outputs"].items()
         }
         with tempfile.TemporaryDirectory() as directory:
-            manifest = build_release(Path(directory), project_root=PROJECT_ROOT)
+            manifest = build_release(
+                Path(directory), project_root=PROJECT_ROOT
+            )
             actual = {
                 name: record["sha256"]
                 for name, record in manifest["outputs"].items()
             }
             self.assertEqual(manifest["mode"], "verified")
             self.assertEqual(actual, expected)
-            zenpen = (Path(directory) / manifest["outputs"]["zenpen"]["path"]).read_bytes()
-            kouhen = (Path(directory) / manifest["outputs"]["kouhen"]["path"]).read_bytes()
+            zenpen = (
+                Path(directory) / manifest["outputs"]["zenpen"]["path"]
+            ).read_bytes()
+            kouhen = (
+                Path(directory) / manifest["outputs"]["kouhen"]["path"]
+            ).read_bytes()
             four_side = (
                 Path(directory) / manifest["outputs"]["four_side"]["path"]
             ).read_bytes()

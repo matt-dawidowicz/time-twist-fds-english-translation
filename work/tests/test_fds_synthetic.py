@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import unittest
 
-from time_twist.fds import FDS_HEADER_SIZE, SIDE_SIZE, FdsFormatError, FdsImage, combine_images
+from time_twist.fds import (
+    FDS_HEADER_SIZE,
+    SIDE_SIZE,
+    FdsFormatError,
+    FdsImage,
+    combine_images,
+)
 
 
 def make_side(*, code: bytes = b"TEST", payload: bytes = b"abc") -> bytes:
@@ -20,7 +26,9 @@ def make_side(*, code: bytes = b"TEST", payload: bytes = b"abc") -> bytes:
     file_header[11:13] = (0x6000).to_bytes(2, "little")
     file_header[13:15] = len(payload).to_bytes(2, "little")
     file_header[15] = 0
-    raw = bytes(disk_info) + b"\x02\x01" + bytes(file_header) + b"\x04" + payload
+    raw = (
+        bytes(disk_info) + b"\x02\x01" + bytes(file_header) + b"\x04" + payload
+    )
     return raw + b"\x00" * (SIDE_SIZE - len(raw))
 
 
@@ -34,7 +42,7 @@ class SyntheticFdsTests(unittest.TestCase):
 
     def test_headered_round_trip(self) -> None:
         header = bytearray(FDS_HEADER_SIZE)
-        header[:4] = b"FDS\x1A"
+        header[:4] = b"FDS\x1a"
         header[4] = 1
         raw = bytes(header) + make_side()
         image = FdsImage.from_bytes(raw)
@@ -53,8 +61,12 @@ class SyntheticFdsTests(unittest.TestCase):
         first = FdsImage.from_bytes(make_side(code=b"ONE "))
         second = FdsImage.from_bytes(make_side(code=b"TWO "))
         combined = combine_images([first, second])
-        self.assertEqual([side.game_code for side in combined.sides], ["ONE", "TWO"])
-        self.assertEqual(combined.to_bytes(), first.to_bytes() + second.to_bytes())
+        self.assertEqual(
+            [side.game_code for side in combined.sides], ["ONE", "TWO"]
+        )
+        self.assertEqual(
+            combined.to_bytes(), first.to_bytes() + second.to_bytes()
+        )
 
     def test_rejects_bad_block_marker_and_capacity_overflow(self) -> None:
         malformed = bytearray(make_side())

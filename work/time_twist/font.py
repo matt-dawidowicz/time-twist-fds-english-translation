@@ -15,14 +15,15 @@ import hashlib
 
 from .english import COMMON_CHARACTERS, EXTENDED_CHARACTERS
 
-
 NOV4_FONT_BASE_OFFSET = 0x1B7D
-SUPPORTED_NOV4_FONT_SOURCE_SHA256 = frozenset({
-    # Clean Japanese NOV4.
-    "89F50DA5A0BD2CE318DD9DBBAF3CE976F353E5EC0AC6357FD91438CDAC927694",
-    # The same bank after the size-neutral NOV4 UI patch.
-    "B20913B933C9AC2E225B2A0E2CEF465C28AD9BA391171671FDAF808E4C5E0046",
-})
+SUPPORTED_NOV4_FONT_SOURCE_SHA256 = frozenset(
+    {
+        # Clean Japanese NOV4.
+        "89F50DA5A0BD2CE318DD9DBBAF3CE976F353E5EC0AC6357FD91438CDAC927694",
+        # The same bank after the size-neutral NOV4 UI patch.
+        "B20913B933C9AC2E225B2A0E2CEF465C28AD9BA391171671FDAF808E4C5E0046",
+    }
+)
 
 # A deterministic 5x7 pixel alphabet.  The previous milestone rasterized an
 # antialiased desktop font at only eight pixels high, leaving broken diagonals
@@ -174,7 +175,6 @@ def common_tile_id(value: int) -> int:
     Values 46 and 47 use punctuation tiles outside the contiguous
     ``$C0``-based alphabet.
     """
-
     if 0 <= value <= 45:
         return 0xC0 + value
     if value == 46:
@@ -203,17 +203,18 @@ def render_glyph(char: str) -> bytes:
     rows 0 through 6, leaving deterministic horizontal spacing and a blank
     bottom row. Space bypasses the pattern table and returns eight blank rows.
     """
-
     if len(char) != 1:
         raise FontPatchError(f"expected one character, got {char!r}")
     if char == " ":
-        return b"\xFF" * 8
+        return b"\xff" * 8
     key = char
     try:
         pattern = PIXEL_FONT_5X7[key]
     except KeyError as error:
-        raise FontPatchError(f"pixel font has no glyph for {char!r}") from error
-    rows = bytearray(b"\xFF" * 8)
+        raise FontPatchError(
+            f"pixel font has no glyph for {char!r}"
+        ) from error
+    rows = bytearray(b"\xff" * 8)
     for y, source_row in enumerate(pattern):
         for x, pixel in enumerate(source_row, start=1):
             if pixel == "1":
@@ -243,7 +244,6 @@ def patched_nov4_font(
     The function does not modify ``data``. Multiple packed codes that resolve
     to one tile intentionally receive the same final glyph.
     """
-
     if len(data) < NOV4_FONT_BASE_OFFSET + (0xFE + 1) * 8:
         raise FontPatchError("NOV4 is too short for its recovered font table")
     source_hash = hashlib.sha256(data).hexdigest().upper()

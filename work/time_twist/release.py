@@ -17,7 +17,12 @@ from pathlib import Path
 from typing import Callable, Mapping
 
 from .compression import compress_english_groups, packed_size
-from .english import EnglishTextError, control_values, encode_english, validate_display_width
+from .english import (
+    EnglishTextError,
+    control_values,
+    encode_english,
+    validate_display_width,
+)
 from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
 from .project import (
@@ -25,7 +30,12 @@ from .project import (
     PERSONALITY_QUESTION_IDS,
     required_dictionary_entries,
 )
-from .scenario import ScenarioBank, parse_scenario_bank, rebuild_scenario_bank, render_symbols
+from .scenario import (
+    ScenarioBank,
+    parse_scenario_bank,
+    rebuild_scenario_bank,
+    render_symbols,
+)
 from .title import DEFAULT_SUBTITLE, patched_nov4_title
 from .ui import (
     patched_kouhen_boot_guard,
@@ -45,7 +55,6 @@ from .ui import (
     patched_tt6c_ui,
 )
 
-
 SOURCE_CHECKOUT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PROJECT_ROOT = (
     SOURCE_CHECKOUT_ROOT
@@ -63,7 +72,10 @@ DEFAULT_RELEASE_TARGET = (
     else Path("work/release_target.json")
 )
 DEFAULT_TITLE_ASSET = (
-    DEFAULT_PROJECT_ROOT / "work" / "title_assets" / "Time Twist approved native title.png"
+    DEFAULT_PROJECT_ROOT
+    / "work"
+    / "title_assets"
+    / "Time Twist approved native title.png"
     if DEFAULT_PROJECT_ROOT is not None
     else Path("work/title_assets/Time Twist approved native title.png")
 )
@@ -137,7 +149,6 @@ class ReleasePaths:
     @classmethod
     def from_project_root(cls, project_root: Path) -> "ReleasePaths":
         """Create canonical paths beneath a validated project checkout."""
-
         root = project_root.resolve()
         work = root / "work"
         return cls(
@@ -145,7 +156,9 @@ class ReleasePaths:
             work_root=work,
             source_lock=work / "release_sources.json",
             release_target=work / "release_target.json",
-            title_asset=work / "title_assets" / "Time Twist approved native title.png",
+            title_asset=work
+            / "title_assets"
+            / "Time Twist approved native title.png",
             zenpen_baseline=work / "baseline" / "time_twist_zenpen_japan.fds",
             kouhen_baseline=work / "baseline" / "time_twist_kouhen_japan.fds",
             translations=work / "translations",
@@ -165,19 +178,16 @@ class ScenarioBuildResult:
 
 def sha256_bytes(data: bytes) -> str:
     """Return an uppercase SHA-256 digest."""
-
     return hashlib.sha256(data).hexdigest().upper()
 
 
 def sha256_file(path: Path) -> str:
     """Return an uppercase SHA-256 digest for a file."""
-
     return sha256_bytes(path.read_bytes())
 
 
 def _is_project_root(path: Path) -> bool:
     """Return whether ``path`` has the source checkout's stable public markers."""
-
     return (
         (path / "pyproject.toml").is_file()
         and (path / "work" / "translations").is_dir()
@@ -197,7 +207,6 @@ def discover_project_root(
     therefore operate on any checkout through ``--project-root`` without
     packaging translations, art, or ROM data inside the wheel.
     """
-
     if explicit is not None:
         candidate = explicit.expanduser().resolve()
         if not _is_project_root(candidate):
@@ -226,7 +235,6 @@ def discover_project_root(
 
 def _project_relative(path: Path, project_root: Path) -> str:
     """Return a stable relative path and reject release inputs outside the project."""
-
     resolved = path.resolve()
     try:
         return resolved.relative_to(project_root.resolve()).as_posix()
@@ -238,7 +246,6 @@ def _project_relative(path: Path, project_root: Path) -> str:
 
 def display_path(path: Path, project_root: Path) -> str:
     """Return a readable manifest path without assuming it is inside the checkout."""
-
     resolved = path.expanduser().resolve()
     try:
         return resolved.relative_to(project_root.resolve()).as_posix()
@@ -248,10 +255,8 @@ def display_path(path: Path, project_root: Path) -> str:
 
 def authoritative_source_paths(paths: ReleasePaths) -> tuple[Path, ...]:
     """Return all non-code files that intentionally define a release build."""
-
     translations = tuple(
-        paths.translations / f"{bank}.json"
-        for bank in KNOWN_SCENARIO_BANKS
+        paths.translations / f"{bank}.json" for bank in KNOWN_SCENARIO_BANKS
     )
     return (
         paths.zenpen_baseline,
@@ -261,15 +266,18 @@ def authoritative_source_paths(paths: ReleasePaths) -> tuple[Path, ...]:
     )
 
 
-def build_source_lock_payload(project_root: Path | None = None) -> dict[str, object]:
+def build_source_lock_payload(
+    project_root: Path | None = None,
+) -> dict[str, object]:
     """Create the deterministic approved-input lock payload."""
-
     root = discover_project_root(project_root)
     paths = ReleasePaths.from_project_root(root)
     files: dict[str, dict[str, object]] = {}
     for path in authoritative_source_paths(paths):
         if not path.is_file():
-            raise ReleaseBuildError(f"required release source is missing: {path}")
+            raise ReleaseBuildError(
+                f"required release source is missing: {path}"
+            )
         files[_project_relative(path, root)] = {
             "sha256": sha256_file(path),
             "bytes": path.stat().st_size,
@@ -289,7 +297,6 @@ def build_source_lock_payload(project_root: Path | None = None) -> dict[str, obj
 
 def _atomic_write_json(path: Path, payload: Mapping[str, object]) -> None:
     """Atomically replace one JSON file after its complete contents are prepared."""
-
     path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(
         mode="w",
@@ -315,7 +322,6 @@ def write_source_lock(
     project_root: Path | None = None,
 ) -> dict[str, object]:
     """Write the approved release-source hashes."""
-
     root = discover_project_root(project_root)
     paths = ReleasePaths.from_project_root(root)
     destination = (path or paths.source_lock).expanduser().resolve()
@@ -330,7 +336,6 @@ def validate_source_lock(
     project_root: Path | None = None,
 ) -> dict[str, object]:
     """Fail unless every approved release input matches its locked digest."""
-
     root = discover_project_root(project_root)
     paths = ReleasePaths.from_project_root(root)
     lock_path = (path or paths.source_lock).expanduser().resolve()
@@ -357,7 +362,9 @@ def validate_source_lock(
         )
     for relative, source_path in actual_paths.items():
         if not source_path.is_file():
-            raise ReleaseBuildError(f"required release source is missing: {source_path}")
+            raise ReleaseBuildError(
+                f"required release source is missing: {source_path}"
+            )
         record = expected_files[relative]
         if not isinstance(record, dict):
             raise ReleaseBuildError(f"invalid lock record for {relative}")
@@ -370,14 +377,19 @@ def validate_source_lock(
         if record.get("bytes") != source_path.stat().st_size:
             raise ReleaseBuildError(f"locked size mismatch for {relative}")
     if payload.get("subtitle") != DEFAULT_SUBTITLE:
-        raise ReleaseBuildError("locked subtitle differs from the code default")
+        raise ReleaseBuildError(
+            "locked subtitle differs from the code default"
+        )
     return payload
 
 
-def _validated_output_records(payload: object, *, label: str) -> dict[str, dict[str, object]]:
+def _validated_output_records(
+    payload: object, *, label: str
+) -> dict[str, dict[str, object]]:
     """Validate release output records shared by target and build manifests."""
-
-    if not isinstance(payload, dict) or set(payload) != set(RELEASE_OUTPUT_KEYS):
+    if not isinstance(payload, dict) or set(payload) != set(
+        RELEASE_OUTPUT_KEYS
+    ):
         raise ReleaseBuildError(
             f"{label} outputs must contain exactly {list(RELEASE_OUTPUT_KEYS)}"
         )
@@ -393,9 +405,13 @@ def _validated_output_records(payload: object, *, label: str) -> dict[str, dict[
             or len(digest) != 64
             or any(character not in "0123456789ABCDEF" for character in digest)
         ):
-            raise ReleaseBuildError(f"{label} output {name} has an invalid SHA-256")
+            raise ReleaseBuildError(
+                f"{label} output {name} has an invalid SHA-256"
+            )
         if not isinstance(size, int) or size <= 0:
-            raise ReleaseBuildError(f"{label} output {name} has an invalid byte size")
+            raise ReleaseBuildError(
+                f"{label} output {name} has an invalid byte size"
+            )
         output[name] = dict(record)
     return output
 
@@ -406,7 +422,6 @@ def validate_release_target(
     source_lock_sha256: str,
 ) -> dict[str, object]:
     """Validate a promoted output target against the active source lock."""
-
     target_path = path.expanduser().resolve()
     if not target_path.is_file():
         raise ReleaseBuildError(
@@ -425,12 +440,17 @@ def validate_release_target(
     return payload
 
 
-def _load_translation_map(bank_name: str, translations_directory: Path) -> dict[str, str]:
+def _load_translation_map(
+    bank_name: str, translations_directory: Path
+) -> dict[str, str]:
     path = translations_directory / f"{bank_name}.json"
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ReleaseBuildError(f"{path} must contain a JSON object")
-    if any(not isinstance(key, str) or not isinstance(value, str) for key, value in payload.items()):
+    if any(
+        not isinstance(key, str) or not isinstance(value, str)
+        for key, value in payload.items()
+    ):
         raise ReleaseBuildError(f"{path} must map string IDs to string text")
     return payload
 
@@ -467,7 +487,9 @@ def _encoded_groups(
             )
             encoded[record_id] = encode_english(english)
         except EnglishTextError as error:
-            raise ReleaseBuildError(f"invalid English in {record_id}: {error}") from error
+            raise ReleaseBuildError(
+                f"invalid English in {record_id}: {error}"
+            ) from error
 
     return tuple(
         tuple(
@@ -487,7 +509,6 @@ def build_scenario_bank(
     translations_directory: Path,
 ) -> ScenarioBuildResult:
     """Build and fixed-UI-patch one scenario component from approved text."""
-
     source_path = temporary_directory / f"{bank_name}_source.bin"
     source_path.write_bytes(source)
     bank = parse_scenario_bank(source_path)
@@ -531,7 +552,9 @@ def _replace(image: FdsImage, side: int, name: str, data: bytes) -> None:
     image.sides[side].find_file(name).data = data
 
 
-def _output_records(output_bytes: Mapping[str, bytes]) -> dict[str, dict[str, object]]:
+def _output_records(
+    output_bytes: Mapping[str, bytes],
+) -> dict[str, dict[str, object]]:
     return {
         name: {
             "path": RELEASE_FILENAMES[name],
@@ -546,13 +569,18 @@ def _target_mismatches(
     target: Mapping[str, object],
     outputs: Mapping[str, Mapping[str, object]],
 ) -> dict[str, dict[str, object]]:
-    expected = _validated_output_records(target.get("outputs"), label="release target")
+    expected = _validated_output_records(
+        target.get("outputs"), label="release target"
+    )
     mismatches: dict[str, dict[str, object]] = {}
     for name in RELEASE_OUTPUT_KEYS:
         expected_record = expected[name]
         actual_record = outputs[name]
         differences = {
-            field: {"expected": expected_record[field], "actual": actual_record[field]}
+            field: {
+                "expected": expected_record[field],
+                "actual": actual_record[field],
+            }
             for field in ("bytes", "sha256")
             if expected_record[field] != actual_record[field]
         }
@@ -570,7 +598,6 @@ def _atomic_publish_file(source: Path, destination: Path) -> None:
     to the interactive emulator account. A destination-local temporary file
     inherits the intended directory ACL before the final atomic replacement.
     """
-
     with tempfile.NamedTemporaryFile(
         mode="wb",
         dir=destination.parent,
@@ -593,7 +620,6 @@ def _atomic_publish_file(source: Path, destination: Path) -> None:
 
 def _publish_staged_release(staging: Path, output_directory: Path) -> None:
     """Publish verified staged files, writing the manifest last."""
-
     output_directory.mkdir(parents=True, exist_ok=True)
     for name in RELEASE_OUTPUT_KEYS:
         filename = RELEASE_FILENAMES[name]
@@ -620,22 +646,27 @@ def build_release(
     tied to the active source lock. No new output is published before all build,
     hash, and target checks succeed.
     """
-
     root = discover_project_root(project_root)
     paths = ReleasePaths.from_project_root(root)
     lock_path = (source_lock or paths.source_lock).expanduser().resolve()
-    target_path = (release_target or paths.release_target).expanduser().resolve()
+    target_path = (
+        (release_target or paths.release_target).expanduser().resolve()
+    )
     lock = validate_source_lock(lock_path, project_root=root)
     lock_sha256 = sha256_file(lock_path)
     if subtitle != lock.get("subtitle"):
-        raise ReleaseBuildError("release subtitle differs from the approved lock")
+        raise ReleaseBuildError(
+            "release subtitle differs from the approved lock"
+        )
 
     zenpen = FdsImage.read(paths.zenpen_baseline)
     kouhen = FdsImage.read(paths.kouhen_baseline)
     images = {"zenpen": zenpen, "kouhen": kouhen}
     scenario_report: dict[str, dict[str, object]] = {}
 
-    with tempfile.TemporaryDirectory(prefix="time_twist_components_") as directory:
+    with tempfile.TemporaryDirectory(
+        prefix="time_twist_components_"
+    ) as directory:
         temporary_directory = Path(directory)
         for bank_name, (image_name, side) in SCENARIO_LOCATIONS.items():
             entry = images[image_name].sides[side].find_file(bank_name)
@@ -692,15 +723,23 @@ def build_release(
         "mode": "verified" if verify_target else "candidate",
         "project_source_lock": display_path(lock_path, root),
         "source_lock_sha256": lock_sha256,
-        "release_target": display_path(target_path, root) if verify_target else None,
-        "release_target_sha256": sha256_file(target_path) if verify_target else None,
-        "release_id": target_payload.get("release_id") if target_payload else None,
+        "release_target": (
+            display_path(target_path, root) if verify_target else None
+        ),
+        "release_target_sha256": (
+            sha256_file(target_path) if verify_target else None
+        ),
+        "release_id": (
+            target_payload.get("release_id") if target_payload else None
+        ),
         "subtitle": subtitle,
         "scenario_banks": scenario_report,
         "component_sha256": {
             "NOV2": sha256_bytes(zenpen.sides[0].find_file("NOV2").data),
             "NOV4": sha256_bytes(zenpen.sides[0].find_file("NOV4").data),
-            "SON-KOUH": sha256_bytes(kouhen.sides[0].find_file("SON-KOUH").data),
+            "SON-KOUH": sha256_bytes(
+                kouhen.sides[0].find_file("SON-KOUH").data
+            ),
         },
         "outputs": outputs,
     }
@@ -730,17 +769,20 @@ def promote_release_target(
     release_id: str | None = None,
 ) -> dict[str, object]:
     """Promote a reviewed candidate manifest into the strict output target."""
-
     root = discover_project_root(project_root)
     paths = ReleasePaths.from_project_root(root)
     manifest_path = candidate_manifest.expanduser().resolve()
     if not manifest_path.is_file():
-        raise ReleaseBuildError(f"candidate manifest is missing: {manifest_path}")
+        raise ReleaseBuildError(
+            f"candidate manifest is missing: {manifest_path}"
+        )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     if manifest.get("schema") != "Time Twist reproducible release manifest v2":
         raise ReleaseBuildError("unsupported candidate manifest schema")
     if manifest.get("mode") != "candidate":
-        raise ReleaseBuildError("release-promote requires a candidate-mode manifest")
+        raise ReleaseBuildError(
+            "release-promote requires a candidate-mode manifest"
+        )
 
     lock_path_value = manifest.get("project_source_lock")
     if not isinstance(lock_path_value, str):
@@ -751,7 +793,9 @@ def promote_release_target(
     validate_source_lock(lock_path, project_root=root)
     lock_sha256 = sha256_file(lock_path)
     if manifest.get("source_lock_sha256") != lock_sha256:
-        raise ReleaseBuildError("candidate manifest does not match the current source lock")
+        raise ReleaseBuildError(
+            "candidate manifest does not match the current source lock"
+        )
 
     output_records = _validated_output_records(
         manifest.get("outputs"),
@@ -760,14 +804,22 @@ def promote_release_target(
     for name, record in output_records.items():
         relative = record.get("path")
         if not isinstance(relative, str) or Path(relative).name != relative:
-            raise ReleaseBuildError(f"candidate output {name} has an unsafe path")
+            raise ReleaseBuildError(
+                f"candidate output {name} has an unsafe path"
+            )
         output_path = manifest_path.parent / relative
         if not output_path.is_file():
-            raise ReleaseBuildError(f"candidate output is missing: {output_path}")
+            raise ReleaseBuildError(
+                f"candidate output is missing: {output_path}"
+            )
         if output_path.stat().st_size != record["bytes"]:
-            raise ReleaseBuildError(f"candidate output size changed: {output_path}")
+            raise ReleaseBuildError(
+                f"candidate output size changed: {output_path}"
+            )
         if sha256_file(output_path) != record["sha256"]:
-            raise ReleaseBuildError(f"candidate output hash changed: {output_path}")
+            raise ReleaseBuildError(
+                f"candidate output hash changed: {output_path}"
+            )
 
     target = {
         "schema": "Time Twist release target v1",

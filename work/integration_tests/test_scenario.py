@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import tempfile
-import unittest
 import json
 import re
+import tempfile
+import unittest
 from pathlib import Path
-
-
-WORK_DIR = Path(__file__).resolve().parents[1]
 from types import SimpleNamespace
 
 from time_twist.charmap import decode_common, decode_extended
@@ -42,9 +39,13 @@ from time_twist.scenario import (
 )
 from time_twist.textcodec import PackedSymbol, SymbolKind
 
+WORK_DIR = Path(__file__).resolve().parents[1]
+
 
 class ScenarioTests(unittest.TestCase):
-    def test_all_translation_maps_are_complete_and_contain_no_japanese(self) -> None:
+    def test_all_translation_maps_are_complete_and_contain_no_japanese(
+        self,
+    ) -> None:
         paths = sorted((WORK_DIR / "translations").glob("*.json"))
         if not paths:
             self.fail("translation maps are not available")
@@ -75,7 +76,9 @@ class ScenarioTests(unittest.TestCase):
         common = PackedSymbol(SymbolKind.COMMON, 0, 0, 0)
         dictionary_symbol = PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0)
         dictionary = ((common,),)
-        self.assertEqual(render_symbols((dictionary_symbol,), dictionary), "あ")
+        self.assertEqual(
+            render_symbols((dictionary_symbol,), dictionary), "あ"
+        )
 
     def test_duplicate_group_pointers_are_rejected(self) -> None:
         source = WORK_DIR / "extracted_zenpen/side1_00_TT1B_A200.bin"
@@ -83,7 +86,9 @@ class ScenarioTests(unittest.TestCase):
         first_group = int.from_bytes(data[0x26:0x28], "little")
         table_address = int.from_bytes(data[0x24:0x26], "little")
         table_offset = table_address - 0xA200
-        data[table_offset:table_offset + 2] = first_group.to_bytes(2, "little")
+        data[table_offset : table_offset + 2] = first_group.to_bytes(
+            2, "little"
+        )
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "TT1B.bin"
             path.write_bytes(data)
@@ -111,11 +116,23 @@ class ScenarioTests(unittest.TestCase):
         paths = sorted((WORK_DIR / "extracted_zenpen").glob("*.bin"))
         paths += sorted((WORK_DIR / "extracted_kouhen").glob("*.bin"))
         scenario_names = {
-            "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B",
-            "TT4", "TT5", "T25", "TT6A", "TT6B", "TT6C", "TT6D",
+            "TT1A",
+            "TT1B",
+            "TT2",
+            "T22",
+            "TT3A",
+            "TT3B",
+            "TT4",
+            "TT5",
+            "T25",
+            "TT6A",
+            "TT6B",
+            "TT6C",
+            "TT6D",
         }
         paths = [
-            path for path in paths
+            path
+            for path in paths
             if any(f"_{name}_" in path.name for name in scenario_names)
         ]
         if not paths:
@@ -140,11 +157,23 @@ class ScenarioTests(unittest.TestCase):
         paths = sorted((WORK_DIR / "extracted_zenpen").glob("*.bin"))
         paths += sorted((WORK_DIR / "extracted_kouhen").glob("*.bin"))
         scenario_names = {
-            "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B",
-            "TT4", "TT5", "T25", "TT6A", "TT6B", "TT6C", "TT6D",
+            "TT1A",
+            "TT1B",
+            "TT2",
+            "T22",
+            "TT3A",
+            "TT3B",
+            "TT4",
+            "TT5",
+            "T25",
+            "TT6A",
+            "TT6B",
+            "TT6C",
+            "TT6D",
         }
         paths = [
-            path for path in paths
+            path
+            for path in paths
             if any(f"_{name}_" in path.name for name in scenario_names)
         ]
         if not paths:
@@ -161,9 +190,11 @@ class ScenarioTests(unittest.TestCase):
                 )
 
     def test_english_map_round_trip_and_capacity(self) -> None:
-        repertoire = "".join(dict.fromkeys(
-            COMMON_CHARACTERS + "".join(EXTENDED_CHARACTERS.values())
-        ))
+        repertoire = "".join(
+            dict.fromkeys(
+                COMMON_CHARACTERS + "".join(EXTENDED_CHARACTERS.values())
+            )
+        )
         self.assertEqual(len(COMMON_CHARACTERS), 48)
         self.assertEqual(len(repertoire), 74)
         text = repertoire + "{CTRL:1}" + repertoire
@@ -180,21 +211,23 @@ class ScenarioTests(unittest.TestCase):
         self.assertNotEqual(patched, original)
 
     def test_pixel_font_is_complete_and_case_legible(self) -> None:
-        repertoire = "".join(dict.fromkeys(
-            COMMON_CHARACTERS + "".join(EXTENDED_CHARACTERS.values())
-        ))
+        repertoire = "".join(
+            dict.fromkeys(
+                COMMON_CHARACTERS + "".join(EXTENDED_CHARACTERS.values())
+            )
+        )
         for char in repertoire:
             with self.subTest(char=char):
                 self.assertEqual(len(render_glyph(char)), 8)
         self.assertNotEqual(render_glyph("a"), render_glyph("A"))
-        self.assertEqual(render_glyph(" "), b"\xFF" * 8)
+        self.assertEqual(render_glyph(" "), b"\xff" * 8)
 
     def test_accented_e_shares_the_lowercase_e_baseline(self) -> None:
         plain = render_glyph("e")
         accented = render_glyph("é")
         self.assertEqual(accented[2:7], plain[2:7])
         self.assertEqual(accented[7], 0xFF)
-        self.assertNotEqual(accented[:2], b"\xFF\xFF")
+        self.assertNotEqual(accented[:2], b"\xff\xff")
         self.assertEqual(PIXEL_FONT_5X7["é"][:2], ("00010", "00100"))
 
     def test_lowercase_p_uses_the_shared_lowercase_x_height(self) -> None:
@@ -219,7 +252,9 @@ class ScenarioTests(unittest.TestCase):
         self.assertIn("She runs into your arms.{CTRL:3}", line)
         validate_display_width(line)
 
-    def test_editorial_regressions_preserve_meaning_and_terminology(self) -> None:
+    def test_editorial_regressions_preserve_meaning_and_terminology(
+        self,
+    ) -> None:
         def translations(bank_name: str) -> dict[str, str]:
             path = WORK_DIR / f"translations/{bank_name}.json"
             if not path.exists():
@@ -261,7 +296,9 @@ class ScenarioTests(unittest.TestCase):
         self.assertIn("the underworld", tt4["TT4/g4/r4"])
 
         tt5 = translations("TT5")
-        self.assertTrue(tt5["TT5/g0/r2"].startswith("Belle: Thank you, truly."))
+        self.assertTrue(
+            tt5["TT5/g0/r2"].startswith("Belle: Thank you, truly.")
+        )
         self.assertEqual(tt5["TT5/g0/r7"].count("Belle:"), 1)
         self.assertIn("Stay in the South.", tt5["TT5/g0/r18"])
         self.assertNotIn("Dixie", tt5["TT5/g0/r18"])
@@ -274,7 +311,9 @@ class ScenarioTests(unittest.TestCase):
         self.assertIn("Voice: The perfect name.", tt6c["TT6C/g1/r9"])
         self.assertIn("I'm the savior", tt6c["TT6C/g2/r13"])
 
-    def test_fixed_footprint_rebuild_keeps_the_original_tail_address(self) -> None:
+    def test_fixed_footprint_rebuild_keeps_the_original_tail_address(
+        self,
+    ) -> None:
         path = WORK_DIR / "extracted_zenpen/side1_01_TT1A_A200.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
@@ -283,7 +322,8 @@ class ScenarioTests(unittest.TestCase):
             tuple(() for _ in group_records)
             for group_records in (
                 tuple(
-                    record for record in bank.records
+                    record
+                    for record in bank.records
                     if record.group_index == group_index
                 )
                 for group_index in range(len(bank.group_addresses))
@@ -314,7 +354,9 @@ class ScenarioTests(unittest.TestCase):
                 preserve_memory_footprint=True,
             )
 
-    def test_translated_banks_match_sources_and_preserve_fixed_tails(self) -> None:
+    def test_translated_banks_match_sources_and_preserve_fixed_tails(
+        self,
+    ) -> None:
         fixtures = (
             (
                 "TT1A",
@@ -395,14 +437,23 @@ class ScenarioTests(unittest.TestCase):
                 WORK_DIR / "translations/TT6D.json",
             ),
         )
-        if not all(path.exists() for fixture in fixtures for path in fixture[1:]):
+        if not all(
+            path.exists() for fixture in fixtures for path in fixture[1:]
+        ):
             self.fail("translated bank fixtures are not available")
 
-        for bank_name, original_path, translated_path, translations_path in fixtures:
+        for (
+            bank_name,
+            original_path,
+            translated_path,
+            translations_path,
+        ) in fixtures:
             with self.subTest(bank=bank_name):
                 original = parse_scenario_bank(original_path)
                 translated = parse_scenario_bank(translated_path)
-                expected = json.loads(translations_path.read_text(encoding="utf-8"))
+                expected = json.loads(
+                    translations_path.read_text(encoding="utf-8")
+                )
                 self.assertEqual(len(translated.data), len(original.data))
                 self.assertEqual(
                     translated.data[original.dictionary_end_offset :],
@@ -417,9 +468,7 @@ class ScenarioTests(unittest.TestCase):
                 )
                 self.assertEqual(len(translated.records), len(expected))
                 for record in translated.records:
-                    record_id = (
-                        f"{bank_name}/g{record.group_index}/r{record.record_index}"
-                    )
+                    record_id = f"{bank_name}/g{record.group_index}/r{record.record_index}"
                     self.assertEqual(
                         render_english(
                             expand_dictionary_symbols(
@@ -431,8 +480,19 @@ class ScenarioTests(unittest.TestCase):
 
     def test_all_completed_translation_segments_fit_the_display(self) -> None:
         for bank_name in (
-            "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B", "TT4", "TT5",
-            "T25", "TT6A", "TT6B", "TT6C", "TT6D",
+            "TT1A",
+            "TT1B",
+            "TT2",
+            "T22",
+            "TT3A",
+            "TT3B",
+            "TT4",
+            "TT5",
+            "T25",
+            "TT6A",
+            "TT6B",
+            "TT6C",
+            "TT6D",
         ):
             path = WORK_DIR / f"translations/{bank_name}.json"
             if not path.exists():
@@ -471,7 +531,9 @@ class ScenarioTests(unittest.TestCase):
             first if second is None else first.ljust(24) + second
             for first, second in rows
         ]
-        actual = [translations[f"TT1A/g0/r{record}"] for record in range(6, 21)]
+        actual = [
+            translations[f"TT1A/g0/r{record}"] for record in range(6, 21)
+        ]
         self.assertEqual(actual, expected)
         for question in actual:
             validate_display_width(question, allow_wrap=True)
@@ -502,7 +564,9 @@ class ScenarioTests(unittest.TestCase):
             self.assertEqual(refreshed_record["id"], "TT1A/g0/r0")
             self.assertEqual(refreshed_record["english"], "Proof{CTRL:1}Text")
 
-    def test_english_dictionary_compresses_and_expands_losslessly(self) -> None:
+    def test_english_dictionary_compresses_and_expands_losslessly(
+        self,
+    ) -> None:
         original_records = tuple(
             encode_english(
                 "the time traveler returned to the time machine."

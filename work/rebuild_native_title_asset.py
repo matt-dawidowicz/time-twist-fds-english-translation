@@ -14,7 +14,6 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-
 TITLE_PALETTE = (
     (0, 0, 0),
     (255, 254, 255),
@@ -45,10 +44,13 @@ BEVEL_EDITS = {
 
 def _reference_to_indices(path: Path) -> Image.Image:
     """Inverse-map one display reference to exact title palette indices."""
-
-    source = Image.open(path).convert("RGB").resize(
-        VISIBLE_SIZE,
-        Image.Resampling.NEAREST,
+    source = (
+        Image.open(path)
+        .convert("RGB")
+        .resize(
+            VISIBLE_SIZE,
+            Image.Resampling.NEAREST,
+        )
     )
     result = Image.new("L", NATIVE_SIZE, 0)
     for y in range(VISIBLE_SIZE[1]):
@@ -69,9 +71,10 @@ def _reference_to_indices(path: Path) -> Image.Image:
     return result
 
 
-def build_native_title(design_reference: Path, legacy_reference: Path) -> Image.Image:
+def build_native_title(
+    design_reference: Path, legacy_reference: Path
+) -> Image.Image:
     """Return the exact reviewed 256x240 indexed production authority."""
-
     desired = _reference_to_indices(design_reference)
     # Image 2 contains one frozen NW-to-SE sprite frame. The chromatic blue
     # core is removed above; this exact native stroke clears its bright fringe.
@@ -96,29 +99,36 @@ def build_native_title(design_reference: Path, legacy_reference: Path) -> Image.
     for coordinate, value in BEVEL_EDITS.items():
         before = result.getpixel(coordinate)
         if {before, value} != {2, 3}:
-            raise ValueError(f"unexpected bevel source at {coordinate}: {before}")
+            raise ValueError(
+                f"unexpected bevel source at {coordinate}: {before}"
+            )
         result.putpixel(coordinate, value)
     for before, after in zip(
         raw.get_flattened_data(), result.get_flattened_data()
     ):
         if (before == 0) != (after == 0) or (before == 1) != (after == 1):
-            raise ValueError("budget edits changed silhouette or white outline")
+            raise ValueError(
+                "budget edits changed silhouette or white outline"
+            )
     return result
 
 
 def main() -> None:
     """Write the deterministic native asset selected by command-line paths."""
-
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--design-reference",
         type=Path,
-        default=Path("work/title_assets/Time Twist polished design reference.png"),
+        default=Path(
+            "work/title_assets/Time Twist polished design reference.png"
+        ),
     )
     parser.add_argument(
         "--legacy-reference",
         type=Path,
-        default=Path("work/title_assets/Time Twist full-screen logo reference.png"),
+        default=Path(
+            "work/title_assets/Time Twist full-screen logo reference.png"
+        ),
     )
     parser.add_argument(
         "--output",

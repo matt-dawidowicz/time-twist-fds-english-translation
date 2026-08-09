@@ -7,7 +7,6 @@ from pathlib import Path
 
 from PIL import Image
 
-
 PALETTE = (0, 85, 170, 255)
 
 
@@ -30,7 +29,6 @@ def render_chr(data: bytes, columns: int = 16, scale: int = 2) -> Image.Image:
         The first eight bytes of each tile are bitplane 0 and the next eight are
         bitplane 1.  Trailing bytes that do not form a complete tile are ignored.
     """
-
     tile_count = len(data) // 16
     rows = (tile_count + columns - 1) // columns
     image = Image.new("L", (columns * 8, rows * 8), 0)
@@ -50,7 +48,8 @@ def render_chr(data: bytes, columns: int = 16, scale: int = 2) -> Image.Image:
 
     if scale != 1:
         image = image.resize(
-            (image.width * scale, image.height * scale), Image.Resampling.NEAREST
+            (image.width * scale, image.height * scale),
+            Image.Resampling.NEAREST,
         )
     return image
 
@@ -73,13 +72,14 @@ def main() -> None:
     Side Effects:
         Creates the output directory as needed and replaces same-named PNGs.
     """
-
     parser = argparse.ArgumentParser()
     parser.add_argument("inputs", nargs="+", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--columns", type=int, default=16)
     parser.add_argument("--scale", type=int, default=2)
-    parser.add_argument("--offset", type=lambda value: int(value, 0), default=0)
+    parser.add_argument(
+        "--offset", type=lambda value: int(value, 0), default=0
+    )
     parser.add_argument("--length", type=lambda value: int(value, 0))
     args = parser.parse_args()
 

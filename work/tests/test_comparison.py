@@ -4,9 +4,12 @@ import json
 import unittest
 from pathlib import Path
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-COMPARISON = PROJECT_ROOT / "outputs" / "Time Twist Japanese-English script comparison.json"
+COMPARISON = (
+    PROJECT_ROOT
+    / "outputs"
+    / "Time Twist Japanese-English script comparison.json"
+)
 TRANSLATIONS = PROJECT_ROOT / "work" / "translations"
 BANK_ORDER = (
     "TT1A",
@@ -33,7 +36,9 @@ class BilingualComparisonTests(unittest.TestCase):
         cls.rows = payload["rows"]
         cls.playable = {}
         for bank in BANK_ORDER:
-            values = json.loads((TRANSLATIONS / f"{bank}.json").read_text(encoding="utf-8"))
+            values = json.loads(
+                (TRANSLATIONS / f"{bank}.json").read_text(encoding="utf-8")
+            )
             cls.playable.update(values)
 
     @staticmethod
@@ -49,7 +54,9 @@ class BilingualComparisonTests(unittest.TestCase):
         scenario = [row for row in self.rows if row["kind"] == "scenario"]
         self.assertEqual(len(scenario), 1299)
         self.assertEqual(len({row["text_id"] for row in scenario}), 1299)
-        self.assertEqual(tuple(dict.fromkeys(row["bank"] for row in scenario)), BANK_ORDER)
+        self.assertEqual(
+            tuple(dict.fromkeys(row["bank"] for row in scenario)), BANK_ORDER
+        )
 
     def test_every_row_keeps_japanese_and_english(self) -> None:
         for row in self.rows:
@@ -58,7 +65,9 @@ class BilingualComparisonTests(unittest.TestCase):
 
     def test_scenario_control_sequences_and_playable_text_match(self) -> None:
         scenario = [row for row in self.rows if row["kind"] == "scenario"]
-        self.assertEqual({row["text_id"] for row in scenario}, set(self.playable))
+        self.assertEqual(
+            {row["text_id"] for row in scenario}, set(self.playable)
+        )
         for row in scenario:
             self.assertEqual(row["control_match"], "yes", row["text_id"])
             self.assertEqual(
@@ -69,7 +78,9 @@ class BilingualComparisonTests(unittest.TestCase):
 
     def test_comparison_ids_are_unique_and_complete(self) -> None:
         self.assertEqual(len(self.rows), 2052)
-        self.assertEqual(len(self.rows), len({row["text_id"] for row in self.rows}))
+        self.assertEqual(
+            len(self.rows), len({row["text_id"] for row in self.rows})
+        )
         counts = {
             kind: sum(row["kind"] == kind for row in self.rows)
             for kind in ("scenario", "fixed-address", "graphics-text")

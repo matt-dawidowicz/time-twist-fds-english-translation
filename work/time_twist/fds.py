@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-
 SIDE_SIZE = 65_500
 FDS_HEADER_SIZE = 16
 DISK_INFO_SIZE = 56
@@ -54,19 +53,16 @@ class FdsFile:
     @property
     def number(self) -> int:
         """Return the filesystem sequence number from the preserved header."""
-
         return self.header[1]
 
     @property
     def file_id(self) -> int:
         """Return the game-assigned identifier from the preserved header."""
-
         return self.header[2]
 
     @property
     def raw_name(self) -> bytes:
         """Return the exact eight-byte filename field, including padding."""
-
         return bytes(self.header[3:11])
 
     @property
@@ -77,19 +73,16 @@ class FdsFile:
         manifest can still identify a malformed or unusual file header. Use
         :attr:`raw_name` when exact filename bytes matter.
         """
-
         return self.raw_name.decode("ascii", "replace").rstrip("\0 ")
 
     @property
     def load_address(self) -> int:
         """Return the 16-bit little-endian CPU/PPU destination address."""
-
         return int.from_bytes(self.header[11:13], "little")
 
     @property
     def size(self) -> int:
         """Return the current payload size, not the stale header declaration."""
-
         return len(self.data)
 
     @property
@@ -99,7 +92,6 @@ class FdsFile:
         Conventionally 0 means program data, 1 means character data, and 2
         means nametable data. The parser preserves other values for diagnosis.
         """
-
         return self.header[15]
 
     def serialized_header(self) -> bytes:
@@ -112,7 +104,6 @@ class FdsFile:
             OverflowError: If the payload is larger than the 16-bit FDS size
                 field.
         """
-
         header = bytearray(self.header)
         header[13:15] = len(self.data).to_bytes(2, "little")
         return bytes(header)
@@ -124,7 +115,6 @@ class FdsFile:
             A JSON-serializable dictionary containing IDs, decoded and raw
             names, load address, current size, kind, and original offsets.
         """
-
         return {
             "index": self.index,
             "number": self.number,
@@ -181,7 +171,6 @@ class FdsSide:
             FdsFormatError: If the side size, block markers, declared payload
                 boundary, or file count is inconsistent.
         """
-
         if len(raw) != SIDE_SIZE:
             raise FdsFormatError(
                 f"side {index}: expected {SIDE_SIZE} bytes, got {len(raw)}"
@@ -253,25 +242,21 @@ class FdsSide:
     @property
     def game_code(self) -> str:
         """Return the printable four-character game code."""
-
         return self.disk_info[16:20].decode("ascii", "replace").rstrip(" ")
 
     @property
     def version(self) -> int:
         """Return the unmodified disk version byte."""
-
         return self.disk_info[20]
 
     @property
     def side_number(self) -> int:
         """Return the game's own side number, which may differ from ``index``."""
-
         return self.disk_info[21]
 
     @property
     def disk_number(self) -> int:
         """Return the game-assigned disk number from block 1."""
-
         return self.disk_info[22]
 
     def find_file(self, name: str) -> FdsFile:
@@ -286,7 +271,6 @@ class FdsSide:
         Raises:
             KeyError: If no file or more than one file has the requested name.
         """
-
         matches = [entry for entry in self.files if entry.name == name]
         if len(matches) != 1:
             raise KeyError(
@@ -314,7 +298,6 @@ class FdsSide:
         original padding as fits and appends deterministic zero padding only
         when necessary.
         """
-
         count_block = bytearray(self.file_count_block)
         count_block[1] = len(self.files)
         output = bytearray(self.disk_info)
@@ -346,9 +329,10 @@ class FdsSide:
             A dictionary containing side identity, layout offsets, capacity
             totals, and nested file manifests.
         """
-
-        rebuilt_used = DISK_INFO_SIZE + 2 + sum(
-            FILE_HEADER_SIZE + 1 + entry.size for entry in self.files
+        rebuilt_used = (
+            DISK_INFO_SIZE
+            + 2
+            + sum(FILE_HEADER_SIZE + 1 + entry.size for entry in self.files)
         )
         return {
             "index": self.index,
@@ -378,7 +362,9 @@ class FdsImage:
     source_path: Path | None = None
 
     @classmethod
-    def from_bytes(cls, raw: bytes, source_path: Path | None = None) -> "FdsImage":
+    def from_bytes(
+        cls, raw: bytes, source_path: Path | None = None
+    ) -> "FdsImage":
         """Parse a complete archival image.
 
         Args:
@@ -393,8 +379,7 @@ class FdsImage:
                 with the image size, a raw image is not side-aligned, or any
                 side is malformed.
         """
-
-        if raw[:4] == b"FDS\x1A":
+        if raw[:4] == b"FDS\x1a":
             if len(raw) < FDS_HEADER_SIZE:
                 raise FdsFormatError("truncated 16-byte FDS header")
             header = raw[:FDS_HEADER_SIZE]
@@ -437,7 +422,6 @@ class FdsImage:
             OSError: If the path cannot be read.
             FdsFormatError: If the file is not a valid archival image.
         """
-
         source = Path(path)
         return cls.from_bytes(source.read_bytes(), source)
 
@@ -453,7 +437,6 @@ class FdsImage:
 
         The method does not modify :attr:`header` or any parsed side.
         """
-
         header = self.header
         if header:
             mutable_header = bytearray(header)
@@ -474,7 +457,6 @@ class FdsImage:
         Side Effects:
             Creates or overwrites ``path``.
         """
-
         Path(path).write_bytes(self.to_bytes())
 
     def manifest(self) -> dict[str, Any]:
@@ -484,7 +466,6 @@ class FdsImage:
             A dictionary containing source provenance, header status, side count,
             and nested side manifests.
         """
-
         return {
             "source": str(self.source_path) if self.source_path else None,
             "headered": bool(self.header),
@@ -510,7 +491,6 @@ def combine_images(images: list[FdsImage]) -> FdsImage:
     blocks are intentionally left untouched because multi-disk games use
     their own game and disk identifiers when validating an inserted side.
     """
-
     if not images:
         raise ValueError("at least one FDS image is required")
 

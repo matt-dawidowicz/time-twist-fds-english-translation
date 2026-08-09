@@ -22,9 +22,6 @@ from .english import (
 )
 from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
-from .scenario import parse_scenario_bank, rebuild_scenario_bank, render_symbols
-from .textcodec import pack_records
-from .title import DEFAULT_SUBTITLE, patched_nov4_title
 from .project import (
     PERSONALITY_QUESTION_IDS,
     infer_bank_name,
@@ -37,11 +34,19 @@ from .release import (
     validate_source_lock,
     write_source_lock,
 )
+from .scenario import (
+    parse_scenario_bank,
+    rebuild_scenario_bank,
+    render_symbols,
+)
+from .textcodec import pack_records
+from .title import DEFAULT_SUBTITLE, patched_nov4_title
 from .ui import (
     patched_kouhen_boot_guard,
     patched_nov2_ui,
     patched_nov4_ui,
     patched_t22_ui,
+    patched_t25_ui,
     patched_tt1a_ui,
     patched_tt1b_ui,
     patched_tt2_ui,
@@ -49,7 +54,6 @@ from .ui import (
     patched_tt3b_ui,
     patched_tt4_ui,
     patched_tt5_ui,
-    patched_t25_ui,
     patched_tt6a_ui,
     patched_tt6b_ui,
     patched_tt6c_ui,
@@ -69,8 +73,9 @@ def safe_filename(name: str) -> str:
     This is a portability transformation, not a reversible encoding. Extracted
     filenames also include side/index metadata to retain identity.
     """
-
-    return "".join(char if char.isalnum() or char in "-_" else "_" for char in name)
+    return "".join(
+        char if char.isalnum() or char in "-_" else "_" for char in name
+    )
 
 
 def command_manifest(args: argparse.Namespace) -> None:
@@ -86,7 +91,6 @@ def command_manifest(args: argparse.Namespace) -> None:
     Side Effects:
         Writes UTF-8 JSON to ``args.output`` or prints it to standard output.
     """
-
     image = FdsImage.read(args.image)
     output = json.dumps(image.manifest(), ensure_ascii=False, indent=2) + "\n"
     if args.output:
@@ -109,7 +113,6 @@ def command_extract(args: argparse.Namespace) -> None:
         Creates the output directory, writes one payload per FDS file, and
         prints each created path. The source image is never changed.
     """
-
     image = FdsImage.read(args.image)
     args.output_dir.mkdir(parents=True, exist_ok=True)
     for side in image.sides:
@@ -137,7 +140,6 @@ def command_roundtrip(args: argparse.Namespace) -> None:
     Side Effects:
         Writes the rebuilt image and prints both SHA-256 hashes plus status.
     """
-
     source = args.image.read_bytes()
     image = FdsImage.from_bytes(source, args.image)
     rebuilt = image.to_bytes()
@@ -166,7 +168,6 @@ def command_combine(args: argparse.Namespace) -> None:
         Creates the output directory, writes the combined image, and prints
         its path and side count.
     """
-
     image = combine_images([FdsImage.read(path) for path in args.images])
     args.output.parent.mkdir(parents=True, exist_ok=True)
     image.write(args.output)
@@ -189,7 +190,6 @@ def command_scenario_extract(args: argparse.Namespace) -> None:
         UTF-8 JSON. Existing English is retained only when group and record
         coordinates still match; Japanese and raw symbols are always refreshed.
     """
-
     bank = parse_scenario_bank(args.bank)
     bank_name = infer_bank_name(args.bank, getattr(args, "bank_name", None))
     existing_english: dict[tuple[int, int], str] = {}
@@ -214,7 +214,9 @@ def command_scenario_extract(args: argparse.Namespace) -> None:
                 {
                     "id": f"{bank_name}/g{group_index}/r{record.record_index}",
                     "record": record.record_index,
-                    "japanese": render_symbols(record.symbols, bank.dictionary),
+                    "japanese": render_symbols(
+                        record.symbols, bank.dictionary
+                    ),
                     "english": existing_english.get(
                         (group_index, record.record_index), ""
                     ),
@@ -270,24 +272,33 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
     source records may still reference it. A complete translation normally
     builds a deterministic English dictionary.
     """
-
     bank = parse_scenario_bank(args.bank)
     bank_name = infer_bank_name(args.bank, getattr(args, "bank_name", None))
     document = json.loads(args.translation.read_text(encoding="utf-8"))
     json_groups = document.get("groups")
-    if not isinstance(json_groups, list) or len(json_groups) != len(bank.group_addresses):
-        raise SystemExit("translation group count does not match the scenario bank")
+    if not isinstance(json_groups, list) or len(json_groups) != len(
+        bank.group_addresses
+    ):
+        raise SystemExit(
+            "translation group count does not match the scenario bank"
+        )
 
     rebuilt_groups: list[tuple[tuple[object, ...], ...]] = []
     translated_count = 0
     total_count = 0
     for group_index, json_group in enumerate(json_groups):
         original_records = tuple(
-            record for record in bank.records if record.group_index == group_index
+            record
+            for record in bank.records
+            if record.group_index == group_index
         )
         json_records = json_group.get("records")
-        if not isinstance(json_records, list) or len(json_records) != len(original_records):
-            raise SystemExit(f"translation record count mismatch in group {group_index}")
+        if not isinstance(json_records, list) or len(json_records) != len(
+            original_records
+        ):
+            raise SystemExit(
+                f"translation record count mismatch in group {group_index}"
+            )
         rebuilt_records: list[tuple[object, ...]] = []
         for original, translated in zip(original_records, json_records):
             total_count += 1
@@ -371,14 +382,15 @@ def merge_translation_document(
     Personality-test records are the only records allowed to use validated
     automatic wrapping; all other control-delimited segments must fit one row.
     """
-
     result = copy.deepcopy(document)
     records_by_id: dict[str, dict[str, object]] = {}
     for group in result.get("groups", []):
         for record in group.get("records", []):
             record_id = record.get("id")
             if not isinstance(record_id, str):
-                raise SystemExit("scenario document contains a record without an ID")
+                raise SystemExit(
+                    "scenario document contains a record without an ID"
+                )
             if record_id in records_by_id:
                 raise SystemExit(f"duplicate scenario record ID: {record_id}")
             records_by_id[record_id] = record
@@ -395,7 +407,9 @@ def merge_translation_document(
 
     for record_id, english in translations.items():
         if not isinstance(english, str) or not english:
-            raise SystemExit(f"English translation for {record_id} must be nonempty")
+            raise SystemExit(
+                f"English translation for {record_id} must be nonempty"
+            )
         record = records_by_id[record_id]
         japanese = record.get("japanese")
         if not isinstance(japanese, str):
@@ -409,7 +423,9 @@ def merge_translation_document(
             )
             encode_english(english)
         except EnglishTextError as error:
-            raise SystemExit(f"invalid English text in {record_id}: {error}") from error
+            raise SystemExit(
+                f"invalid English text in {record_id}: {error}"
+            ) from error
         record["english"] = english
     return result
 
@@ -430,11 +446,12 @@ def command_scenario_merge(args: argparse.Namespace) -> None:
         Writes formatted UTF-8 JSON to ``output`` or updates ``scenario`` in
         place, then prints the destination.
     """
-
     document = json.loads(args.scenario.read_text(encoding="utf-8"))
     translations = json.loads(args.translations.read_text(encoding="utf-8"))
     if not isinstance(document, dict) or not isinstance(translations, dict):
-        raise SystemExit("scenario and translation files must contain JSON objects")
+        raise SystemExit(
+            "scenario and translation files must contain JSON objects"
+        )
     merged = merge_translation_document(
         document,
         translations,
@@ -469,7 +486,6 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
     Pointer-table bytes are included in final usage because each group after
     group zero adds one two-byte loaded address.
     """
-
     bank = parse_scenario_bank(args.bank)
     text_start_offset = bank.group_addresses[0] - bank.load_address
     capacity = bank.dictionary_end_offset - text_start_offset
@@ -493,7 +509,9 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
         return
     translations = json.loads(args.translations.read_text(encoding="utf-8"))
     if not isinstance(translations, dict):
-        raise SystemExit("translation file must contain an ID-keyed JSON object")
+        raise SystemExit(
+            "translation file must contain an ID-keyed JSON object"
+        )
     bank_name = infer_bank_name(args.bank, getattr(args, "bank_name", None))
     records_by_id = {
         f"{bank_name}/g{record.group_index}/r{record.record_index}": record
@@ -507,7 +525,9 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
     literal_bytes = 0
     for record_id, english in translations.items():
         if not isinstance(english, str) or not english:
-            raise SystemExit(f"English translation for {record_id} must be nonempty")
+            raise SystemExit(
+                f"English translation for {record_id} must be nonempty"
+            )
         record = records_by_id[record_id]
         japanese = render_symbols(record.symbols, bank.dictionary)
         if control_values(english) != control_values(japanese):
@@ -518,7 +538,9 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
                 allow_wrap=record_id in PERSONALITY_QUESTION_IDS,
             )
         except EnglishTextError as error:
-            raise SystemExit(f"invalid English text in {record_id}: {error}") from error
+            raise SystemExit(
+                f"invalid English text in {record_id}: {error}"
+            ) from error
         encoded = encode_english(english)
         encoded_by_id[record_id] = encoded
         literal_bytes += len(pack_records((encoded,)))
@@ -549,7 +571,9 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
         f"remaining: {capacity - used} bytes"
     )
     if used > capacity:
-        raise SystemExit(f"translation exceeds fixed RAM reservation by {used - capacity} bytes")
+        raise SystemExit(
+            f"translation exceeds fixed RAM reservation by {used - capacity} bytes"
+        )
 
 
 def command_font_patch(args: argparse.Namespace) -> None:
@@ -566,7 +590,6 @@ def command_font_patch(args: argparse.Namespace) -> None:
         Creates the destination directory, writes patched NOV4, and prints its
         path.
     """
-
     patched = patched_nov4_font(args.nov4.read_bytes())
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(patched)
@@ -589,7 +612,6 @@ def command_title_patch(args: argparse.Namespace) -> None:
         Creates the destination directory, writes expanded NOV4, and prints its
         path.
     """
-
     patched = patched_nov4_title(
         args.nov4.read_bytes(),
         args.target,
@@ -617,7 +639,6 @@ def command_ui_patch(args: argparse.Namespace) -> None:
         Creates the destination directory, writes the patched component, and
         prints its path.
     """
-
     patcher = {
         "SON-KOUH": patched_kouhen_boot_guard,
         "NOV2": patched_nov2_ui,
@@ -659,7 +680,6 @@ def command_replace_file(args: argparse.Namespace) -> None:
         its destination. The source image on disk is never overwritten unless
         the caller explicitly chooses the same output path.
     """
-
     image = FdsImage.read(args.image)
     if args.side < 0 or args.side >= len(image.sides):
         raise SystemExit(f"side {args.side} is outside this image")
@@ -669,10 +689,8 @@ def command_replace_file(args: argparse.Namespace) -> None:
     print(args.output)
 
 
-
 def command_release_lock(args: argparse.Namespace) -> None:
     """Validate or intentionally refresh the approved release-source lock."""
-
     project_root = discover_project_root(args.project_root)
     lock_path = args.lock or project_root / "work" / "release_sources.json"
     if args.update:
@@ -685,7 +703,6 @@ def command_release_lock(args: argparse.Namespace) -> None:
 
 def command_release_build(args: argparse.Namespace) -> None:
     """Build all release images and write a hash manifest."""
-
     project_root = discover_project_root(args.project_root)
     output_directory = args.output_dir or project_root / "build" / "release"
     manifest = build_release(
@@ -703,7 +720,6 @@ def command_release_build(args: argparse.Namespace) -> None:
 
 def command_release_promote(args: argparse.Namespace) -> None:
     """Promote a reviewed candidate manifest into the strict release target."""
-
     project_root = discover_project_root(args.project_root)
     target = promote_release_target(
         args.candidate_manifest,
@@ -713,6 +729,7 @@ def command_release_promote(args: argparse.Namespace) -> None:
     )
     target_path = args.target or project_root / "work" / "release_target.json"
     print(f"promoted {target_path} ({target['release_id']})")
+
 
 def build_parser() -> argparse.ArgumentParser:
     """Construct the complete command-line parser.
@@ -724,7 +741,6 @@ def build_parser() -> argparse.ArgumentParser:
     The function is side-effect free: it does not inspect the filesystem,
     import user configuration, or parse process arguments.
     """
-
     parser = argparse.ArgumentParser(
         prog="time-twist",
         description=(
@@ -780,7 +796,9 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     roundtrip.add_argument("image", type=Path, help="source .fds image")
-    roundtrip.add_argument("output", type=Path, help="rebuilt verification image")
+    roundtrip.add_argument(
+        "output", type=Path, help="rebuilt verification image"
+    )
     roundtrip.set_defaults(function=command_roundtrip)
 
     combine = subparsers.add_parser(
@@ -814,16 +832,31 @@ def build_parser() -> argparse.ArgumentParser:
             "is retained at matching group/record coordinates."
         ),
     )
-    scenario_extract.add_argument("bank", type=Path, help="extracted scenario .bin")
+    scenario_extract.add_argument(
+        "bank", type=Path, help="extracted scenario .bin"
+    )
     scenario_extract.add_argument(
         "--bank-name",
         choices=(
-            "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B",
-            "TT4", "TT5", "T25", "TT6A", "TT6B", "TT6C", "TT6D",
+            "TT1A",
+            "TT1B",
+            "TT2",
+            "T22",
+            "TT3A",
+            "TT3B",
+            "TT4",
+            "TT5",
+            "T25",
+            "TT6A",
+            "TT6B",
+            "TT6C",
+            "TT6D",
         ),
         help="explicit bank name when the filename is nonstandard",
     )
-    scenario_extract.add_argument("output", type=Path, help="scenario JSON path")
+    scenario_extract.add_argument(
+        "output", type=Path, help="scenario JSON path"
+    )
     scenario_extract.set_defaults(function=command_scenario_extract)
 
     scenario_insert = subparsers.add_parser(
@@ -835,12 +868,25 @@ def build_parser() -> argparse.ArgumentParser:
             "receive a compact English dictionary."
         ),
     )
-    scenario_insert.add_argument("bank", type=Path, help="clean extracted bank")
+    scenario_insert.add_argument(
+        "bank", type=Path, help="clean extracted bank"
+    )
     scenario_insert.add_argument(
         "--bank-name",
         choices=(
-            "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B",
-            "TT4", "TT5", "T25", "TT6A", "TT6B", "TT6C", "TT6D",
+            "TT1A",
+            "TT1B",
+            "TT2",
+            "T22",
+            "TT3A",
+            "TT3B",
+            "TT4",
+            "TT5",
+            "T25",
+            "TT6A",
+            "TT6B",
+            "TT6C",
+            "TT6D",
         ),
         help="explicit bank name when the filename is nonstandard",
     )
@@ -896,12 +942,25 @@ def build_parser() -> argparse.ArgumentParser:
             "remaining bytes or a hard overrun."
         ),
     )
-    scenario_footprint.add_argument("bank", type=Path, help="clean extracted bank")
+    scenario_footprint.add_argument(
+        "bank", type=Path, help="clean extracted bank"
+    )
     scenario_footprint.add_argument(
         "--bank-name",
         choices=(
-            "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B",
-            "TT4", "TT5", "T25", "TT6A", "TT6B", "TT6C", "TT6D",
+            "TT1A",
+            "TT1B",
+            "TT2",
+            "T22",
+            "TT3A",
+            "TT3B",
+            "TT4",
+            "TT5",
+            "T25",
+            "TT6A",
+            "TT6B",
+            "TT6C",
+            "TT6D",
         ),
         help="explicit bank name when the filename is nonstandard",
     )
@@ -933,7 +992,9 @@ def build_parser() -> argparse.ArgumentParser:
             "and nametables below resident NOV3."
         ),
     )
-    title_patch.add_argument("nov4", type=Path, help="source/patched-size NOV4 .bin")
+    title_patch.add_argument(
+        "nov4", type=Path, help="source/patched-size NOV4 .bin"
+    )
     title_patch.add_argument(
         "target",
         type=Path,
@@ -960,8 +1021,21 @@ def build_parser() -> argparse.ArgumentParser:
     ui_patch.add_argument(
         "--component",
         choices=(
-            "SON-KOUH", "NOV2", "NOV4", "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B", "TT4",
-            "TT5", "T25", "TT6A", "TT6B", "TT6C",
+            "SON-KOUH",
+            "NOV2",
+            "NOV4",
+            "TT1A",
+            "TT1B",
+            "TT2",
+            "T22",
+            "TT3A",
+            "TT3B",
+            "TT4",
+            "TT5",
+            "T25",
+            "TT6A",
+            "TT6B",
+            "TT6C",
         ),
         default="NOV2",
         help="owning FDS component (default: NOV2)",
@@ -979,7 +1053,9 @@ def build_parser() -> argparse.ArgumentParser:
     replace_file.add_argument("image", type=Path, help="input .fds image")
     replace_file.add_argument("side", type=int, help="zero-based side index")
     replace_file.add_argument("name", help="exact printable FDS filename")
-    replace_file.add_argument("data", type=Path, help="replacement payload .bin")
+    replace_file.add_argument(
+        "data", type=Path, help="replacement payload .bin"
+    )
     replace_file.add_argument("output", type=Path, help="rebuilt output .fds")
     replace_file.set_defaults(function=command_replace_file)
 
@@ -1076,12 +1152,17 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> None:
     """Parse arguments, run one command, and present expected failures cleanly."""
-
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
         args.function(args)
-    except (OSError, ValueError, KeyError, OverflowError, json.JSONDecodeError) as error:
+    except (
+        OSError,
+        ValueError,
+        KeyError,
+        OverflowError,
+        json.JSONDecodeError,
+    ) as error:
         message = str(error)
         if isinstance(error, KeyError) and len(message) >= 2:
             message = message.strip("'\"")

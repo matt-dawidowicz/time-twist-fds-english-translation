@@ -7,9 +7,12 @@ from pathlib import Path
 
 from generate_bilingual_comparison import build_rows
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-COMPARISON = PROJECT_ROOT / "outputs" / "Time Twist Japanese-English script comparison.json"
+COMPARISON = (
+    PROJECT_ROOT
+    / "outputs"
+    / "Time Twist Japanese-English script comparison.json"
+)
 
 
 class BilingualComparisonGenerationTests(unittest.TestCase):
