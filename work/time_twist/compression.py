@@ -18,7 +18,6 @@ from collections.abc import Iterable
 
 from .textcodec import PackedSymbol, SymbolKind, pack_records
 
-
 MAX_DICTIONARY_ENTRIES = 31
 MAX_CANDIDATE_TOKENS = 32
 MAX_CANDIDATES_TO_EVALUATE = 200
@@ -36,7 +35,6 @@ def symbol_bit_length(symbol: PackedSymbol) -> int:
     Raises:
         ValueError: If ``symbol`` is a separator or has an unsupported kind.
     """
-
     if symbol.kind is SymbolKind.COMMON:
         return 6
     if symbol.kind in (SymbolKind.EXTENDED, SymbolKind.DICTIONARY):
@@ -62,7 +60,6 @@ def packed_size(
     The function deliberately repacks the data instead of summing token widths
     because separator alignment can change the true byte cost.
     """
-
     return sum(len(pack_records(group)) for group in groups) + len(
         pack_records(dictionary)
     )
@@ -70,14 +67,12 @@ def packed_size(
 
 def _record_packed_size(record: tuple[PackedSymbol, ...]) -> int:
     """Return exact aligned bytes for one payload plus its separator."""
-
     bits = sum(symbol_bit_length(symbol) for symbol in record) + 7
     return (bits + 7) // 8
 
 
 def _symbol_key(symbol: PackedSymbol) -> int:
     """Map every native symbol kind/value to one collision-free byte."""
-
     if symbol.kind is SymbolKind.COMMON:
         return symbol.value
     if symbol.kind is SymbolKind.EXTENDED:
@@ -93,7 +88,6 @@ def _prepared_records(
     groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
 ) -> tuple[tuple[bytes, int], ...]:
     """Cache byte-search keys and payload bit lengths for one iteration."""
-
     return tuple(
         (
             bytes(_symbol_key(symbol) for symbol in record),
@@ -106,7 +100,6 @@ def _prepared_records(
 
 def _non_overlapping_byte_occurrences(haystack: bytes, needle: bytes) -> int:
     """Count deterministic leftmost non-overlapping matches using C-level find."""
-
     count = 0
     position = 0
     while True:
@@ -123,7 +116,6 @@ def _candidate_packed_size(
     candidate: tuple[PackedSymbol, ...],
 ) -> int:
     """Measure a candidate exactly without rebuilding and repacking all groups."""
-
     candidate_key = bytes(_symbol_key(symbol) for symbol in candidate)
     literal_bits = sum(symbol_bit_length(symbol) for symbol in candidate)
     delta_bits = literal_bits - 9
@@ -153,7 +145,6 @@ def _candidate_counts(
     prevents nested dictionaries and preserves control placement. Overlapping
     occurrences are counted for ranking; actual replacement is non-overlapping.
     """
-
     counts: Counter[tuple[PackedSymbol, ...]] = Counter()
     for group in groups:
         for record in group:
@@ -195,7 +186,6 @@ def _replace_candidate(
     Replacement restarts after the full match, making the result deterministic
     even when a candidate overlaps with itself.
     """
-
     candidate_length = len(candidate)
     rebuilt_groups: list[tuple[tuple[PackedSymbol, ...], ...]] = []
     for group in groups:
@@ -204,7 +194,10 @@ def _replace_candidate(
             rebuilt: list[PackedSymbol] = []
             position = 0
             while position < len(record):
-                if tuple(record[position : position + candidate_length]) == candidate:
+                if (
+                    tuple(record[position : position + candidate_length])
+                    == candidate
+                ):
                     rebuilt.append(reference)
                     position += candidate_length
                 else:
@@ -250,7 +243,6 @@ def compress_english_groups(
     The transformation is deterministic and side-effect free: identical input
     produces identical group symbols, dictionary order, and packed size.
     """
-
     if len(required_entries) > MAX_DICTIONARY_ENTRIES:
         raise ValueError("too many required dictionary entries")
     if len(set(required_entries)) != len(required_entries):
@@ -262,7 +254,9 @@ def compress_english_groups(
         for entry in required_entries
         for symbol in entry
     ):
-        raise ValueError("required dictionary entries must contain literal glyphs")
+        raise ValueError(
+            "required dictionary entries must contain literal glyphs"
+        )
 
     compressed = groups
     dictionary: tuple[tuple[PackedSymbol, ...], ...] = ()
@@ -280,7 +274,9 @@ def compress_english_groups(
         for candidate, count in counts.items():
             if count < 2:
                 continue
-            literal_bits = sum(symbol_bit_length(symbol) for symbol in candidate)
+            literal_bits = sum(
+                symbol_bit_length(symbol) for symbol in candidate
+            )
             entry_bits = len(pack_records((candidate,))) * 8
             estimated_saving = count * (literal_bits - 9) - entry_bits
             if estimated_saving > 0:
@@ -344,7 +340,6 @@ def expand_dictionary_symbols(
     so verification can compare fully expanded symbols in either form. Inputs
     are not modified.
     """
-
     expanded: list[PackedSymbol] = []
     for symbol in symbols:
         if symbol.kind is not SymbolKind.DICTIONARY:
@@ -352,7 +347,9 @@ def expand_dictionary_symbols(
             continue
         index = symbol.value - 1
         if index < 0 or index >= len(dictionary):
-            raise ValueError(f"dictionary reference {symbol.value} is out of range")
+            raise ValueError(
+                f"dictionary reference {symbol.value} is out of range"
+            )
         if index in _stack:
             raise ValueError(f"dictionary loop at reference {symbol.value}")
         expanded.extend(

@@ -18,6 +18,21 @@ The wheel contains the Python package only. Translation maps, title assets,
 source locks, and ROM inputs remain project-checkout data. An installed command
 can drive any checkout with `--project-root PATH`.
 
+## Code style
+
+Python code is formatted for Python 3.11 at a 79-column line length. Public
+modules, classes, functions, and methods follow the PEP 257 docstring
+conventions used throughout the tooling. Run the complete style gate with:
+
+```powershell
+python -m black --check work
+python -m ruff check work
+python -m pydocstyle --convention=pep257 work
+```
+
+Use `python -m black work` and `python -m ruff check --fix work` for safe
+mechanical corrections, then review docstring changes manually.
+
 ## Test suites
 
 ### Public unit suite
@@ -56,6 +71,9 @@ Public CI performs:
 ```powershell
 python work/tools/check_public_tree.py
 python -m pip install -e ".[dev]"
+python -m black --check work
+python -m ruff check work
+python -m pydocstyle --convention=pep257 work
 python work/run_tests.py unit
 python -m build
 python -m pip install --force-reinstall dist/*.whl
@@ -209,6 +227,7 @@ reference/preview images.
 - [ ] Error messages identify the failed invariant.
 - [ ] Control-code order is unchanged or the exception is documented/tested.
 - [ ] Fixed record/table/bank sizes and tail addresses are preserved.
+- [ ] Black, Ruff, and pydocstyle checks pass.
 - [ ] Public tests pass with zero skips.
 - [ ] Private integration tests pass with zero skips when fixtures are available.
 - [ ] Wheel build/install smoke test passes.

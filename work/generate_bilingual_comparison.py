@@ -20,13 +20,23 @@ from time_twist import ui
 from time_twist.scenario import render_symbols
 from time_twist.textcodec import split_records
 
-
 ROOT = Path(__file__).resolve().parent.parent
 WORK = ROOT / "work"
 OUTPUTS = ROOT / "outputs"
 BANK_ORDER = (
-    "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B",
-    "TT4", "TT5", "T25", "TT6A", "TT6B", "TT6C", "TT6D",
+    "TT1A",
+    "TT1B",
+    "TT2",
+    "T22",
+    "TT3A",
+    "TT3B",
+    "TT4",
+    "TT5",
+    "T25",
+    "TT6A",
+    "TT6B",
+    "TT6C",
+    "TT6D",
 )
 CONTROL_RE = re.compile(r"\{CTRL:(\d+)\}")
 
@@ -70,13 +80,19 @@ class ComparisonRow:
 # to a real geographic dialect.
 VOICE_MARKERS = (
     ("わたくし", "formal/humble first person; more ceremonious than 'I'"),
-    ("わし", "elderly or authoritative masculine first person; character voice, not necessarily regional"),
+    (
+        "わし",
+        "elderly or authoritative masculine first person; character voice, not necessarily regional",
+    ),
     ("ぼく", "soft/juvenile masculine first person"),
     ("おれ", "plain-to-rough masculine first person"),
     ("おぬし", "archaic/status-marked second person"),
     ("そなた", "archaic or elevated second person"),
     ("きさま", "hostile/contemptuous second person in modern usage"),
-    ("おまえ", "familiar or rough second person; relationship and tone matter"),
+    (
+        "おまえ",
+        "familiar or rough second person; relationship and tone matter",
+    ),
     ("でございます", "very polite/formal copula"),
     ("ござる", "archaic/stylized polite speech"),
     ("くだされ", "archaic request form"),
@@ -84,8 +100,14 @@ VOICE_MARKERS = (
     ("せぬ", "literary/archaic negative"),
     ("とらん", "colloquial/dialectal negative; inspect the verb and speaker"),
     ("ぞい", "stereotyped elderly emphatic ending"),
-    ("じゃろ", "old-person/western-style copula; usually fictional voice here"),
-    ("じゃ", "old-person/western-style copula; context decides voice versus region"),
+    (
+        "じゃろ",
+        "old-person/western-style copula; usually fictional voice here",
+    ),
+    (
+        "じゃ",
+        "old-person/western-style copula; context decides voice versus region",
+    ),
     ("のう", "elderly/reflective sentence ending; often fictional voice"),
     ("やで", "strong Kansai-style copula/emphasis"),
     ("やねん", "Kansai explanatory copula"),
@@ -99,60 +121,130 @@ HONORIFICS = (
     ("さま", "-sama: high respect, worship, status, or irony"),
     ("どの", "-dono: historical/formal status title"),
     ("ちゃん", "-chan: affection, familiarity, or diminutive tone"),
-    ("くん", "-kun: familiar/status-marked address, often toward a boy or junior"),
+    (
+        "くん",
+        "-kun: familiar/status-marked address, often toward a boy or junior",
+    ),
     ("さん", "-san: ordinary respectful address"),
 )
 
 ENDING_MARKERS = (
-    (re.compile(r"ぜ(?:[。！？!?…」』]|$)"), "ぜ: rough masculine sentence-final emphasis"),
-    (re.compile(r"ぞ(?:[。！？!?…」』]|$)"), "ぞ: forceful assertion or command emphasis"),
-    (re.compile(r"まい(?:[。！？!?…」』]|$)"), "まい: literary negative intention or conjecture"),
+    (
+        re.compile(r"ぜ(?:[。！？!?…」』]|$)"),
+        "ぜ: rough masculine sentence-final emphasis",
+    ),
+    (
+        re.compile(r"ぞ(?:[。！？!?…」』]|$)"),
+        "ぞ: forceful assertion or command emphasis",
+    ),
+    (
+        re.compile(r"まい(?:[。！？!?…」』]|$)"),
+        "まい: literary negative intention or conjecture",
+    ),
     (re.compile(r"ぬ(?:[。！？!?…」』]|$)"), "ぬ: literary/archaic negative"),
-    (re.compile(r"ばい(?:[。！？!?…」』]|$)"), "ばい: possible Kyushu/Hakata-style assertive ending; verify speaker context"),
+    (
+        re.compile(r"ばい(?:[。！？!?…」』]|$)"),
+        "ばい: possible Kyushu/Hakata-style assertive ending; verify speaker context",
+    ),
 )
 
 # These are aids for reconstructing normal modern orthography.  They are not
 # substitutions for the source.  Ambiguous readings deliberately show more
 # than one candidate.
 ORTHOGRAPHY_TERMS = (
-    ("れきし", "歴史"), ("じかん", "時間"), ("じだい", "時代"),
-    ("みらい", "未来"), ("かこ", "過去"), ("げんざい", "現在"),
-    ("せかい", "世界"), ("にほん", "日本"), ("とうきょう", "東京"),
-    ("はくぶつかん", "博物館"), ("きょうかい", "教会"),
-    ("びょういん", "病院"), ("がっこう", "学校"), ("けんきゅう", "研究"),
-    ("はかせ", "博士"), ("せんせい", "先生"), ("しんぶん", "新聞"),
-    ("せんそう", "戦争"), ("へいし", "兵士"), ("しけい", "死刑"),
-    ("どれい", "奴隷"), ("じゆう", "自由"), ("へいわ", "平和"),
-    ("しゅうきょう", "宗教"), ("しんこう", "信仰"), ("せいしょ", "聖書"),
-    ("きせき", "奇跡"), ("よげん", "予言"), ("うらない", "占い"),
-    ("あくま", "悪魔"), ("かみさま", "神様"), ("たましい", "魂"),
-    ("いのち", "命"), ("こころ", "心"), ("からだ", "体"),
-    ("おとこ", "男"), ("おんな", "女"), ("おんなのこ", "女の子"),
-    ("おとこのこ", "男の子"), ("こども", "子供"), ("ひと", "人"),
-    ("おとな", "大人"), ("おや", "親"), ("ちち", "父"), ("はは", "母"),
-    ("むすこ", "息子"), ("むすめ", "娘"), ("なまえ", "名前"),
-    ("ことば", "言葉"), ("こえ", "声"), ("はなし", "話"),
-    ("ほんとう", "本当"), ("だいじ", "大事"), ("だいじょうぶ", "大丈夫"),
-    ("しぬ", "死ぬ"), ("ころす", "殺す"), ("たすける", "助ける"),
-    ("いきる", "生きる"), ("うまれる", "生まれる"), ("あう", "会う/遭う/合う"),
-    ("みる", "見る/診る"), ("きく", "聞く/聴く/訊く"),
-    ("いう", "言う"), ("おもう", "思う"), ("しる", "知る"),
-    ("わかる", "分かる"), ("かえる", "帰る/変える/替える"),
-    ("とる", "取る/撮る/採る"), ("なおす", "直す/治す"),
-    ("かみ", "神/紙/髪"), ("はし", "橋/端/箸"),
+    ("れきし", "歴史"),
+    ("じかん", "時間"),
+    ("じだい", "時代"),
+    ("みらい", "未来"),
+    ("かこ", "過去"),
+    ("げんざい", "現在"),
+    ("せかい", "世界"),
+    ("にほん", "日本"),
+    ("とうきょう", "東京"),
+    ("はくぶつかん", "博物館"),
+    ("きょうかい", "教会"),
+    ("びょういん", "病院"),
+    ("がっこう", "学校"),
+    ("けんきゅう", "研究"),
+    ("はかせ", "博士"),
+    ("せんせい", "先生"),
+    ("しんぶん", "新聞"),
+    ("せんそう", "戦争"),
+    ("へいし", "兵士"),
+    ("しけい", "死刑"),
+    ("どれい", "奴隷"),
+    ("じゆう", "自由"),
+    ("へいわ", "平和"),
+    ("しゅうきょう", "宗教"),
+    ("しんこう", "信仰"),
+    ("せいしょ", "聖書"),
+    ("きせき", "奇跡"),
+    ("よげん", "予言"),
+    ("うらない", "占い"),
+    ("あくま", "悪魔"),
+    ("かみさま", "神様"),
+    ("たましい", "魂"),
+    ("いのち", "命"),
+    ("こころ", "心"),
+    ("からだ", "体"),
+    ("おとこ", "男"),
+    ("おんな", "女"),
+    ("おんなのこ", "女の子"),
+    ("おとこのこ", "男の子"),
+    ("こども", "子供"),
+    ("ひと", "人"),
+    ("おとな", "大人"),
+    ("おや", "親"),
+    ("ちち", "父"),
+    ("はは", "母"),
+    ("むすこ", "息子"),
+    ("むすめ", "娘"),
+    ("なまえ", "名前"),
+    ("ことば", "言葉"),
+    ("こえ", "声"),
+    ("はなし", "話"),
+    ("ほんとう", "本当"),
+    ("だいじ", "大事"),
+    ("だいじょうぶ", "大丈夫"),
+    ("しぬ", "死ぬ"),
+    ("ころす", "殺す"),
+    ("たすける", "助ける"),
+    ("いきる", "生きる"),
+    ("うまれる", "生まれる"),
+    ("あう", "会う/遭う/合う"),
+    ("みる", "見る/診る"),
+    ("きく", "聞く/聴く/訊く"),
+    ("いう", "言う"),
+    ("おもう", "思う"),
+    ("しる", "知る"),
+    ("わかる", "分かる"),
+    ("かえる", "帰る/変える/替える"),
+    ("とる", "取る/撮る/採る"),
+    ("なおす", "直す/治す"),
+    ("かみ", "神/紙/髪"),
+    ("はし", "橋/端/箸"),
 )
 
 KATAKANA_CANDIDATES = (
-    ("しもん", "シモン (Simon)"), ("ひとらー", "ヒトラー (Hitler)"),
-    ("りんかーん", "リンカーン (Lincoln)"), ("じゃんぬ", "ジャンヌ (Jeanne)"),
+    ("しもん", "シモン (Simon)"),
+    ("ひとらー", "ヒトラー (Hitler)"),
+    ("りんかーん", "リンカーン (Lincoln)"),
+    ("じゃんぬ", "ジャンヌ (Jeanne)"),
     ("ありすとてれす", "アリストテレス (Aristotle)"),
     ("いえす", "イエス (Jesus or 'yes'; context is essential)"),
-    ("きりすと", "キリスト (Christ)"), ("えるされむ", "エルサレム (Jerusalem)"),
-    ("べつれへむ", "ベツレヘム (Bethlehem)"), ("ろーま", "ローマ (Rome)"),
-    ("どいつ", "ドイツ (Germany)"), ("あめりか", "アメリカ (America)"),
-    ("てれび", "テレビ"), ("こんぴゅーた", "コンピュータ"),
-    ("たいむ", "タイム"), ("べると", "ベルト"), ("でびる", "デビル"),
-    ("こんそめ", "コンソメ"), ("みゅーじあむ", "ミュージアム"),
+    ("きりすと", "キリスト (Christ)"),
+    ("えるされむ", "エルサレム (Jerusalem)"),
+    ("べつれへむ", "ベツレヘム (Bethlehem)"),
+    ("ろーま", "ローマ (Rome)"),
+    ("どいつ", "ドイツ (Germany)"),
+    ("あめりか", "アメリカ (America)"),
+    ("てれび", "テレビ"),
+    ("こんぴゅーた", "コンピュータ"),
+    ("たいむ", "タイム"),
+    ("べると", "ベルト"),
+    ("でびる", "デビル"),
+    ("こんそめ", "コンソメ"),
+    ("みゅーじあむ", "ミュージアム"),
 )
 
 
@@ -169,8 +261,11 @@ def _read_source_document(bank: str) -> dict:
         OSError: If the source document cannot be read.
         JSONDecodeError: If it is not valid JSON.
     """
-
-    return json.loads((WORK / "translated_scripts" / f"{bank}.json").read_text(encoding="utf-8"))
+    return json.loads(
+        (WORK / "translated_scripts" / f"{bank}.json").read_text(
+            encoding="utf-8"
+        )
+    )
 
 
 def _source_path(document: dict) -> Path:
@@ -189,11 +284,12 @@ def _source_path(document: dict) -> Path:
     Relocation exists because old extraction paths may be absolute or tied to
     a previous build directory. Ambiguity is rejected rather than guessed.
     """
-
     path = Path(document["source"])
     if path.exists():
         return path
-    candidates = list(WORK.glob(f"extracted_*/*_{path.name.split('_', 2)[-1]}"))
+    candidates = list(
+        WORK.glob(f"extracted_*/*_{path.name.split('_', 2)[-1]}")
+    )
     if len(candidates) != 1:
         raise FileNotFoundError(f"cannot resolve source bank {path}")
     return candidates[0]
@@ -208,8 +304,9 @@ def _readable(text: str) -> str:
     Returns:
         Text with controls rendered as spaced ``⟦CTRL:n⟧`` markers.
     """
-
-    return CONTROL_RE.sub(lambda match: f" ⟦CTRL:{match.group(1)}⟧ ", text).strip()
+    return CONTROL_RE.sub(
+        lambda match: f" ⟦CTRL:{match.group(1)}⟧ ", text
+    ).strip()
 
 
 def _controls(text: str) -> tuple[str, ...]:
@@ -221,7 +318,6 @@ def _controls(text: str) -> tuple[str, ...]:
     Returns:
         Payload strings without braces or the ``CTRL:`` prefix.
     """
-
     return tuple(CONTROL_RE.findall(text))
 
 
@@ -235,7 +331,6 @@ def _script_profile(text: str) -> str:
         Semicolon-separated counts for hiragana, katakana, kanji, Latin
         letters, and digits, plus a kana-only observation when applicable.
     """
-
     clean = CONTROL_RE.sub("", text)
     counts = Counter()
     for character in clean:
@@ -250,38 +345,139 @@ def _script_profile(text: str) -> str:
             counts["Latin"] += 1
         elif character.isdigit():
             counts["digits"] += 1
-    parts = [f"{name}:{counts[name]}" for name in ("hiragana", "katakana", "kanji", "Latin", "digits")]
+    parts = [
+        f"{name}:{counts[name]}"
+        for name in ("hiragana", "katakana", "kanji", "Latin", "digits")
+    ]
     if counts["hiragana"] and not counts["katakana"] and not counts["kanji"]:
         parts.append("phonetic hiragana orthography")
     return "; ".join(parts)
 
 
 ROMAJI_BASIC = {
-    "あ":"a","い":"i","う":"u","え":"e","お":"o",
-    "か":"ka","き":"ki","く":"ku","け":"ke","こ":"ko",
-    "が":"ga","ぎ":"gi","ぐ":"gu","げ":"ge","ご":"go",
-    "さ":"sa","し":"shi","す":"su","せ":"se","そ":"so",
-    "ざ":"za","じ":"ji","ず":"zu","ぜ":"ze","ぞ":"zo",
-    "た":"ta","ち":"chi","つ":"tsu","て":"te","と":"to",
-    "だ":"da","ぢ":"ji","づ":"zu","で":"de","ど":"do",
-    "な":"na","に":"ni","ぬ":"nu","ね":"ne","の":"no",
-    "は":"ha","ひ":"hi","ふ":"fu","へ":"he","ほ":"ho",
-    "ば":"ba","び":"bi","ぶ":"bu","べ":"be","ぼ":"bo",
-    "ぱ":"pa","ぴ":"pi","ぷ":"pu","ぺ":"pe","ぽ":"po",
-    "ま":"ma","み":"mi","む":"mu","め":"me","も":"mo",
-    "や":"ya","ゆ":"yu","よ":"yo",
-    "ら":"ra","り":"ri","る":"ru","れ":"re","ろ":"ro",
-    "わ":"wa","を":"o","ん":"n","ゔ":"vu",
-    "ぁ":"a","ぃ":"i","ぅ":"u","ぇ":"e","ぉ":"o",
+    "あ": "a",
+    "い": "i",
+    "う": "u",
+    "え": "e",
+    "お": "o",
+    "か": "ka",
+    "き": "ki",
+    "く": "ku",
+    "け": "ke",
+    "こ": "ko",
+    "が": "ga",
+    "ぎ": "gi",
+    "ぐ": "gu",
+    "げ": "ge",
+    "ご": "go",
+    "さ": "sa",
+    "し": "shi",
+    "す": "su",
+    "せ": "se",
+    "そ": "so",
+    "ざ": "za",
+    "じ": "ji",
+    "ず": "zu",
+    "ぜ": "ze",
+    "ぞ": "zo",
+    "た": "ta",
+    "ち": "chi",
+    "つ": "tsu",
+    "て": "te",
+    "と": "to",
+    "だ": "da",
+    "ぢ": "ji",
+    "づ": "zu",
+    "で": "de",
+    "ど": "do",
+    "な": "na",
+    "に": "ni",
+    "ぬ": "nu",
+    "ね": "ne",
+    "の": "no",
+    "は": "ha",
+    "ひ": "hi",
+    "ふ": "fu",
+    "へ": "he",
+    "ほ": "ho",
+    "ば": "ba",
+    "び": "bi",
+    "ぶ": "bu",
+    "べ": "be",
+    "ぼ": "bo",
+    "ぱ": "pa",
+    "ぴ": "pi",
+    "ぷ": "pu",
+    "ぺ": "pe",
+    "ぽ": "po",
+    "ま": "ma",
+    "み": "mi",
+    "む": "mu",
+    "め": "me",
+    "も": "mo",
+    "や": "ya",
+    "ゆ": "yu",
+    "よ": "yo",
+    "ら": "ra",
+    "り": "ri",
+    "る": "ru",
+    "れ": "re",
+    "ろ": "ro",
+    "わ": "wa",
+    "を": "o",
+    "ん": "n",
+    "ゔ": "vu",
+    "ぁ": "a",
+    "ぃ": "i",
+    "ぅ": "u",
+    "ぇ": "e",
+    "ぉ": "o",
 }
 ROMAJI_DIGRAPHS = {
-    "きゃ":"kya","きゅ":"kyu","きょ":"kyo","ぎゃ":"gya","ぎゅ":"gyu","ぎょ":"gyo",
-    "しゃ":"sha","しゅ":"shu","しょ":"sho","じゃ":"ja","じゅ":"ju","じょ":"jo",
-    "ちゃ":"cha","ちゅ":"chu","ちょ":"cho","にゃ":"nya","にゅ":"nyu","にょ":"nyo",
-    "ひゃ":"hya","ひゅ":"hyu","ひょ":"hyo","びゃ":"bya","びゅ":"byu","びょ":"byo",
-    "ぴゃ":"pya","ぴゅ":"pyu","ぴょ":"pyo","みゃ":"mya","みゅ":"myu","みょ":"myo",
-    "りゃ":"rya","りゅ":"ryu","りょ":"ryo","ふぁ":"fa","ふぃ":"fi","ふぇ":"fe","ふぉ":"fo",
-    "てぃ":"ti","でぃ":"di","とぅ":"tu","どぅ":"du","うぃ":"wi","うぇ":"we","うぉ":"wo",
+    "きゃ": "kya",
+    "きゅ": "kyu",
+    "きょ": "kyo",
+    "ぎゃ": "gya",
+    "ぎゅ": "gyu",
+    "ぎょ": "gyo",
+    "しゃ": "sha",
+    "しゅ": "shu",
+    "しょ": "sho",
+    "じゃ": "ja",
+    "じゅ": "ju",
+    "じょ": "jo",
+    "ちゃ": "cha",
+    "ちゅ": "chu",
+    "ちょ": "cho",
+    "にゃ": "nya",
+    "にゅ": "nyu",
+    "にょ": "nyo",
+    "ひゃ": "hya",
+    "ひゅ": "hyu",
+    "ひょ": "hyo",
+    "びゃ": "bya",
+    "びゅ": "byu",
+    "びょ": "byo",
+    "ぴゃ": "pya",
+    "ぴゅ": "pyu",
+    "ぴょ": "pyo",
+    "みゃ": "mya",
+    "みゅ": "myu",
+    "みょ": "myo",
+    "りゃ": "rya",
+    "りゅ": "ryu",
+    "りょ": "ryo",
+    "ふぁ": "fa",
+    "ふぃ": "fi",
+    "ふぇ": "fe",
+    "ふぉ": "fo",
+    "てぃ": "ti",
+    "でぃ": "di",
+    "とぅ": "tu",
+    "どぅ": "du",
+    "うぃ": "wi",
+    "うぇ": "we",
+    "うぉ": "wo",
 }
 
 
@@ -299,7 +495,6 @@ def _to_hiragana(character: str) -> str:
         TypeError: If ``character`` is empty or contains more than one code
             point, as enforced by :func:`ord`.
     """
-
     codepoint = ord(character)
     if 0x30A1 <= codepoint <= 0x30F6:
         return chr(codepoint - 0x60)
@@ -320,7 +515,6 @@ def _romanize(text: str) -> str:
     vowels but performs no morphology, word segmentation, or name resolution.
     It must not be treated as a translation.
     """
-
     clean = CONTROL_RE.sub(" / ", text)
     kana = "".join(_to_hiragana(character) for character in clean)
     output: list[str] = []
@@ -332,7 +526,7 @@ def _romanize(text: str) -> str:
             geminate = True
             index += 1
             continue
-        pair = kana[index:index + 2]
+        pair = kana[index : index + 2]
         syllable = ROMAJI_DIGRAPHS.get(pair)
         if syllable is not None:
             index += 2
@@ -341,7 +535,9 @@ def _romanize(text: str) -> str:
             index += 1
         if character == "ー" and output:
             previous = output[-1]
-            vowel = next((value for value in reversed(previous) if value in "aeiou"), "")
+            vowel = next(
+                (value for value in reversed(previous) if value in "aeiou"), ""
+            )
             output.append(vowel)
             continue
         if geminate and syllable and syllable[0].isalpha():
@@ -367,7 +563,6 @@ def _voice_notes(text: str) -> tuple[str, ...]:
     ``じゃ`` inside Jeanne and ``のう`` inside ordinary vocabulary. Results are
     review prompts, not authoritative dialect classifications.
     """
-
     clean = CONTROL_RE.sub("", text)
     notes: list[str] = []
     for marker, explanation in VOICE_MARKERS:
@@ -383,11 +578,16 @@ def _voice_notes(text: str) -> tuple[str, ...]:
     for marker, explanation in HONORIFICS:
         honorific_source = clean
         if marker == "さま":
-            honorific_source = honorific_source.replace("きさま", "").replace("さまざま", "")
+            honorific_source = honorific_source.replace("きさま", "").replace(
+                "さまざま", ""
+            )
         elif marker == "さん":
             honorific_source = honorific_source.replace("たくさん", "")
             honorific_source = re.sub(r"さんにん", "", honorific_source)
-        if re.search(re.escape(marker) + r"(?=[\s、。！？!?…／」』はがをにとのへも]|$)", honorific_source):
+        if re.search(
+            re.escape(marker) + r"(?=[\s、。！？!?…／」』はがをにとのへも]|$)",
+            honorific_source,
+        ):
             notes.append(f"{marker}: {explanation}")
     for pattern, explanation in ENDING_MARKERS:
         if explanation.startswith("ぜ:") and "だぜ" in clean:
@@ -412,21 +612,25 @@ def _orthography_notes(text: str) -> tuple[str, str]:
     longest readings first. This prevents one replacement from creating a
     false match inside another. No synthetic normalized sentence is produced.
     """
-
     clean = CONTROL_RE.sub("", text)
     candidates: list[str] = []
     searchable = clean
     # First mask foreign names/loans, then ordinary lexemes.  Masking and
     # longest-first matching prevent false restorations such as 人らー for
     # ひとらー (Hitler) or 女の子のこ for おんなのこ.
-    for reading, spelling in sorted(KATAKANA_CANDIDATES, key=lambda item: len(item[0]), reverse=True):
+    for reading, spelling in sorted(
+        KATAKANA_CANDIDATES, key=lambda item: len(item[0]), reverse=True
+    ):
         if reading in searchable:
             candidates.append(f"{reading} → {spelling}")
             searchable = searchable.replace(reading, " " * len(reading))
-    for reading, spelling in sorted(ORTHOGRAPHY_TERMS, key=lambda item: len(item[0]), reverse=True):
+    for reading, spelling in sorted(
+        ORTHOGRAPHY_TERMS, key=lambda item: len(item[0]), reverse=True
+    ):
         if len(reading) <= 2:
             pattern = re.compile(
-                r"(?<![ぁ-ん])" + re.escape(reading)
+                r"(?<![ぁ-ん])"
+                + re.escape(reading)
                 + r"(?=[はがをにとのへもでよか、。！？!?…／」』\s]|$)"
             )
             match = pattern.search(searchable)
@@ -434,16 +638,26 @@ def _orthography_notes(text: str) -> tuple[str, str]:
             match = re.search(re.escape(reading), searchable)
         if match:
             candidates.append(f"{reading} → {spelling}")
-            searchable = searchable[:match.start()] + " " * (match.end() - match.start()) + searchable[match.end():]
-    if not candidates and any(0x3040 <= ord(character) <= 0x309F for character in clean):
-        candidates.append("Source suppresses normal kanji/katakana distinctions; restore only with context")
+            searchable = (
+                searchable[: match.start()]
+                + " " * (match.end() - match.start())
+                + searchable[match.end() :]
+            )
+    if not candidates and any(
+        0x3040 <= ord(character) <= 0x309F for character in clean
+    ):
+        candidates.append(
+            "Source suppresses normal kanji/katakana distinctions; restore only with context"
+        )
     # Do not synthesize a kanji sentence: replacing substrings without a full
     # morphological parse can silently invent the wrong word.  The adjacent
     # candidate column carries the safe, reviewable suggestions.
     return clean, tuple(dict.fromkeys(candidates))
 
 
-def _comparison_flags(japanese: str, english: str, kind: str, packed_bytes: str) -> tuple[str, ...]:
+def _comparison_flags(
+    japanese: str, english: str, kind: str, packed_bytes: str
+) -> tuple[str, ...]:
     """Identify concrete technical and translation checks for one row.
 
     Args:
@@ -456,7 +670,6 @@ def _comparison_flags(japanese: str, english: str, kind: str, packed_bytes: str)
         Ordered flags covering control drift, source numerals, fixed size,
         abbreviations, padding, and dramatic ellipses.
     """
-
     flags: list[str] = []
     source_controls = _controls(japanese)
     english_controls = _controls(english)
@@ -464,7 +677,9 @@ def _comparison_flags(japanese: str, english: str, kind: str, packed_bytes: str)
         flags.append("control sequence differs")
     source_numbers = re.findall(r"\d+", CONTROL_RE.sub("", japanese))
     if source_numbers:
-        flags.append(f"source numerals {source_numbers}; verify dates/counts and Japanese ordering")
+        flags.append(
+            f"source numerals {source_numbers}; verify dates/counts and Japanese ordering"
+        )
     if kind == "fixed-address":
         flags.append(f"fixed-address label; {packed_bytes} packed bytes")
     if re.search(r"\b[A-Z]{1,5}\b", english) and kind == "fixed-address":
@@ -476,7 +691,12 @@ def _comparison_flags(japanese: str, english: str, kind: str, packed_bytes: str)
     return tuple(flags)
 
 
-def _priority(kind: str, voice: tuple[str, ...], orthography: tuple[str, ...], flags: tuple[str, ...]) -> str:
+def _priority(
+    kind: str,
+    voice: tuple[str, ...],
+    orthography: tuple[str, ...],
+    flags: tuple[str, ...],
+) -> str:
     """Assign a deterministic review priority from explainable signals.
 
     Args:
@@ -492,19 +712,33 @@ def _priority(kind: str, voice: tuple[str, ...], orthography: tuple[str, ...], f
     ambiguity/context, and fixed-address risk. It does not claim translation
     quality.
     """
-
     score = 0
     score += min(4, len(voice) * 2)
-    score += 2 if any("/" in note or "context" in note for note in orthography) else 0
+    score += (
+        2
+        if any("/" in note or "context" in note for note in orthography)
+        else 0
+    )
     score += 3 if any("control sequence" in flag for flag in flags) else 0
     score += 2 if kind == "fixed-address" else 0
-    score += 1 if any("abbreviation" in flag or "padding" in flag for flag in flags) else 0
+    score += (
+        1
+        if any("abbreviation" in flag or "padding" in flag for flag in flags)
+        else 0
+    )
     return "high" if score >= 5 else "medium" if score >= 2 else "low"
 
 
 def _make_row(
-    *, sequence: int, bank: str, text_id: str, kind: str,
-    source_location: str, packed_bytes: str, japanese: str, english: str,
+    *,
+    sequence: int,
+    bank: str,
+    text_id: str,
+    kind: str,
+    source_location: str,
+    packed_bytes: str,
+    japanese: str,
+    english: str,
 ) -> ComparisonRow:
     """Construct all deterministic annotations for one source record.
 
@@ -521,7 +755,6 @@ def _make_row(
     Returns:
         Immutable :class:`ComparisonRow` with blank human-review fields.
     """
-
     voice = _voice_notes(japanese)
     normalized, orthography = _orthography_notes(japanese)
     flags = _comparison_flags(japanese, english, kind, packed_bytes)
@@ -566,48 +799,112 @@ def _scenario_rows(start_sequence: int) -> list[ComparisonRow]:
         ValueError: If a source ID lacks English or a translation map contains
             an unknown ID.
     """
-
     rows: list[ComparisonRow] = []
     sequence = start_sequence
     for bank in BANK_ORDER:
         source = _read_source_document(bank)
-        translations = json.loads((WORK / "translations" / f"{bank}.json").read_text(encoding="utf-8"))
+        translations = json.loads(
+            (WORK / "translations" / f"{bank}.json").read_text(
+                encoding="utf-8"
+            )
+        )
         seen: set[str] = set()
         for group in source["groups"]:
             for record in group["records"]:
                 text_id = record["id"]
                 if text_id not in translations:
-                    raise ValueError(f"missing English translation for {text_id}")
+                    raise ValueError(
+                        f"missing English translation for {text_id}"
+                    )
                 seen.add(text_id)
-                rows.append(_make_row(
-                    sequence=sequence,
-                    bank=bank,
-                    text_id=text_id,
-                    kind="scenario",
-                    source_location=f"group {group['group']} @ {group['address']}; record {record['record']}",
-                    packed_bytes="group-compressed",
-                    japanese=record["japanese"],
-                    english=translations[text_id],
-                ))
+                rows.append(
+                    _make_row(
+                        sequence=sequence,
+                        bank=bank,
+                        text_id=text_id,
+                        kind="scenario",
+                        source_location=f"group {group['group']} @ {group['address']}; record {record['record']}",
+                        packed_bytes="group-compressed",
+                        japanese=record["japanese"],
+                        english=translations[text_id],
+                    )
+                )
                 sequence += 1
         extra = set(translations) - seen
         if extra:
-            raise ValueError(f"translation map has unknown IDs for {bank}: {sorted(extra)}")
+            raise ValueError(
+                f"translation map has unknown IDs for {bank}: {sorted(extra)}"
+            )
     return rows
 
 
 FIXED_SPECS = (
-    ("TT1B", ui.TT1B_FIXED_TEXT_START_OFFSET, ui.TT1B_FIXED_TEXT_END_OFFSET, ui.TT1B_FIXED_TEXT_RECORDS),
-    ("TT2", ui.TT2_FIXED_TEXT_START_OFFSET, ui.TT2_FIXED_TEXT_END_OFFSET, ui.TT2_FIXED_TEXT_RECORDS),
-    ("T22", ui.T22_FIXED_TEXT_START_OFFSET, ui.T22_FIXED_TEXT_END_OFFSET, ui.T22_FIXED_TEXT_RECORDS),
-    ("TT3A", ui.TT3A_FIXED_TEXT_START_OFFSET, ui.TT3A_FIXED_TEXT_END_OFFSET, ui.TT3A_FIXED_TEXT_RECORDS),
-    ("TT3B", ui.TT3B_FIXED_TEXT_START_OFFSET, ui.TT3B_FIXED_TEXT_END_OFFSET, ui.TT3B_FIXED_TEXT_RECORDS),
-    ("TT4", ui.TT4_FIXED_TEXT_START_OFFSET, ui.TT4_FIXED_TEXT_END_OFFSET, ui.TT4_FIXED_TEXT_RECORDS),
-    ("TT5", ui.TT5_FIXED_TEXT_START_OFFSET, ui.TT5_FIXED_TEXT_END_OFFSET, ui.TT5_FIXED_TEXT_RECORDS),
-    ("T25", ui.T25_FIXED_TEXT_START_OFFSET, ui.T25_FIXED_TEXT_END_OFFSET, ui.T25_FIXED_TEXT_RECORDS),
-    ("TT6A", ui.TT6A_FIXED_TEXT_START_OFFSET, ui.TT6A_FIXED_TEXT_END_OFFSET, ui.TT6A_FIXED_TEXT_RECORDS),
-    ("TT6B", ui.TT6B_FIXED_TEXT_START_OFFSET, ui.TT6B_FIXED_TEXT_END_OFFSET, ui.TT6B_FIXED_TEXT_RECORDS),
-    ("TT6C", ui.TT6C_FIXED_TEXT_START_OFFSET, ui.TT6C_FIXED_TEXT_END_OFFSET, ui.TT6C_FIXED_TEXT_RECORDS),
+    (
+        "TT1B",
+        ui.TT1B_FIXED_TEXT_START_OFFSET,
+        ui.TT1B_FIXED_TEXT_END_OFFSET,
+        ui.TT1B_FIXED_TEXT_RECORDS,
+    ),
+    (
+        "TT2",
+        ui.TT2_FIXED_TEXT_START_OFFSET,
+        ui.TT2_FIXED_TEXT_END_OFFSET,
+        ui.TT2_FIXED_TEXT_RECORDS,
+    ),
+    (
+        "T22",
+        ui.T22_FIXED_TEXT_START_OFFSET,
+        ui.T22_FIXED_TEXT_END_OFFSET,
+        ui.T22_FIXED_TEXT_RECORDS,
+    ),
+    (
+        "TT3A",
+        ui.TT3A_FIXED_TEXT_START_OFFSET,
+        ui.TT3A_FIXED_TEXT_END_OFFSET,
+        ui.TT3A_FIXED_TEXT_RECORDS,
+    ),
+    (
+        "TT3B",
+        ui.TT3B_FIXED_TEXT_START_OFFSET,
+        ui.TT3B_FIXED_TEXT_END_OFFSET,
+        ui.TT3B_FIXED_TEXT_RECORDS,
+    ),
+    (
+        "TT4",
+        ui.TT4_FIXED_TEXT_START_OFFSET,
+        ui.TT4_FIXED_TEXT_END_OFFSET,
+        ui.TT4_FIXED_TEXT_RECORDS,
+    ),
+    (
+        "TT5",
+        ui.TT5_FIXED_TEXT_START_OFFSET,
+        ui.TT5_FIXED_TEXT_END_OFFSET,
+        ui.TT5_FIXED_TEXT_RECORDS,
+    ),
+    (
+        "T25",
+        ui.T25_FIXED_TEXT_START_OFFSET,
+        ui.T25_FIXED_TEXT_END_OFFSET,
+        ui.T25_FIXED_TEXT_RECORDS,
+    ),
+    (
+        "TT6A",
+        ui.TT6A_FIXED_TEXT_START_OFFSET,
+        ui.TT6A_FIXED_TEXT_END_OFFSET,
+        ui.TT6A_FIXED_TEXT_RECORDS,
+    ),
+    (
+        "TT6B",
+        ui.TT6B_FIXED_TEXT_START_OFFSET,
+        ui.TT6B_FIXED_TEXT_END_OFFSET,
+        ui.TT6B_FIXED_TEXT_RECORDS,
+    ),
+    (
+        "TT6C",
+        ui.TT6C_FIXED_TEXT_START_OFFSET,
+        ui.TT6C_FIXED_TEXT_END_OFFSET,
+        ui.TT6C_FIXED_TEXT_RECORDS,
+    ),
 )
 
 
@@ -629,7 +926,6 @@ def _fixed_rows(start_sequence: int) -> list[ComparisonRow]:
     Individual packed byte sizes are derived from original record boundaries,
     not estimated from visible text.
     """
-
     rows: list[ComparisonRow] = []
     sequence = start_sequence
     for bank, start, end, english_records in FIXED_SPECS:
@@ -639,22 +935,28 @@ def _fixed_rows(start_sequence: int) -> list[ComparisonRow]:
         packed = data[start:end]
         records, parsed_end = split_records(packed, limit=len(english_records))
         if parsed_end != len(packed):
-            raise ValueError(f"{bank} fixed table did not consume its source range")
+            raise ValueError(
+                f"{bank} fixed table did not consume its source range"
+            )
         starts = ui._record_starts(packed, len(records))
         ends = (*starts[1:], len(packed))
-        for index, (record, english, record_start, record_end) in enumerate(zip(records, english_records, starts, ends)):
+        for index, (record, english, record_start, record_end) in enumerate(
+            zip(records, english_records, starts, ends)
+        ):
             japanese = render_symbols(record, dictionary)
             size = record_end - record_start
-            rows.append(_make_row(
-                sequence=sequence,
-                bank=bank,
-                text_id=f"{bank}/fixed/r{index}",
-                kind="fixed-address",
-                source_location=f"${0xA200 + start + record_start:04X}",
-                packed_bytes=str(size),
-                japanese=japanese,
-                english=english.rstrip(),
-            ))
+            rows.append(
+                _make_row(
+                    sequence=sequence,
+                    bank=bank,
+                    text_id=f"{bank}/fixed/r{index}",
+                    kind="fixed-address",
+                    source_location=f"${0xA200 + start + record_start:04X}",
+                    packed_bytes=str(size),
+                    japanese=japanese,
+                    english=english.rstrip(),
+                )
+            )
             sequence += 1
     return rows
 
@@ -672,7 +974,6 @@ def _single_packed_japanese(packed: bytes) -> str:
         ValueError: If bytes remain after the first aligned record.
         PackedTextError: If the record is truncated.
     """
-
     records, end = split_records(packed, limit=1)
     if end != len(packed):
         raise ValueError("single UI record has trailing bytes")
@@ -693,7 +994,6 @@ def _ui_rows(start_sequence: int) -> list[ComparisonRow]:
         ValueError: If a configured packed UI slot contains extra records.
         PackedTextError: If a configured slot is malformed.
     """
-
     rows: list[ComparisonRow] = []
     sequence = start_sequence
     tt1a_sections = (
@@ -703,41 +1003,100 @@ def _ui_rows(start_sequence: int) -> list[ComparisonRow]:
     )
     for section, records in tt1a_sections:
         for index, (offset, packed, english) in enumerate(records):
-            rows.append(_make_row(
-                sequence=sequence, bank="TT1A", text_id=f"TT1A/{section}/r{index}",
-                kind="fixed-address", source_location=f"${0xA200 + offset:04X}",
-                packed_bytes=str(len(packed)), japanese=_single_packed_japanese(packed),
-                english=english.rstrip(),
-            ))
+            rows.append(
+                _make_row(
+                    sequence=sequence,
+                    bank="TT1A",
+                    text_id=f"TT1A/{section}/r{index}",
+                    kind="fixed-address",
+                    source_location=f"${0xA200 + offset:04X}",
+                    packed_bytes=str(len(packed)),
+                    japanese=_single_packed_japanese(packed),
+                    english=english.rstrip(),
+                )
+            )
             sequence += 1
 
     ui_specs = [
-        ("NOV2", "NOV2/start", 0x6000 + ui.START_PROMPT_OFFSET, ui.ORIGINAL_START_PROMPT, "START"),
-        ("NOV4", "NOV4/start", 0xA200 + ui.NOV4_START_PROMPT_OFFSET, ui.ORIGINAL_START_PROMPT, "START"),
-        ("NOV2", "NOV2/wait", 0x6000 + ui.WAIT_PROMPT_OFFSET, ui.ORIGINAL_WAIT_PROMPT, "PLEASE WAIT..."),
+        (
+            "NOV2",
+            "NOV2/start",
+            0x6000 + ui.START_PROMPT_OFFSET,
+            ui.ORIGINAL_START_PROMPT,
+            "START",
+        ),
+        (
+            "NOV4",
+            "NOV4/start",
+            0xA200 + ui.NOV4_START_PROMPT_OFFSET,
+            ui.ORIGINAL_START_PROMPT,
+            "START",
+        ),
+        (
+            "NOV2",
+            "NOV2/wait",
+            0x6000 + ui.WAIT_PROMPT_OFFSET,
+            ui.ORIGINAL_WAIT_PROMPT,
+            "PLEASE WAIT...",
+        ),
     ]
     ui_specs.extend(
         ("NOV2", f"NOV2/disk/r{index}", 0x6000 + offset, packed, english)
-        for index, (offset, packed, english) in enumerate((*ui.DISK_PROMPT_PATCHES, *ui.WRONG_DISK_PATCHES))
+        for index, (offset, packed, english) in enumerate(
+            (*ui.DISK_PROMPT_PATCHES, *ui.WRONG_DISK_PATCHES)
+        )
     )
     for bank, text_id, address, packed, english in ui_specs:
-        rows.append(_make_row(
-            sequence=sequence, bank=bank, text_id=text_id, kind="fixed-address",
-            source_location=f"${address:04X}", packed_bytes=str(len(packed)),
-            japanese=_single_packed_japanese(packed), english=english.rstrip(),
-        ))
+        rows.append(
+            _make_row(
+                sequence=sequence,
+                bank=bank,
+                text_id=text_id,
+                kind="fixed-address",
+                source_location=f"${address:04X}",
+                packed_bytes=str(len(packed)),
+                japanese=_single_packed_japanese(packed),
+                english=english.rstrip(),
+            )
+        )
         sequence += 1
 
     graphic_rows = (
-        ("TITLE", "TITLE/wordmark", "graphics-only", "タイムツイスト", "TIME TWIST"),
-        ("TITLE", "TITLE/subtitle", "graphics-only", "歴史のかたすみで……", "On the Outskirts of History..."),
-        ("SON-KOUH", "SON-KOUH/direct-boot", "graphics-only", "ぜんぺんディスクから ロードしてください。", "PLEASE START WITH PART 1"),
+        (
+            "TITLE",
+            "TITLE/wordmark",
+            "graphics-only",
+            "タイムツイスト",
+            "TIME TWIST",
+        ),
+        (
+            "TITLE",
+            "TITLE/subtitle",
+            "graphics-only",
+            "歴史のかたすみで……",
+            "On the Outskirts of History...",
+        ),
+        (
+            "SON-KOUH",
+            "SON-KOUH/direct-boot",
+            "graphics-only",
+            "ぜんぺんディスクから ロードしてください。",
+            "PLEASE START WITH PART 1",
+        ),
     )
     for bank, text_id, location, japanese, english in graphic_rows:
-        rows.append(_make_row(
-            sequence=sequence, bank=bank, text_id=text_id, kind="graphics-text",
-            source_location=location, packed_bytes="n/a", japanese=japanese, english=english,
-        ))
+        rows.append(
+            _make_row(
+                sequence=sequence,
+                bank=bank,
+                text_id=text_id,
+                kind="graphics-text",
+                source_location=location,
+                packed_bytes="n/a",
+                japanese=japanese,
+                english=english,
+            )
+        )
         sequence += 1
     return rows
 
@@ -753,7 +1112,6 @@ def build_rows() -> list[ComparisonRow]:
             IDs are duplicated.
         OSError: If required source artifacts cannot be read.
     """
-
     scenario = _scenario_rows(1)
     fixed = _fixed_rows(len(scenario) + 1)
     interface = _ui_rows(len(scenario) + len(fixed) + 1)
@@ -777,9 +1135,12 @@ def _write_tsv(rows: list[ComparisonRow], path: Path) -> None:
         Creates or replaces ``path`` using UTF-8 with a BOM and Excel-tab
         quoting rules.
     """
-
     with path.open("w", encoding="utf-8-sig", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=ComparisonRow.__dataclass_fields__, dialect="excel-tab")
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=ComparisonRow.__dataclass_fields__,
+            dialect="excel-tab",
+        )
         writer.writeheader()
         writer.writerows(asdict(row) for row in rows)
 
@@ -798,13 +1159,15 @@ def _write_json(rows: list[ComparisonRow], path: Path) -> None:
         Creates or replaces ``path`` with schema/provenance metadata and all
         dataclass fields, preserving Unicode Japanese.
     """
-
     payload = {
         "schema": "time-twist-bilingual-comparison-v1",
         "source_of_truth": "japanese_exact is decoded from immutable Japanese banks; annotations are editorial aids",
         "rows": [asdict(row) for row in rows],
     }
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _cell(value: object) -> str:
@@ -820,7 +1183,6 @@ def _cell(value: object) -> str:
         Newlines become ``<br>`` only after escaping, so source text cannot
         inject markup.
     """
-
     return html.escape(str(value)).replace("\n", "<br>")
 
 
@@ -838,24 +1200,28 @@ def _write_html(rows: list[ComparisonRow], path: Path) -> None:
         Creates or replaces ``path``. Search/filter behavior is embedded as
         dependency-free JavaScript for local ``file://`` use.
     """
-
     counts = Counter(row.kind for row in rows)
     priorities = Counter(row.review_priority for row in rows)
     body_rows = []
     for row in rows:
-        notes = "<br>".join(filter(None, (
-            _cell(row.voice_dialect_register),
-            _cell(row.orthography_kanji_katakana),
-            _cell(row.comparison_flags),
-        )))
+        notes = "<br>".join(
+            filter(
+                None,
+                (
+                    _cell(row.voice_dialect_register),
+                    _cell(row.orthography_kanji_katakana),
+                    _cell(row.comparison_flags),
+                ),
+            )
+        )
         body_rows.append(
             f'<tr data-bank="{_cell(row.bank)}" data-kind="{_cell(row.kind)}" '
             f'data-priority="{_cell(row.review_priority)}">'
-            f'<td>{row.sequence}</td><td><b>{_cell(row.bank)}</b><br><code>{_cell(row.text_id)}</code><br>'
-            f'<small>{_cell(row.kind)}; {_cell(row.source_location)}; {_cell(row.packed_bytes)} bytes</small></td>'
+            f"<td>{row.sequence}</td><td><b>{_cell(row.bank)}</b><br><code>{_cell(row.text_id)}</code><br>"
+            f"<small>{_cell(row.kind)}; {_cell(row.source_location)}; {_cell(row.packed_bytes)} bytes</small></td>"
             f'<td lang="ja">{_cell(row.japanese_readable)}<br><small>{_cell(row.mechanical_romaji)}</small></td>'
             f'<td lang="ja">{_cell(row.normalized_japanese_aid)}</td>'
-            f'<td>{_cell(row.current_english_readable)}</td>'
+            f"<td>{_cell(row.current_english_readable)}</td>"
             f'<td>{notes}</td><td class="priority {row.review_priority}">{_cell(row.review_priority)}</td></tr>'
         )
     document = f"""<!doctype html>
@@ -894,11 +1260,12 @@ def _write_guide(rows: list[ComparisonRow], path: Path) -> None:
     Side Effects:
         Creates or replaces ``path``.
     """
-
     banks = Counter(row.bank for row in rows if row.kind == "scenario")
     priority = Counter(row.review_priority for row in rows)
     voice_rows = sum(bool(row.voice_dialect_register) for row in rows)
-    control_mismatches = [row.text_id for row in rows if row.control_match == "NO"]
+    control_mismatches = [
+        row.text_id for row in rows if row.control_match == "NO"
+    ]
     guide = f"""# Time Twist bilingual script comparison
 
 This package is designed for a second-pass localization review, not merely a proof that English fits in the ROM.
@@ -952,12 +1319,17 @@ def main() -> None:
         Creates ``outputs`` when needed; replaces TSV, JSON, HTML, and Markdown
         guide files; and prints the final row count.
     """
-
     rows = build_rows()
     OUTPUTS.mkdir(parents=True, exist_ok=True)
-    _write_tsv(rows, OUTPUTS / "Time Twist Japanese-English script comparison.tsv")
-    _write_json(rows, OUTPUTS / "Time Twist Japanese-English script comparison.json")
-    _write_html(rows, OUTPUTS / "Time Twist Japanese-English script comparison.html")
+    _write_tsv(
+        rows, OUTPUTS / "Time Twist Japanese-English script comparison.tsv"
+    )
+    _write_json(
+        rows, OUTPUTS / "Time Twist Japanese-English script comparison.json"
+    )
+    _write_html(
+        rows, OUTPUTS / "Time Twist Japanese-English script comparison.html"
+    )
     _write_guide(rows, OUTPUTS / "Time Twist bilingual comparison guide.md")
     print(f"wrote {len(rows)} comparison rows")
 

@@ -26,7 +26,6 @@ from .textcodec import (
     split_records,
 )
 
-
 # ---------------------------------------------------------------------------
 # Shared NOV2/NOV4 prompts and input behavior
 # ---------------------------------------------------------------------------
@@ -69,9 +68,7 @@ WRONG_DISK_PATCHES = (
     ),
 )
 WAIT_PROMPT_OFFSET = 0x25D9
-ORIGINAL_WAIT_PROMPT = bytes.fromhex(
-    "2F 33 30 FE 37 FB F1 1E 40 7C 79 40 FD"
-)
+ORIGINAL_WAIT_PROMPT = bytes.fromhex("2F 33 30 FE 37 FB F1 1E 40 7C 79 40 FD")
 ENGLISH_WAIT_PROMPT = pack_records([encode_english("PLEASE WAIT... ")])
 
 # ---------------------------------------------------------------------------
@@ -102,7 +99,17 @@ KOUHEN_BOOT_GUARD_LINES = (
     (13, "PART 1"),
 )
 KOUHEN_BOOT_GUARD_TILE_CHARACTERS = (
-    "P", "L", "E", "A", "S", "T", "R", "W", "I", "H", "1",
+    "P",
+    "L",
+    "E",
+    "A",
+    "S",
+    "T",
+    "R",
+    "W",
+    "I",
+    "H",
+    "1",
 )
 
 # NOV2 normally fills unused menu-buffer cells with $AC.  The menu renderer
@@ -111,9 +118,7 @@ KOUHEN_BOOT_GUARD_TILE_CHARACTERS = (
 # cells opaque caused the typewriter cadence to process them as silent
 # characters.
 NOV2_BLANK_TILE = 0xC0
-NOV2_OPAQUE_CLEAR_PATCHES = (
-    (0x345B, 0xAC, NOV2_BLANK_TILE, "menu choice"),
-)
+NOV2_OPAQUE_CLEAR_PATCHES = ((0x345B, 0xAC, NOV2_BLANK_TILE, "menu choice"),)
 
 # NOV2's scroll uploader must retain this indexed load.  It copies the valid
 # bottom dialogue row to the nametable before the text buffer shifts.  An
@@ -235,17 +240,80 @@ TT1B_FIXED_TEXT_SOURCE_SHA256 = (
     "AF6969B469081B6992DF4893FCE6308ABB51896B5D2DAAD49AF0B23500E5FD4F"
 )
 TT1B_REQUIRED_DICTIONARY_TEXT = (
-    "LOOK", "TALK", "MUSEUM", "BODY", "EYES", "PICTURE", "SIMON",
-    "ASK", "MEMBER", "DEVIL", "NOSE", "EARS", "SKY", "SIGN", "CHEST",
-    "HOUSE", "CHURCH", "PRIEST", "EST", "ROUND",
+    "LOOK",
+    "TALK",
+    "MUSEUM",
+    "BODY",
+    "EYES",
+    "PICTURE",
+    "SIMON",
+    "ASK",
+    "MEMBER",
+    "DEVIL",
+    "NOSE",
+    "EARS",
+    "SKY",
+    "SIGN",
+    "CHEST",
+    "HOUSE",
+    "CHURCH",
+    "PRIEST",
+    "EST",
+    "ROUND",
 )
 TT1B_FIXED_TEXT_RECORDS = (
-    "LOOK", "TALK", "MOVE", "SKY", "AROUND", "MUSEUM", "SIGN", "BODY",
-    "EAST", "WEST", "USE", "HIT", "POKE", "WLK", "PT", "EXH", "ROOM",
-    "GIRL", "MON", "SPELL", "HOLD", "HUG", "SMILE", "PRA", "SH", "EYES",
-    "NOSE", "EARS", "CHEST", "MAN", "MP", "N", "HOUSE", "PLATE", "ICOM",
-    "NEWS", "LENS", "PICTURE", "OLD", "FRT", "GROUND", "FWD", "BCK", "SIMON",
-    "R", "ASK", "CHURCH", "PRIEST", "MEMBER", "SERMON", "DEVIL", "BELT",
+    "LOOK",
+    "TALK",
+    "MOVE",
+    "SKY",
+    "AROUND",
+    "MUSEUM",
+    "SIGN",
+    "BODY",
+    "EAST",
+    "WEST",
+    "USE",
+    "HIT",
+    "POKE",
+    "WLK",
+    "PT",
+    "EXH",
+    "ROOM",
+    "GIRL",
+    "MON",
+    "SPELL",
+    "HOLD",
+    "HUG",
+    "SMILE",
+    "PRA",
+    "SH",
+    "EYES",
+    "NOSE",
+    "EARS",
+    "CHEST",
+    "MAN",
+    "MP",
+    "N",
+    "HOUSE",
+    "PLATE",
+    "ICOM",
+    "NEWS",
+    "LENS",
+    "PICTURE",
+    "OLD",
+    "FRT",
+    "GROUND",
+    "FWD",
+    "BCK",
+    "SIMON",
+    "R",
+    "ASK",
+    "CHURCH",
+    "PRIEST",
+    "MEMBER",
+    "SERMON",
+    "DEVIL",
+    "BELT",
     "RUN",
 )
 
@@ -401,18 +469,100 @@ TT3A_FIXED_TEXT_SOURCE_SHA256 = (
     "7CBFBAF8AEAE3831B8F9BB0E4A53BF746171BF554F8B7E6ADE7DBFE0AF47DCBA"
 )
 TT3A_FIXED_TEXT_RECORDS = (
-    "SE", "SAY", "GT", "USE", "GO", "AREA", "BOD", "POCKT",
-    "PLI", "OUT", "HIT", "DATA", "IN", "WL", "CHARM", "OUT",
-    "PS", "IN", "WLK", "FL", "Nick", "RAL", "Frankie", "STOVE",
-    "BED", "SHWR", "SHT", "RB", "MATT", "TILE", "RCK", "SHWR",
-    "WR", "TUN", "SL", "FR", "BCK", "SOL", "YES", "NO",
-    "GUN", "TOSS", "FNC", "WD", "BCH", "MAN", "SIM", "RED",
-    "BLUE", "NOTES", "PASS", "GRT", "CRM", "BRN", "TEAR", "JN",
-    "N", "E", "W", "MILL", "FNT", "BT", "SW", "NO", "S", "GET",
-    "PP", "BCK", "TRASH", "Old man", "Gestapo", "GHETO", "RESID",
-    "RESIST", "REGSTR", "G-BT", "NAZI", "UBOAT", "BANANA", "GABN",
-    "DLN", "BELMO", "PHIL", "TRUFT", "MONTY", "PTTN", "EISEN",
-    "ROOSVLT", "CHRCHL", "MACARTH", "YS", "NO", "BRM", "LAMP",
+    "SE",
+    "SAY",
+    "GT",
+    "USE",
+    "GO",
+    "AREA",
+    "BOD",
+    "POCKT",
+    "PLI",
+    "OUT",
+    "HIT",
+    "DATA",
+    "IN",
+    "WL",
+    "CHARM",
+    "OUT",
+    "PS",
+    "IN",
+    "WLK",
+    "FL",
+    "Nick",
+    "RAL",
+    "Frankie",
+    "STOVE",
+    "BED",
+    "SHWR",
+    "SHT",
+    "RB",
+    "MATT",
+    "TILE",
+    "RCK",
+    "SHWR",
+    "WR",
+    "TUN",
+    "SL",
+    "FR",
+    "BCK",
+    "SOL",
+    "YES",
+    "NO",
+    "GUN",
+    "TOSS",
+    "FNC",
+    "WD",
+    "BCH",
+    "MAN",
+    "SIM",
+    "RED",
+    "BLUE",
+    "NOTES",
+    "PASS",
+    "GRT",
+    "CRM",
+    "BRN",
+    "TEAR",
+    "JN",
+    "N",
+    "E",
+    "W",
+    "MILL",
+    "FNT",
+    "BT",
+    "SW",
+    "NO",
+    "S",
+    "GET",
+    "PP",
+    "BCK",
+    "TRASH",
+    "Old man",
+    "Gestapo",
+    "GHETO",
+    "RESID",
+    "RESIST",
+    "REGSTR",
+    "G-BT",
+    "NAZI",
+    "UBOAT",
+    "BANANA",
+    "GABN",
+    "DLN",
+    "BELMO",
+    "PHIL",
+    "TRUFT",
+    "MONTY",
+    "PTTN",
+    "EISEN",
+    "ROOSVLT",
+    "CHRCHL",
+    "MACARTH",
+    "YS",
+    "NO",
+    "BRM",
+    "LAMP",
     "WMN",
 )
 
@@ -424,9 +574,27 @@ TT3B_FIXED_TEXT_SOURCE_SHA256 = (
     "999B38FD507E1B5777D893C1009551E63FBD9153DCDB59A383BAC72313A9D8E4"
 )
 TT3B_FIXED_TEXT_RECORDS = (
-    "SE", "SAY", "GT", "USE", "GO", "AREA", "MILL", "SIM", "WMN",
-    "GUN", "CHARM", "Schmidt", "OUT", "FGT", "GUARD", "RUN", "AS",
-    "RD", "TX", "Hitler", "Cougar",
+    "SE",
+    "SAY",
+    "GT",
+    "USE",
+    "GO",
+    "AREA",
+    "MILL",
+    "SIM",
+    "WMN",
+    "GUN",
+    "CHARM",
+    "Schmidt",
+    "OUT",
+    "FGT",
+    "GUARD",
+    "RUN",
+    "AS",
+    "RD",
+    "TX",
+    "Hitler",
+    "Cougar",
 )
 
 # TT4's fixed-address table contains its command menu, medical-treatment
@@ -439,18 +607,103 @@ TT4_FIXED_TEXT_SOURCE_SHA256 = (
     "B28692367059E8AB5396FF23552FDD2E2279130845EA2964F05E1F7EA19D377C"
 )
 TT4_FIXED_TEXT_RECORDS = (
-    "SE", "SAY", "TREAT", "USE", "S", "GO", "IN", "STAT", "PRST",
-    "HD", "SLAP", "PRESS", "CHIN", "KNEE", "EARS", "EYES", "NOSE",
-    "PAUSE", "CONT", "O", "OIL", "BL", "GV", "EAT", "LCK", "OUT",
-    "AREA", "BLD", "MRCH", "MAN", "BOD", "SL", "BY", "H", "NO",
-    "TMPL", "S", "DATA", "DAR", "YTH", "UP", "DN", "LVL", "WARM",
-    "COOL", "RB", "CRUSH", "PRICK", "NONE", "OIL", "WRAP", "N", "E",
-    "W", "GRL", "MOM", "PLNT", "DOKU", "JIAO", "GRIND", "BOIL", "RD",
-    "TK", "SOL", "SP", "SWING", "BCK", "WLK", "SOCR", "PYTH",
-    "PLATO", "HEROD", "HOM", "SE", "FISH", "KID", "NIC", "POL", "ARIS",
-    "IMEL", "JAKAR", "SPAR", "DAEDAL", "HERAC", "NAPOL", "GORBY", "AGAM",
-    "KAN", "PARTSN", "AISNO", "PARTH", "STR", "MEL", "FIG", "RICE",
-    "PEARL", "COFE",
+    "SE",
+    "SAY",
+    "TREAT",
+    "USE",
+    "S",
+    "GO",
+    "IN",
+    "STAT",
+    "PRST",
+    "HD",
+    "SLAP",
+    "PRESS",
+    "CHIN",
+    "KNEE",
+    "EARS",
+    "EYES",
+    "NOSE",
+    "PAUSE",
+    "CONT",
+    "O",
+    "OIL",
+    "BL",
+    "GV",
+    "EAT",
+    "LCK",
+    "OUT",
+    "AREA",
+    "BLD",
+    "MRCH",
+    "MAN",
+    "BOD",
+    "SL",
+    "BY",
+    "H",
+    "NO",
+    "TMPL",
+    "S",
+    "DATA",
+    "DAR",
+    "YTH",
+    "UP",
+    "DN",
+    "LVL",
+    "WARM",
+    "COOL",
+    "RB",
+    "CRUSH",
+    "PRICK",
+    "NONE",
+    "OIL",
+    "WRAP",
+    "N",
+    "E",
+    "W",
+    "GRL",
+    "MOM",
+    "PLNT",
+    "DOKU",
+    "JIAO",
+    "GRIND",
+    "BOIL",
+    "RD",
+    "TK",
+    "SOL",
+    "SP",
+    "SWING",
+    "BCK",
+    "WLK",
+    "SOCR",
+    "PYTH",
+    "PLATO",
+    "HEROD",
+    "HOM",
+    "SE",
+    "FISH",
+    "KID",
+    "NIC",
+    "POL",
+    "ARIS",
+    "IMEL",
+    "JAKAR",
+    "SPAR",
+    "DAEDAL",
+    "HERAC",
+    "NAPOL",
+    "GORBY",
+    "AGAM",
+    "KAN",
+    "PARTSN",
+    "AISNO",
+    "PARTH",
+    "STR",
+    "MEL",
+    "FIG",
+    "RICE",
+    "PEARL",
+    "COFE",
 )
 
 # TT5's fixed-address table contains its action menu, plantation task and
@@ -463,20 +716,119 @@ TT5_FIXED_TEXT_SOURCE_SHA256 = (
     "443013AA1921DD6EDDC01E5C38E301624D27BFDCD8B4525DE237451751E44D54"
 )
 TT5_FIXED_TEXT_RECORDS = (
-    "SE", "SAY", "AS", "GO", "George", "BL", "MEN", "AREA", "RUIN",
-    "TRACK", "N", "E", "W", "GT", "OPEN", "DATA", "ROOM", "MN",
-    "WD", "DRAW", "OUT", "USE", "CT", "YS", "NO", "OK", "AGAIN",
-    "SCHED", "CALL", "WATER", "COT", "ROOF", "WOOD", "WEED",
-    "4B", "6B", "8B", "10B", "25", "26", "27", "28",
-    "1P", "2P", "3P", "4P", "60 CM", "65 CM", "70 CM",
-    "75 CM", "30M", "60M", "90M", "120M", "TM", "TRDR",
-    "MARINE", "CAV", "RED", "WT", "BK", "DEWI", "STOWE", "AKINO",
-    "MARY", "WHITNY", "KILAU", "ETNA", "RUSH", "OIWA", "PROJ", "GIN",
-    "PLOW", "CAM", "AIR", "VCR", "BCK", "ANS", "PROB", "CW",
-    "SHP", "PG", "1", "2", "3", "4", "5", "6", "7", "8", "TENS",
-    "ONES", "0", "1", "2", "3", "4", "5", "6UP", "6", "7", "8", "9",
-    "POUR", "END", "LARGE", "MEDIUM", "SM", "MANR", "MEYER", "CAVE",
-    "STAT", "IN",
+    "SE",
+    "SAY",
+    "AS",
+    "GO",
+    "George",
+    "BL",
+    "MEN",
+    "AREA",
+    "RUIN",
+    "TRACK",
+    "N",
+    "E",
+    "W",
+    "GT",
+    "OPEN",
+    "DATA",
+    "ROOM",
+    "MN",
+    "WD",
+    "DRAW",
+    "OUT",
+    "USE",
+    "CT",
+    "YS",
+    "NO",
+    "OK",
+    "AGAIN",
+    "SCHED",
+    "CALL",
+    "WATER",
+    "COT",
+    "ROOF",
+    "WOOD",
+    "WEED",
+    "4B",
+    "6B",
+    "8B",
+    "10B",
+    "25",
+    "26",
+    "27",
+    "28",
+    "1P",
+    "2P",
+    "3P",
+    "4P",
+    "60 CM",
+    "65 CM",
+    "70 CM",
+    "75 CM",
+    "30M",
+    "60M",
+    "90M",
+    "120M",
+    "TM",
+    "TRDR",
+    "MARINE",
+    "CAV",
+    "RED",
+    "WT",
+    "BK",
+    "DEWI",
+    "STOWE",
+    "AKINO",
+    "MARY",
+    "WHITNY",
+    "KILAU",
+    "ETNA",
+    "RUSH",
+    "OIWA",
+    "PROJ",
+    "GIN",
+    "PLOW",
+    "CAM",
+    "AIR",
+    "VCR",
+    "BCK",
+    "ANS",
+    "PROB",
+    "CW",
+    "SHP",
+    "PG",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "TENS",
+    "ONES",
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6UP",
+    "6",
+    "7",
+    "8",
+    "9",
+    "POUR",
+    "END",
+    "LARGE",
+    "MEDIUM",
+    "SM",
+    "MANR",
+    "MEYER",
+    "CAVE",
+    "STAT",
+    "IN",
 )
 
 # T25's fixed table contains the mansion investigation and flooded-island
@@ -487,11 +839,48 @@ T25_FIXED_TEXT_SOURCE_SHA256 = (
     "5B96A30331E8E68609B817B068A41F32ECDF3D8AB8A7C667D85CD3E612270DF6"
 )
 T25_FIXED_TEXT_RECORDS = (
-    "SE", "SAY", "USE", "GO", "SK", "SOL", "COFE", "OFR", "MANR", "ROOM",
-    "WGN", "MEYR", "George", "LINC", "POT", "OUT", "WD", "HALL", "AREA",
-    "GUEST", "STUDY", "STAIR", "GT", "OPEN", "DK", "DRAW", "1ST", "2ND",
-    "3RD", "P", "AS", "HIDE", "DOWN", "UP", "ON", "BOAT", "COY", "RV",
-    "ME", "COY1", "COY2", "COY3",
+    "SE",
+    "SAY",
+    "USE",
+    "GO",
+    "SK",
+    "SOL",
+    "COFE",
+    "OFR",
+    "MANR",
+    "ROOM",
+    "WGN",
+    "MEYR",
+    "George",
+    "LINC",
+    "POT",
+    "OUT",
+    "WD",
+    "HALL",
+    "AREA",
+    "GUEST",
+    "STUDY",
+    "STAIR",
+    "GT",
+    "OPEN",
+    "DK",
+    "DRAW",
+    "1ST",
+    "2ND",
+    "3RD",
+    "P",
+    "AS",
+    "HIDE",
+    "DOWN",
+    "UP",
+    "ON",
+    "BOAT",
+    "COY",
+    "RV",
+    "ME",
+    "COY1",
+    "COY2",
+    "COY3",
 )
 
 # TT6A's fixed table contains the donkey-specific verbs and the Nazareth
@@ -502,11 +891,47 @@ TT6A_FIXED_TEXT_SOURCE_SHA256 = (
     "BAB73CA358662FF6D05E52B84AF7327850B3D29DAD118E19EDB5F53C6A548270"
 )
 TT6A_FIXED_TEXT_RECORDS = (
-    "SE", "AS", "SM", "HL", "GO", "AREA", "SK", "BOD", "JOS", "NOD",
-    "TURN", "SL", "VL", "DR", "DATA", "ELDER", "KID", "WL", "TRGH", "RP",
-    "HAY", "WATER", "HL", "R H", "L HSE", "RV", "ROOM", "MARY", "BL",
-    "MILL", "BRC", "NECK", "WT", "OUT", "ON", "DOWN", "TOOL", "BD",
-    "ON BD", "BK", "KIDS",
+    "SE",
+    "AS",
+    "SM",
+    "HL",
+    "GO",
+    "AREA",
+    "SK",
+    "BOD",
+    "JOS",
+    "NOD",
+    "TURN",
+    "SL",
+    "VL",
+    "DR",
+    "DATA",
+    "ELDER",
+    "KID",
+    "WL",
+    "TRGH",
+    "RP",
+    "HAY",
+    "WATER",
+    "HL",
+    "R H",
+    "L HSE",
+    "RV",
+    "ROOM",
+    "MARY",
+    "BL",
+    "MILL",
+    "BRC",
+    "NECK",
+    "WT",
+    "OUT",
+    "ON",
+    "DOWN",
+    "TOOL",
+    "BD",
+    "ON BD",
+    "BK",
+    "KIDS",
 )
 
 # TT6B's fixed table contains travel, stable-animal, history-quiz, and animal
@@ -517,13 +942,68 @@ TT6B_FIXED_TEXT_SOURCE_SHA256 = (
     "DABABCA65A7EB469E1CD0EB41B2711D9B2721FFD3C011676442C28193EE50B6B"
 )
 TT6B_FIXED_TEXT_RECORDS = (
-    "SE", "AS", "SM", "HL", "GO", "AREA", "JOS", "MARY", "BOD", "SL",
-    "GLR", "YELL", "TONG", "WINK", "SAY", "EAT", "TENT", "CML", "MEN",
-    "N", "E", "W", "S", "FWD", "BCK", "ATK", "WLK", "ROOM", "TRGH", "HR",
-    "SHP", "CW", "DNG", "WIS", "KNOW", "ISIS", "BAL", "JHV", "IRQ",
-    "JORDN", "SYR", "EGYPT", "DAVID", "SOLO", "SAM", "JAC", "ISC",
-    "SADM", "ABRAM", "SATN", "CST", "ZORO", "OIL", "HAY", "WAG", "FLEA",
-    "HUG", "SMILE", "PRSE", "HOOF", "TAIL", "MANE",
+    "SE",
+    "AS",
+    "SM",
+    "HL",
+    "GO",
+    "AREA",
+    "JOS",
+    "MARY",
+    "BOD",
+    "SL",
+    "GLR",
+    "YELL",
+    "TONG",
+    "WINK",
+    "SAY",
+    "EAT",
+    "TENT",
+    "CML",
+    "MEN",
+    "N",
+    "E",
+    "W",
+    "S",
+    "FWD",
+    "BCK",
+    "ATK",
+    "WLK",
+    "ROOM",
+    "TRGH",
+    "HR",
+    "SHP",
+    "CW",
+    "DNG",
+    "WIS",
+    "KNOW",
+    "ISIS",
+    "BAL",
+    "JHV",
+    "IRQ",
+    "JORDN",
+    "SYR",
+    "EGYPT",
+    "DAVID",
+    "SOLO",
+    "SAM",
+    "JAC",
+    "ISC",
+    "SADM",
+    "ABRAM",
+    "SATN",
+    "CST",
+    "ZORO",
+    "OIL",
+    "HAY",
+    "WAG",
+    "FLEA",
+    "HUG",
+    "SMILE",
+    "PRSE",
+    "HOOF",
+    "TAIL",
+    "MANE",
 )
 
 # TT6C's fixed table contains finale actions plus answer choices drawn from
@@ -535,17 +1015,100 @@ TT6C_FIXED_TEXT_SOURCE_SHA256 = (
     "580A8C45C48A3D468FA446DC6D4294A32D5CF78DFB76C630E63D8BB6282606BD"
 )
 TT6C_FIXED_TEXT_RECORDS = (
-    "SE", "D", "LEAP", "GT", "JR", "SAY", "AS", "EAT", "USE", "ROOM",
-    "JOS", "MARY", "B", "MEN", "MY BOD", "KSH", "BOD", "TBELT", "MOVE",
-    "OPEN", "GO", "AREA", "GND", "HL", "PNL", "YS", "LD", "N", "E", "W",
-    "S", "RD", "BONES", "P", "TX", "OT", "4", "5", "6", "7", "Cougar",
-    "Ruger", "Hauer", "Berger", "GLZR", "SMT", "TAVN", "TLR", "CATH",
-    "MYLEN", "LRA", "ISABL", "MOROC", "REBEC", "BREAD", "TRAD", "AUST",
-    "FRAN", "SWIS", "BELG", "PLANT", "AMACH", "DOKU", "SENBR", "DAEDL",
-    "CENTA", "ATL", "CERBR", "FRED", "BOB", "TM", "JM", "SRW", "COY",
-    "REIN", "PUMA", "GOLD", "SILVER", "COPPER", "TIN", "MAGDA", "NZR",
-    "BETH", "JERUS", "BISH", "MEYER", "HITLR", "NIK", "JEAN", "ALEX",
-    "LINC", "LEFT", "UP", "R",
+    "SE",
+    "D",
+    "LEAP",
+    "GT",
+    "JR",
+    "SAY",
+    "AS",
+    "EAT",
+    "USE",
+    "ROOM",
+    "JOS",
+    "MARY",
+    "B",
+    "MEN",
+    "MY BOD",
+    "KSH",
+    "BOD",
+    "TBELT",
+    "MOVE",
+    "OPEN",
+    "GO",
+    "AREA",
+    "GND",
+    "HL",
+    "PNL",
+    "YS",
+    "LD",
+    "N",
+    "E",
+    "W",
+    "S",
+    "RD",
+    "BONES",
+    "P",
+    "TX",
+    "OT",
+    "4",
+    "5",
+    "6",
+    "7",
+    "Cougar",
+    "Ruger",
+    "Hauer",
+    "Berger",
+    "GLZR",
+    "SMT",
+    "TAVN",
+    "TLR",
+    "CATH",
+    "MYLEN",
+    "LRA",
+    "ISABL",
+    "MOROC",
+    "REBEC",
+    "BREAD",
+    "TRAD",
+    "AUST",
+    "FRAN",
+    "SWIS",
+    "BELG",
+    "PLANT",
+    "AMACH",
+    "DOKU",
+    "SENBR",
+    "DAEDL",
+    "CENTA",
+    "ATL",
+    "CERBR",
+    "FRED",
+    "BOB",
+    "TM",
+    "JM",
+    "SRW",
+    "COY",
+    "REIN",
+    "PUMA",
+    "GOLD",
+    "SILVER",
+    "COPPER",
+    "TIN",
+    "MAGDA",
+    "NZR",
+    "BETH",
+    "JERUS",
+    "BISH",
+    "MEYER",
+    "HITLR",
+    "NIK",
+    "JEAN",
+    "ALEX",
+    "LINC",
+    "LEFT",
+    "UP",
+    "R",
 )
 
 
@@ -571,7 +1134,6 @@ def _encode_kouhen_guard_rle(values: bytes) -> bytes:
     Runs are split at 62 because ``$FF`` terminates the decoder. Single-byte
     remainders use literals because they are shorter than a two-byte run.
     """
-
     encoded = bytearray()
     index = 0
     while index < len(values):
@@ -610,7 +1172,6 @@ def _kouhen_boot_guard_assets() -> tuple[bytes, bytes]:
     Glyph bits are inverted relative to NOV4's stored font because SON-KOUH
     uploads its private patterns directly instead of expanding inverse rows.
     """
-
     tile_by_character = {
         character: tile
         for tile, character in enumerate(KOUHEN_BOOT_GUARD_TILE_CHARACTERS)
@@ -627,23 +1188,29 @@ def _kouhen_boot_guard_assets() -> tuple[bytes, bytes]:
         start = row * 32 + column - nametable_start
         end = start + len(text)
         if start < 0 or end > len(tilemap):
-            raise UiPatchError("Kouhen boot message is outside its nametable fragment")
+            raise UiPatchError(
+                "Kouhen boot message is outside its nametable fragment"
+            )
         tilemap[start:end] = bytes(
-            KOUHEN_BOOT_GUARD_BLANK_TILE
-            if character == " "
-            else tile_by_character[character]
+            (
+                KOUHEN_BOOT_GUARD_BLANK_TILE
+                if character == " "
+                else tile_by_character[character]
+            )
             for character in text
         )
 
     stream = _encode_kouhen_guard_rle(bytes(tilemap))
-    stream_size = KOUHEN_BOOT_GUARD_TILEMAP_END - KOUHEN_BOOT_GUARD_TILEMAP_OFFSET
+    stream_size = (
+        KOUHEN_BOOT_GUARD_TILEMAP_END - KOUHEN_BOOT_GUARD_TILEMAP_OFFSET
+    )
     if len(stream) > stream_size:
         raise UiPatchError(
             f"Kouhen boot tilemap needs {len(stream)} bytes but has {stream_size}"
         )
     # The decoder stops at the first $FF; additional terminators safely retain
     # the fixed address of the following CHR upload routine.
-    stream = stream.ljust(stream_size, b"\xFF")
+    stream = stream.ljust(stream_size, b"\xff")
 
     glyphs = bytearray(KOUHEN_BOOT_GUARD_TILE_COUNT * 8)
     for character, tile in tile_by_character.items():
@@ -669,18 +1236,22 @@ def patched_kouhen_boot_guard(data: bytes) -> bytes:
         UiPatchError: If size or SHA-256 does not match the recovered source,
             or generated assets exceed their fixed locations.
     """
-
     if len(data) != KOUHEN_BOOT_GUARD_SIZE:
         raise UiPatchError(
             f"SON-KOUH has size {len(data)}, expected {KOUHEN_BOOT_GUARD_SIZE}"
         )
-    if hashlib.sha256(data).hexdigest().upper() != KOUHEN_BOOT_GUARD_SOURCE_SHA256:
+    if (
+        hashlib.sha256(data).hexdigest().upper()
+        != KOUHEN_BOOT_GUARD_SOURCE_SHA256
+    ):
         raise UiPatchError("SON-KOUH does not match the known Japanese source")
 
     stream, glyphs = _kouhen_boot_guard_assets()
     chr_end = KOUHEN_BOOT_GUARD_CHR_OFFSET + len(glyphs)
     result = bytearray(data)
-    result[KOUHEN_BOOT_GUARD_TILEMAP_OFFSET:KOUHEN_BOOT_GUARD_TILEMAP_END] = stream
+    result[KOUHEN_BOOT_GUARD_TILEMAP_OFFSET:KOUHEN_BOOT_GUARD_TILEMAP_END] = (
+        stream
+    )
     result[KOUHEN_BOOT_GUARD_CHR_OFFSET:chr_end] = glyphs
     return bytes(result)
 
@@ -700,12 +1271,13 @@ def _patched_start_prompt(data: bytes, offset: int, component: str) -> bytes:
         UiPatchError: If source/replacement sizes differ, the input is short,
             expected bytes differ, or the source prompt is not globally unique.
     """
-
     if len(ENGLISH_START_PROMPT) != len(ORIGINAL_START_PROMPT):
         raise UiPatchError("translated start prompt changed packed size")
     end = offset + len(ORIGINAL_START_PROMPT)
     if len(data) < end:
-        raise UiPatchError(f"{component} is too short for the recovered start prompt")
+        raise UiPatchError(
+            f"{component} is too short for the recovered start prompt"
+        )
     if data[offset:end] != ORIGINAL_START_PROMPT:
         raise UiPatchError(
             f"{component} start prompt does not match the known source bytes"
@@ -732,7 +1304,6 @@ def _patched_disk_prompts(data: bytes) -> bytes:
             source bytes differ.
         EnglishTextError: If configured English cannot be encoded.
     """
-
     result = bytearray(data)
     for offset, original, english in DISK_PROMPT_PATCHES:
         replacement = pack_records([encode_english(english)])
@@ -742,7 +1313,9 @@ def _patched_disk_prompts(data: bytes) -> bytes:
             )
         end = offset + len(original)
         if len(result) < end:
-            raise UiPatchError("NOV2 is too short for the recovered disk prompt")
+            raise UiPatchError(
+                "NOV2 is too short for the recovered disk prompt"
+            )
         if result[offset:end] != original:
             raise UiPatchError(
                 f"NOV2 disk prompt at 0x{offset:04X} does not match source"
@@ -764,7 +1337,6 @@ def _patched_wrong_disk_message(data: bytes) -> bytes:
         UiPatchError: If any slot size or source bytes differ.
         EnglishTextError: If configured English cannot be encoded.
     """
-
     result = bytearray(data)
     for offset, original, english in WRONG_DISK_PATCHES:
         replacement = pack_records([encode_english(english)])
@@ -793,7 +1365,6 @@ def _patched_wait_prompt(data: bytes) -> bytes:
     Raises:
         UiPatchError: If packed sizes differ or source bytes are unknown.
     """
-
     if len(ENGLISH_WAIT_PROMPT) != len(ORIGINAL_WAIT_PROMPT):
         raise UiPatchError("translated wait prompt changed packed size")
     end = WAIT_PROMPT_OFFSET + len(ORIGINAL_WAIT_PROMPT)
@@ -821,7 +1392,6 @@ def _patched_opaque_text_clears(data: bytes) -> bytes:
     broad rendering fix that previously restored menu rows at the cost of
     ordinary dialogue replacement.
     """
-
     result = bytearray(data)
     for offset, original, replacement, label in NOV2_OPAQUE_CLEAR_PATCHES:
         if len(result) <= offset or result[offset] != original:
@@ -853,7 +1423,6 @@ def _patched_single_choice_b_guard(data: bytes) -> bytes:
 
     Multi-choice Back/Cancel behavior is deliberately left untouched.
     """
-
     result = bytearray(data)
     for offset, original, replacement, label in NOV2_SINGLE_CHOICE_B_PATCHES:
         end = offset + len(original)
@@ -884,7 +1453,6 @@ def patched_nov2_ui(data: bytes) -> bytes:
     Patch order is intentional because every helper validates the bytes it
     owns while leaving disjoint regions available to later helpers.
     """
-
     with_wait_prompt = _patched_wait_prompt(data)
     with_disk_prompts = _patched_disk_prompts(with_wait_prompt)
     with_wrong_disk_message = _patched_wrong_disk_message(with_disk_prompts)
@@ -910,7 +1478,6 @@ def patched_nov4_ui(data: bytes) -> bytes:
     The Japanese and English records both occupy six packed bytes, so neither
     the following NOV4 data nor any FDS file offsets move.
     """
-
     return _patched_start_prompt(data, NOV4_START_PROMPT_OFFSET, "NOV4")
 
 
@@ -928,7 +1495,6 @@ def patched_tt1a_ui(data: bytes) -> bytes:
             bank is short, or a source slot differs.
         EnglishTextError: If configured choice text cannot be encoded.
     """
-
     result = bytearray(data)
     for offset, original, english in (
         *TT1A_BLOOD_TYPE_PATCHES,
@@ -968,7 +1534,6 @@ def _tt2_dictionary(data: bytes) -> tuple[tuple[PackedSymbol, ...], ...]:
     The historical function name remains for compatibility, but the layout is
     shared by TT1B, T22, TT3-TT6, and T25 after scenario insertion.
     """
-
     pointer_end = TT2_DICTIONARY_POINTER_OFFSET + 2
     if len(data) < pointer_end:
         raise UiPatchError("TT2 is too short for its dictionary pointer")
@@ -1016,20 +1581,23 @@ def _encode_with_dictionary(
     Ties retain Python's tuple-order minimum, making identical input
     deterministic.
     """
-
     source = encode_english(text)
     normalized_dictionary = tuple(
-        tuple(PackedSymbol(symbol.kind, symbol.value, 0, 0) for symbol in entry)
+        tuple(
+            PackedSymbol(symbol.kind, symbol.value, 0, 0) for symbol in entry
+        )
         for entry in dictionary
     )
-    best: list[tuple[int, tuple[PackedSymbol, ...]] | None] = [
-        None
-    ] * (len(source) + 1)
+    best: list[tuple[int, tuple[PackedSymbol, ...]] | None] = [None] * (
+        len(source) + 1
+    )
     best[len(source)] = (0, ())
     for position in range(len(source) - 1, -1, -1):
         suffix = best[position + 1]
         if suffix is None:
-            raise UiPatchError("dictionary encoder reached an impossible suffix state")
+            raise UiPatchError(
+                "dictionary encoder reached an impossible suffix state"
+            )
         choices = [
             (
                 symbol_bit_length(source[position]) + suffix[0],
@@ -1042,7 +1610,9 @@ def _encode_with_dictionary(
                 continue
             tail = best[end]
             if tail is None:
-                raise UiPatchError("dictionary encoder reached an impossible tail state")
+                raise UiPatchError(
+                    "dictionary encoder reached an impossible tail state"
+                )
             choices.append(
                 (
                     9 + tail[0],
@@ -1083,7 +1653,6 @@ def _encode_at_exact_record_size(
     as are necessary to consume the record's original byte allocation after
     the shortest dictionary-aware encoding has been chosen.
     """
-
     encoded = _encode_with_dictionary(text, dictionary)
     common_space = encode_english(" ")[0]
     while len(pack_records((encoded,))) < target_size:
@@ -1131,10 +1700,11 @@ def _patched_fixed_record_table(
     dictionary.  Each replacement is independently padded to its original slot
     size before the complete table is written back.
     """
-
     source = data[start:end]
     if len(source) != end - start:
-        raise UiPatchError(f"{component} is too short for its fixed text table")
+        raise UiPatchError(
+            f"{component} is too short for its fixed text table"
+        )
     if hashlib.sha256(source).hexdigest().upper() != source_sha256:
         raise UiPatchError(
             f"{component} fixed text table does not match the known source"
@@ -1177,7 +1747,6 @@ def _record_starts(data: bytes, count: int) -> tuple[int, ...]:
     Raises:
         PackedTextError: If fewer than ``count`` complete records exist.
     """
-
     starts: list[int] = []
     offset = 0
     for _ in range(count):
@@ -1199,7 +1768,6 @@ def patched_tt2_ui(data: bytes) -> bytes:
         UiPatchError: If the Japanese table is unknown or any record cannot
             occupy its exact original slot.
     """
-
     return _patched_fixed_record_table(
         data,
         start=TT2_FIXED_TEXT_START_OFFSET,
@@ -1223,7 +1791,6 @@ def patched_tt1b_ui(data: bytes) -> bytes:
         UiPatchError: If the Japanese table is unknown or any record cannot
             occupy its exact original slot.
     """
-
     return _patched_fixed_record_table(
         data,
         start=TT1B_FIXED_TEXT_START_OFFSET,
@@ -1246,7 +1813,6 @@ def patched_t22_ui(data: bytes) -> bytes:
     Raises:
         UiPatchError: If the table revision or fixed-slot layout differs.
     """
-
     return _patched_fixed_record_table(
         data,
         start=T22_FIXED_TEXT_START_OFFSET,
@@ -1269,7 +1835,6 @@ def patched_tt3a_ui(data: bytes) -> bytes:
     Raises:
         UiPatchError: If the table revision or fixed-slot layout differs.
     """
-
     return _patched_fixed_record_table(
         data,
         start=TT3A_FIXED_TEXT_START_OFFSET,
@@ -1292,7 +1857,6 @@ def patched_tt3b_ui(data: bytes) -> bytes:
     Raises:
         UiPatchError: If the table revision or fixed-slot layout differs.
     """
-
     return _patched_fixed_record_table(
         data,
         start=TT3B_FIXED_TEXT_START_OFFSET,
@@ -1315,7 +1879,6 @@ def patched_tt4_ui(data: bytes) -> bytes:
     Raises:
         UiPatchError: If the table revision or fixed-slot layout differs.
     """
-
     return _patched_fixed_record_table(
         data,
         start=TT4_FIXED_TEXT_START_OFFSET,
@@ -1338,7 +1901,6 @@ def patched_tt5_ui(data: bytes) -> bytes:
     Raises:
         UiPatchError: If the table revision or fixed-slot layout differs.
     """
-
     return _patched_fixed_record_table(
         data,
         start=TT5_FIXED_TEXT_START_OFFSET,
@@ -1361,7 +1923,6 @@ def patched_t25_ui(data: bytes) -> bytes:
     Raises:
         UiPatchError: If the table revision or fixed-slot layout differs.
     """
-
     return _patched_fixed_record_table(
         data,
         start=T25_FIXED_TEXT_START_OFFSET,
@@ -1384,7 +1945,6 @@ def patched_tt6a_ui(data: bytes) -> bytes:
     Raises:
         UiPatchError: If the table revision or fixed-slot layout differs.
     """
-
     return _patched_fixed_record_table(
         data,
         start=TT6A_FIXED_TEXT_START_OFFSET,
@@ -1407,7 +1967,6 @@ def patched_tt6b_ui(data: bytes) -> bytes:
     Raises:
         UiPatchError: If the table revision or fixed-slot layout differs.
     """
-
     return _patched_fixed_record_table(
         data,
         start=TT6B_FIXED_TEXT_START_OFFSET,
@@ -1430,7 +1989,6 @@ def patched_tt6c_ui(data: bytes) -> bytes:
     Raises:
         UiPatchError: If the table revision or fixed-slot layout differs.
     """
-
     return _patched_fixed_record_table(
         data,
         start=TT6C_FIXED_TEXT_START_OFFSET,

@@ -24,7 +24,6 @@ from typing import Iterable
 
 from generate_bilingual_comparison import _romanize
 
-
 ROOT = Path(__file__).resolve().parent.parent
 WORK = ROOT / "work"
 OUTPUTS = ROOT / "outputs"
@@ -39,9 +38,23 @@ JP_LABEL_RE = re.compile(
 )
 
 BANK_ORDER = (
-    "TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B",
-    "TT4", "TT5", "T25", "TT6A", "TT6B", "TT6C", "TT6D",
-    "NOV2", "NOV4", "TITLE", "SON-KOUH",
+    "TT1A",
+    "TT1B",
+    "TT2",
+    "T22",
+    "TT3A",
+    "TT3B",
+    "TT4",
+    "TT5",
+    "T25",
+    "TT6A",
+    "TT6B",
+    "TT6C",
+    "TT6D",
+    "NOV2",
+    "NOV4",
+    "TITLE",
+    "SON-KOUH",
 )
 
 # Rebuilt with the project's native dictionary compressor after the playable
@@ -1193,7 +1206,7 @@ ROMAJI_OVERRIDES = {
 
 MANUAL_PATCH = {
     "TT1A/g0/r1": (
-        "News: Dr. Simon,{CTRL:0}the \"solitary genius,\"{CTRL:2}"
+        'News: Dr. Simon,{CTRL:0}the "solitary genius,"{CTRL:2}'
         "physicist, commented{CTRL:0}on time travel last eve:{CTRL:4}"
     ),
     "TT1A/g0/r9": "Baseball means Giants.",
@@ -1209,7 +1222,7 @@ MANUAL_PATCH = {
         "but are romantic inside."
     ),
     "TT1A/g0/r27": (
-        "\"Today's Fortune\"{CTRL:0}{CTRL:2}Today may be a day you{CTRL:0}"
+        '"Today\'s Fortune"{CTRL:0}{CTRL:2}Today may be a day you{CTRL:0}'
         "never forget.{CTRL:3}Calm judgment and will{CTRL:4}"
         "bring you luck.{CTRL:3}At a suburban museum,{CTRL:4}"
         "a lovely woman may leap{CTRL:4}right into your arms.{CTRL:3}"
@@ -1222,13 +1235,11 @@ MANUAL_PATCH = {
     ),
     "TT1B/g0/r1": "A blue sky... how long?",
     "TT1B/g0/r17": (
-        "\"Devil's Hand\"{CTRL:0}{CTRL:2}A bronze statue, emblem{CTRL:0}"
+        '"Devil\'s Hand"{CTRL:0}{CTRL:2}A bronze statue, emblem{CTRL:0}'
         "of a 19th-century cult.{CTRL:4}{CTRL:3}Its claws tore hearts{CTRL:4}"
         "from sacrifices."
     ),
-    "TT1B/g0/r28": (
-        "Me: Um...{CTRL:1}Girl: Seen them all?{CTRL:0}Me: No..."
-    ),
+    "TT1B/g0/r28": ("Me: Um...{CTRL:1}Girl: Seen them all?{CTRL:0}Me: No..."),
     "TT1B/g0/r31": (
         "Me: You mean...{CTRL:0}What you'd call a devil.{CTRL:0}"
         "Me: G-g-g-gah!{CTRL:6}Devil: Patient telepathy{CTRL:4}"
@@ -1248,7 +1259,7 @@ MANUAL_PATCH = {
     "TT1B/g2/r14": "Wh-what?! That's me!",
     "TT3A/g2/r30": (
         "One note fragment.{CTRL:0}In blue ink:{CTRL:0}"
-        "\"...4 km southwest...\"{CTRL:0}\"...Rebecca.\""
+        '"...4 km southwest..."{CTRL:0}"...Rebecca."'
     ),
     "TT6A/g0/r13": (
         "Joseph: Mary is pregnant{CTRL:0}before we are even wed.{CTRL:2}"
@@ -1313,73 +1324,451 @@ EXTERNAL_REFERENCES = (
 )
 
 GLOSSARY_SEEDS = (
-    ("Character", "おれ", "俺", "Protagonist", "I; me", "Source speaker tag and rough/plain masculine first person."),
-    ("Character", "おんなのこ", "女の子", "Girl", "young woman", "Recurring modern woman; no personal name is supplied in the extracted text."),
-    ("Character", "しもんはかせ", "シモン博士", "Dr. Simon", "Dr. Shimon", "Physicist and creator of the Time Belt."),
-    ("Character", "あくま", "悪魔", "Devil", "demon", "Recurring antagonist; translated as a title/role."),
-    ("Character", "ぴえーる", "ピエール", "Pierre", "", "Body/identity used in the 1428 France chapter."),
-    ("Character", "じゃんぬ・だるく", "ジャンヌ・ダルク", "Jeanne d'Arc", "Joan of Arc", "Use Jeanne in direct address; full historical name in narration."),
-    ("Character", "るごー", "ルゴー", "Lugot", "Rugot", "Medieval French ally; romanization retained consistently."),
+    (
+        "Character",
+        "おれ",
+        "俺",
+        "Protagonist",
+        "I; me",
+        "Source speaker tag and rough/plain masculine first person.",
+    ),
+    (
+        "Character",
+        "おんなのこ",
+        "女の子",
+        "Girl",
+        "young woman",
+        "Recurring modern woman; no personal name is supplied in the extracted text.",
+    ),
+    (
+        "Character",
+        "しもんはかせ",
+        "シモン博士",
+        "Dr. Simon",
+        "Dr. Shimon",
+        "Physicist and creator of the Time Belt.",
+    ),
+    (
+        "Character",
+        "あくま",
+        "悪魔",
+        "Devil",
+        "demon",
+        "Recurring antagonist; translated as a title/role.",
+    ),
+    (
+        "Character",
+        "ぴえーる",
+        "ピエール",
+        "Pierre",
+        "",
+        "Body/identity used in the 1428 France chapter.",
+    ),
+    (
+        "Character",
+        "じゃんぬ・だるく",
+        "ジャンヌ・ダルク",
+        "Jeanne d'Arc",
+        "Joan of Arc",
+        "Use Jeanne in direct address; full historical name in narration.",
+    ),
+    (
+        "Character",
+        "るごー",
+        "ルゴー",
+        "Lugot",
+        "Rugot",
+        "Medieval French ally; romanization retained consistently.",
+    ),
     ("Character", "ちの", "チノ", "Chino", "", "Medieval French ally."),
-    ("Character", "ごるどー", "ゴルドー", "Gordo", "Gordeaux", "Medieval French ally."),
-    ("Character", "しきょう", "司教", "Bishop", "", "Office/title, not a personal name."),
+    (
+        "Character",
+        "ごるどー",
+        "ゴルドー",
+        "Gordo",
+        "Gordeaux",
+        "Medieval French ally.",
+    ),
+    (
+        "Character",
+        "しきょう",
+        "司教",
+        "Bishop",
+        "",
+        "Office/title, not a personal name.",
+    ),
     ("Character", "だんしゃく", "男爵", "Baron", "", "Office/title."),
-    ("Character", "いざべる", "イザベル", "Isabelle", "Isabel", "The Baron's wife."),
-    ("Character", "くーがー", "クーガー", "Cougar", "Kuger", "U.S. air lieutenant identity in 1944."),
-    ("Character", "しゅみっと", "シュミット", "Schmidt", "", "German officer and resistance ally."),
-    ("Character", "ひとらー", "ヒトラー", "Hitler", "", "Historical figure under supernatural influence in the game."),
-    ("Character", "にくらす", "ニクラス", "Nicras", "Niklas", "Physician identity in ancient Athens."),
-    ("Character", "あてな", "アテナ", "Athena", "", "Greek goddess of wisdom and patron of Athens."),
+    (
+        "Character",
+        "いざべる",
+        "イザベル",
+        "Isabelle",
+        "Isabel",
+        "The Baron's wife.",
+    ),
+    (
+        "Character",
+        "くーがー",
+        "クーガー",
+        "Cougar",
+        "Kuger",
+        "U.S. air lieutenant identity in 1944.",
+    ),
+    (
+        "Character",
+        "しゅみっと",
+        "シュミット",
+        "Schmidt",
+        "",
+        "German officer and resistance ally.",
+    ),
+    (
+        "Character",
+        "ひとらー",
+        "ヒトラー",
+        "Hitler",
+        "",
+        "Historical figure under supernatural influence in the game.",
+    ),
+    (
+        "Character",
+        "にくらす",
+        "ニクラス",
+        "Nicras",
+        "Niklas",
+        "Physician identity in ancient Athens.",
+    ),
+    (
+        "Character",
+        "あてな",
+        "アテナ",
+        "Athena",
+        "",
+        "Greek goddess of wisdom and patron of Athens.",
+    ),
     ("Character", "へるめす", "ヘルメス", "Hermes", "", "Greek god."),
     ("Character", "はです", "ハデス", "Hades", "", "Greek underworld figure."),
-    ("Character", "けるべろす", "ケルベロス", "Cerberus", "", "Guardian hound of the underworld."),
-    ("Character", "りんかーん", "リンカーン", "Lincoln", "Abraham Lincoln", "Historical figure in the Civil War chapter."),
-    ("Character", "まいやー", "マイヤー", "Meyer", "Mayer", "Plantation/farm owner; current script establishes Meyer."),
+    (
+        "Character",
+        "けるべろす",
+        "ケルベロス",
+        "Cerberus",
+        "",
+        "Guardian hound of the underworld.",
+    ),
+    (
+        "Character",
+        "りんかーん",
+        "リンカーン",
+        "Lincoln",
+        "Abraham Lincoln",
+        "Historical figure in the Civil War chapter.",
+    ),
+    (
+        "Character",
+        "まいやー",
+        "マイヤー",
+        "Meyer",
+        "Mayer",
+        "Plantation/farm owner; current script establishes Meyer.",
+    ),
     ("Character", "べる", "ベル", "Belle", "Bell", "George's mother."),
-    ("Character", "じょーじ", "ジョージ", "George", "", "Protagonist's identity in 1864 Atlanta."),
+    (
+        "Character",
+        "じょーじ",
+        "ジョージ",
+        "George",
+        "",
+        "Protagonist's identity in 1864 Atlanta.",
+    ),
     ("Character", "よせふ", "ヨセフ", "Joseph", "", "Mary's betrothed."),
     ("Character", "まりあ", "マリア", "Mary", "Maria", "Mother of Jesus."),
-    ("Character", "かしむ", "カシム", "Kashim", "Kas(h)im", "Joseph's donkey and the protagonist's animal identity."),
-    ("Character", "かすぱる", "カスパル", "Caspar", "Gaspar", "One of the Magi."),
-    ("Character", "めるきおーる", "メルキオール", "Melchior", "", "One of the Magi."),
-    ("Character", "ばるたざーる", "バルタザール", "Balthazar", "Balthasar", "One of the Magi."),
-    ("Historical person", "いえす・きりすと", "イエス・キリスト", "Jesus Christ", "", "Name revealed through an intentional Jesus/yes wordplay."),
-    ("Location", "あくまはくぶつかん", "悪魔博物館", "Devil Museum", "Demon Museum", "Modern museum where the supernatural plot begins."),
-    ("Location", "きょうかい", "教会", "Church", "", "Modern and medieval church contexts are distinguished by scene."),
-    ("Location", "どいつなんぶ ほりょしゅうようじょ", "ドイツ南部 捕虜収容所", "POW camp in southern Germany", "", "1944 setting."),
-    ("Location", "よみのくに", "黄泉の国", "the underworld", "Yomi", "Rendered by Greek-scene function rather than as a Japanese place name."),
+    (
+        "Character",
+        "かしむ",
+        "カシム",
+        "Kashim",
+        "Kas(h)im",
+        "Joseph's donkey and the protagonist's animal identity.",
+    ),
+    (
+        "Character",
+        "かすぱる",
+        "カスパル",
+        "Caspar",
+        "Gaspar",
+        "One of the Magi.",
+    ),
+    (
+        "Character",
+        "めるきおーる",
+        "メルキオール",
+        "Melchior",
+        "",
+        "One of the Magi.",
+    ),
+    (
+        "Character",
+        "ばるたざーる",
+        "バルタザール",
+        "Balthazar",
+        "Balthasar",
+        "One of the Magi.",
+    ),
+    (
+        "Historical person",
+        "いえす・きりすと",
+        "イエス・キリスト",
+        "Jesus Christ",
+        "",
+        "Name revealed through an intentional Jesus/yes wordplay.",
+    ),
+    (
+        "Location",
+        "あくまはくぶつかん",
+        "悪魔博物館",
+        "Devil Museum",
+        "Demon Museum",
+        "Modern museum where the supernatural plot begins.",
+    ),
+    (
+        "Location",
+        "きょうかい",
+        "教会",
+        "Church",
+        "",
+        "Modern and medieval church contexts are distinguished by scene.",
+    ),
+    (
+        "Location",
+        "どいつなんぶ ほりょしゅうようじょ",
+        "ドイツ南部 捕虜収容所",
+        "POW camp in southern Germany",
+        "",
+        "1944 setting.",
+    ),
+    (
+        "Location",
+        "よみのくに",
+        "黄泉の国",
+        "the underworld",
+        "Yomi",
+        "Rendered by Greek-scene function rather than as a Japanese place name.",
+    ),
     ("Location", "なざれ", "ナザレ", "Nazareth", "", "Nativity chapter."),
-    ("Location", "べつれへむ", "ベツレヘム", "Bethlehem", "", "Nativity chapter."),
-    ("Location", "えるされむ", "エルサレム", "Jerusalem", "", "Historical/biblical place name."),
-    ("Location", "いすらえる", "イスラエル", "Israel", "", "The game's geographic label."),
-    ("Artifact", "たいむべると", "タイムベルト", "Time Belt", "time belt", "Belt-shaped time machine; capitalization retained as an item name."),
-    ("Artifact", "たいむましん", "タイムマシン", "time machine", "", "General technology term."),
-    ("Artifact", "まふうじのつぼ", "魔封じの壺", "Demon-Sealing Jar", "demon-binding jar", "Museum artifact and key sealing vessel."),
-    ("Artifact", "さばとのはこ", "サバトの箱", "Sabbath Box", "Witches' Sabbath box", "Museum exhibit said to hold soul contracts."),
-    ("Artifact", "いましめのすず", "戒めの鈴", "Warding Bell", "Bell of Admonition", "Museum exhibit; English favors function."),
-    ("Artifact", "あくまのて", "悪魔の手", "Devil's Hand", "", "A bronze statue, not merely a symbol."),
-    ("Artifact", "まもりふだ", "守り札", "protective charm", "amulet", "Recurring warding object."),
-    ("Supernatural", "まらどぅる ばらお がらどぅーら", "マラドゥル・バラオ・ガラドゥーラ", "Maradul Barao Garadura", "Galdura variant", "Incantation; variants in the source are preserved and noted."),
-    ("Time travel", "たいむとらべる", "タイムトラベル", "time travel", "", "General concept."),
-    ("Time travel", "たいむわーぷ", "タイムワープ", "time warp", "time jump", "The game's term for historical transit."),
-    ("Historical period", "1428ねん", "1428年", "1428", "", "France/Jeanne chapter."),
-    ("Historical period", "1944ねん 7がつ", "1944年7月", "July 1944", "", "German POW chapter."),
-    ("Historical period", "1864ねん 9がつ", "1864年9月", "September 1864", "", "Atlanta/Civil War chapter."),
-    ("Historical period", "きげんぜん 4ねんごろ", "紀元前4年頃", "circa 4 BC", "around 4 BCE", "The game uses BC-era framing."),
+    (
+        "Location",
+        "べつれへむ",
+        "ベツレヘム",
+        "Bethlehem",
+        "",
+        "Nativity chapter.",
+    ),
+    (
+        "Location",
+        "えるされむ",
+        "エルサレム",
+        "Jerusalem",
+        "",
+        "Historical/biblical place name.",
+    ),
+    (
+        "Location",
+        "いすらえる",
+        "イスラエル",
+        "Israel",
+        "",
+        "The game's geographic label.",
+    ),
+    (
+        "Artifact",
+        "たいむべると",
+        "タイムベルト",
+        "Time Belt",
+        "time belt",
+        "Belt-shaped time machine; capitalization retained as an item name.",
+    ),
+    (
+        "Artifact",
+        "たいむましん",
+        "タイムマシン",
+        "time machine",
+        "",
+        "General technology term.",
+    ),
+    (
+        "Artifact",
+        "まふうじのつぼ",
+        "魔封じの壺",
+        "Demon-Sealing Jar",
+        "demon-binding jar",
+        "Museum artifact and key sealing vessel.",
+    ),
+    (
+        "Artifact",
+        "さばとのはこ",
+        "サバトの箱",
+        "Sabbath Box",
+        "Witches' Sabbath box",
+        "Museum exhibit said to hold soul contracts.",
+    ),
+    (
+        "Artifact",
+        "いましめのすず",
+        "戒めの鈴",
+        "Warding Bell",
+        "Bell of Admonition",
+        "Museum exhibit; English favors function.",
+    ),
+    (
+        "Artifact",
+        "あくまのて",
+        "悪魔の手",
+        "Devil's Hand",
+        "",
+        "A bronze statue, not merely a symbol.",
+    ),
+    (
+        "Artifact",
+        "まもりふだ",
+        "守り札",
+        "protective charm",
+        "amulet",
+        "Recurring warding object.",
+    ),
+    (
+        "Supernatural",
+        "まらどぅる ばらお がらどぅーら",
+        "マラドゥル・バラオ・ガラドゥーラ",
+        "Maradul Barao Garadura",
+        "Galdura variant",
+        "Incantation; variants in the source are preserved and noted.",
+    ),
+    (
+        "Time travel",
+        "たいむとらべる",
+        "タイムトラベル",
+        "time travel",
+        "",
+        "General concept.",
+    ),
+    (
+        "Time travel",
+        "たいむわーぷ",
+        "タイムワープ",
+        "time warp",
+        "time jump",
+        "The game's term for historical transit.",
+    ),
+    (
+        "Historical period",
+        "1428ねん",
+        "1428年",
+        "1428",
+        "",
+        "France/Jeanne chapter.",
+    ),
+    (
+        "Historical period",
+        "1944ねん 7がつ",
+        "1944年7月",
+        "July 1944",
+        "",
+        "German POW chapter.",
+    ),
+    (
+        "Historical period",
+        "1864ねん 9がつ",
+        "1864年9月",
+        "September 1864",
+        "",
+        "Atlanta/Civil War chapter.",
+    ),
+    (
+        "Historical period",
+        "きげんぜん 4ねんごろ",
+        "紀元前4年頃",
+        "circa 4 BC",
+        "around 4 BCE",
+        "The game uses BC-era framing.",
+    ),
     ("Command", "みる", "見る", "LOOK", "Examine", "Core menu command."),
     ("Command", "はなす", "話す", "TALK", "Speak", "Core menu command."),
     ("Command", "いどう", "移動", "MOVE", "Go", "Core menu command."),
     ("Command", "つかう", "使う", "USE", "", "Core menu command."),
     ("Command", "とる", "取る", "TAKE", "Get", "Core menu command."),
-    ("Command", "きく", "聞く／訊く", "ASK / LISTEN", "Hear", "Context determines whether it means ask or listen."),
-    ("Interface", "さいしょから", "最初から", "START", "From the beginning", "Start-menu label."),
-    ("Interface", "しばらく おまちください", "しばらくお待ちください", "PLEASE WAIT…", "", "System wait prompt."),
-    ("Interface", "ぜんぺん", "前編", "PART 1", "first part", "Zenpen disk label."),
-    ("Interface", "こうへん", "後編", "PART 2", "second part", "Kouhen disk label."),
-    ("Graphics", "タイムツイスト", "タイムツイスト", "TIME TWIST", "", "Title wordmark."),
-    ("Graphics", "歴史のかたすみで……", "歴史の片隅で……", "On the Outskirts of History…", "In a Corner of History", "Requested localized subtitle."),
-    ("Register", "いわゆるひとつの", "いわゆる一つの", "what you might call…", "one of those…", "Comic Nagashima-associated verbal mannerism."),
-    ("Slang", "ぼいん", "ボイン", "quite a pair / big breasts", "", "Dated, objectifying slang; tone is intentionally crude."),
+    (
+        "Command",
+        "きく",
+        "聞く／訊く",
+        "ASK / LISTEN",
+        "Hear",
+        "Context determines whether it means ask or listen.",
+    ),
+    (
+        "Interface",
+        "さいしょから",
+        "最初から",
+        "START",
+        "From the beginning",
+        "Start-menu label.",
+    ),
+    (
+        "Interface",
+        "しばらく おまちください",
+        "しばらくお待ちください",
+        "PLEASE WAIT…",
+        "",
+        "System wait prompt.",
+    ),
+    (
+        "Interface",
+        "ぜんぺん",
+        "前編",
+        "PART 1",
+        "first part",
+        "Zenpen disk label.",
+    ),
+    (
+        "Interface",
+        "こうへん",
+        "後編",
+        "PART 2",
+        "second part",
+        "Kouhen disk label.",
+    ),
+    (
+        "Graphics",
+        "タイムツイスト",
+        "タイムツイスト",
+        "TIME TWIST",
+        "",
+        "Title wordmark.",
+    ),
+    (
+        "Graphics",
+        "歴史のかたすみで……",
+        "歴史の片隅で……",
+        "On the Outskirts of History…",
+        "In a Corner of History",
+        "Requested localized subtitle.",
+    ),
+    (
+        "Register",
+        "いわゆるひとつの",
+        "いわゆる一つの",
+        "what you might call…",
+        "one of those…",
+        "Comic Nagashima-associated verbal mannerism.",
+    ),
+    (
+        "Slang",
+        "ぼいん",
+        "ボイン",
+        "quite a pair / big breasts",
+        "",
+        "Dated, objectifying slang; tone is intentionally crude.",
+    ),
 )
 
 
@@ -1480,14 +1869,15 @@ class ReviewTableParser(HTMLParser):
             Initializes :class:`html.parser.HTMLParser` with character-reference
             conversion enabled.
         """
-
         super().__init__(convert_charrefs=True)
         self.rows: list[list[str]] = []
         self._row: list[str] | None = None
         self._in_cell = False
         self._buffer: list[str] = []
 
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+    def handle_starttag(
+        self, tag: str, attrs: list[tuple[str, str | None]]
+    ) -> None:
         """Process structural opening tags relevant to review-table extraction.
 
         Args:
@@ -1499,7 +1889,6 @@ class ReviewTableParser(HTMLParser):
             Starts a row or cell buffer and appends a newline for ``<br>`` tags
             encountered inside the active cell.
         """
-
         if tag == "tr":
             self._row = []
         elif self._row is not None and tag in {"td", "th"}:
@@ -1522,10 +1911,11 @@ class ReviewTableParser(HTMLParser):
             ValueError: If a cell closes without an active row, indicating
                 malformed state or unsupported table markup.
         """
-
         if tag in {"td", "th"} and self._in_cell:
             if self._row is None:
-                raise ValueError("review table cell closed without an active row")
+                raise ValueError(
+                    "review table cell closed without an active row"
+                )
             self._row.append("".join(self._buffer).strip())
             self._in_cell = False
         elif tag == "tr" and self._row is not None:
@@ -1541,7 +1931,6 @@ class ReviewTableParser(HTMLParser):
         Side Effects:
             Extends the current cell buffer.  Text outside cells is discarded.
         """
-
         if self._in_cell:
             self._buffer.append(data)
 
@@ -1562,7 +1951,6 @@ def sha256(path: Path) -> str:
         Streaming keeps source and generated multi-megabyte workbooks out of
         memory while producing reproducible provenance metadata.
     """
-
     digest = hashlib.sha256()
     with path.open("rb") as stream:
         for chunk in iter(lambda: stream.read(1 << 20), b""):
@@ -1580,7 +1968,6 @@ def collapse(text: str) -> str:
         Text with every whitespace run replaced by one ASCII space and leading
         or trailing whitespace removed.
     """
-
     return re.sub(r"\s+", " ", text).strip()
 
 
@@ -1595,7 +1982,6 @@ def without_controls(text: str, separator: str = " ") -> str:
     Returns:
         Control-free, whitespace-normalized visible text.
     """
-
     return collapse(CONTROL_RE.sub(separator, text))
 
 
@@ -1614,7 +2000,6 @@ def naturalize_current(text: str) -> str:
         This function does not translate Japanese or infer missing content.  It
         is only a presentation fallback when no reviewed replacement exists.
     """
-
     value = CONTROL_RE.sub(" ", text)
     value = re.sub(r"\.{4,}", "…", value)
     value = value.replace("...", "…")
@@ -1639,10 +2024,11 @@ def conservative_reconstruction(exact: str) -> str:
         of a more specific phrase.  Unmapped kana remain untouched so ambiguity
         is visible instead of being silently assigned kanji.
     """
-
     text = CONTROL_RE.sub(" ", exact)
     for source, replacement in sorted(
-        SAFE_RECONSTRUCTIONS.items(), key=lambda item: len(item[0]), reverse=True
+        SAFE_RECONSTRUCTIONS.items(),
+        key=lambda item: len(item[0]),
+        reverse=True,
     ):
         text = text.replace(source, replacement)
     return collapse(text)
@@ -1657,7 +2043,6 @@ def controls(text: str) -> tuple[str, ...]:
     Returns:
         A tuple of payload strings without braces or the ``CTRL:`` prefix.
     """
-
     return tuple(CONTROL_RE.findall(text))
 
 
@@ -1680,9 +2065,10 @@ def current_capacity(source_row: dict) -> str:
         length and longest control-delimited segment are warnings, not proof of
         final bank fit; native recompression remains authoritative.
     """
-
     if source_row["packed_bytes"].isdigit():
-        return f"{source_row['packed_bytes']} packed bytes (fixed-address slot)"
+        return (
+            f"{source_row['packed_bytes']} packed bytes (fixed-address slot)"
+        )
     if source_row["packed_bytes"] == "group-compressed":
         current = source_row["current_english_exact"]
         segments = re.split(r"\{CTRL:\d+\}", current)
@@ -1718,9 +2104,10 @@ def parse_review(
         being attached to the wrong ROM record.  Automated review text remains
         advisory and is interpreted again by later functions.
     """
-
     if review_path is None:
-        review_path = next((path for path in REVIEW_CANDIDATES if path.exists()), None)
+        review_path = next(
+            (path for path in REVIEW_CANDIDATES if path.exists()), None
+        )
     if review_path is None:
         neutral = {
             "qa": "",
@@ -1731,7 +2118,9 @@ def parse_review(
         }
         return {row["text_id"]: dict(neutral) for row in source_rows}, None
     if not review_path.is_file():
-        raise FileNotFoundError(f"diagnostic review file not found: {review_path}")
+        raise FileNotFoundError(
+            f"diagnostic review file not found: {review_path}"
+        )
     parser = ReviewTableParser()
     parser.feed(review_path.read_text(encoding="utf-8"))
     data_rows = parser.rows[1:]
@@ -1761,8 +2150,10 @@ def parse_review(
         output[source["text_id"]] = {
             "qa": qa.strip(),
             "direction": direction.strip(),
-            "close_reading": close.strip("“”\" "),
-            "review_priority": priority_match.group(1) if priority_match else "medium",
+            "close_reading": close.strip('“”" '),
+            "review_priority": (
+                priority_match.group(1) if priority_match else "medium"
+            ),
             "raw_notes": review[6],
         }
     return output, review_path
@@ -1782,7 +2173,6 @@ def direction_is_translation(direction: str) -> bool:
         This conservative allow-by-exclusion rule prevents prose such as
         "Retranslate clause by clause" from appearing as game dialogue.
     """
-
     generic = (
         "Current English is a usable draft",
         "Retranslate clause by clause",
@@ -1810,7 +2200,6 @@ def expanded_fixed_meaning(source_row: dict) -> str:
         The result is editorial analysis only.  It does not replace the verified
         compact patch form or imply that expanded English fits the original slot.
     """
-
     exact = source_row["japanese_exact"]
     plain = collapse(CONTROL_RE.sub(" ", exact))
     if exact in FIXED_NATURAL:
@@ -1820,18 +2209,37 @@ def expanded_fixed_meaning(source_row: dict) -> str:
     month = re.fullmatch(r"(\d+)がつ", plain)
     if month:
         names = (
-            "", "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December",
+            "",
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
         )
         number = int(month.group(1))
         if 1 <= number <= 12:
             return names[number]
-    count = re.fullmatch(r"(\d+)(ぴき|ひき|びき|こ|かしょ|はい|ぱい|ぷん|せんち)", plain)
+    count = re.fullmatch(
+        r"(\d+)(ぴき|ひき|びき|こ|かしょ|はい|ぱい|ぷん|せんち)", plain
+    )
     if count:
         units = {
-            "ぴき": "animals", "ひき": "animals", "びき": "animals",
-            "こ": "items", "かしょ": "places", "はい": "cups",
-            "ぱい": "cups", "ぷん": "minutes", "せんち": "centimeters",
+            "ぴき": "animals",
+            "ひき": "animals",
+            "びき": "animals",
+            "こ": "items",
+            "かしょ": "places",
+            "はい": "cups",
+            "ぱい": "cups",
+            "ぷん": "minutes",
+            "せんち": "centimeters",
         }
         return f"{count.group(1)} {units[count.group(2)]}"
     numbered = re.fullmatch(r"こよーて(\d+)", plain)
@@ -1858,7 +2266,6 @@ def final_natural(source_row: dict, review: dict) -> str:
     Raises:
         KeyError: If required source or review fields are missing.
     """
-
     text_id = source_row["text_id"]
     if text_id in MANUAL_FINAL:
         return MANUAL_FINAL[text_id]
@@ -1890,7 +2297,6 @@ def literal_meaning(source_row: dict, review: dict, final: str) -> str:
         to omit Japanese information.  "Literal" here exposes information and
         structure; it is not deliberately ungrammatical word-for-word English.
     """
-
     if review["close_reading"]:
         return naturalize_current(review["close_reading"])
     if source_row["kind"] == "fixed-address":
@@ -1922,7 +2328,6 @@ def speaker_identity(source_row: dict, final: str) -> str:
         resembles that character's voice.  Uncertainty remains explicit until
         neighboring records or gameplay provide evidence.
     """
-
     if source_row["text_id"] in SPEAKER_IDENTITY_OVERRIDES:
         return SPEAKER_IDENTITY_OVERRIDES[source_row["text_id"]]
     if source_row["kind"] == "fixed-address":
@@ -1942,7 +2347,9 @@ def speaker_identity(source_row: dict, final: str) -> str:
         r"(?:^|/|\s)([A-Z][A-Za-z0-9 .-]{0,28}):", final
     )
     if english_labels:
-        return "; ".join(dict.fromkeys(label.strip() for label in english_labels))
+        return "; ".join(
+            dict.fromkeys(label.strip() for label in english_labels)
+        )
     if "「" in source:
         return "Unidentified voice / context-dependent speaker"
     return "Narration / protagonist's internal observation / interaction text"
@@ -1963,7 +2370,6 @@ def dialect_register(source_row: dict) -> str:
         unrelated words do not create false dialect labels.  Stock role-language
         such as ``わし``/``じゃ`` is distinguished from clustered regional forms.
     """
-
     text = CONTROL_RE.sub(" ", source_row["japanese_exact"])
     notes: list[str] = []
     if re.search(r"おれ(?:は|が|の|を|に|も|だ|「|$)", text):
@@ -1979,10 +2385,15 @@ def dialect_register(source_row: dict) -> str:
     if re.search(r"おまえ(?:ら|は|が|の|を|に|も|「|$)", text):
         notes.append("おまえ: familiar or rough second person")
     if re.search(r"じゃ(?:[ろっがぞな。！？…」]|$)", text):
-        notes.append("じゃ: old-person/authority role-copula; not automatically regional")
+        notes.append(
+            "じゃ: old-person/authority role-copula; not automatically regional"
+        )
     if re.search(r"(?<![あき])のう(?:[。！？…」]|$)", text):
         notes.append("のう: elderly/reflective ending")
-    if any(marker in text for marker in ("どえりゃー", "だがや", "うるしゃー", "くりゃーて")):
+    if any(
+        marker in text
+        for marker in ("どえりゃー", "だがや", "うるしゃー", "くりゃーて")
+    ):
         notes.append("clustered stylized Nagoya/Owari speech")
     if re.search(r"だっぺ(?:[。！？…」]|$)", text):
         notes.append("だっぺ: marked rural/Tohoku-coded ending")
@@ -2027,7 +2438,6 @@ def linguistic_notes(source_row: dict, review: dict, register: str) -> str:
         Sensitive historical language is described as source characterization,
         neither endorsed nor silently sanitized.
     """
-
     notes: list[str] = []
     if register:
         notes.append(register)
@@ -2054,7 +2464,9 @@ def linguistic_notes(source_row: dict, review: dict, register: str) -> str:
     if source_row["text_id"] == "TT1B/g0/r17":
         notes.append("ブロンズの像 explicitly means a bronze statue/figure.")
     if source_row["text_id"] == "TT1B/g0/r1":
-        notes.append("青空 is explicit: the image is a blue sky, not an unspecified 'it.'")
+        notes.append(
+            "青空 is explicit: the image is a blue sky, not an unspecified 'it.'"
+        )
     if source_row["text_id"] == "TT1A/g0/r9":
         notes.append(
             "A declarative personality-test proposition with a Japanese pro-baseball "
@@ -2066,7 +2478,10 @@ def linguistic_notes(source_row: dict, review: dict, register: str) -> str:
             "residents to leave so parcels can be assembled."
         )
     if source_row["bank"] == "TT5" or source_row["bank"] == "T25":
-        if any(term in source_row["japanese_exact"] for term in ("どれい", "さべつ", "なんぶ")):
+        if any(
+            term in source_row["japanese_exact"]
+            for term in ("どれい", "さべつ", "なんぶ")
+        ):
             notes.append(
                 "The source is depicting nineteenth-century slavery/racism; harmful "
                 "content is translated as character speech or narration without "
@@ -2080,7 +2495,9 @@ def linguistic_notes(source_row: dict, review: dict, register: str) -> str:
     return " ".join(notes)
 
 
-def problem_categories(qa: str, source_row: dict, final: str) -> tuple[str, ...]:
+def problem_categories(
+    qa: str, source_row: dict, final: str
+) -> tuple[str, ...]:
     """Map free-form review evidence to normalized QA problem categories.
 
     Args:
@@ -2098,7 +2515,6 @@ def problem_categories(qa: str, source_row: dict, final: str) -> tuple[str, ...]
         used to infer Japanese dialect or grammar, avoiding the unsafe substring
         behavior found in the earlier diagnostic workbook.
     """
-
     categories: list[str] = []
     generic_review_boilerplate = (
         "No obvious line-level defect detected automatically. "
@@ -2141,7 +2557,9 @@ def problem_categories(qa: str, source_row: dict, final: str) -> tuple[str, ...]
         natural = final.casefold()
         current = source_row["current_english_readable"].casefold()
         if natural != current:
-            categories.append("Acceptable compression / technical abbreviation")
+            categories.append(
+                "Acceptable compression / technical abbreviation"
+            )
         else:
             categories.append("Accurate")
     elif not categories:
@@ -2178,7 +2596,6 @@ def current_problems(
         defect.  Fixed-address abbreviations are documented as technical choices
         instead of being mislabeled as mistranslations.
     """
-
     qa = review["qa"]
     manual = {
         "TT1B/g0/r31": (
@@ -2200,10 +2617,11 @@ def current_problems(
         return manual[source_row["text_id"]]
     generic = "No obvious line-level defect detected automatically."
     if source_row["kind"] == "fixed-address":
-        if final.casefold() == source_row["current_english_readable"].casefold():
-            return (
-                f"Accurate within a fixed {source_row['packed_bytes']}-byte record."
-            )
+        if (
+            final.casefold()
+            == source_row["current_english_readable"].casefold()
+        ):
+            return f"Accurate within a fixed {source_row['packed_bytes']}-byte record."
         return (
             f"Technical abbreviation: current slot text "
             f"'{source_row['current_english_readable']}' represents '{final}' in "
@@ -2219,7 +2637,9 @@ def current_problems(
     if generic in qa:
         if source_row["current_english_readable"].strip() == final.strip():
             return "Accurate."
-        return "Acceptable draft; natural wording and speaker labeling refined."
+        return (
+            "Acceptable draft; natural wording and speaker labeling refined."
+        )
     cleaned = qa.replace(generic, "").strip()
     cleaned = re.sub(r"Technical constraints.*$", "", cleaned).strip()
     return cleaned or "; ".join(categories)
@@ -2246,7 +2666,6 @@ def insert_controls_by_current_layout(final: str, current_exact: str) -> str:
         This is a proposal generator, not visual proof.  The result still passes
         control equality, display-width, encoder, and bank recompression checks.
     """
-
     values = list(controls(current_exact))
     if not values:
         return final
@@ -2291,7 +2710,6 @@ def patch_charset_safe(text: str) -> str:
         visible so the actual encoder can reject them instead of hiding a
         translation error through lossy transliteration.
     """
-
     return (
         text.replace("’", "'")
         .replace("‘", "'")
@@ -2306,17 +2724,22 @@ def patch_charset_safe(text: str) -> str:
 
 def load_playable_scenario_text() -> dict[str, str]:
     """Load the ID-keyed scenario maps that define the playable release."""
-
     output: dict[str, str] = {}
     for path in sorted(TRANSLATIONS.glob("*.json")):
         payload = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(payload, dict):
-            raise ValueError(f"playable translation map is not an object: {path}")
+            raise ValueError(
+                f"playable translation map is not an object: {path}"
+            )
         for text_id, text in payload.items():
             if not isinstance(text_id, str) or not isinstance(text, str):
-                raise ValueError(f"playable translation map has non-string data: {path}")
+                raise ValueError(
+                    f"playable translation map has non-string data: {path}"
+                )
             if text_id in output:
-                raise ValueError(f"duplicate playable translation ID: {text_id}")
+                raise ValueError(
+                    f"duplicate playable translation ID: {text_id}"
+                )
             output[text_id] = text
     return output
 
@@ -2351,18 +2774,22 @@ def patch_safe(
         listed in :data:`PATCH_FOOTPRINT_RESULTS` overrides that estimate because
         its finalized map passed native encoding, display, and recompression.
     """
-
     text_id = source_row["text_id"]
     if source_row["kind"] == "scenario":
         try:
             patch = playable_scenario_text[text_id]
         except KeyError as error:
-            raise ValueError(f"playable scenario translation is missing: {text_id}") from error
+            raise ValueError(
+                f"playable scenario translation is missing: {text_id}"
+            ) from error
     elif source_row["kind"] in {"fixed-address", "graphics-text"}:
         patch = source_row["current_english_exact"]
     elif text_id in MANUAL_PATCH:
         patch = MANUAL_PATCH[text_id]
-    elif direction_is_translation(review["direction"]) or text_id in MANUAL_FINAL:
+    elif (
+        direction_is_translation(review["direction"])
+        or text_id in MANUAL_FINAL
+    ):
         patch = insert_controls_by_current_layout(
             final.replace("Protagonist:", "Me:"),
             source_row["current_english_exact"],
@@ -2382,7 +2809,9 @@ def patch_safe(
         return patch, "", False
     if source_row["packed_bytes"] != "group-compressed":
         return patch, "", False
-    current_visible = len(CONTROL_RE.sub("", source_row["current_english_exact"]))
+    current_visible = len(
+        CONTROL_RE.sub("", source_row["current_english_exact"])
+    )
     patch_visible = len(CONTROL_RE.sub("", patch))
     current_segment_max = max(
         (
@@ -2403,7 +2832,9 @@ def patch_safe(
         # recompression after the patch-safe wording was finalized.
         expansion = False
     nuance = ""
-    if patch == source_row["current_english_exact"] and final != naturalize_current(patch):
+    if patch == source_row[
+        "current_english_exact"
+    ] and final != naturalize_current(patch):
         nuance = (
             "The verified current slot-sized wording is retained as the shortest "
             "available basis; the fuller natural translation must be tested during "
@@ -2437,7 +2868,6 @@ def ambiguity_and_confidence(
         explicitly.  The function still returns a proposed translation; low
         confidence never becomes an excuse for an empty workbook field.
     """
-
     text_id = source_row["text_id"]
     if text_id == "TT3A/g2/r30":
         return (
@@ -2512,7 +2942,6 @@ def make_rows(
         reading, speaker, register, QA, patch fit, and confidence are calculated
         separately so one inference cannot overwrite authoritative source data.
     """
-
     payload = json.loads(SOURCE_JSON.read_text(encoding="utf-8"))
     source_rows = payload["rows"]
     if len(source_rows) != 2052:
@@ -2535,7 +2964,9 @@ def make_rows(
             source_row, review, register
         )
         if expansion:
-            status = "Final proposed — technical expansion/recompression review"
+            status = (
+                "Final proposed — technical expansion/recompression review"
+            )
         elif gameplay:
             status = "Final proposed — gameplay/visual confirmation requested"
         else:
@@ -2555,7 +2986,9 @@ def make_rows(
                 ),
                 literal_english_meaning=literal,
                 linguistic_and_cultural_notes=notes,
-                speaker_or_narration_identity=speaker_identity(source_row, final),
+                speaker_or_narration_identity=speaker_identity(
+                    source_row, final
+                ),
                 current_english=source_row["current_english_exact"],
                 problems_with_current_english=problems,
                 final_natural_english_translation=final,
@@ -2566,15 +2999,19 @@ def make_rows(
                 scene=SCENES[source_row["bank"]]["title"],
                 source_location=source_row["source_location"],
                 apparent_capacity=current_capacity(source_row),
-                source_control_codes=",".join(controls(source_row["japanese_exact"])),
+                source_control_codes=",".join(
+                    controls(source_row["japanese_exact"])
+                ),
                 patch_control_codes=",".join(controls(patch)),
                 control_codes_match=(
                     "yes"
-                    if controls(source_row["japanese_exact"]) == controls(patch)
+                    if controls(source_row["japanese_exact"])
+                    == controls(patch)
                     else "no"
                 ),
                 problem_categories="; ".join(categories),
-                dialect_or_register=register or "Unmarked / neutral or context-dependent",
+                dialect_or_register=register
+                or "Unmarked / neutral or context-dependent",
                 requires_gameplay_context="yes" if gameplay else "no",
                 requires_technical_expansion="yes" if expansion else "no",
                 nuance_lost_in_patch_safe_version=nuance,
@@ -2598,11 +3035,11 @@ def first_occurrence(rows: list[WorkbookRow], needle: str) -> str:
         Both exact and control-stripped forms are checked.  The function does not
         perform fuzzy matching because that could silently conflate homophones.
     """
-
     simplified = CONTROL_RE.sub(" ", needle)
     for row in rows:
-        if needle in row.exact_japanese_source or simplified in CONTROL_RE.sub(
-            " ", row.exact_japanese_source
+        if (
+            needle in row.exact_japanese_source
+            or simplified in CONTROL_RE.sub(" ", row.exact_japanese_source)
         ):
             return row.original_record_id
     return "not found as one contiguous ROM substring"
@@ -2623,9 +3060,15 @@ def make_glossary(rows: list[WorkbookRow]) -> list[dict]:
         Chosen forms come from the centralized seed table so terminology cannot
         drift silently between HTML, JSON, CSV, and the voice guide.
     """
-
     output = []
-    for category, exact, reconstructed, chosen, alternatives, notes in GLOSSARY_SEEDS:
+    for (
+        category,
+        exact,
+        reconstructed,
+        chosen,
+        alternatives,
+        notes,
+    ) in GLOSSARY_SEEDS:
         output.append(
             {
                 "category": category,
@@ -2650,7 +3093,6 @@ def escape_cell(value: object) -> str:
     Returns:
         HTML-escaped text with newline characters converted to ``<br>``.
     """
-
     return html.escape(str(value)).replace("\n", "<br>")
 
 
@@ -2683,7 +3125,6 @@ def render_html(
         Filter metadata is duplicated into escaped ``data-*`` attributes so the
         static artifact remains searchable without a web server or build step.
     """
-
     counts = Counter(row.record_type for row in rows)
     footprint_summary = "; ".join(
         f"{bank} {result['used']}/{result['capacity']} bytes "
@@ -2700,7 +3141,9 @@ def render_html(
         f'<option value="{html.escape(bank)}">{html.escape(bank)}</option>'
         for bank in BANK_ORDER
     )
-    speaker_values = sorted({row.speaker_or_narration_identity for row in rows})
+    speaker_values = sorted(
+        {row.speaker_or_narration_identity for row in rows}
+    )
     speaker_options = "".join(
         f'<option value="{html.escape(value)}">{html.escape(value)}</option>'
         for value in speaker_values
@@ -2736,8 +3179,14 @@ def render_html(
         for bank, scene in SCENES.items()
     )
     speaker_headers = (
-        "Known name", "Japanese labels", "First person", "Typical endings",
-        "Politeness", "Dialect", "Verbal habits", "Relationships",
+        "Known name",
+        "Japanese labels",
+        "First person",
+        "Typical endings",
+        "Politeness",
+        "Dialect",
+        "Verbal habits",
+        "Relationships",
         "Recommended English voice",
     )
     speaker_rows = "".join(
@@ -2745,8 +3194,15 @@ def render_html(
         + "".join(
             f"<td>{escape_cell(entry[key])}</td>"
             for key in (
-                "name", "labels", "first_person", "endings", "politeness",
-                "dialect", "habits", "relationships", "english_voice",
+                "name",
+                "labels",
+                "first_person",
+                "endings",
+                "politeness",
+                "dialect",
+                "habits",
+                "relationships",
+                "english_voice",
             )
         )
         + "</tr>"
@@ -2757,8 +3213,14 @@ def render_html(
         + "".join(
             f"<td>{escape_cell(entry[key])}</td>"
             for key in (
-                "category", "exact_japanese", "reconstructed_japanese", "romaji",
-                "chosen_english", "alternative_readings", "first_occurrence", "notes",
+                "category",
+                "exact_japanese",
+                "reconstructed_japanese",
+                "romaji",
+                "chosen_english",
+                "alternative_readings",
+                "first_occurrence",
+                "notes",
             )
         )
         + "</tr>"
@@ -2839,8 +3301,12 @@ def render_html(
         f'{escape_cell(ref["note"])}</li>'
         for ref in EXTERNAL_REFERENCES
     )
-    technical_count = sum(row.requires_technical_expansion == "yes" for row in rows)
-    gameplay_count = sum(row.requires_gameplay_context == "yes" for row in rows)
+    technical_count = sum(
+        row.requires_technical_expansion == "yes" for row in rows
+    )
+    gameplay_count = sum(
+        row.requires_gameplay_context == "yes" for row in rows
+    )
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -2938,7 +3404,6 @@ def write_csv(path: Path, records: Iterable[dict]) -> None:
     Side Effects:
         Replaces ``path`` with UTF-8-with-BOM CSV and normalized CSV newlines.
     """
-
     records = list(records)
     if not records:
         raise ValueError("cannot write empty CSV")
@@ -2973,9 +3438,10 @@ def write_progress(
         bank coverage, native recompression evidence, screenshot requests,
         expansion warnings, terminology decisions, and unresolved ambiguities.
     """
-
     gameplay = [row for row in rows if row.requires_gameplay_context == "yes"]
-    technical = [row for row in rows if row.requires_technical_expansion == "yes"]
+    technical = [
+        row for row in rows if row.requires_technical_expansion == "yes"
+    ]
     unresolved = [row for row in rows if row.unresolved_ambiguity]
     bank_counts = Counter(row.bank for row in rows)
     progress = [
@@ -2996,7 +3462,9 @@ def write_progress(
         *(
             [f"- `{review_path.name}` — SHA-256 `{sha256(review_path)}`"]
             if review_path is not None
-            else ["- Diagnostic review: not supplied (neutral diagnostics used)"]
+            else [
+                "- Diagnostic review: not supplied (neutral diagnostics used)"
+            ]
         ),
         "",
         "## Bank coverage",
@@ -3087,7 +3555,6 @@ def write_voice_guide(glossary: list[dict]) -> None:
     Side Effects:
         Replaces ``outputs/Time_Twist_terminology_and_voice_guide.md``.
     """
-
     lines = [
         "# Time Twist terminology and character-voice guide",
         "",
@@ -3160,19 +3627,22 @@ def validate(
         It cannot prove literary quality or gameplay fit; those require review,
         encoder/recompression tests, and the listed visual checks.
     """
-
     source_rows = source_payload["rows"]
     if len(rows) != 2052:
         raise AssertionError(f"expected 2052 rows, got {len(rows)}")
     ids = [row.original_record_id for row in rows]
     if len(ids) != len(set(ids)):
-        duplicates = [item for item, count in Counter(ids).items() if count > 1]
+        duplicates = [
+            item for item, count in Counter(ids).items() if count > 1
+        ]
         raise AssertionError(f"duplicate IDs: {duplicates}")
     source_by_id = {row["text_id"]: row for row in source_rows}
     for row in rows:
         source = source_by_id[row.original_record_id]
         if row.exact_japanese_source != source["japanese_exact"]:
-            raise AssertionError(f"Japanese source drift: {row.original_record_id}")
+            raise AssertionError(
+                f"Japanese source drift: {row.original_record_id}"
+            )
         if (
             controls(row.exact_japanese_source)
             != controls(row.patch_safe_english_translation)
@@ -3180,11 +3650,20 @@ def validate(
         ):
             raise AssertionError(f"control drift: {row.original_record_id}")
         if not row.final_natural_english_translation:
-            raise AssertionError(f"missing final translation: {row.original_record_id}")
+            raise AssertionError(
+                f"missing final translation: {row.original_record_id}"
+            )
         if not row.patch_safe_english_translation:
-            raise AssertionError(f"missing patch translation: {row.original_record_id}")
-        if "き声る" in row.reconstructed_japanese or "人らー" in row.reconstructed_japanese:
-            raise AssertionError(f"unsafe reconstruction: {row.original_record_id}")
+            raise AssertionError(
+                f"missing patch translation: {row.original_record_id}"
+            )
+        if (
+            "き声る" in row.reconstructed_japanese
+            or "人らー" in row.reconstructed_japanese
+        ):
+            raise AssertionError(
+                f"unsafe reconstruction: {row.original_record_id}"
+            )
     if not glossary:
         raise AssertionError("glossary is empty")
 
@@ -3209,7 +3688,6 @@ def write_checkpoints(rows: list[WorkbookRow]) -> None:
         Checkpoints are written only after aggregate validation.  They support
         inspection and recovery but are not separate translation authorities.
     """
-
     directory = WORK / "translation_workbook_banks"
     directory.mkdir(parents=True, exist_ok=True)
     completed: list[str] = []
@@ -3271,7 +3749,6 @@ def main() -> None:
         speaker, glossary, control, and native-fit evidence shown in HTML so
         machine-readable and human-readable outputs remain auditable.
     """
-
     parser = argparse.ArgumentParser(
         description="Generate the Time Twist translation-review workbook."
     )

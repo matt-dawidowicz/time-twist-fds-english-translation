@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import tempfile
 import unittest
 from pathlib import Path
 
@@ -19,7 +18,9 @@ class ProjectConfigurationTests(unittest.TestCase):
             "TT1A",
         )
 
-    def test_bank_name_inference_rejects_ambiguous_or_unknown_names(self) -> None:
+    def test_bank_name_inference_rejects_ambiguous_or_unknown_names(
+        self,
+    ) -> None:
         with self.assertRaises(ValueError):
             infer_bank_name(Path("translated_fixed_footprint.bin"))
         with self.assertRaises(ValueError):
@@ -30,7 +31,9 @@ class ProjectConfigurationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             infer_bank_name(Path("anything.bin"), "UNKNOWN")
 
-    def test_tt6c_reserves_dictionary_token_for_fixed_cougar_label(self) -> None:
+    def test_tt6c_reserves_dictionary_token_for_fixed_cougar_label(
+        self,
+    ) -> None:
         self.assertEqual(
             required_dictionary_entries("TT6C"),
             (encode_english("Cougar"),),

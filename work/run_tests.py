@@ -16,7 +16,6 @@ import sys
 import unittest
 from pathlib import Path
 
-
 WORK_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = WORK_ROOT.parent
 FIXTURE_MANIFEST = WORK_ROOT / "integration_fixtures.json"
@@ -25,13 +24,11 @@ sys.path.insert(0, str(WORK_ROOT))
 
 def sha256(path: Path) -> str:
     """Return an uppercase SHA-256 digest for one local fixture."""
-
     return hashlib.sha256(path.read_bytes()).hexdigest().upper()
 
 
 def validate_integration_fixtures() -> None:
     """Fail before test discovery unless the complete private overlay is present."""
-
     payload = json.loads(FIXTURE_MANIFEST.read_text(encoding="utf-8"))
     if payload.get("schema") != "Time Twist private integration fixtures v1":
         raise SystemExit("unsupported integration fixture manifest schema")
@@ -63,7 +60,6 @@ def validate_integration_fixtures() -> None:
 
 def discover(directory: str) -> unittest.TestSuite:
     """Discover an importable suite beneath ``work``."""
-
     return unittest.defaultTestLoader.discover(
         start_dir=str(WORK_ROOT / directory),
         pattern="test*.py",
@@ -73,7 +69,6 @@ def discover(directory: str) -> unittest.TestSuite:
 
 def main(argv: list[str] | None = None) -> int:
     """Run the selected suite and reject all skips."""
-
     parser = argparse.ArgumentParser(prog="python work/run_tests.py")
     parser.add_argument(
         "suite",
@@ -96,9 +91,14 @@ def main(argv: list[str] | None = None) -> int:
         validate_integration_fixtures()
         suite.addTests(discover("integration_tests"))
 
-    result = unittest.TextTestRunner(verbosity=1 if args.quiet else 2).run(suite)
+    result = unittest.TextTestRunner(verbosity=1 if args.quiet else 2).run(
+        suite
+    )
     if result.skipped:
-        print("skipped tests are not permitted in supported test suites", file=sys.stderr)
+        print(
+            "skipped tests are not permitted in supported test suites",
+            file=sys.stderr,
+        )
         return 1
     return 0 if result.wasSuccessful() else 1
 

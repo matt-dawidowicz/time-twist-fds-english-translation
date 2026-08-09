@@ -13,8 +13,13 @@ from pathlib import Path
 from typing import Iterable
 
 from .charmap import decode_common, decode_extended
-from .textcodec import BitReader, PackedSymbol, SymbolKind, decode_symbol, pack_records
-
+from .textcodec import (
+    BitReader,
+    PackedSymbol,
+    SymbolKind,
+    decode_symbol,
+    pack_records,
+)
 
 LOAD_ADDRESS = 0xA200
 DICTIONARY_POINTER_OFFSET = 0x16
@@ -91,7 +96,6 @@ def _read_word(data: bytes, offset: int) -> int:
     Raises:
         ScenarioError: If either byte lies outside ``data``.
     """
-
     if offset < 0 or offset + 2 > len(data):
         raise ScenarioError(f"word offset ${offset:04X} is outside the bank")
     return int.from_bytes(data[offset : offset + 2], "little")
@@ -112,7 +116,6 @@ def _to_offset(address: int, load_address: int, size: int) -> int:
     Raises:
         ScenarioError: If the result is negative or greater than ``size``.
     """
-
     offset = address - load_address
     if offset < 0 or offset > size:
         raise ScenarioError(
@@ -141,7 +144,6 @@ def _decode_records_to_end(
             fails to reach ``end_offset`` exactly.
         PackedTextError: If a symbol is truncated.
     """
-
     if start_offset > end_offset:
         raise ScenarioError("record stream starts after its end")
     reader = BitReader(data, start_offset * 8)
@@ -185,7 +187,6 @@ def _decode_fixed_records(
     Raises:
         PackedTextError: If the stream ends before ``count`` records.
     """
-
     reader = BitReader(data, start_offset * 8)
     records: list[tuple[PackedSymbol, ...]] = []
     for _ in range(count):
@@ -211,7 +212,6 @@ def _maximum_dictionary_reference(
     Returns:
         Maximum dictionary payload, or zero when no reference exists.
     """
-
     return max(
         (
             symbol.value
@@ -246,10 +246,11 @@ def _decode_referenced_dictionary(
     The dictionary is reparsed when a decoded entry references a later entry.
     This avoids assuming that source dictionaries are flat.
     """
-
     required_count = _maximum_dictionary_reference(text_records)
     if required_count > MAX_DICTIONARY_ENTRY_COUNT:
-        raise ScenarioError(f"dictionary reference {required_count} is out of range")
+        raise ScenarioError(
+            f"dictionary reference {required_count} is out of range"
+        )
     dictionary: tuple[tuple[PackedSymbol, ...], ...] = ()
     end_offset = start_offset
     while len(dictionary) < required_count:
@@ -258,7 +259,9 @@ def _decode_referenced_dictionary(
         )
         nested_count = _maximum_dictionary_reference(dictionary)
         if nested_count > MAX_DICTIONARY_ENTRY_COUNT:
-            raise ScenarioError(f"dictionary reference {nested_count} is out of range")
+            raise ScenarioError(
+                f"dictionary reference {nested_count} is out of range"
+            )
         required_count = max(required_count, nested_count)
     return dictionary, end_offset
 
@@ -290,14 +293,15 @@ def parse_scenario_bank(
 
     The function reads the filesystem but never mutates the bank.
     """
-
     data = path.read_bytes()
     dictionary_address = _read_word(data, DICTIONARY_POINTER_OFFSET)
     group_table_address = _read_word(data, GROUP_TABLE_POINTER_OFFSET)
     group_zero_address = _read_word(data, GROUP_ZERO_POINTER_OFFSET)
 
     dictionary_offset = _to_offset(dictionary_address, load_address, len(data))
-    group_table_offset = _to_offset(group_table_address, load_address, len(data))
+    group_table_offset = _to_offset(
+        group_table_address, load_address, len(data)
+    )
     group_zero_offset = _to_offset(group_zero_address, load_address, len(data))
     if dictionary_offset < group_table_offset:
         raise ScenarioError("dictionary precedes the group-pointer table")
@@ -317,14 +321,17 @@ def parse_scenario_bank(
         raise ScenarioError("text-group pointers are not strictly ordered")
 
     group_offsets = tuple(
-        _to_offset(address, load_address, len(data)) for address in group_addresses
+        _to_offset(address, load_address, len(data))
+        for address in group_addresses
     )
     group_end_offsets = (*group_offsets[1:], group_table_offset)
     if group_zero_offset != group_offsets[0]:
         raise ScenarioError("group-zero pointer conversion is inconsistent")
 
     records: list[ScenarioRecord] = []
-    for group_index, (start, end) in enumerate(zip(group_offsets, group_end_offsets)):
+    for group_index, (start, end) in enumerate(
+        zip(group_offsets, group_end_offsets)
+    ):
         group_records = _decode_records_to_end(data, start, end)
         records.extend(
             ScenarioRecord(group_index, record_index, symbols)
@@ -382,7 +389,6 @@ def rebuild_scenario_bank(
 
     The function is side-effect free and does not modify ``bank``.
     """
-
     if len(groups) != len(bank.group_addresses):
         raise ScenarioError(
             f"expected {len(bank.group_addresses)} groups, got {len(groups)}"
@@ -395,7 +401,9 @@ def rebuild_scenario_bank(
     for records in groups:
         address = bank.load_address + len(prefix) + len(group_stream)
         if address > 0xFFFF:
-            raise ScenarioError("rebuilt group pointer exceeds the 16-bit address space")
+            raise ScenarioError(
+                "rebuilt group pointer exceeds the 16-bit address space"
+            )
         group_addresses.append(address)
         group_stream.extend(pack_records(records))
 
@@ -407,7 +415,9 @@ def rebuild_scenario_bank(
     dictionary_stream = pack_records(dictionary)
     end_address = dictionary_address + len(dictionary_stream)
     if end_address > 0x10000:
-        raise ScenarioError("rebuilt scenario data exceeds the 16-bit address space")
+        raise ScenarioError(
+            "rebuilt scenario data exceeds the 16-bit address space"
+        )
 
     prefix[DICTIONARY_POINTER_OFFSET : DICTIONARY_POINTER_OFFSET + 2] = (
         dictionary_address.to_bytes(2, "little")
@@ -418,7 +428,9 @@ def rebuild_scenario_bank(
     prefix[GROUP_ZERO_POINTER_OFFSET : GROUP_ZERO_POINTER_OFFSET + 2] = (
         group_addresses[0].to_bytes(2, "little")
     )
-    rebuilt_text = bytes(prefix + group_stream + group_table + dictionary_stream)
+    rebuilt_text = bytes(
+        prefix + group_stream + group_table + dictionary_stream
+    )
     if preserve_memory_footprint:
         if len(rebuilt_text) > bank.dictionary_end_offset:
             overrun = len(rebuilt_text) - bank.dictionary_end_offset
@@ -428,7 +440,9 @@ def rebuild_scenario_bank(
         # Keep the original tail at its original CPU address.  Besides keeping
         # the FDS file size fixed, this prevents a translated overlay from
         # moving fixed-address data or overwriting the resident NOV4 program.
-        rebuilt_text += bank.data[len(rebuilt_text) : bank.dictionary_end_offset]
+        rebuilt_text += bank.data[
+            len(rebuilt_text) : bank.dictionary_end_offset
+        ]
     suffix = bank.data[bank.dictionary_end_offset :]
     return rebuilt_text + suffix
 
@@ -455,7 +469,6 @@ def render_symbols(
     than disappearing from the extracted source. Rendering never mutates the
     symbols or dictionary and never raises for a bad reference.
     """
-
     rendered: list[str] = []
     for symbol in symbols:
         if symbol.kind is SymbolKind.COMMON:

@@ -6,7 +6,6 @@ import argparse
 from pathlib import Path
 
 from PIL import Image, ImageDraw
-
 from render_chr import render_chr
 
 
@@ -32,12 +31,13 @@ def main() -> None:
         Rendering stops cleanly at the first incomplete tile.  ``--monochrome``
         isolates NES color index 1, which is useful when locating text glyphs.
     """
-
     parser = argparse.ArgumentParser()
     parser.add_argument("input", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("--start", type=lambda value: int(value, 0), default=0)
-    parser.add_argument("--count", type=lambda value: int(value, 0), default=0x100)
+    parser.add_argument(
+        "--count", type=lambda value: int(value, 0), default=0x100
+    )
     parser.add_argument("--columns", type=int, default=8)
     parser.add_argument("--scale", type=int, default=8)
     parser.add_argument(
@@ -52,7 +52,9 @@ def main() -> None:
     label_height = 16
     cell_height = tile_size + label_height
     rows = (args.count + args.columns - 1) // args.columns
-    output = Image.new("RGB", (args.columns * tile_size, rows * cell_height), "white")
+    output = Image.new(
+        "RGB", (args.columns * tile_size, rows * cell_height), "white"
+    )
     draw = ImageDraw.Draw(output)
 
     for relative_index in range(args.count):
@@ -60,13 +62,17 @@ def main() -> None:
         tile_data = data[tile_index * 16 : tile_index * 16 + 16]
         if len(tile_data) < 16:
             break
-        tile = render_chr(tile_data, columns=1, scale=args.scale).convert("RGB")
+        tile = render_chr(tile_data, columns=1, scale=args.scale).convert(
+            "RGB"
+        )
         if args.monochrome:
             tile = tile.point(lambda value: 255 if value == 85 else 0)
         x = (relative_index % args.columns) * tile_size
         y = (relative_index // args.columns) * cell_height
         output.paste(tile, (x, y))
-        draw.text((x + 2, y + tile_size + 1), f"{tile_index:03X}", fill="black")
+        draw.text(
+            (x + 2, y + tile_size + 1), f"{tile_index:03X}", fill="black"
+        )
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     output.save(args.output)

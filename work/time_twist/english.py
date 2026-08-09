@@ -17,15 +17,9 @@ from collections.abc import Iterable
 
 from .textcodec import PackedSymbol, SymbolKind
 
-
 # Common codes cost six bits.  They contain space, every lowercase letter,
 # the 19 most frequent uppercase letters, and the two most common marks.
-COMMON_CHARACTERS = (
-    " "
-    "etaoinshrdlucmfwypvbgkjqxz"
-    "ETAOINSHRDLUCMFWYPV"
-    ",."
-)
+COMMON_CHARACTERS = " " "etaoinshrdlucmfwypvbgkjqxz" "ETAOINSHRDLUCMFWYPV" ",."
 
 # Extended codes 37-63 cost nine bits and use the engine's existing lookup
 # table.  Keeping digits and punctuation on their original tile IDs avoids
@@ -88,7 +82,6 @@ def _character_symbols() -> dict[str, PackedSymbol]:
     duplicates, currently only space, use :meth:`dict.setdefault` and cannot
     replace the cheaper representation.
     """
-
     result = {
         char: PackedSymbol(SymbolKind.COMMON, value, 0, 0)
         for value, char in enumerate(COMMON_CHARACTERS)
@@ -121,7 +114,6 @@ def encode_english(text: str) -> tuple[PackedSymbol, ...]:
     fail with their character position so translation JSON can be corrected
     before any ROM is rebuilt.
     """
-
     symbols: list[PackedSymbol] = []
     position = 0
     while position < len(text):
@@ -133,7 +125,9 @@ def encode_english(text: str) -> tuple[PackedSymbol, ...]:
                 )
             value = int(match.group(1))
             if value == 5:
-                raise EnglishTextError("control 5 is reserved for record separators")
+                raise EnglishTextError(
+                    "control 5 is reserved for record separators"
+                )
             symbols.append(PackedSymbol(SymbolKind.CONTROL, value, 0, 0))
             position = match.end()
             continue
@@ -163,7 +157,6 @@ def render_english(symbols: Iterable[PackedSymbol]) -> str:
     :func:`time_twist.compression.expand_dictionary_symbols` first when
     verifying compressed scenario text.
     """
-
     common = {value: char for value, char in enumerate(COMMON_CHARACTERS)}
     rendered: list[str] = []
     for symbol in symbols:
@@ -192,8 +185,9 @@ def control_values(text: str) -> tuple[int, ...]:
         recognized tags is ignored; full validation belongs to
         :func:`encode_english`.
     """
-
-    return tuple(int(match.group(1)) for match in CONTROL_PATTERN.finditer(text))
+    return tuple(
+        int(match.group(1)) for match in CONTROL_PATTERN.finditer(text)
+    )
 
 
 def validate_display_width(
@@ -225,7 +219,6 @@ def validate_display_width(
     tags delimit independently measured display segments and do not consume
     columns.
     """
-
     start = 0
     segment = 0
     for match in (*CONTROL_PATTERN.finditer(text), None):

@@ -4,7 +4,6 @@ import csv
 import json
 import re
 import unittest
-from pathlib import Path
 
 from generate_translation_workbook import (
     CONTROL_OVERRIDE_IDS,
@@ -69,9 +68,13 @@ class TranslationWorkbookTests(unittest.TestCase):
         for row in self.rows:
             for field in REQUIRED_FIELDS:
                 value = getattr(row, field)
-                self.assertNotEqual(value, "", f"{row.original_record_id}: {field}")
+                self.assertNotEqual(
+                    value, "", f"{row.original_record_id}: {field}"
+                )
 
-    def test_patch_controls_match_source_except_documented_ui_override(self) -> None:
+    def test_patch_controls_match_source_except_documented_ui_override(
+        self,
+    ) -> None:
         mismatches = {
             row.original_record_id
             for row in self.rows
@@ -102,7 +105,8 @@ class TranslationWorkbookTests(unittest.TestCase):
                 encode_english(row.patch_safe_english_translation)
                 validate_display_width(
                     row.patch_safe_english_translation,
-                    allow_wrap=row.original_record_id in PERSONALITY_QUESTION_IDS,
+                    allow_wrap=row.original_record_id
+                    in PERSONALITY_QUESTION_IDS,
                 )
 
     def test_visible_words_after_ellipses_have_a_space(self) -> None:

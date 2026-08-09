@@ -5,9 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PIL import Image
-
 from time_twist.font import render_glyph
-
 
 SAMPLES = (
     "PART1  SIDE B  INSERT NOW",
@@ -39,7 +37,6 @@ def main() -> None:
         Nearest-neighbor pixel replication exposes exact 8-by-8 glyph shapes
         without introducing antialiasing artifacts.
     """
-
     scale = 4
     margin = 8
     width = (max(map(len, SAMPLES)) * 8 + margin * 2) * scale

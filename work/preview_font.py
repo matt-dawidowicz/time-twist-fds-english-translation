@@ -7,7 +7,6 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
-
 CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789,.()\"'-/:!?"
 FONT_CANDIDATES = (
     ("DejaVu Sans Mono 8", "DejaVuSansMono.ttf", 8),
@@ -20,7 +19,6 @@ FONT_CANDIDATES = (
 
 def font_search_paths(filename: str) -> tuple[Path | str, ...]:
     """Return portable name-based and common operating-system font locations."""
-
     paths: list[Path | str] = [filename]
     windows = os.environ.get("WINDIR")
     if windows:
@@ -38,7 +36,6 @@ def font_search_paths(filename: str) -> tuple[Path | str, ...]:
 
 def load_available_fonts() -> tuple[tuple[str, ImageFont.FreeTypeFont], ...]:
     """Load each distinct available candidate without requiring a specific OS."""
-
     loaded: list[tuple[str, ImageFont.FreeTypeFont]] = []
     for label, filename, size in FONT_CANDIDATES:
         for candidate in font_search_paths(filename):
@@ -53,9 +50,10 @@ def load_available_fonts() -> tuple[tuple[str, ImageFont.FreeTypeFont], ...]:
     return tuple(loaded)
 
 
-def render_glyph(font: ImageFont.FreeTypeFont, char: str, threshold: int) -> Image.Image:
+def render_glyph(
+    font: ImageFont.FreeTypeFont, char: str, threshold: int
+) -> Image.Image:
     """Rasterize one font character as an 8-by-8 monochrome candidate."""
-
     grayscale = Image.new("L", (8, 8), 0)
     draw = ImageDraw.Draw(grayscale)
     draw.text((1, 0), char, font=font, fill=255)
@@ -64,13 +62,14 @@ def render_glyph(font: ImageFont.FreeTypeFont, char: str, threshold: int) -> Ima
 
 def main() -> None:
     """Render every available candidate into one portable sample sheet."""
-
     fonts = load_available_fonts()
     scale = 4
     columns = 16
     rows_per_font = (len(CHARACTERS) + columns - 1) // columns
     section_height = 20 + rows_per_font * 8 * scale
-    output = Image.new("RGB", (columns * 8 * scale, len(fonts) * section_height), "white")
+    output = Image.new(
+        "RGB", (columns * 8 * scale, len(fonts) * section_height), "white"
+    )
     draw = ImageDraw.Draw(output)
     for font_index, (label, font) in enumerate(fonts):
         y_base = font_index * section_height

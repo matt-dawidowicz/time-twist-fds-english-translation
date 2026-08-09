@@ -78,7 +78,6 @@ class BitReader:
         Raises:
             ValueError: If ``bit_position`` lies outside ``data``.
         """
-
         if bit_position < 0 or bit_position > len(data) * 8:
             raise ValueError("bit position is outside the stream")
         self.data = data
@@ -91,13 +90,11 @@ class BitReader:
         This is the floor of the absolute bit position. A reader at the end of
         a byte-aligned stream therefore returns ``len(data)``.
         """
-
         return self.bit_position // 8
 
     @property
     def at_byte_boundary(self) -> bool:
         """Return whether the next unread bit begins a byte."""
-
         return self.bit_position % 8 == 0
 
     def read_bit(self) -> int:
@@ -115,7 +112,6 @@ class BitReader:
         Side Effects:
             Advances :attr:`bit_position` by one on success.
         """
-
         if self.bit_position >= len(self.data) * 8:
             raise PackedTextError("unexpected end of packed-text stream")
         byte_index, within_byte = divmod(self.bit_position, 8)
@@ -138,7 +134,6 @@ class BitReader:
         Side Effects:
             Advances :attr:`bit_position` by ``count`` on success.
         """
-
         if count < 0:
             raise ValueError("bit count cannot be negative")
         value = 0
@@ -152,7 +147,6 @@ class BitReader:
         No padding-value check is performed because the original decoder also
         discards these bits after a record separator.
         """
-
         remainder = self.bit_position % 8
         if remainder:
             self.bit_position += 8 - remainder
@@ -172,7 +166,6 @@ class BitWriter:
             Initializes a private mutable byte buffer.  No external objects or
             files are modified.
         """
-
         self._bytes = bytearray()
         self.bit_position = 0
 
@@ -190,14 +183,15 @@ class BitWriter:
         Side Effects:
             Extends the internal byte buffer and advances ``bit_position``.
         """
-
         if count < 0 or value < 0 or value >= (1 << count):
             raise ValueError(f"value {value} does not fit in {count} bits")
         for shift in range(count - 1, -1, -1):
             byte_index, within_byte = divmod(self.bit_position, 8)
             if byte_index == len(self._bytes):
                 self._bytes.append(0)
-            self._bytes[byte_index] |= ((value >> shift) & 1) << (7 - within_byte)
+            self._bytes[byte_index] |= ((value >> shift) & 1) << (
+                7 - within_byte
+            )
             self.bit_position += 1
 
     def align_to_next_byte(self) -> None:
@@ -207,7 +201,6 @@ class BitWriter:
             Resets the in-byte bit position to zero when the current output byte
             is partially filled.  The existing unused bits remain zero.
         """
-
         remainder = self.bit_position % 8
         if remainder:
             self.bit_position += 8 - remainder
@@ -219,7 +212,6 @@ class BitWriter:
             All bytes written so far, including the final partially filled byte
             and its zero-valued padding bits.
         """
-
         return bytes(self._bytes)
 
 
@@ -250,7 +242,6 @@ def decode_symbol(reader: BitReader) -> PackedSymbol:
     Control value 5 is returned as :attr:`SymbolKind.SEPARATOR`; callers are
     responsible for applying the engine's following byte alignment.
     """
-
     start = reader.bit_position
     first = reader.read_bit()
     second = reader.read_bit()
@@ -269,7 +260,9 @@ def decode_symbol(reader: BitReader) -> PackedSymbol:
                 value = reader.read_bits(5)
             else:
                 value = reader.read_bits(3)
-                kind = SymbolKind.SEPARATOR if value == 5 else SymbolKind.CONTROL
+                kind = (
+                    SymbolKind.SEPARATOR if value == 5 else SymbolKind.CONTROL
+                )
     return PackedSymbol(kind, value, start, reader.bit_position)
 
 
@@ -290,14 +283,17 @@ def encode_symbol(writer: BitWriter, symbol: PackedSymbol) -> None:
         Appends bits to ``writer``. It does not perform byte alignment after a
         separator.
     """
-
     if symbol.kind is SymbolKind.COMMON:
         if not 0 <= symbol.value <= 47:
-            raise PackedTextError(f"common value {symbol.value} is out of range")
+            raise PackedTextError(
+                f"common value {symbol.value} is out of range"
+            )
         writer.write_bits(symbol.value, 6)
     elif symbol.kind is SymbolKind.EXTENDED:
         if not 0 <= symbol.value <= 63:
-            raise PackedTextError(f"extended value {symbol.value} is out of range")
+            raise PackedTextError(
+                f"extended value {symbol.value} is out of range"
+            )
         writer.write_bits(0b110, 3)
         writer.write_bits(symbol.value, 6)
     elif symbol.kind is SymbolKind.DICTIONARY:
@@ -312,7 +308,9 @@ def encode_symbol(writer: BitWriter, symbol: PackedSymbol) -> None:
         if not 0 <= value <= 7:
             raise PackedTextError(f"control value {value} is out of range")
         if symbol.kind is SymbolKind.CONTROL and value == 5:
-            raise PackedTextError("control value 5 is reserved for record separators")
+            raise PackedTextError(
+                "control value 5 is reserved for record separators"
+            )
         writer.write_bits(0b1111, 4)
         writer.write_bits(value, 3)
     else:
@@ -320,8 +318,9 @@ def encode_symbol(writer: BitWriter, symbol: PackedSymbol) -> None:
 
 
 def pack_records(
-    records: list[tuple[PackedSymbol, ...]]
-    | tuple[tuple[PackedSymbol, ...], ...],
+    records: (
+        list[tuple[PackedSymbol, ...]] | tuple[tuple[PackedSymbol, ...], ...]
+    ),
 ) -> bytes:
     """Pack records with control-5 separators and byte-aligned starts.
 
@@ -340,13 +339,14 @@ def pack_records(
     exactly one separator after each record and pads to the next byte exactly
     as the game's lookup routine does.
     """
-
     writer = BitWriter()
     separator = PackedSymbol(SymbolKind.SEPARATOR, 5, 0, 0)
     for record in records:
         for symbol in record:
             if symbol.kind is SymbolKind.SEPARATOR:
-                raise PackedTextError("record payload cannot contain a separator")
+                raise PackedTextError(
+                    "record payload cannot contain a separator"
+                )
             encode_symbol(writer, symbol)
         encode_symbol(writer, separator)
         writer.align_to_next_byte()
@@ -378,7 +378,6 @@ def split_records(
     ``$8126-$8137``, which discards the rest of the separator byte before
     beginning the next record.
     """
-
     if offset < 0 or offset > len(data):
         raise ValueError("record offset is outside the stream")
     reader = BitReader(data, offset * 8)

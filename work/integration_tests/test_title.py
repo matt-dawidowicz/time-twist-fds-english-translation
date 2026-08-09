@@ -5,14 +5,11 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import time_twist.title as title
 from PIL import Image
-
+from rebuild_native_title_asset import build_native_title
 
 WORK_DIR = Path(__file__).resolve().parents[1]
-
-from rebuild_native_title_asset import build_native_title
-import time_twist.title as title
-
 
 NATIVE_FILE_SHA256 = (
     "281FD547A893A27A8C744C3FDE8ADC6C98F4E2E97F5A32BCCCE2FFA270D5DA42"
@@ -86,7 +83,9 @@ def _sha256(data: bytes) -> str:
 def _patterns(data: bytes) -> tuple[bytes, ...]:
     if len(data) % 16:
         raise AssertionError("CHR data is not tile aligned")
-    return tuple(data[offset:offset + 16] for offset in range(0, len(data), 16))
+    return tuple(
+        data[offset : offset + 16] for offset in range(0, len(data), 16)
+    )
 
 
 class TitlePatchTests(unittest.TestCase):
@@ -125,12 +124,16 @@ class TitlePatchTests(unittest.TestCase):
         while offset < len(encoded):
             marker = encoded[offset]
             offset += 1
-            self.assertNotEqual(marker, 0xFF, "RLE fragment contains a terminator")
+            self.assertNotEqual(
+                marker, 0xFF, "RLE fragment contains a terminator"
+            )
             if marker >= 0xC0:
                 self.assertLessEqual(marker, 0xFE)
                 count = marker - 0xC0
                 self.assertIn(count, range(1, 63))
-                self.assertLess(offset, len(encoded), "RLE run is missing its value")
+                self.assertLess(
+                    offset, len(encoded), "RLE run is missing its value"
+                )
                 decoded.extend((encoded[offset],) * count)
                 offset += 1
             else:
@@ -175,39 +178,49 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(combined_end, title.SECOND_NAMETABLE_END + 1)
         self.assertEqual(
             _sha256(
-                self.source[
-                    title.CLOCK_SOURCE_OFFSET:title.CLOCK_SOURCE_END
-                ]
+                self.source[title.CLOCK_SOURCE_OFFSET : title.CLOCK_SOURCE_END]
             ),
             title.CLOCK_SOURCE_SHA256,
         )
         self.assertEqual(
             _sha256(
                 self.source[
-                    title.CLOCK_METASPRITE_START:title.CLOCK_METASPRITE_END
+                    title.CLOCK_METASPRITE_START : title.CLOCK_METASPRITE_END
                 ]
             ),
             title.CLOCK_METASPRITE_SHA256,
         )
 
-    def test_native_authority_regenerates_exactly_and_has_locked_geometry(self) -> None:
+    def test_native_authority_regenerates_exactly_and_has_locked_geometry(
+        self,
+    ) -> None:
         regenerated = build_native_title(self.design_path, self.legacy_path)
         self.assertEqual(regenerated.mode, "L")
         self.assertEqual(regenerated.size, (256, 240))
         self.assertEqual(regenerated.tobytes(), self.native.tobytes())
-        self.assertEqual(_sha256(self.native_path.read_bytes()), NATIVE_FILE_SHA256)
+        self.assertEqual(
+            _sha256(self.native_path.read_bytes()), NATIVE_FILE_SHA256
+        )
         self.assertEqual(_sha256(self.native.tobytes()), NATIVE_PIXELS_SHA256)
 
         logo = self.native.crop((0, 0, 256, 96))
         clock = self.native.crop((100, 36, 152, 96))
         self.assertEqual(_sha256(logo.tobytes()), LOGO_CROP_SHA256)
         self.assertEqual(_sha256(clock.tobytes()), CLOCK_CROP_SHA256)
-        self.assertEqual(sum(pixel != 0 for pixel in logo.get_flattened_data()), 9348)
-        self.assertEqual(sum(pixel != 0 for pixel in clock.get_flattened_data()), 810)
+        self.assertEqual(
+            sum(pixel != 0 for pixel in logo.get_flattened_data()), 9348
+        )
+        self.assertEqual(
+            sum(pixel != 0 for pixel in clock.get_flattened_data()), 810
+        )
         self.assertEqual(set(self.native.get_flattened_data()), {0, 1, 2, 3})
-        self.assertFalse(any(self.native.crop((0, 96, 256, 240)).get_flattened_data()))
+        self.assertFalse(
+            any(self.native.crop((0, 96, 256, 240)).get_flattened_data())
+        )
 
-    def test_completed_title_is_exact_and_lower_rom_art_is_unchanged(self) -> None:
+    def test_completed_title_is_exact_and_lower_rom_art_is_unchanged(
+        self,
+    ) -> None:
         rendered = title._render_split_nametable(
             self.assets.final_nametable,
             self.assets.background_chr,
@@ -217,7 +230,8 @@ class TitlePatchTests(unittest.TestCase):
             self.source, title.FINAL_NAMETABLE_START
         )
         source_chr = self.source[
-            title.TITLE_CHR_OFFSET:title.TITLE_CHR_OFFSET + title.TITLE_CHR_SIZE
+            title.TITLE_CHR_OFFSET : title.TITLE_CHR_OFFSET
+            + title.TITLE_CHR_SIZE
         ]
         original = title._render_indexed_nametable(source_final, source_chr)
 
@@ -228,9 +242,13 @@ class TitlePatchTests(unittest.TestCase):
         expected = original.copy()
         expected.paste(self.native.crop((0, 0, 256, 96)), (0, 0))
         expected.paste(0, (0, 92, 256, 106))
-        subtitle_width = sum(
-            4 if character == " " else 6 for character in title.DEFAULT_SUBTITLE
-        ) - 1
+        subtitle_width = (
+            sum(
+                4 if character == " " else 6
+                for character in title.DEFAULT_SUBTITLE
+            )
+            - 1
+        )
         title._draw_text(
             expected,
             title.DEFAULT_SUBTITLE,
@@ -243,12 +261,18 @@ class TitlePatchTests(unittest.TestCase):
             rendered.crop((0, 106, 256, 240)).tobytes(),
             original.crop((0, 106, 256, 240)).tobytes(),
         )
-        self.assertFalse(any(rendered.crop((0, 92, 256, 96)).get_flattened_data()))
-        self.assertFalse(any(rendered.crop((0, 103, 256, 106)).get_flattened_data()))
+        self.assertFalse(
+            any(rendered.crop((0, 92, 256, 96)).get_flattened_data())
+        )
+        self.assertFalse(
+            any(rendered.crop((0, 103, 256, 106)).get_flattened_data())
+        )
 
-    def test_exact_tile_budgets_full_slide_identity_and_completed_origin(self) -> None:
+    def test_exact_tile_budgets_full_slide_identity_and_completed_origin(
+        self,
+    ) -> None:
         top = _patterns(
-            self.assets.background_chr[:title.TOP_TILE_COUNT * 16]
+            self.assets.background_chr[: title.TOP_TILE_COUNT * 16]
         )
         bottom = _patterns(self.assets.bottom_chr)
         nintendo = _patterns(self.assets.nintendo_chr)
@@ -261,8 +285,9 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(
             self.assets.restore_chr,
             self.assets.background_chr[
-                title.NINTENDO_FIRST_TILE * 16:
-                (title.NINTENDO_FIRST_TILE + title.NINTENDO_TILE_COUNT) * 16
+                title.NINTENDO_FIRST_TILE
+                * 16 : (title.NINTENDO_FIRST_TILE + title.NINTENDO_TILE_COUNT)
+                * 16
             ],
         )
         self.assertEqual(self.assets.background_chr, self.assets.chr_data)
@@ -270,26 +295,35 @@ class TitlePatchTests(unittest.TestCase):
 
         final_tiles = self.assets.final_nametable
         slide_tiles = self.assets.second_nametable
-        self.assertEqual(slide_tiles[:12 * 32], final_tiles[:12 * 32])
+        self.assertEqual(slide_tiles[: 12 * 32], final_tiles[: 12 * 32])
         self.assertEqual(
-            set(final_tiles[:title.SPLIT_TILE_ROW * 32]),
+            set(final_tiles[: title.SPLIT_TILE_ROW * 32]),
             set(range(title.TOP_TILE_COUNT)),
         )
         self.assertTrue(
-            all(tile_id < title.TOP_TILE_COUNT for tile_id in final_tiles[:16 * 32])
+            all(
+                tile_id < title.TOP_TILE_COUNT
+                for tile_id in final_tiles[: 16 * 32]
+            )
         )
         self.assertTrue(
-            all(tile_id < title.BOTTOM_TILE_COUNT for tile_id in final_tiles[16 * 32:960])
+            all(
+                tile_id < title.BOTTOM_TILE_COUNT
+                for tile_id in final_tiles[16 * 32 : 960]
+            )
         )
         self.assertTrue(
-            all(tile_id < title.TOP_TILE_COUNT for tile_id in slide_tiles[:12 * 32])
+            all(
+                tile_id < title.TOP_TILE_COUNT
+                for tile_id in slide_tiles[: 12 * 32]
+            )
         )
         self.assertTrue(
             all(
                 title.NINTENDO_FIRST_TILE
                 <= tile_id
                 < title.NINTENDO_FIRST_TILE + title.NINTENDO_TILE_COUNT
-                for tile_id in slide_tiles[12 * 32:960]
+                for tile_id in slide_tiles[12 * 32 : 960]
             )
         )
 
@@ -300,21 +334,30 @@ class TitlePatchTests(unittest.TestCase):
             slide_tiles, self.assets.background_chr
         ).crop((0, 0, 256, 96))
         self.assertEqual(slide_logo.tobytes(), final_logo.tobytes())
-        self.assertEqual(slide_logo.tobytes(), self.native.crop((0, 0, 256, 96)).tobytes())
+        self.assertEqual(
+            slide_logo.tobytes(), self.native.crop((0, 0, 256, 96)).tobytes()
+        )
 
         self.assertEqual(_sha256(final_tiles), FINAL_NAMETABLE_SHA256)
         self.assertEqual(_sha256(slide_tiles), SECOND_NAMETABLE_SHA256)
-        self.assertEqual(_sha256(self.assets.background_chr), BACKGROUND_CHR_SHA256)
+        self.assertEqual(
+            _sha256(self.assets.background_chr), BACKGROUND_CHR_SHA256
+        )
         self.assertEqual(_sha256(self.assets.bottom_chr), BOTTOM_CHR_SHA256)
-        self.assertEqual(_sha256(self.assets.nintendo_chr), NINTENDO_CHR_SHA256)
+        self.assertEqual(
+            _sha256(self.assets.nintendo_chr), NINTENDO_CHR_SHA256
+        )
         self.assertEqual(_sha256(self.assets.restore_chr), RESTORE_CHR_SHA256)
 
-    def test_nintendo_overlay_and_pre_slide_restore_have_no_stale_logo_pixels(self) -> None:
+    def test_nintendo_overlay_and_pre_slide_restore_have_no_stale_logo_pixels(
+        self,
+    ) -> None:
         source_second, _ = title.decode_title_rle(
             self.source, title.SECOND_NAMETABLE_START
         )
         source_chr = self.source[
-            title.TITLE_CHR_OFFSET:title.TITLE_CHR_OFFSET + title.TITLE_CHR_SIZE
+            title.TITLE_CHR_OFFSET : title.TITLE_CHR_OFFSET
+            + title.TITLE_CHR_SIZE
         ]
         original = title._render_indexed_nametable(source_second, source_chr)
         first = title.NINTENDO_FIRST_TILE * 16
@@ -340,7 +383,9 @@ class TitlePatchTests(unittest.TestCase):
             self.native.crop((0, 0, 256, 96)).tobytes(),
         )
 
-    def test_native_slide_origins_wrap_and_representative_frames_are_locked(self) -> None:
+    def test_native_slide_origins_wrap_and_representative_frames_are_locked(
+        self,
+    ) -> None:
         expected_origins = (
             0x1F0,
             0x01C,
@@ -427,7 +472,6 @@ class TitlePatchTests(unittest.TestCase):
 
         def masked_physical_nametable(nametable: bytes) -> Image.Image:
             """Independently model one map's state-3 attribute visibility."""
-
             unmasked = title._render_indexed_nametable(
                 nametable, self.assets.background_chr
             ).crop((0, 0, 256, 96))
@@ -438,18 +482,14 @@ class TitlePatchTests(unittest.TestCase):
             for y in range(96):
                 for x in range(256):
                     attribute = attributes[(y // 32) * 8 + (x // 32)]
-                    quadrant_shift = (
-                        ((y // 16) & 1) * 4 + ((x // 16) & 1) * 2
-                    )
+                    quadrant_shift = ((y // 16) & 1) * 4 + ((x // 16) & 1) * 2
                     palette_id = (attribute >> quadrant_shift) & 3
                     pattern_index = source_pixels[x, y]
                     if palette_id == 1 and pattern_index in {1, 2, 3}:
                         masked_pixels[x, y] = pattern_index
             return masked
 
-        final_physical = masked_physical_nametable(
-            self.assets.final_nametable
-        )
+        final_physical = masked_physical_nametable(self.assets.final_nametable)
         slide_physical = masked_physical_nametable(
             self.assets.second_nametable
         )
@@ -496,7 +536,9 @@ class TitlePatchTests(unittest.TestCase):
                 monochrome = title.render_monochrome_slide_frame(
                     self.assets, origin
                 )
-                self.assertEqual(monochrome.tobytes(), expected_monochrome.tobytes())
+                self.assertEqual(
+                    monochrome.tobytes(), expected_monochrome.tobytes()
+                )
                 self.assertEqual(
                     sum(
                         pixel == title.TITLE_PALETTE[1]
@@ -507,11 +549,15 @@ class TitlePatchTests(unittest.TestCase):
                 self.assertFalse(
                     any(
                         pixel != title.TITLE_PALETTE[0]
-                        for pixel in monochrome.crop((0, 96, 256, 240)).get_flattened_data()
+                        for pixel in monochrome.crop(
+                            (0, 96, 256, 240)
+                        ).get_flattened_data()
                     )
                 )
                 if index in SLIDE_RAW_SHA256:
-                    self.assertEqual(_sha256(raw.tobytes()), SLIDE_RAW_SHA256[index])
+                    self.assertEqual(
+                        _sha256(raw.tobytes()), SLIDE_RAW_SHA256[index]
+                    )
                     self.assertEqual(
                         _sha256(monochrome.tobytes()),
                         SLIDE_MONOCHROME_SHA256[index],
@@ -525,7 +571,13 @@ class TitlePatchTests(unittest.TestCase):
             9348,
         )
         self.assertEqual(_sha256(completed.tobytes()), SLIDE_RAW_SHA256[20])
-        self.assertFalse(any(title.render_slide_logo_frame(self.assets, 0x1F0).get_flattened_data()))
+        self.assertFalse(
+            any(
+                title.render_slide_logo_frame(
+                    self.assets, 0x1F0
+                ).get_flattened_data()
+            )
+        )
         for invalid in (-1, 0x200):
             with self.subTest(invalid=invalid):
                 with self.assertRaises(title.TitlePatchError):
@@ -562,8 +614,12 @@ class TitlePatchTests(unittest.TestCase):
     def test_rle_fragments_are_legal_exact_and_singly_terminated(self) -> None:
         self.assertEqual(len(self.assets.encoded_final), 456)
         self.assertEqual(len(self.assets.encoded_second), 400)
-        self.assertEqual(_sha256(self.assets.encoded_final), ENCODED_FINAL_SHA256)
-        self.assertEqual(_sha256(self.assets.encoded_second), ENCODED_SECOND_SHA256)
+        self.assertEqual(
+            _sha256(self.assets.encoded_final), ENCODED_FINAL_SHA256
+        )
+        self.assertEqual(
+            _sha256(self.assets.encoded_second), ENCODED_SECOND_SHA256
+        )
         self.assert_legal_rle(
             self.assets.encoded_final, self.assets.final_nametable
         )
@@ -580,23 +636,31 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(
             self.patched[second_offset:terminator], self.assets.encoded_second
         )
-        self.assertEqual(self.patched[terminator:], b"\xFF")
-        final, decoded_second_offset = title.decode_title_rle(self.patched, stream)
+        self.assertEqual(self.patched[terminator:], b"\xff")
+        final, decoded_second_offset = title.decode_title_rle(
+            self.patched, stream
+        )
         second, decoded_terminator = title.decode_title_rle(
             self.patched, decoded_second_offset
         )
         combined, end = title.decode_title_stream(self.patched, stream)
-        self.assertEqual((final, second), (
-            self.assets.final_nametable,
-            self.assets.second_nametable,
-        ))
+        self.assertEqual(
+            (final, second),
+            (
+                self.assets.final_nametable,
+                self.assets.second_nametable,
+            ),
+        )
         self.assertEqual(decoded_terminator, terminator)
         self.assertEqual(combined, final + second)
         self.assertEqual(end, len(self.patched))
 
     def test_patch_layout_helpers_scope_memory_and_determinism(self) -> None:
         layout = self._layout()
-        address = lambda offset: title.NOV4_LOAD_ADDRESS + offset
+
+        def address(offset: int) -> int:
+            return title.NOV4_LOAD_ADDRESS + offset
+
         bottom_address = address(layout["bottom"])
         nintendo_address = address(layout["nintendo"])
         loader_address = address(layout["loader"])
@@ -609,15 +673,15 @@ class TitlePatchTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            self.patched[layout["bottom"]:layout["nintendo"]],
+            self.patched[layout["bottom"] : layout["nintendo"]],
             self.assets.bottom_chr,
         )
         self.assertEqual(
-            self.patched[layout["nintendo"]:layout["restore"]],
+            self.patched[layout["nintendo"] : layout["restore"]],
             self.assets.nintendo_chr,
         )
         self.assertEqual(
-            self.patched[layout["restore"]:layout["loader"]],
+            self.patched[layout["restore"] : layout["loader"]],
             self.assets.restore_chr,
         )
         expected_loader = (
@@ -626,7 +690,7 @@ class TitlePatchTests(unittest.TestCase):
             + b"\x60"
         )
         self.assertEqual(
-            self.patched[layout["loader"]:layout["slide_prep"]],
+            self.patched[layout["loader"] : layout["slide_prep"]],
             expected_loader,
         )
         expected_slide_prep = (
@@ -635,32 +699,34 @@ class TitlePatchTests(unittest.TestCase):
                 "A0 1B A9 00 A2 26 20 AF EB"
             )
             + base_restore_address.to_bytes(2, "little")
-            + bytes.fromhex(
-                "68 85 FF 09 10 85 FF 8D 00 20 A5 1C 8D 01 20 60"
-            )
+            + bytes.fromhex("68 85 FF 09 10 85 FF 8D 00 20 A5 1C 8D 01 20 60")
         )
         self.assertEqual(
-            self.patched[layout["slide_prep"]:layout["transition"]],
+            self.patched[layout["slide_prep"] : layout["transition"]],
             expected_slide_prep,
         )
         self.assertEqual(len(expected_slide_prep), title.SLIDE_PREP_SIZE)
 
-        expected_transition = bytes.fromhex(
-            "A9 01 8D E1 07 20 E0 6F "
-            "A9 00 8D 01 20 A5 FF 48 29 7F 8D 00 20 "
-            "A0 1B A9 00 A2 26 20 AF EB"
-        ) + address(layout["restore"]).to_bytes(2, "little") + bytes.fromhex(
-            "A0 00 A9 00 A2 37 20 AF EB"
-        ) + bottom_address.to_bytes(2, "little") + bytes.fromhex(
-            "68 85 FF 09 10 85 FF 8D 00 20 "
-            "A9 00 85 4F 85 55 85 57 85 58 85 49 85 4A "
-            "8D 70 07 8D 71 07 "
-            "A9 FF 85 48 A9 10 85 56 "
-            "A9 C0 8D 72 07 A9 3F 8D 73 07 "
-            "A5 1C 8D 01 20 60"
+        expected_transition = (
+            bytes.fromhex(
+                "A9 01 8D E1 07 20 E0 6F "
+                "A9 00 8D 01 20 A5 FF 48 29 7F 8D 00 20 "
+                "A0 1B A9 00 A2 26 20 AF EB"
+            )
+            + address(layout["restore"]).to_bytes(2, "little")
+            + bytes.fromhex("A0 00 A9 00 A2 37 20 AF EB")
+            + bottom_address.to_bytes(2, "little")
+            + bytes.fromhex(
+                "68 85 FF 09 10 85 FF 8D 00 20 "
+                "A9 00 85 4F 85 55 85 57 85 58 85 49 85 4A "
+                "8D 70 07 8D 71 07 "
+                "A9 FF 85 48 A9 10 85 56 "
+                "A9 C0 8D 72 07 A9 3F 8D 73 07 "
+                "A5 1C 8D 01 20 60"
+            )
         )
         self.assertEqual(
-            self.patched[layout["transition"]:layout["exit"]],
+            self.patched[layout["transition"] : layout["exit"]],
             expected_transition,
         )
         expected_exit = bytes.fromhex(
@@ -669,136 +735,161 @@ class TitlePatchTests(unittest.TestCase):
             "A9 02 A2 03 4C 19 61"
         )
         self.assertEqual(
-            self.patched[layout["exit"]:layout["stream"]], expected_exit
+            self.patched[layout["exit"] : layout["stream"]], expected_exit
         )
 
         self.assertEqual(
-            self.patched[title.TITLE_POINTER_OFFSET:title.TITLE_POINTER_OFFSET + 4],
+            self.patched[
+                title.TITLE_POINTER_OFFSET : title.TITLE_POINTER_OFFSET + 4
+            ],
             bytes((0xA9, stream_address & 0xFF, 0xA2, stream_address >> 8)),
         )
         self.assertEqual(
             self.patched[
-                title.BACKGROUND_TAIL_UPLOAD_OFFSET:
-                title.BACKGROUND_TAIL_UPLOAD_OFFSET + 11
+                title.BACKGROUND_TAIL_UPLOAD_OFFSET : title.BACKGROUND_TAIL_UPLOAD_OFFSET
+                + 11
             ],
             bytes((0x20, loader_address & 0xFF, loader_address >> 8))
-            + b"\xEA" * 8,
+            + b"\xea" * 8,
         )
         self.assertEqual(
             self.patched[
-                title.SLIDE_PREP_CALL_OFFSET:
-                title.SLIDE_PREP_CALL_OFFSET + len(title.SLIDE_PREP_CALL_SOURCE)
+                title.SLIDE_PREP_CALL_OFFSET : title.SLIDE_PREP_CALL_OFFSET
+                + len(title.SLIDE_PREP_CALL_SOURCE)
             ],
             bytes((0x20, slide_prep_address & 0xFF, slide_prep_address >> 8)),
         )
         self.assertEqual(
             self.patched[
-                title.TITLE_TRANSITION_CALL_OFFSET:
-                title.TITLE_TRANSITION_CALL_OFFSET
+                title.TITLE_TRANSITION_CALL_OFFSET : title.TITLE_TRANSITION_CALL_OFFSET
                 + len(title.TITLE_TRANSITION_CALL_SOURCE)
             ],
             bytes((0x20, transition_address & 0xFF, transition_address >> 8))
-            + b"\xEA" * (len(title.TITLE_TRANSITION_CALL_SOURCE) - 3),
-        )
-        self.assertEqual(
-            self.patched[title.TITLE_EXIT_OFFSET:title.TITLE_EXIT_OFFSET + 7],
-            bytes((0x4C, exit_address & 0xFF, exit_address >> 8)) + b"\xEA" * 4,
+            + b"\xea" * (len(title.TITLE_TRANSITION_CALL_SOURCE) - 3),
         )
         self.assertEqual(
             self.patched[
-                title.PPUCTRL_INIT_OFFSET:
-                title.PPUCTRL_INIT_OFFSET + len(title.PPUCTRL_INIT_SOURCE)
+                title.TITLE_EXIT_OFFSET : title.TITLE_EXIT_OFFSET + 7
+            ],
+            bytes((0x4C, exit_address & 0xFF, exit_address >> 8))
+            + b"\xea" * 4,
+        )
+        self.assertEqual(
+            self.patched[
+                title.PPUCTRL_INIT_OFFSET : title.PPUCTRL_INIT_OFFSET
+                + len(title.PPUCTRL_INIT_SOURCE)
             ],
             self.source[
-                title.PPUCTRL_INIT_OFFSET:
-                title.PPUCTRL_INIT_OFFSET + len(title.PPUCTRL_INIT_SOURCE)
+                title.PPUCTRL_INIT_OFFSET : title.PPUCTRL_INIT_OFFSET
+                + len(title.PPUCTRL_INIT_SOURCE)
             ],
         )
         self.assertEqual(
             self.patched[
-                title.PHASE_ZERO_UPLOAD_OFFSET:
-                title.PHASE_ZERO_UPLOAD_OFFSET + len(title.PHASE_ZERO_UPLOAD_SOURCE)
+                title.PHASE_ZERO_UPLOAD_OFFSET : title.PHASE_ZERO_UPLOAD_OFFSET
+                + len(title.PHASE_ZERO_UPLOAD_SOURCE)
             ],
             self.source[
-                title.PHASE_ZERO_UPLOAD_OFFSET:
-                title.PHASE_ZERO_UPLOAD_OFFSET + len(title.PHASE_ZERO_UPLOAD_SOURCE)
+                title.PHASE_ZERO_UPLOAD_OFFSET : title.PHASE_ZERO_UPLOAD_OFFSET
+                + len(title.PHASE_ZERO_UPLOAD_SOURCE)
             ],
         )
         self.assertEqual(
             self.source[
-                title.SLIDE_PALETTE_COLOR1_OFFSET:
-                title.SLIDE_PALETTE_COLOR1_OFFSET
+                title.SLIDE_PALETTE_COLOR1_OFFSET : title.SLIDE_PALETTE_COLOR1_OFFSET
                 + len(title.SLIDE_PALETTE_COLOR1_SOURCE)
             ],
             title.SLIDE_PALETTE_COLOR1_SOURCE,
         )
         self.assertEqual(
             self.patched[
-                title.SLIDE_PALETTE_COLOR1_OFFSET:
-                title.SLIDE_PALETTE_COLOR1_OFFSET
+                title.SLIDE_PALETTE_COLOR1_OFFSET : title.SLIDE_PALETTE_COLOR1_OFFSET
                 + len(title.SLIDE_PALETTE_COLOR1_PATCH)
             ],
             title.SLIDE_PALETTE_COLOR1_PATCH,
         )
 
-        allowed = set(range(title.TITLE_POINTER_OFFSET, title.TITLE_POINTER_OFFSET + 4))
+        allowed = set(
+            range(title.TITLE_POINTER_OFFSET, title.TITLE_POINTER_OFFSET + 4)
+        )
         for offset, size in (
             (title.TITLE_EXIT_OFFSET, len(title.TITLE_EXIT_SOURCE)),
             (title.BACKGROUND_TAIL_UPLOAD_OFFSET, 11),
             (title.SLIDE_PREP_CALL_OFFSET, len(title.SLIDE_PREP_CALL_SOURCE)),
-            (title.TITLE_TRANSITION_CALL_OFFSET, len(title.TITLE_TRANSITION_CALL_SOURCE)),
-            (title.SLIDE_PALETTE_COLOR1_OFFSET, len(title.SLIDE_PALETTE_COLOR1_PATCH)),
-            (title.CLOCK_HAND_ORIGINS_OFFSET, len(title.CLOCK_HAND_ORIGINS_PATCH)),
+            (
+                title.TITLE_TRANSITION_CALL_OFFSET,
+                len(title.TITLE_TRANSITION_CALL_SOURCE),
+            ),
+            (
+                title.SLIDE_PALETTE_COLOR1_OFFSET,
+                len(title.SLIDE_PALETTE_COLOR1_PATCH),
+            ),
+            (
+                title.CLOCK_HAND_ORIGINS_OFFSET,
+                len(title.CLOCK_HAND_ORIGINS_PATCH),
+            ),
         ):
             allowed.update(range(offset, offset + size))
-        allowed.update(range(title.TITLE_CHR_OFFSET, title.CLOCK_SOURCE_OFFSET))
+        allowed.update(
+            range(title.TITLE_CHR_OFFSET, title.CLOCK_SOURCE_OFFSET)
+        )
         actual = {
             index
-            for index, (before, after) in enumerate(zip(self.source, self.patched))
+            for index, (before, after) in enumerate(
+                zip(self.source, self.patched)
+            )
             if before != after
         }
         self.assertLessEqual(actual, allowed)
 
         self.assertEqual(len(self.patched), 12209)
         self.assertEqual(address(len(self.patched)), 0xD1B1)
-        self.assertEqual(title.NOV3_LOAD_ADDRESS - address(len(self.patched)), 0x604)
+        self.assertEqual(
+            title.NOV3_LOAD_ADDRESS - address(len(self.patched)), 0x604
+        )
         self.assertLess(address(len(self.patched)), title.NOV3_LOAD_ADDRESS)
         self.assertEqual(_sha256(self.patched), PATCHED_NOV4_SHA256)
         self.assertEqual(
-            title.build_title_assets(self.source, self.native_path), self.assets
+            title.build_title_assets(self.source, self.native_path),
+            self.assets,
         )
         self.assertEqual(
-            title.patched_nov4_title(self.source, self.native_path), self.patched
+            title.patched_nov4_title(self.source, self.native_path),
+            self.patched,
         )
 
-    def test_clock_chr_metasprites_and_timing_stay_native_with_new_origin(self) -> None:
+    def test_clock_chr_metasprites_and_timing_stay_native_with_new_origin(
+        self,
+    ) -> None:
         source_clock = self.source[
-            title.CLOCK_SOURCE_OFFSET:title.CLOCK_SOURCE_END
+            title.CLOCK_SOURCE_OFFSET : title.CLOCK_SOURCE_END
         ]
         patched_clock = self.patched[
-            title.CLOCK_SOURCE_OFFSET:title.CLOCK_SOURCE_END
+            title.CLOCK_SOURCE_OFFSET : title.CLOCK_SOURCE_END
         ]
         self.assertEqual(patched_clock, source_clock)
         self.assertEqual(_sha256(patched_clock), title.CLOCK_SOURCE_SHA256)
         source_metasprites = self.source[
-            title.CLOCK_METASPRITE_START:title.CLOCK_METASPRITE_END
+            title.CLOCK_METASPRITE_START : title.CLOCK_METASPRITE_END
         ]
         patched_metasprites = self.patched[
-            title.CLOCK_METASPRITE_START:title.CLOCK_METASPRITE_END
+            title.CLOCK_METASPRITE_START : title.CLOCK_METASPRITE_END
         ]
         self.assertEqual(patched_metasprites, source_metasprites)
-        self.assertEqual(_sha256(patched_metasprites), title.CLOCK_METASPRITE_SHA256)
+        self.assertEqual(
+            _sha256(patched_metasprites), title.CLOCK_METASPRITE_SHA256
+        )
         self.assertEqual(
             self.source[
-                title.CLOCK_HAND_ORIGINS_OFFSET:
-                title.CLOCK_HAND_ORIGINS_OFFSET + 7
+                title.CLOCK_HAND_ORIGINS_OFFSET : title.CLOCK_HAND_ORIGINS_OFFSET
+                + 7
             ],
             bytes.fromhex("78 00 37 04 80 00 3F"),
         )
         self.assertEqual(
             self.patched[
-                title.CLOCK_HAND_ORIGINS_OFFSET:
-                title.CLOCK_HAND_ORIGINS_OFFSET + 7
+                title.CLOCK_HAND_ORIGINS_OFFSET : title.CLOCK_HAND_ORIGINS_OFFSET
+                + 7
             ],
             bytes.fromhex("68 00 2F 04 70 00 37"),
         )
@@ -817,12 +908,16 @@ class TitlePatchTests(unittest.TestCase):
     def test_source_and_native_asset_guards_fail_closed(self) -> None:
         damaged = bytearray(self.source)
         damaged[title.SLIDE_PREP_CALL_OFFSET] ^= 0x01
-        with self.assertRaisesRegex(title.TitlePatchError, "pre-slide palette call"):
+        with self.assertRaisesRegex(
+            title.TitlePatchError, "pre-slide palette call"
+        ):
             title.patched_nov4_title(bytes(damaged), self.native_path)
 
         damaged = bytearray(self.source)
         damaged[title.SLIDE_PALETTE_COLOR1_OFFSET] ^= 0x01
-        with self.assertRaisesRegex(title.TitlePatchError, "slide palette color 1"):
+        with self.assertRaisesRegex(
+            title.TitlePatchError, "slide palette color 1"
+        ):
             title.patched_nov4_title(bytes(damaged), self.native_path)
 
         damaged = bytearray(self.source)

@@ -24,12 +24,13 @@ from time_twist.release import (
     write_source_lock,
 )
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 class ReleaseConfigurationUnitTests(unittest.TestCase):
-    def test_publisher_replaces_from_destination_local_temporary_files(self) -> None:
+    def test_publisher_replaces_from_destination_local_temporary_files(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             staging = root / "private-stage"
@@ -46,7 +47,9 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             replacements: list[tuple[Path, Path]] = []
             real_replace = os.replace
 
-            def recording_replace(source: str | Path, destination: str | Path) -> None:
+            def recording_replace(
+                source: str | Path, destination: str | Path
+            ) -> None:
                 replacements.append((Path(source), Path(destination)))
                 real_replace(source, destination)
 
@@ -61,7 +64,10 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
                 all(source.parent == output for source, _ in replacements)
             )
             self.assertTrue(
-                all(destination.parent == output for _, destination in replacements)
+                all(
+                    destination.parent == output
+                    for _, destination in replacements
+                )
             )
             for filename, payload in payloads.items():
                 self.assertEqual((output / filename).read_bytes(), payload)
@@ -81,7 +87,10 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
     def test_external_paths_are_manifest_safe(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             external = Path(directory) / "lock.json"
-            self.assertEqual(display_path(external, PROJECT_ROOT), external.resolve().as_posix())
+            self.assertEqual(
+                display_path(external, PROJECT_ROOT),
+                external.resolve().as_posix(),
+            )
 
     def test_release_target_is_tied_to_source_lock(self) -> None:
         payload = {
@@ -96,10 +105,14 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "target.json"
             path.write_text(json.dumps(payload), encoding="utf-8")
-            with self.assertRaisesRegex(ReleaseBuildError, "different source lock"):
+            with self.assertRaisesRegex(
+                ReleaseBuildError, "different source lock"
+            ):
                 validate_release_target(path, source_lock_sha256="C" * 64)
 
-    def test_cli_uses_console_script_name_and_repository_defaults(self) -> None:
+    def test_cli_uses_console_script_name_and_repository_defaults(
+        self,
+    ) -> None:
         parser = build_parser()
         self.assertEqual(parser.prog, "time-twist")
         args = parser.parse_args(["release-build"])
@@ -112,15 +125,19 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
     def test_known_cli_error_has_no_traceback(self) -> None:
         stderr = io.StringIO()
         with tempfile.TemporaryDirectory() as directory:
-            with contextlib.redirect_stderr(stderr), self.assertRaises(SystemExit) as raised:
+            with (
+                contextlib.redirect_stderr(stderr),
+                self.assertRaises(SystemExit) as raised,
+            ):
                 main(["release-build", "--project-root", directory])
         self.assertEqual(raised.exception.code, 2)
         rendered = stderr.getvalue()
         self.assertIn("time-twist: error:", rendered)
         self.assertNotIn("Traceback", rendered)
 
-
-    def test_promotion_accepts_reviewed_noncanonical_hashes_and_external_lock(self) -> None:
+    def test_promotion_accepts_reviewed_noncanonical_hashes_and_external_lock(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "project"
             work = root / "work"
@@ -130,10 +147,16 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             translations.mkdir(parents=True)
             title_assets.mkdir()
             baseline.mkdir()
-            (root / "pyproject.toml").write_text("[project]\nname='test'\n", encoding="utf-8")
+            (root / "pyproject.toml").write_text(
+                "[project]\nname='test'\n", encoding="utf-8"
+            )
             for bank in KNOWN_SCENARIO_BANKS:
-                (translations / f"{bank}.json").write_text("{}\n", encoding="utf-8")
-            (title_assets / "Time Twist approved native title.png").write_bytes(b"title")
+                (translations / f"{bank}.json").write_text(
+                    "{}\n", encoding="utf-8"
+                )
+            (
+                title_assets / "Time Twist approved native title.png"
+            ).write_bytes(b"title")
             (baseline / "time_twist_zenpen_japan.fds").write_bytes(b"zenpen")
             (baseline / "time_twist_kouhen_japan.fds").write_bytes(b"kouhen")
 
