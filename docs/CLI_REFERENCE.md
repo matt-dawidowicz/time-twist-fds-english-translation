@@ -104,6 +104,12 @@ changes only; it does not approve new output hashes.
 Rebuilds all 13 scenario banks, applies fixed UI/font/title patches, produces
 Zenpen and Kouhen, combines four sides, and writes `release_manifest.json`.
 
+Release manifest schema v4 is a complete audit record. It includes source-lock
+and release-code provenance, informational Python/Pillow environment versions,
+all scenario-bank capacity/hash reports, fixed-component hashes, target state,
+and canonical final-output records. Generated manifests are structurally
+validated before publication.
+
 Default strict mode verifies `PROJECT/work/release_target.json`, including its
 tie to the active source-lock SHA-256 and the active release-code provenance.
 It stages output and does not publish a new build when target verification
@@ -115,22 +121,29 @@ missing-target error until that exact candidate is reviewed and promoted.
 
 `--candidate` skips target approval and publishes a candidate manifest for
 review. Candidate mode is required after an intentional source/output change.
+Legacy v3 candidate manifests must be rebuilt with the current code before they
+can be promoted.
 
 ### `release-promote CANDIDATE_MANIFEST [--target PATH] [--release-id ID]`
 
-Accepts only a candidate-mode manifest. It verifies the candidate's active
-source lock, release-code tree, output paths, sizes, and SHA-256 hashes, then
-atomically writes the versioned release target. A subsequent strict
+Accepts only a complete current-schema candidate manifest. It verifies the
+candidate's active source lock, release-code tree, full audit metadata, output
+paths, sizes, and SHA-256 hashes. Candidate outputs are checked once during
+validation and again immediately before the target is atomically written,
+closing the promotion time-of-check/time-of-use window. A subsequent strict
 `release-build` must reproduce that target.
 
-Candidate and target manifests record an optional checkout Git commit and
-dirty flag, plus an authoritative SHA-256 over normalized logical
+Candidate and target metadata record an optional checkout Git commit and dirty
+flag, plus an authoritative SHA-256 over normalized logical
 `work/time_twist/**/*.py` paths and contents. The executing/imported package
 and supplied project checkout are hashed independently with those same logical
 identities and must match before either build or promotion proceeds. Git is not
-required. A legacy target without code provenance, or a target made by a
-different active code tree, is rejected and must be re-created through
-candidate review and promotion.
+required. Candidate/verified manifests additionally record Python
+implementation/version and Pillow version for reproduction diagnostics; those
+environment fields are informational rather than release authority. A legacy
+target without code provenance, or a target made by a different active code
+tree, is rejected and must be re-created through candidate review and
+promotion.
 
 ## Failure interpretation
 
