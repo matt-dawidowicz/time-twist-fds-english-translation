@@ -364,14 +364,14 @@ def split_records(
     Args:
         data: Complete packed byte stream.
         offset: Byte offset of the first record.
-        limit: Exact number of records to decode.
+        limit: Exact nonnegative number of records to decode.
 
     Returns:
         A pair containing mutable symbol lists and the byte offset immediately
         after the final aligned separator.
 
     Raises:
-        ValueError: If ``offset`` is outside ``data``.
+        ValueError: If ``offset`` is outside ``data`` or ``limit`` is negative.
         PackedTextError: If fewer than ``limit`` complete records are present.
 
     A zero limit returns no records and the original offset. This mirrors
@@ -380,6 +380,8 @@ def split_records(
     """
     if offset < 0 or offset > len(data):
         raise ValueError("record offset is outside the stream")
+    if limit < 0:
+        raise ValueError("record limit cannot be negative")
     reader = BitReader(data, offset * 8)
     records: list[list[PackedSymbol]] = []
     current: list[PackedSymbol] = []
