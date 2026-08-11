@@ -62,6 +62,11 @@ disabled when necessary, and fails closed if the exhaustive positive-saving
 search still cannot produce a complete dictionary. This applies equally to the
 manual `scenario-insert`/`ui-patch` workflow and the canonical release builder.
 
+A fully translated fixed-UI bank also rejects `scenario-insert --no-compress`.
+That diagnostic mode deliberately preserves the Japanese dictionary, so it
+cannot be a safe input to the English fixed-table `ui-patch` step. The command
+now fails before writing an output rather than allowing that unsafe workflow.
+
 The hardening is folded into the canonical CLI, parser, compressor, and release
 modules rather than hidden behind compatibility facades. The recovered binary
 logic remains structurally unchanged except where this note documents a new
@@ -96,6 +101,8 @@ private ROM bytes. It verifies:
 - an explicit fixed-UI dictionary floor extends the preserved tail boundary;
 - fixed-UI dictionary generation fails closed before an incomplete dictionary
   can reach the UI patcher;
+- fully translated fixed-UI insertion rejects `--no-compress` without writing
+  an unsafe intermediate bank;
 - direct scenario rebuilding rejects changed per-group record counts;
 - direct scenario rebuilding rejects dictionaries larger than 31 entries;
 - the personality-question wrapping exception remains intact;
@@ -105,7 +112,7 @@ private ROM bytes. It verifies:
 - the release dependency metadata keeps Pillow pinned to the approved version.
 
 The existing public CI matrix continues to run Black, Ruff, pydocstyle, mypy,
-public-tree validation, 89 fixture-free unit tests on Python 3.11/3.12, and the
+public-tree validation, 90 fixture-free unit tests on Python 3.11/3.12, and the
 Python 3.12 package/wheel smoke tests. Private integration tests remain a
 separate local release gate because original ROM-derived fixtures are
 intentionally absent from the repository.
