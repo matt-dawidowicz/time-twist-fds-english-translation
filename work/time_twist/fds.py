@@ -380,9 +380,9 @@ class FdsImage:
             A parsed image with every side and file represented.
 
         Raises:
-            FdsFormatError: If a header is truncated, its side count disagrees
-                with the image size, a raw image is not side-aligned, or any
-                side is malformed.
+            FdsFormatError: If the image declares or contains zero sides, a
+                header is truncated, its side count disagrees with the image
+                size, a raw image is not side-aligned, or any side is malformed.
         """
         if raw[:4] == b"FDS\x1a":
             if len(raw) < FDS_HEADER_SIZE:
@@ -405,6 +405,8 @@ class FdsImage:
             side_count = len(raw) // SIDE_SIZE
             side_data = raw
 
+        if side_count == 0:
+            raise FdsFormatError("FDS image contains no sides")
         sides = [
             FdsSide.parse(
                 side_data[index * SIDE_SIZE : (index + 1) * SIDE_SIZE], index
