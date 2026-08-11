@@ -32,10 +32,16 @@ jobs:
           text = path.read_text(encoding="utf-8")
 
           old_imports = '''from .compression import compress_english_groups, packed_size\nfrom .english import (\n    EnglishTextError,\n    control_values,\n    encode_english,\n    validate_display_width,\n)\nfrom .fds import FdsImage, combine_images\nfrom .font import patched_nov4_font\nfrom .project import (\n    KNOWN_SCENARIO_BANKS,\n    PERSONALITY_QUESTION_IDS,\n    required_dictionary_entries,\n)\n'''
-          new_imports = '''from .compression import compress_english_groups, packed_size\nfrom .english import EnglishTextError\nfrom .fds import FdsImage, combine_images\nfrom .font import patched_nov4_font\nfrom .project import (\n    KNOWN_SCENARIO_BANKS,\n    required_dictionary_entries,\n    source_dictionary_reference_floor,\n)\nfrom .scenario_validation import encode_validated_english, scenario_record_id\n'''
+          new_imports = '''from .compression import compress_english_groups, packed_size\nfrom .english import EnglishTextError\nfrom .fds import FdsImage, combine_images\nfrom .font import patched_nov4_font\nfrom .project import (\n    KNOWN_SCENARIO_BANKS,\n    required_dictionary_entries,\n    source_dictionary_reference_floor,\n)\n'''
           if text.count(old_imports) != 1:
               raise SystemExit("release import block did not match expected source")
           text = text.replace(old_imports, new_imports, 1)
+
+          scenario_import = '''from .scenario import (\n    ScenarioBank,\n    parse_scenario_bank,\n    rebuild_scenario_bank,\n    render_symbols,\n)\n'''
+          scenario_import_hardened = scenario_import + '''from .scenario_validation import (\n    encode_validated_english,\n    scenario_record_id,\n)\n'''
+          if text.count(scenario_import) != 1:
+              raise SystemExit("release scenario import block did not match expected source")
+          text = text.replace(scenario_import, scenario_import_hardened, 1)
 
           encoded_function = '''def _encoded_groups(\n    bank: ScenarioBank,\n    bank_name: str,\n    translations: dict[str, str],\n) -> tuple[tuple[tuple[PackedSymbol, ...], ...], ...]:\n    """Validate release translations through the shared scenario policy."""\n    records_by_id = {\n        scenario_record_id(\n            bank_name,\n            record.group_index,\n            record.record_index,\n        ): record\n        for record in bank.records\n    }\n    unknown = sorted(set(translations) - set(records_by_id))\n    missing = sorted(set(records_by_id) - set(translations))\n    if unknown or missing:\n        raise ReleaseBuildError(\n            f"{bank_name} translation IDs differ from the source; "\n            f"unknown={unknown[:1]}, missing={missing[:1]}"\n        )\n\n    encoded: dict[str, tuple[PackedSymbol, ...]] = {}\n    for record_id, record in records_by_id.items():\n        japanese = render_symbols(record.symbols, bank.dictionary)\n        try:\n            encoded[record_id] = encode_validated_english(\n                record_id,\n                translations[record_id],\n                japanese,\n            )\n        except EnglishTextError as error:\n            raise ReleaseBuildError(\n                f"invalid English in {record_id}: {error}"\n            ) from error\n\n    return tuple(\n        tuple(\n            encoded[\n                scenario_record_id(\n                    bank_name,\n                    group_index,\n                    record.record_index,\n                )\n            ]\n            for record in bank.records\n            if record.group_index == group_index\n        )\n        for group_index in range(len(bank.group_addresses))\n    )\n'''
           text, count = re.subn(
@@ -62,6 +68,8 @@ jobs:
           path.write_text(text, encoding="utf-8")
           PY
           rm work/time_twist/_release_core.py
+      - run: python -m black work/time_twist/release.py
+      - run: python -m ruff check --fix work/time_twist/release.py
       - run: python -m black work/time_twist/release.py
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
