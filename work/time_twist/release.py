@@ -471,6 +471,35 @@ def authoritative_source_paths(paths: ReleasePaths) -> tuple[Path, ...]:
     )
 
 
+def _protected_release_paths(paths: ReleasePaths) -> dict[Path, str]:
+    """Return project files that release metadata must never overwrite."""
+    protected: dict[Path, str] = {
+        (paths.project_root / "pyproject.toml").resolve(): "project metadata",
+        paths.source_lock.resolve(): "release source lock",
+        paths.release_target.resolve(): "release target",
+    }
+    for path in authoritative_source_paths(paths):
+        protected[path.resolve()] = "approved release source"
+    for path in release_code_paths(paths.project_root):
+        protected[path.resolve()] = "release-critical code"
+    return protected
+
+
+def _validate_destination_collision(
+    destination: Path,
+    protected: Mapping[Path, str],
+    *,
+    label: str,
+) -> None:
+    """Reject metadata output that aliases a protected release file."""
+    resolved = destination.expanduser().resolve()
+    protected_label = protected.get(resolved)
+    if protected_label is not None:
+        raise ReleaseBuildError(
+            f"{label} collides with protected {protected_label}: {resolved}"
+        )
+
+
 def _source_normalization(relative: str) -> str:
     """Return the established content policy for one locked source path."""
     logical_path = PurePosixPath(relative)
@@ -559,6 +588,13 @@ def write_source_lock(
     root = discover_project_root(project_root)
     paths = ReleasePaths.from_project_root(root)
     destination = (path or paths.source_lock).expanduser().resolve()
+    protected = _protected_release_paths(paths)
+    protected.pop(paths.source_lock.resolve(), None)
+    _validate_destination_collision(
+        destination,
+        protected,
+        label="source-lock destination",
+    )
     payload = build_source_lock_payload(root)
     _atomic_write_json(destination, payload)
     return payload
@@ -1242,6 +1278,19 @@ def _validate_candidate_outputs(
             )
 
 
+def _validate_candidate_against_rebuild(
+    manifest: Mapping[str, object],
+    rebuilt: Mapping[str, object],
+) -> None:
+    """Bind candidate audit claims to a fresh deterministic rebuild."""
+    for field in ("scenario_banks", "component_sha256", "outputs"):
+        if manifest.get(field) != rebuilt.get(field):
+            raise ReleaseBuildError(
+                f"candidate manifest {field} does not match a fresh canonical "
+                "rebuild from the active source lock and release code"
+            )
+
+
 def _atomic_publish_file(source: Path, destination: Path) -> None:
     """Atomically publish a staged file with destination-directory access.
 
@@ -1464,7 +1513,7 @@ def promote_release_target(
     project_root: Path | None = None,
     release_id: str | None = None,
 ) -> dict[str, object]:
-    """Promote a reviewed candidate manifest into the strict output target."""
+    """Promote only a candidate reproduced from active inputs and code."""
     root = discover_project_root(project_root)
     paths = ReleasePaths.from_project_root(root)
     active_code_provenance = build_code_provenance(root)
@@ -1499,7 +1548,7 @@ def promote_release_target(
     if not lock_path.is_file():
         validate_source_lock(lock_path, project_root=root)
     lock_sha256_before = source_lock_sha256(lock_path)
-    validate_source_lock(lock_path, project_root=root)
+    lock = validate_source_lock(lock_path, project_root=root)
     lock_sha256 = source_lock_sha256(lock_path)
     if lock_sha256 != lock_sha256_before:
         raise ReleaseBuildError(
@@ -1508,6 +1557,13 @@ def promote_release_target(
     if manifest.get("source_lock_sha256") != lock_sha256:
         raise ReleaseBuildError(
             "candidate manifest does not match the current source lock"
+        )
+    locked_subtitle = lock.get("subtitle")
+    if not isinstance(locked_subtitle, str):
+        raise ReleaseBuildError("active source lock has no valid subtitle")
+    if manifest.get("subtitle") != locked_subtitle:
+        raise ReleaseBuildError(
+            "candidate manifest subtitle does not match the active source lock"
         )
     code_provenance = validate_code_provenance(
         manifest.get("code_provenance"),
@@ -1527,15 +1583,37 @@ def promote_release_target(
     )
     if not selected_release_id.strip():
         raise ReleaseBuildError("release ID must not be empty")
+
+    destination = (target_path or paths.release_target).expanduser().resolve()
+    protected = _protected_release_paths(paths)
+    protected.pop(paths.release_target.resolve(), None)
+    protected[lock_path.resolve()] = "active source lock"
+    protected[manifest_path] = "candidate manifest"
+    for filename in RELEASE_FILENAMES.values():
+        protected[(manifest_path.parent / filename).resolve()] = "candidate output"
+    _validate_destination_collision(
+        destination,
+        protected,
+        label="release-target destination",
+    )
+
+    with tempfile.TemporaryDirectory(
+        prefix="time_twist_promotion_rebuild_"
+    ) as directory:
+        rebuilt = build_release(
+            Path(directory) / "candidate",
+            project_root=root,
+            source_lock=lock_path,
+            verify_target=False,
+            subtitle=locked_subtitle,
+        )
+    _validate_candidate_against_rebuild(manifest, rebuilt)
+
     _validate_release_code_stable(active_code_provenance, root)
     validate_source_lock(lock_path, project_root=root)
     if source_lock_sha256(lock_path) != lock_sha256:
         raise ReleaseBuildError(
             "release source lock changed while the candidate was validated"
-        )
-    if sha256_file(manifest_path) != manifest_sha256:
-        raise ReleaseBuildError(
-            "candidate manifest changed while it was being validated"
         )
 
     target: dict[str, object] = {
@@ -1552,7 +1630,10 @@ def promote_release_target(
             for name in RELEASE_OUTPUT_KEYS
         },
     }
-    destination = (target_path or paths.release_target).expanduser().resolve()
     _validate_candidate_outputs(manifest_path, output_records)
+    if sha256_file(manifest_path) != manifest_sha256:
+        raise ReleaseBuildError(
+            "candidate manifest changed while it was being validated"
+        )
     _atomic_write_json(destination, target)
     return target
