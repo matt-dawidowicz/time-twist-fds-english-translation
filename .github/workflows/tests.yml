@@ -50,6 +50,8 @@ jobs:
           project.write_text(text.replace(temporary, "", 1), encoding="utf-8")
           PY
       - run: python -m black work/time_twist/cli.py
+      - name: Remove editable-install metadata before public tree check
+        run: rm -rf work/time_twist_fds_tools.egg-info
       - run: python work/tools/check_public_tree.py
       - run: python -m black --check work
       - run: python -m ruff check work
