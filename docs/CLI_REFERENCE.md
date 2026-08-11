@@ -42,7 +42,8 @@ must still fit 65,500 bytes.
 ### `scenario-extract BANK OUTPUT`
 
 Decodes group pointers, packed records, dictionary references, and Japanese
-text to JSON. Existing English at matching group/record coordinates is kept.
+text to JSON. Existing English is retained only when its stable `BANK/gN/rN`
+record ID still matches the refreshed source.
 
 ### `scenario-merge SCENARIO TRANSLATIONS [--output PATH] [--allow-partial]`
 
@@ -52,13 +53,19 @@ required. It validates controls, glyph support, and display width.
 ### `scenario-footprint BANK [--translations PATH]`
 
 Reports the fixed text reservation and, with a complete translation map,
-compressed use and remaining bytes.
+compressed use and remaining bytes. For banks with fixed-address UI text, the
+source reservation includes dictionary entries referenced by those verified
+source tables as well as ordinary scenario dialogue.
 
 ### `scenario-insert BANK TRANSLATION OUTPUT [--no-compress] [--bank-name NAME]`
 
-Rebuilds scenario groups and pointers. Complete translations receive a new
-English dictionary; partial work keeps the Japanese dictionary. `--bank-name`
-is available when the input filename does not safely identify its bank.
+Rebuilds scenario groups and pointers only after validating group indices,
+record indices, stable IDs, control order, display width, and glyph support.
+Complete translations receive a new English dictionary; partial work keeps the
+Japanese dictionary. `--bank-name` is available when the input filename does
+not safely identify its bank. Capacity-constrained complete builds retry the
+deterministic compressor without candidate pruning only if the normal fast
+search misses the native reservation.
 
 ## Asset and UI commands
 
