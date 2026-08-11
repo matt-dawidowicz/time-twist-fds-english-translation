@@ -154,7 +154,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
         groups = ((record,),)
         uncompressed = packed_size(groups, ())
         with patch(
-            "time_twist._compression_core.MAX_CANDIDATES_TO_EVALUATE",
+            "time_twist.compression.MAX_CANDIDATES_TO_EVALUATE",
             0,
         ):
             compressed, dictionary = compress_english_groups(

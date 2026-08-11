@@ -48,11 +48,10 @@ references transitively. `dictionary_end_offset` therefore covers entries
 proven reachable from either dialogue or the source fixed UI, without assuming
 that every bank has 31 source entries.
 
-The large recovered parsers/builders remain semantically unchanged in private
-`_core` modules. The copied release implementation received only the
-repository-standard Black formatting required by CI. Small public facades add
-the new policy checks around those cores, keeping the reverse-engineered binary
-implementation easy to compare with its previous version.
+The hardening is folded into the canonical CLI, parser, compressor, and release
+modules rather than hidden behind compatibility facades. The recovered binary
+logic remains structurally unchanged except where this note documents a new
+validation or capacity boundary.
 
 ## Capacity-only compressor fallback
 
