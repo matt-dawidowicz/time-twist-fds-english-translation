@@ -367,10 +367,7 @@ def compress_english_groups(
         not requires_full_dictionary
         or len(primary[1]) == MAX_DICTIONARY_ENTRIES
     )
-    if (
-        (max_bytes is None or primary_size <= max_bytes)
-        and primary_complete
-    ):
+    if (max_bytes is None or primary_size <= max_bytes) and primary_complete:
         return primary
 
     fallback = _compress_english_groups_greedy(
