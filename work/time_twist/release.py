@@ -28,6 +28,12 @@ del _name
 ReleaseBuildError = _core.ReleaseBuildError
 ScenarioBuildResult = _core.ScenarioBuildResult
 SCENARIO_UI_PATCHERS = _core.SCENARIO_UI_PATCHERS
+build_code_provenance = _core.build_code_provenance
+build_release = _core.build_release
+discover_project_root = _core.discover_project_root
+promote_release_target = _core.promote_release_target
+validate_source_lock = _core.validate_source_lock
+write_source_lock = _core.write_source_lock
 
 
 def _encoded_groups(
