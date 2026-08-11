@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
+from time_twist.project import KNOWN_SCENARIO_BANKS
 from time_twist.release import (
     BUILD_ENVIRONMENT_SCHEMA,
     RELEASE_FILENAMES,
@@ -20,7 +22,6 @@ from time_twist.release import (
     validate_release_manifest_metadata,
     write_source_lock,
 )
-from time_twist.project import KNOWN_SCENARIO_BANKS
 
 
 def make_synthetic_project(root: Path) -> Path:
@@ -40,7 +41,9 @@ def make_synthetic_project(root: Path) -> Path:
     (code / "__init__.py").write_text('"""Synthetic package."""\n')
     for bank in KNOWN_SCENARIO_BANKS:
         (translations / f"{bank}.json").write_text("{}\n", encoding="utf-8")
-    (title_assets / "Time Twist approved native title.png").write_bytes(b"title")
+    (title_assets / "Time Twist approved native title.png").write_bytes(
+        b"title"
+    )
     (baseline / "time_twist_zenpen_japan.fds").write_bytes(b"zenpen")
     (baseline / "time_twist_kouhen_japan.fds").write_bytes(b"kouhen")
     return root
@@ -67,21 +70,7 @@ def valid_manifest(root: Path, candidate: Path) -> dict[str, object]:
             "remaining_bytes": 1,
             "sha256": "A" * 64,
         }
-        for bank in (
-            "TT3A",
-            "TT3B",
-            "TT1B",
-            "TT1A",
-            "TT2",
-            "T22",
-            "TT6C",
-            "TT6B",
-            "TT6A",
-            "TT6D",
-            "TT4",
-            "TT5",
-            "T25",
-        )
+        for bank in KNOWN_SCENARIO_BANKS
     }
     return {
         "schema": RELEASE_MANIFEST_SCHEMA,
@@ -138,8 +127,6 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             candidate.mkdir()
             manifest = valid_manifest(root, candidate)
             manifest_path = candidate / "release_manifest.json"
-            import json
-
             manifest_path.write_text(
                 json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
             )
