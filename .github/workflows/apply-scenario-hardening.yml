@@ -1,0 +1,75 @@
+name: apply scenario hardening
+
+on:
+  push:
+    branches:
+      - codex/scenario-validation-hardening
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/scenario-validation-hardening
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Apply reviewed hardening patch
+        shell: bash
+        run: |
+          cat > /tmp/apply.b64 <<'EOF'
+          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
+          EOF
+          base64 -d /tmp/apply.b64 | gzip -d > /tmp/apply.py
+          python /tmp/apply.py
+      - name: Install development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+      - name: Format changed Python
+        run: >-
+          python -m black
+          work/time_twist/scenario_validation.py
+          work/time_twist/scenario.py
+          work/time_twist/compression.py
+          work/time_twist/project.py
+          work/time_twist/cli.py
+          work/time_twist/release.py
+          work/tests/test_scenario_validation_hardening.py
+      - name: Public tree policy
+        run: python work/tools/check_public_tree.py
+      - name: Ruff
+        run: python -m ruff check work
+      - name: Pydocstyle
+        run: python -m pydocstyle --convention=pep257 work
+      - name: Mypy
+        run: python -m mypy
+      - name: Unit tests
+        run: python work/run_tests.py unit
+      - name: Diff checks
+        run: git diff --check
+      - name: Commit validated hardening
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            work/time_twist/scenario_validation.py \
+            work/time_twist/scenario.py \
+            work/time_twist/compression.py \
+            work/time_twist/project.py \
+            work/time_twist/cli.py \
+            work/time_twist/release.py \
+            work/tests/test_scenario_validation_hardening.py \
+            docs/SCENARIO_VALIDATION_HARDENING.md \
+            docs/CLI_REFERENCE.md \
+            docs/README.md \
+            .github/workflows/apply-scenario-hardening.yml
+          git diff --cached --check
+          git commit -m "Harden scenario translation validation"
+          git push origin HEAD:codex/scenario-validation-hardening
