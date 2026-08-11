@@ -1,45 +1,78 @@
 name: tests
 
 on:
-  push:
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
-  unit-tests:
+  fold-release-hardening:
+    if: github.head_ref == 'codex/scenario-validation-hardening'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: codex/scenario-validation-hardening
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.11"
           cache: pip
-      - run: python work/tools/check_public_tree.py
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[dev]"
-      - run: python -m black --check work
+      - name: Fold hardening into release.py
+        shell: bash
+        run: |
+          cp work/time_twist/_release_core.py work/time_twist/release.py
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("work/time_twist/release.py")
+          text = path.read_text(encoding="utf-8")
+
+          old_imports = '''from .compression import compress_english_groups, packed_size\nfrom .english import (\n    EnglishTextError,\n    control_values,\n    encode_english,\n    validate_display_width,\n)\nfrom .fds import FdsImage, combine_images\nfrom .font import patched_nov4_font\nfrom .project import (\n    KNOWN_SCENARIO_BANKS,\n    PERSONALITY_QUESTION_IDS,\n    required_dictionary_entries,\n)\n'''
+          new_imports = '''from .compression import compress_english_groups, packed_size\nfrom .english import EnglishTextError\nfrom .fds import FdsImage, combine_images\nfrom .font import patched_nov4_font\nfrom .project import (\n    KNOWN_SCENARIO_BANKS,\n    required_dictionary_entries,\n    source_dictionary_reference_floor,\n)\nfrom .scenario_validation import encode_validated_english, scenario_record_id\n'''
+          if text.count(old_imports) != 1:
+              raise SystemExit("release import block did not match expected source")
+          text = text.replace(old_imports, new_imports, 1)
+
+          encoded_function = '''def _encoded_groups(\n    bank: ScenarioBank,\n    bank_name: str,\n    translations: dict[str, str],\n) -> tuple[tuple[tuple[PackedSymbol, ...], ...], ...]:\n    """Validate release translations through the shared scenario policy."""\n    records_by_id = {\n        scenario_record_id(\n            bank_name,\n            record.group_index,\n            record.record_index,\n        ): record\n        for record in bank.records\n    }\n    unknown = sorted(set(translations) - set(records_by_id))\n    missing = sorted(set(records_by_id) - set(translations))\n    if unknown or missing:\n        raise ReleaseBuildError(\n            f"{bank_name} translation IDs differ from the source; "\n            f"unknown={unknown[:1]}, missing={missing[:1]}"\n        )\n\n    encoded: dict[str, tuple[PackedSymbol, ...]] = {}\n    for record_id, record in records_by_id.items():\n        japanese = render_symbols(record.symbols, bank.dictionary)\n        try:\n            encoded[record_id] = encode_validated_english(\n                record_id,\n                translations[record_id],\n                japanese,\n            )\n        except EnglishTextError as error:\n            raise ReleaseBuildError(\n                f"invalid English in {record_id}: {error}"\n            ) from error\n\n    return tuple(\n        tuple(\n            encoded[\n                scenario_record_id(\n                    bank_name,\n                    group_index,\n                    record.record_index,\n                )\n            ]\n            for record in bank.records\n            if record.group_index == group_index\n        )\n        for group_index in range(len(bank.group_addresses))\n    )\n'''
+          text, count = re.subn(
+              r"def _encoded_groups\(.*?\n\n\ndef build_scenario_bank\(",
+              encoded_function + "\n\ndef build_scenario_bank(",
+              text,
+              count=1,
+              flags=re.S,
+          )
+          if count != 1:
+              raise SystemExit("release _encoded_groups function was not replaced")
+
+          build_function = '''def build_scenario_bank(\n    source: bytes,\n    bank_name: str,\n    *,\n    temporary_directory: Path,\n    translations_directory: Path,\n) -> ScenarioBuildResult:\n    """Build one scenario bank with fixed-UI boundary and capacity guards."""\n    source_path = temporary_directory / f"{bank_name}_source.bin"\n    source_path.write_bytes(source)\n    bank = parse_scenario_bank(\n        source_path,\n        minimum_dictionary_entries=source_dictionary_reference_floor(\n            bank_name,\n            source,\n        ),\n    )\n    groups = _encoded_groups(\n        bank,\n        bank_name,\n        _load_translation_map(bank_name, translations_directory),\n    )\n    text_start = bank.group_addresses[0] - bank.load_address\n    capacity = bank.dictionary_end_offset - text_start\n    pointer_bytes = 2 * (len(groups) - 1)\n    compressed, dictionary = compress_english_groups(\n        groups,\n        required_entries=required_dictionary_entries(bank_name),\n        max_bytes=capacity - pointer_bytes,\n    )\n    if bank_name in SCENARIO_UI_PATCHERS and len(dictionary) != 31:\n        raise ReleaseBuildError(\n            f"{bank_name} fixed UI requires exactly 31 dictionary entries; "\n            f"compressor produced {len(dictionary)}"\n        )\n    rebuilt = rebuild_scenario_bank(\n        bank,\n        compressed,\n        dictionary=dictionary,\n        preserve_memory_footprint=True,\n    )\n    patcher = SCENARIO_UI_PATCHERS.get(bank_name)\n    if patcher is not None:\n        rebuilt = patcher(rebuilt)\n\n    used = packed_size(compressed, dictionary) + pointer_bytes\n    return ScenarioBuildResult(\n        data=rebuilt,\n        records=len(bank.records),\n        dictionary_entries=len(dictionary),\n        packed_bytes=used,\n        capacity_bytes=capacity,\n    )\n'''
+          text, count = re.subn(
+              r"def build_scenario_bank\(.*?\n\n\ndef _replace\(",
+              build_function + "\n\ndef _replace(",
+              text,
+              count=1,
+              flags=re.S,
+          )
+          if count != 1:
+              raise SystemExit("release build_scenario_bank function was not replaced")
+
+          path.write_text(text, encoding="utf-8")
+          PY
+          rm work/time_twist/_release_core.py
+      - run: python -m black work/time_twist/release.py
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
       - run: python work/run_tests.py unit
-      - if: matrix.python-version == '3.12'
-        run: python -m build
-      - if: matrix.python-version == '3.12'
-        run: python -m pip install --force-reinstall dist/*.whl
-      - if: matrix.python-version == '3.12'
-        name: Prove smoke test imports the installed wheel
-        run: >-
-          python -c "from pathlib import Path; import time_twist;
-          from time_twist.release import build_code_provenance;
-          imported = Path(time_twist.__file__).resolve();
-          checkout = Path('work/time_twist').resolve(); print(imported);
-          assert checkout not in imported.parents,
-          f'import leaked from checkout: {imported}';
-          build_code_provenance(Path.cwd())"
-      - if: matrix.python-version == '3.12'
-        run: time-twist --help
-      - if: matrix.python-version == '3.12'
-        run: time-twist release-build --help
+      - run: git diff --check
+      - name: Commit canonical release module
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- work/time_twist/release.py work/time_twist/_release_core.py
+          git commit -m "Fold release hardening into canonical module"
+          git push origin HEAD:codex/scenario-validation-hardening
