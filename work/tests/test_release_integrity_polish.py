@@ -1,7 +1,8 @@
-"""Fixture-free regression tests for final release-integrity hardening."""
+"""Fixture-free regression tests for release-integrity hardening."""
 
 from __future__ import annotations
 
+import copy
 import json
 import tempfile
 import unittest
@@ -95,8 +96,13 @@ def valid_manifest(root: Path, candidate: Path) -> dict[str, object]:
     }
 
 
+def write_manifest(path: Path, payload: dict[str, object]) -> None:
+    """Write a deterministic test candidate manifest."""
+    path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+
+
 class ReleaseIntegrityPolishTests(unittest.TestCase):
-    """Exercise the final promotion and manifest integrity invariants."""
+    """Exercise promotion and manifest integrity invariants."""
 
     def test_build_environment_records_python_and_pillow(self) -> None:
         environment = build_environment_provenance()
@@ -119,6 +125,82 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             ):
                 validate_release_manifest_metadata(manifest)
 
+    def test_promotion_rejects_manifest_subtitle_not_in_source_lock(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_synthetic_project(Path(directory) / "project")
+            write_source_lock(project_root=root)
+            candidate = Path(directory) / "candidate"
+            candidate.mkdir()
+            manifest = valid_manifest(root, candidate)
+            manifest["subtitle"] = "Edited after candidate build"
+            manifest_path = candidate / "release_manifest.json"
+            write_manifest(manifest_path, manifest)
+            code_root = root / "work" / "time_twist"
+            with (
+                mock.patch(
+                    "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+                ),
+                self.assertRaisesRegex(
+                    ReleaseBuildError, "subtitle does not match"
+                ),
+            ):
+                promote_release_target(manifest_path, project_root=root)
+
+    def test_promotion_rejects_candidate_not_matching_fresh_rebuild(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_synthetic_project(Path(directory) / "project")
+            write_source_lock(project_root=root)
+            candidate = Path(directory) / "candidate"
+            candidate.mkdir()
+            manifest = valid_manifest(root, candidate)
+            manifest_path = candidate / "release_manifest.json"
+            write_manifest(manifest_path, manifest)
+            rebuilt = copy.deepcopy(manifest)
+            rebuilt_outputs = copy.deepcopy(rebuilt["outputs"])
+            rebuilt_outputs["zenpen"]["sha256"] = "F" * 64
+            rebuilt["outputs"] = rebuilt_outputs
+            code_root = root / "work" / "time_twist"
+            with (
+                mock.patch(
+                    "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+                ),
+                mock.patch(
+                    "time_twist.release.build_release", return_value=rebuilt
+                ) as rebuild,
+                self.assertRaisesRegex(
+                    ReleaseBuildError, "outputs does not match a fresh canonical"
+                ),
+            ):
+                promote_release_target(manifest_path, project_root=root)
+            rebuild.assert_called_once()
+            self.assertFalse((root / "work" / "release_target.json").exists())
+
+    def test_promotion_accepts_candidate_matching_fresh_rebuild(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_synthetic_project(Path(directory) / "project")
+            write_source_lock(project_root=root)
+            candidate = Path(directory) / "candidate"
+            candidate.mkdir()
+            manifest = valid_manifest(root, candidate)
+            manifest_path = candidate / "release_manifest.json"
+            write_manifest(manifest_path, manifest)
+            code_root = root / "work" / "time_twist"
+            with (
+                mock.patch(
+                    "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+                ),
+                mock.patch(
+                    "time_twist.release.build_release", return_value=manifest
+                ),
+            ):
+                target = promote_release_target(
+                    manifest_path,
+                    project_root=root,
+                    release_id="reviewed",
+                )
+            self.assertEqual(target["release_id"], "reviewed")
+            self.assertTrue((root / "work" / "release_target.json").is_file())
+
     def test_promotion_rechecks_candidate_outputs_before_target_write(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
@@ -127,9 +209,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             candidate.mkdir()
             manifest = valid_manifest(root, candidate)
             manifest_path = candidate / "release_manifest.json"
-            manifest_path.write_text(
-                json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
-            )
+            write_manifest(manifest_path, manifest)
             code_root = root / "work" / "time_twist"
             real_validator = __import__(
                 "time_twist.release", fromlist=["_validate_candidate_outputs"]
@@ -151,6 +231,9 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
                     "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
                 ),
                 mock.patch(
+                    "time_twist.release.build_release", return_value=manifest
+                ),
+                mock.patch(
                     "time_twist.release._validate_candidate_outputs",
                     side_effect=mutate_after_first_check,
                 ),
@@ -158,13 +241,42 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
                     ReleaseBuildError, "candidate output .* changed"
                 ),
             ):
-                promote_release_target(
-                    manifest_path,
-                    target_path=root / "work" / "release_target.json",
-                    project_root=root,
-                )
+                promote_release_target(manifest_path, project_root=root)
             self.assertEqual(calls, 2)
             self.assertFalse((root / "work" / "release_target.json").exists())
+
+    def test_source_lock_update_rejects_approved_source_destination(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_synthetic_project(Path(directory) / "project")
+            baseline = root / "work" / "baseline" / "time_twist_zenpen_japan.fds"
+            original = baseline.read_bytes()
+            with self.assertRaisesRegex(ReleaseBuildError, "collides with protected"):
+                write_source_lock(baseline, project_root=root)
+            self.assertEqual(baseline.read_bytes(), original)
+
+    def test_promotion_target_rejects_candidate_manifest_destination(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_synthetic_project(Path(directory) / "project")
+            write_source_lock(project_root=root)
+            candidate = Path(directory) / "candidate"
+            candidate.mkdir()
+            manifest = valid_manifest(root, candidate)
+            manifest_path = candidate / "release_manifest.json"
+            write_manifest(manifest_path, manifest)
+            original = manifest_path.read_bytes()
+            code_root = root / "work" / "time_twist"
+            with (
+                mock.patch(
+                    "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+                ),
+                self.assertRaisesRegex(ReleaseBuildError, "candidate manifest"),
+            ):
+                promote_release_target(
+                    manifest_path,
+                    target_path=manifest_path,
+                    project_root=root,
+                )
+            self.assertEqual(manifest_path.read_bytes(), original)
 
 
 if __name__ == "__main__":
