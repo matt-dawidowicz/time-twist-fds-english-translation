@@ -30,40 +30,59 @@ class ReleaseBuildTests(unittest.TestCase):
             with self.assertRaisesRegex(ReleaseBuildError, "unapproved"):
                 validate_source_lock(path, project_root=PROJECT_ROOT)
 
-    def test_complete_release_rebuild_matches_promoted_target(self) -> None:
+    def test_complete_candidate_rebuild_is_byte_deterministic(self) -> None:
         required = (
             DEFAULT_SOURCE_LOCK,
-            DEFAULT_RELEASE_TARGET,
             DEFAULT_ZENPEN_BASELINE,
             DEFAULT_KOUHEN_BASELINE,
             DEFAULT_TITLE_ASSET,
         )
         self.assertTrue(all(path.is_file() for path in required))
-        target = json.loads(DEFAULT_RELEASE_TARGET.read_text(encoding="utf-8"))
-        expected = {
-            name: record["sha256"]
-            for name, record in target["outputs"].items()
-        }
         with tempfile.TemporaryDirectory() as directory:
-            manifest = build_release(
-                Path(directory), project_root=PROJECT_ROOT
+            first_directory = Path(directory) / "first"
+            second_directory = Path(directory) / "second"
+            first = build_release(
+                first_directory,
+                project_root=PROJECT_ROOT,
+                verify_target=False,
             )
-            actual = {
-                name: record["sha256"]
-                for name, record in manifest["outputs"].items()
-            }
-            self.assertEqual(manifest["mode"], "verified")
-            self.assertEqual(actual, expected)
+            second = build_release(
+                second_directory,
+                project_root=PROJECT_ROOT,
+                verify_target=False,
+            )
+            self.assertEqual(first, second)
+            self.assertEqual(first["mode"], "candidate")
+            self.assertEqual(
+                (first_directory / "release_manifest.json").read_bytes(),
+                (second_directory / "release_manifest.json").read_bytes(),
+            )
+            for record in first["outputs"].values():
+                filename = record["path"]
+                self.assertEqual(
+                    (first_directory / filename).read_bytes(),
+                    (second_directory / filename).read_bytes(),
+                )
             zenpen = (
-                Path(directory) / manifest["outputs"]["zenpen"]["path"]
+                first_directory / first["outputs"]["zenpen"]["path"]
             ).read_bytes()
             kouhen = (
-                Path(directory) / manifest["outputs"]["kouhen"]["path"]
+                first_directory / first["outputs"]["kouhen"]["path"]
             ).read_bytes()
             four_side = (
-                Path(directory) / manifest["outputs"]["four_side"]["path"]
+                first_directory / first["outputs"]["four_side"]["path"]
             ).read_bytes()
             self.assertEqual(four_side, zenpen + kouhen)
+
+    def test_strict_release_rejects_unpromoted_checkout(self) -> None:
+        self.assertFalse(DEFAULT_RELEASE_TARGET.exists())
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "strict"
+            with self.assertRaisesRegex(
+                ReleaseBuildError, "release target is missing.*release-promote"
+            ):
+                build_release(output, project_root=PROJECT_ROOT)
+            self.assertFalse(output.exists())
 
 
 if __name__ == "__main__":

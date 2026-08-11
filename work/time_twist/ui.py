@@ -13,7 +13,9 @@ Public ``patched_*`` functions are pure: they accept one extracted FDS file as
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Mapping
 from dataclasses import dataclass
+from types import MappingProxyType
 
 from .compression import symbol_bit_length
 from .english import encode_english
@@ -38,6 +40,14 @@ class UiPatchError(ValueError):
     """
 
 
+COMPONENT_LOAD_ADDRESSES: Mapping[str, int] = MappingProxyType(
+    {
+        # Verified from NOV2's FDS block-3 file header.
+        "NOV2": 0x6000,
+    }
+)
+
+
 @dataclass(frozen=True)
 class SourceVerifiedPatch:
     """Describe one immutable, size-neutral component instruction patch."""
@@ -49,13 +59,34 @@ class SourceVerifiedPatch:
     replacement: bytes
     label: str
 
-    def apply_to(self, data: bytearray) -> None:
-        """Validate and install this patch into a mutable component copy."""
-        end = self.file_offset + len(self.expected)
+    def __post_init__(self) -> None:
+        """Validate size and established file-offset/CPU-address metadata."""
+        if self.file_offset < 0:
+            raise UiPatchError(
+                f"{self.component} {self.label} has a negative file offset"
+            )
+        load_address = COMPONENT_LOAD_ADDRESSES.get(self.component)
+        if load_address is None:
+            raise UiPatchError(
+                f"{self.component} {self.label} has no verified component "
+                "load address"
+            )
+        expected_cpu_address = load_address + self.file_offset
+        if self.cpu_address != expected_cpu_address:
+            raise UiPatchError(
+                f"{self.component} {self.label} declares CPU "
+                f"${self.cpu_address:04X}, expected ${expected_cpu_address:04X} "
+                f"from load ${load_address:04X} + file "
+                f"0x{self.file_offset:04X}"
+            )
         if len(self.expected) != len(self.replacement):
             raise UiPatchError(
                 f"{self.component} {self.label} patch changed size"
             )
+
+    def apply_to(self, data: bytearray) -> None:
+        """Validate and install this patch into a mutable component copy."""
+        end = self.file_offset + len(self.expected)
         if len(data) < end or data[self.file_offset : end] != self.expected:
             raise UiPatchError(
                 f"{self.component} {self.label} at file 0x{self.file_offset:04X} "

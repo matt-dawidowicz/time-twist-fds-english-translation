@@ -286,9 +286,9 @@ class FdsSide:
             Exactly :data:`SIDE_SIZE` rebuilt bytes.
 
         Raises:
-            FdsFormatError: If current files no longer fit on the side.
-            OverflowError: If the file count or a payload size does not fit its
-                one- or two-byte field.
+            FdsFormatError: If current files no longer fit on the side or the
+                file count does not fit its one-byte field.
+            OverflowError: If a payload size does not fit its two-byte field.
 
         File count and payload-size fields are refreshed. All other disk-info
         and file-header bytes are preserved. Growth beyond the archival side
@@ -298,6 +298,11 @@ class FdsSide:
         original padding as fits and appends deterministic zero padding only
         when necessary.
         """
+        if len(self.files) > 0xFF:
+            raise FdsFormatError(
+                f"side {self.index}: file count {len(self.files)} exceeds "
+                "the one-byte FDS limit"
+            )
         count_block = bytearray(self.file_count_block)
         count_block[1] = len(self.files)
         output = bytearray(self.disk_info)
@@ -432,13 +437,18 @@ class FdsImage:
             Complete image bytes using the original header convention.
 
         Raises:
-            FdsFormatError: If any rebuilt side exceeds its capacity.
-            OverflowError: If the number of sides does not fit the header.
+            FdsFormatError: If any rebuilt side exceeds its capacity or the
+                number of sides does not fit a header's one-byte count.
 
         The method does not modify :attr:`header` or any parsed side.
         """
         header = self.header
         if header:
+            if len(self.sides) > 0xFF:
+                raise FdsFormatError(
+                    f"headered image side count {len(self.sides)} exceeds "
+                    "the one-byte FDS limit"
+                )
             mutable_header = bytearray(header)
             mutable_header[4] = len(self.sides)
             header = bytes(mutable_header)

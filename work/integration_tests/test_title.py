@@ -838,7 +838,11 @@ class TitlePatchTests(unittest.TestCase):
         actual = {
             index
             for index, (before, after) in enumerate(
-                zip(self.source, self.patched, strict=True)
+                zip(
+                    self.source,
+                    self.patched[: len(self.source)],
+                    strict=True,
+                )
             )
             if before != after
         }

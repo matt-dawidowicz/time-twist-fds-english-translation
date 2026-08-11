@@ -97,8 +97,9 @@ suite when the private overlay is available. Supported suites allow no skips.
 Read:
 
 1. [Release lifecycle](DEVELOPMENT.md#release-lifecycle)
-2. [Release commands](CLI_REFERENCE.md#release-commands)
-3. [Translation workflow](TRANSLATION_WORKFLOW.md)
+2. [Release risk assessment](RELEASE_RISK_ASSESSMENT.md)
+3. [Release commands](CLI_REFERENCE.md#release-commands)
+4. [Translation workflow](TRANSLATION_WORKFLOW.md)
 
 A source-lock refresh approves inputs; a candidate build exposes new outputs;
 promotion approves the exact reviewed hashes; a strict build reproduces them.
@@ -111,7 +112,7 @@ promotion approves the exact reviewed hashes; a strict build reproduces them.
 | `work/time_twist/ui.py` | Playable fixed/interface source |
 | `work/title_assets/Time Twist approved native title.png` | Native ROM-bound title geometry |
 | `work/release_sources.json` | Approved non-code input hashes |
-| `work/release_target.json` | Promoted output hashes |
+| `work/release_target.json` | Absent until a reviewed candidate is promoted |
 | `work/translated_scripts/*.json` | Decoded/review scenario records |
 | `work/translation_workbook_banks/*.json` | Detailed per-bank review |
 | `outputs/Time_Twist_complete_translation_workbook.*` | Aggregate review artifacts |

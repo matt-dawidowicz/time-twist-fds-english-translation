@@ -86,7 +86,7 @@ def make_side(payloads: tuple[bytes, ...], *, padding_byte: int) -> bytes:
         header[1] = index
         header[2] = index
         header[3:11] = f"F{index:02d}".encode("ascii").ljust(8, b" ")
-        header[11:13] = (0x6000 + index * 0x100).to_bytes(2, "little")
+        header[11:13] = (0x6000).to_bytes(2, "little")
         header[13:15] = len(payload).to_bytes(2, "little")
         header[15] = index % 3
         blocks.extend(header)
@@ -159,6 +159,22 @@ class PackedBinaryPropertyTests(unittest.TestCase):
             groups,
         )
 
+    def test_nested_source_dictionary_expands_and_loops_fail(self) -> None:
+        """Support nested source dictionaries while rejecting recursive loops."""
+        literal = symbol(SymbolKind.COMMON, 47)
+        reference_one = symbol(SymbolKind.DICTIONARY, 1)
+        reference_two = symbol(SymbolKind.DICTIONARY, 2)
+        dictionary = ((literal,), (reference_one, literal))
+        self.assertEqual(
+            expand_dictionary_symbols((reference_two,), dictionary),
+            (literal, literal),
+        )
+        with self.assertRaisesRegex(ValueError, "dictionary loop"):
+            expand_dictionary_symbols(
+                (reference_one,),
+                ((reference_two,), (reference_one,)),
+            )
+
 
 class FdsPropertyTests(unittest.TestCase):
     """Exercise lossless parsing for legal synthetic FDS layouts."""
@@ -204,6 +220,24 @@ class FdsPropertyTests(unittest.TestCase):
         image.sides[0].files[0].data += b"x"
         with self.assertRaises(FdsFormatError):
             image.to_bytes()
+
+    def test_file_and_header_side_count_boundaries_fail_cleanly(self) -> None:
+        """Accept one-byte maxima and reject counts that cannot be serialized."""
+        raw = make_side((b"",) * 0xFF, padding_byte=0)
+        self.assertEqual(FdsImage.from_bytes(raw).to_bytes(), raw)
+
+        image = FdsImage.from_bytes(make_side((b"",), padding_byte=0))
+        image.sides[0].files *= 0x100
+        with self.assertRaisesRegex(FdsFormatError, "file count 256"):
+            image.to_bytes()
+
+        header = b"FDS\x1a\x01" + b"\x00" * 11
+        headered = FdsImage.from_bytes(
+            header + make_side((b"",), padding_byte=0)
+        )
+        headered.sides *= 0x100
+        with self.assertRaisesRegex(FdsFormatError, "side count 256"):
+            headered.to_bytes()
 
 
 if __name__ == "__main__":

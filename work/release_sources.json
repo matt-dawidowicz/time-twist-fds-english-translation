@@ -1,69 +1,85 @@
 {
-  "schema": "Time Twist release source lock v1",
+  "schema": "Time Twist release source lock v2",
   "authority": "The locked scenario maps, fixed UI/font/title code in this revision, and the locked title asset are the playable release authority. Workbook patch-safe fields mirror this authority; editorial alternatives remain in the natural-translation fields.",
   "subtitle": "On the Outskirts of History...",
   "files": {
     "work/baseline/time_twist_zenpen_japan.fds": {
+      "normalization": "raw",
       "sha256": "B9424DD29EE195A9FA9AC4F844F058C380E30F7ACA741218789FA8611F741916",
       "bytes": 131000
     },
     "work/baseline/time_twist_kouhen_japan.fds": {
+      "normalization": "raw",
       "sha256": "F62A7424FE489CBE479C3EBAABE4CE62D85127601FFD3D08ABD4E5A0DC39442A",
       "bytes": 131000
     },
     "work/title_assets/Time Twist approved native title.png": {
+      "normalization": "raw",
       "sha256": "281FD547A893A27A8C744C3FDE8ADC6C98F4E2E97F5A32BCCCE2FFA270D5DA42",
       "bytes": 2450
     },
     "work/translations/TT1A.json": {
+      "normalization": "lf",
       "sha256": "1E40557B8747051580AFD9E5B4D44B5401C5C12E8235DBC32E70A3524225C971",
       "bytes": 3657
     },
     "work/translations/TT1B.json": {
+      "normalization": "lf",
       "sha256": "1E7B41D108FEED9695C2F9E0639B7CA4EE036385579B0C017406B471BADCEA38",
       "bytes": 9642
     },
     "work/translations/TT2.json": {
+      "normalization": "lf",
       "sha256": "245121C71E117EB706AC549C47B4D41A654D9481EA912883E7989B52ABAEE0EB",
       "bytes": 10151
     },
     "work/translations/T22.json": {
+      "normalization": "lf",
       "sha256": "272D6507D8D75DAA82112A1DE0789BEFA733D1A89A4753FE051AE85B64DC2562",
       "bytes": 4362
     },
     "work/translations/TT3A.json": {
+      "normalization": "lf",
       "sha256": "DF6867B3F1A897F86CEC25E8FCD8DA197290CF242BCD9CDA7039F8A0A0116C07",
       "bytes": 9614
     },
     "work/translations/TT3B.json": {
+      "normalization": "lf",
       "sha256": "5B01DCCF05A66D352F94D2DFDCBE67B9866C99DF077BF515FF7BD29D7B83218E",
       "bytes": 4619
     },
     "work/translations/TT4.json": {
+      "normalization": "lf",
       "sha256": "41F4364FEB26B686070BE765263FB2A3AB78CB1FD4AE01B00AC4B1B7E20F087B",
       "bytes": 12063
     },
     "work/translations/TT5.json": {
+      "normalization": "lf",
       "sha256": "A488707E24EFF9F83426BB0FBA5518792CAEE05377704FA73D78F3C95990E5AC",
       "bytes": 9069
     },
     "work/translations/T25.json": {
+      "normalization": "lf",
       "sha256": "7DBAB8E9A3184425B4C791B016CAEA1BF5DA2C13899B072114591CD87AF81DB4",
       "bytes": 5683
     },
     "work/translations/TT6A.json": {
+      "normalization": "lf",
       "sha256": "DED60090F87FDEDE51FBDDD94E464DF1A04C124881430FB892EB75C06E23098E",
       "bytes": 6915
     },
     "work/translations/TT6B.json": {
+      "normalization": "lf",
       "sha256": "4FE41821D402F36EA7ADBF576271FB63E117B8B1D0A69F74E802FB673C7A0355",
       "bytes": 6048
     },
     "work/translations/TT6C.json": {
+      "normalization": "lf",
       "sha256": "AEE19FCD74936B969CE314F6B7C3D593609C68BBDB0FF4F79F691AAF04EDB626",
       "bytes": 8841
     },
     "work/translations/TT6D.json": {
+      "normalization": "lf",
       "sha256": "54968631B4E74DD7712BFC1C2EFBD6DC1B6A5AF582BD6CB809EA7B5AF178F957",
       "bytes": 791
     }

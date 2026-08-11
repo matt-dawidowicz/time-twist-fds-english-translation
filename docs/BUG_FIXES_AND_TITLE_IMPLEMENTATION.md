@@ -61,7 +61,11 @@ The patching code follows a fail-closed contract:
 `SourceVerifiedPatch` in `ui.py` makes the instruction-patch form of this
 contract declarative. Each immutable record names the component, file offset,
 CPU address, expected source bytes, same-size replacement bytes, and purpose.
-It refuses a size change or source mismatch before writing anything.
+For components with a proven linear load mapping, the constructor also checks
+`cpu_address == component_load_address + file_offset`; currently this is
+established for NOV2 at `$6000`. Unknown mappings are rejected instead of being
+hidden behind a guessed generic rule. It refuses an address inconsistency,
+size change, or source mismatch before writing anything.
 
 ## NOV2 one-choice B-button engine fix
 
@@ -577,7 +581,9 @@ time-twist title-patch NOV4-font.bin `
 
 Do not use individually patched banks as release authority. The release command
 also validates approved inputs, file ownership, component order, FDS capacity,
-output hashes, and release-code provenance.
+output hashes, and release-code provenance. Provenance hashes the actual
+imported package and the supplied checkout under identical logical paths and
+fails before generation if they differ.
 
 ## Test and evidence map
 
@@ -614,6 +620,21 @@ produced 1,153 byte-identical comparison artifacts: movement at frames
 896-915, settled monochrome through 979, palette refinement at 980-983, final
 fade-in at 1020-1027, and clock-hand animation from 1029. A complete Zenpen and
 Kouhen playthrough is still required for release certification.
+
+### Auditing an expanded NOV4 correctly
+
+The source NOV4 is 9,077 bytes; the patched title component is 12,209 bytes.
+An allowed-difference audit must therefore compare the source against exactly
+the same-length prefix of the patched component. Strictly zipping the two full
+byte strings is itself an error because the appended helper/data region has no
+source counterpart.
+
+The integration test now audits `patched[:len(source)]` against the documented
+mutable ranges. The appended 3,132 bytes are not exempt from verification:
+separate assertions lock the helper layout, title pointer, two decoded
+1,024-byte nametables, exact stream termination, final `$D1B1` address, and
+the `$0604` gap before resident NOV3 at `$D7B5`. This division makes the test
+match the binary layout rather than weakening it.
 
 ## Build-publication access fix
 
