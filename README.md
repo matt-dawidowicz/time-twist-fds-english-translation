@@ -81,7 +81,7 @@ time-twist --help
 python work/run_tests.py unit
 ```
 
-The public suite contains **90 fixture-free tests** and permits no skips. Public
+The public suite is fixture-free and permits no skips. Public
 CI runs source/style/type/unit checks on both Python 3.11 and 3.12. Python 3.12
 also builds and force-installs the wheel, proves the smoke test imports the
 installed package rather than the checkout, and exercises the CLI.

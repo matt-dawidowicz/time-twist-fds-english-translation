@@ -42,7 +42,7 @@ mechanical corrections, then review docstring changes manually.
 python work/run_tests.py unit
 ```
 
-This suite is fixture-free, runs in public CI, and currently contains 83 tests.
+This suite is fixture-free, runs in public CI, and permits no skips.
 It covers codecs, synthetic FDS behavior, compression invariants,
 comparison/workbook integrity, declarative patch guards, and release-control
 logic. Skips are treated as failures.

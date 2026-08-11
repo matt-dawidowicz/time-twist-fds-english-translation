@@ -92,7 +92,8 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
 ## Tests
 
 - Public tests and ROM-derived integration tests are separated.
-- `python work/run_tests.py unit` discovers 83 fixture-free tests.
+- `python work/run_tests.py unit` discovers the complete fixture-free public
+  suite.
 - `python work/run_tests.py integration` discovers 75 exact tests when the legal
   private overlay is present.
 - The fixture manifest is validated before discovery.
