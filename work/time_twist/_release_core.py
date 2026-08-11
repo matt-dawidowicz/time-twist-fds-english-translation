@@ -844,7 +844,9 @@ def _validated_scenario_report(
     label: str,
 ) -> dict[str, dict[str, object]]:
     """Validate the complete per-bank audit summary in a release manifest."""
-    if not isinstance(payload, dict) or set(payload) != set(SCENARIO_LOCATIONS):
+    if not isinstance(payload, dict) or set(payload) != set(
+        SCENARIO_LOCATIONS
+    ):
         raise ReleaseBuildError(
             f"{label} scenario banks must contain exactly "
             f"{sorted(SCENARIO_LOCATIONS)}"
@@ -1590,9 +1592,9 @@ def promote_release_target(
     protected[lock_path.resolve()] = "active source lock"
     protected[manifest_path] = "candidate manifest"
     for filename in RELEASE_FILENAMES.values():
-        protected[
-            (manifest_path.parent / filename).resolve()
-        ] = "candidate output"
+        protected[(manifest_path.parent / filename).resolve()] = (
+            "candidate output"
+        )
     _validate_destination_collision(
         destination,
         protected,

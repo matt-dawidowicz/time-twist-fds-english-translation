@@ -138,5 +138,5 @@ def build_scenario_bank(
 
 
 # The original release orchestrator resolves these names in its module globals.
-setattr(_core, "_encoded_groups", _encoded_groups)
-setattr(_core, "build_scenario_bank", build_scenario_bank)
+_core._encoded_groups = _encoded_groups
+_core.build_scenario_bank = build_scenario_bank

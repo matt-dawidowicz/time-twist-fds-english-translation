@@ -8,12 +8,6 @@ import json
 from typing import Any
 
 from . import _cli_core as _core
-
-for _name in dir(_core):
-    if not _name.startswith("__"):
-        globals()[_name] = getattr(_core, _name)
-del _name
-
 from .compression import compress_english_groups, packed_size
 from .english import EnglishTextError
 from .project import (
@@ -28,6 +22,11 @@ from .scenario import (
 )
 from .scenario_validation import encode_validated_english, scenario_record_id
 from .textcodec import PackedSymbol, pack_records
+
+for _name in dir(_core):
+    if not _name.startswith("__") and _name not in globals():
+        globals()[_name] = getattr(_core, _name)
+del _name
 
 safe_filename = _core.safe_filename
 command_manifest = _core.command_manifest
@@ -419,9 +418,9 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
 
 # build_parser() and main() live in the original implementation module and
 # resolve command callbacks from its globals, so replace those globals here.
-setattr(_core, "command_scenario_extract", command_scenario_extract)
-setattr(_core, "command_scenario_insert", command_scenario_insert)
-setattr(_core, "merge_translation_document", merge_translation_document)
-setattr(_core, "command_scenario_footprint", command_scenario_footprint)
+_core.command_scenario_extract = command_scenario_extract
+_core.command_scenario_insert = command_scenario_insert
+_core.merge_translation_document = merge_translation_document
+_core.command_scenario_footprint = command_scenario_footprint
 
 command_scenario_merge = _core.command_scenario_merge
