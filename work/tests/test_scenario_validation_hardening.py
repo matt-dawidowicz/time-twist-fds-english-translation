@@ -156,9 +156,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
     def test_fixed_ui_dictionary_requirement_fails_closed(self) -> None:
         groups = ((encode_english("AB"),),)
         required = required_dictionary_entries("TT2")
-        self.assertTrue(
-            getattr(required, "requires_full_dictionary", False)
-        )
+        self.assertTrue(getattr(required, "requires_full_dictionary", False))
         with self.assertRaisesRegex(ValueError, "exactly 31"):
             compress_english_groups(groups, required_entries=required)
 
