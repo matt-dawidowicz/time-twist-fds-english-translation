@@ -125,7 +125,9 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             ):
                 validate_release_manifest_metadata(manifest)
 
-    def test_promotion_rejects_manifest_subtitle_not_in_source_lock(self) -> None:
+    def test_promotion_rejects_manifest_subtitle_not_in_source_lock(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             write_source_lock(project_root=root)
@@ -146,7 +148,9 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             ):
                 promote_release_target(manifest_path, project_root=root)
 
-    def test_promotion_rejects_candidate_not_matching_fresh_rebuild(self) -> None:
+    def test_promotion_rejects_candidate_not_matching_fresh_rebuild(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             write_source_lock(project_root=root)
@@ -201,7 +205,9 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             self.assertEqual(target["release_id"], "reviewed")
             self.assertTrue((root / "work" / "release_target.json").is_file())
 
-    def test_promotion_rechecks_candidate_outputs_before_target_write(self) -> None:
+    def test_promotion_rechecks_candidate_outputs_before_target_write(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             write_source_lock(project_root=root)
@@ -245,16 +251,27 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             self.assertEqual(calls, 2)
             self.assertFalse((root / "work" / "release_target.json").exists())
 
-    def test_source_lock_update_rejects_approved_source_destination(self) -> None:
+    def test_source_lock_update_rejects_approved_source_destination(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
-            baseline = root / "work" / "baseline" / "time_twist_zenpen_japan.fds"
+            baseline = (
+                root
+                / "work"
+                / "baseline"
+                / "time_twist_zenpen_japan.fds"
+            )
             original = baseline.read_bytes()
-            with self.assertRaisesRegex(ReleaseBuildError, "collides with protected"):
+            with self.assertRaisesRegex(
+                ReleaseBuildError, "collides with protected"
+            ):
                 write_source_lock(baseline, project_root=root)
             self.assertEqual(baseline.read_bytes(), original)
 
-    def test_promotion_target_rejects_candidate_manifest_destination(self) -> None:
+    def test_promotion_target_rejects_candidate_manifest_destination(
+        self,
+    ) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             write_source_lock(project_root=root)
