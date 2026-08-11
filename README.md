@@ -71,7 +71,8 @@ before moving natural-field text into the ROM.
 
 ## Install and test
 
-Python 3.11 or newer is required.
+Python 3.11 or newer is required. The release dependency set pins Pillow
+12.3.0 so title generation uses one exact imaging-library version.
 
 ```powershell
 python work/tools/check_public_tree.py
@@ -80,7 +81,7 @@ time-twist --help
 python work/run_tests.py unit
 ```
 
-The public suite contains **83 fixture-free tests** and permits no skips. Public
+The public suite contains **89 fixture-free tests** and permits no skips. Public
 CI runs source/style/type/unit checks on both Python 3.11 and 3.12. Python 3.12
 also builds and force-installs the wheel, proves the smoke test imports the
 installed package rather than the checkout, and exercises the CLI.
@@ -158,10 +159,11 @@ candidate files immediately before target publication, and rejects custom
 source-lock/target destinations that collide with authoritative inputs,
 release-critical code, the candidate manifest, or candidate outputs.
 
-Release manifests record the Python implementation/version and Pillow version
-as informational build-environment metadata. These fields help diagnose a future
-reproducibility discrepancy without replacing source, code, component, and
-output hashes as the release authority.
+Release manifests record the Python implementation/version and exact Pillow
+version as build-environment metadata. The Pillow dependency is also pinned in
+package metadata; the manifest field remains useful for auditing the environment
+that actually produced a candidate. Source, code, component, and output hashes
+remain the release authority.
 
 The installed wheel contains code only. It intentionally does not package
 translation project data, title assets, ROMs, or generated banks. From outside
