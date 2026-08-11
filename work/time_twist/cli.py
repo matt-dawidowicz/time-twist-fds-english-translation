@@ -353,11 +353,21 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
     text_start = bank.group_addresses[0] - bank.load_address
     capacity = bank.dictionary_end_offset - text_start
     pointer_bytes = 2 * (len(packed_groups) - 1)
+    required_entries = required_dictionary_entries(bank_name)
+    if (
+        translated_count == total_count
+        and args.no_compress
+        and getattr(required_entries, "requires_full_dictionary", False)
+    ):
+        raise SystemExit(
+            f"{bank_name} fixed UI requires a complete 31-entry English "
+            "dictionary; --no-compress cannot produce a safe ui-patch input"
+        )
     if translated_count == total_count and not args.no_compress:
         original_size = packed_size(packed_groups, ())
         packed_groups, dictionary = compress_english_groups(
             packed_groups,
-            required_entries=required_dictionary_entries(bank_name),
+            required_entries=required_entries,
             max_bytes=capacity - pointer_bytes,
         )
         compressed_size = packed_size(packed_groups, dictionary)
@@ -910,7 +920,10 @@ def build_parser() -> argparse.ArgumentParser:
     scenario_insert.add_argument(
         "--no-compress",
         action="store_true",
-        help="diagnostic: preserve the original dictionary on a complete bank",
+        help=(
+            "diagnostic: preserve the original dictionary on a complete bank; "
+            "unavailable for banks whose fixed UI requires 31 English entries"
+        ),
     )
     scenario_insert.set_defaults(function=command_scenario_insert)
 
