@@ -12,6 +12,7 @@ import copy
 import hashlib
 import json
 from pathlib import Path
+from typing import Any, cast
 
 from .compression import compress_english_groups, packed_size
 from .english import (
@@ -39,7 +40,7 @@ from .scenario import (
     rebuild_scenario_bank,
     render_symbols,
 )
-from .textcodec import pack_records
+from .textcodec import PackedSymbol, pack_records
 from .title import DEFAULT_SUBTITLE, patched_nov4_title
 from .ui import (
     patched_kouhen_boot_guard,
@@ -283,7 +284,7 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
             "translation group count does not match the scenario bank"
         )
 
-    rebuilt_groups: list[tuple[tuple[object, ...], ...]] = []
+    rebuilt_groups: list[tuple[tuple[PackedSymbol, ...], ...]] = []
     translated_count = 0
     total_count = 0
     for group_index, json_group in enumerate(json_groups):
@@ -299,8 +300,10 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
             raise SystemExit(
                 f"translation record count mismatch in group {group_index}"
             )
-        rebuilt_records: list[tuple[object, ...]] = []
-        for original, translated in zip(original_records, json_records):
+        rebuilt_records: list[tuple[PackedSymbol, ...]] = []
+        for original, translated in zip(
+            original_records, json_records, strict=True
+        ):
             total_count += 1
             english = translated.get("english", "")
             if not isinstance(english, str):
@@ -358,11 +361,11 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
 
 
 def merge_translation_document(
-    document: dict[str, object],
-    translations: dict[str, object],
+    document: dict[str, Any],
+    translations: dict[str, Any],
     *,
     require_complete: bool = True,
-) -> dict[str, object]:
+) -> dict[str, Any]:
     """Validate and merge English text by stable record ID.
 
     Args:
@@ -521,7 +524,7 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
     if unknown:
         raise SystemExit(f"unknown translation IDs: {', '.join(unknown)}")
 
-    encoded_by_id: dict[str, tuple[object, ...]] = {}
+    encoded_by_id: dict[str, tuple[PackedSymbol, ...]] = {}
     literal_bytes = 0
     for record_id, english in translations.items():
         if not isinstance(english, str) or not english:
@@ -695,10 +698,12 @@ def command_release_lock(args: argparse.Namespace) -> None:
     lock_path = args.lock or project_root / "work" / "release_sources.json"
     if args.update:
         payload = write_source_lock(lock_path, project_root=project_root)
-        print(f"updated {lock_path} ({len(payload['files'])} approved files)")
+        files = cast(dict[str, object], payload["files"])
+        print(f"updated {lock_path} ({len(files)} approved files)")
     else:
         payload = validate_source_lock(lock_path, project_root=project_root)
-        print(f"release source lock: PASS ({len(payload['files'])} files)")
+        files = cast(dict[str, object], payload["files"])
+        print(f"release source lock: PASS ({len(files)} files)")
 
 
 def command_release_build(args: argparse.Namespace) -> None:
@@ -713,7 +718,8 @@ def command_release_build(args: argparse.Namespace) -> None:
         verify_target=not args.candidate,
     )
     print(f"mode: {manifest['mode']}")
-    for name, record in manifest["outputs"].items():
+    outputs = cast(dict[str, dict[str, object]], manifest["outputs"])
+    for name, record in outputs.items():
         print(f"{name}: {record['path']} SHA-256 {record['sha256']}")
     print(output_directory.resolve() / "release_manifest.json")
 

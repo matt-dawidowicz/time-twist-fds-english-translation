@@ -24,7 +24,10 @@ build/
 dist/
 .venv/
 venv/
+.ruff_cache/
+.mypy_cache/
 .pytest_cache/
+.hypothesis/
 .coverage
 
 # Codex task metadata is local to this workspace.

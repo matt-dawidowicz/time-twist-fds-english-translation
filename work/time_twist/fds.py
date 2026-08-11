@@ -156,7 +156,7 @@ class FdsSide:
     parsed_length: int = 0
 
     @classmethod
-    def parse(cls, raw: bytes, index: int) -> "FdsSide":
+    def parse(cls, raw: bytes, index: int) -> FdsSide:
         """Parse one fixed-size archival side.
 
         Args:
@@ -364,7 +364,7 @@ class FdsImage:
     @classmethod
     def from_bytes(
         cls, raw: bytes, source_path: Path | None = None
-    ) -> "FdsImage":
+    ) -> FdsImage:
         """Parse a complete archival image.
 
         Args:
@@ -409,7 +409,7 @@ class FdsImage:
         return cls(header=header, sides=sides, source_path=source_path)
 
     @classmethod
-    def read(cls, path: str | Path) -> "FdsImage":
+    def read(cls, path: str | Path) -> FdsImage:
         """Read and parse an image while retaining its source path.
 
         Args:

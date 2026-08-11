@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 
 from .english import encode_english
+from .textcodec import PackedSymbol
 from .ui import T22_REQUIRED_DICTIONARY_TEXT, TT1B_REQUIRED_DICTIONARY_TEXT
 
 KNOWN_SCENARIO_BANKS = (
@@ -57,7 +58,7 @@ PERSONALITY_QUESTION_IDS = frozenset(
 
 def required_dictionary_entries(
     bank_name: str,
-) -> tuple[tuple[object, ...], ...]:
+) -> tuple[tuple[PackedSymbol, ...], ...]:
     """Encode dictionary entries reserved by a bank's fixed-address text."""
     return tuple(
         encode_english(text)

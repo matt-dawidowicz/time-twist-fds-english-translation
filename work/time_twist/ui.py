@@ -13,6 +13,7 @@ Public ``patched_*`` functions are pure: they accept one extracted FDS file as
 from __future__ import annotations
 
 import hashlib
+from dataclasses import dataclass
 
 from .compression import symbol_bit_length
 from .english import encode_english
@@ -25,6 +26,43 @@ from .textcodec import (
     pack_records,
     split_records,
 )
+
+
+class UiPatchError(ValueError):
+    """Report an incompatible source, fixed-slot overrun, or unsafe UI patch.
+
+    UI patch helpers raise this exception before returning modified bytes when
+    source fingerprints, instruction patterns, encoded sizes, or bank capacity
+    differ from verified assumptions. Callers should inspect the source
+    version or shorten/recompress text instead of forcing a partial write.
+    """
+
+
+@dataclass(frozen=True)
+class SourceVerifiedPatch:
+    """Describe one immutable, size-neutral component instruction patch."""
+
+    component: str
+    file_offset: int
+    cpu_address: int
+    expected: bytes
+    replacement: bytes
+    label: str
+
+    def apply_to(self, data: bytearray) -> None:
+        """Validate and install this patch into a mutable component copy."""
+        end = self.file_offset + len(self.expected)
+        if len(self.expected) != len(self.replacement):
+            raise UiPatchError(
+                f"{self.component} {self.label} patch changed size"
+            )
+        if len(data) < end or data[self.file_offset : end] != self.expected:
+            raise UiPatchError(
+                f"{self.component} {self.label} at file 0x{self.file_offset:04X} "
+                f"/ CPU ${self.cpu_address:04X} does not match source"
+            )
+        data[self.file_offset : end] = self.replacement
+
 
 # ---------------------------------------------------------------------------
 # Shared NOV2/NOV4 prompts and input behavior
@@ -118,7 +156,16 @@ KOUHEN_BOOT_GUARD_TILE_CHARACTERS = (
 # cells opaque caused the typewriter cadence to process them as silent
 # characters.
 NOV2_BLANK_TILE = 0xC0
-NOV2_OPAQUE_CLEAR_PATCHES = ((0x345B, 0xAC, NOV2_BLANK_TILE, "menu choice"),)
+NOV2_OPAQUE_CLEAR_PATCHES = (
+    SourceVerifiedPatch(
+        component="NOV2",
+        file_offset=0x345B,
+        cpu_address=0x945B,
+        expected=bytes((0xAC,)),
+        replacement=bytes((NOV2_BLANK_TILE,)),
+        label="menu choice clear",
+    ),
+)
 
 # NOV2's scroll uploader must retain this indexed load.  It copies the valid
 # bottom dialogue row to the nametable before the text buffer shifts.  An
@@ -149,41 +196,53 @@ NOV2_DIALOGUE_ROW_COPY = (
 # Thus the post-title START menu ignores B without changing Back/Cancel on
 # normal multi-choice menus.
 NOV2_SINGLE_CHOICE_B_PATCHES = (
-    (
-        0x0A0D,
-        bytes.fromhex("31 6A 34 6A"),
-        bytes.fromhex("40 6A 40 6A"),
-        "duplicate state handlers 1-2",
+    SourceVerifiedPatch(
+        component="NOV2",
+        file_offset=0x0A0D,
+        cpu_address=0x6A0D,
+        expected=bytes.fromhex("31 6A 34 6A"),
+        replacement=bytes.fromhex("40 6A 40 6A"),
+        label="duplicate state handlers 1-2",
     ),
-    (
-        0x0A13,
-        bytes.fromhex("34 6A"),
-        bytes.fromhex("40 6A"),
-        "duplicate state handler 4",
+    SourceVerifiedPatch(
+        component="NOV2",
+        file_offset=0x0A13,
+        cpu_address=0x6A13,
+        expected=bytes.fromhex("34 6A"),
+        replacement=bytes.fromhex("40 6A"),
+        label="duplicate state handler 4",
     ),
-    (
-        0x0A17,
-        bytes.fromhex("37 6A"),
-        bytes.fromhex("73 6B"),
-        "duplicate state handler 6",
+    SourceVerifiedPatch(
+        component="NOV2",
+        file_offset=0x0A17,
+        cpu_address=0x6A17,
+        expected=bytes.fromhex("37 6A"),
+        replacement=bytes.fromhex("73 6B"),
+        label="duplicate state handler 6",
     ),
-    (
-        0x0A25,
-        bytes.fromhex("F0 07"),
-        bytes.fromhex("F0 19"),
-        "shared state-return branch",
+    SourceVerifiedPatch(
+        component="NOV2",
+        file_offset=0x0A25,
+        cpu_address=0x6A25,
+        expected=bytes.fromhex("F0 07"),
+        replacement=bytes.fromhex("F0 19"),
+        label="shared state-return branch",
     ),
-    (
-        0x0A2E,
-        bytes.fromhex("4C 01 61 4C 01 61 4C 01 61 4C DB 89"),
-        bytes.fromhex("A4 98 88 F0 60 A9 04 85 A1 4C B8 7D"),
-        "single-choice B guard helper",
+    SourceVerifiedPatch(
+        component="NOV2",
+        file_offset=0x0A2E,
+        cpu_address=0x6A2E,
+        expected=bytes.fromhex("4C 01 61 4C 01 61 4C 01 61 4C DB 89"),
+        replacement=bytes.fromhex("A4 98 88 F0 60 A9 04 85 A1 4C B8 7D"),
+        label="single-choice B guard helper",
     ),
-    (
-        0x39E1,
-        bytes.fromhex("A9 04 85 A1 A9 22 4C 09 61"),
-        bytes.fromhex("4C 2E 6A EA EA EA EA EA EA"),
-        "B action detour",
+    SourceVerifiedPatch(
+        component="NOV2",
+        file_offset=0x39E1,
+        cpu_address=0x99E1,
+        expected=bytes.fromhex("A9 04 85 A1 A9 22 4C 09 61"),
+        replacement=bytes.fromhex("4C 2E 6A EA EA EA EA EA EA"),
+        label="B action detour",
     ),
 )
 
@@ -1112,16 +1171,6 @@ TT6C_FIXED_TEXT_RECORDS = (
 )
 
 
-class UiPatchError(ValueError):
-    """Report an incompatible source, fixed-slot overrun, or unsafe UI patch.
-
-    UI patch helpers raise this exception before returning modified bytes when
-    source fingerprints, instruction patterns, encoded sizes, or bank capacity
-    differ from verified assumptions.  Callers should inspect the source version
-    or shorten/recompress text instead of forcing a partial write.
-    """
-
-
 def _encode_kouhen_guard_rle(values: bytes) -> bytes:
     """Encode a SON-KOUH startup nametable fragment.
 
@@ -1393,17 +1442,13 @@ def _patched_opaque_text_clears(data: bytes) -> bytes:
     ordinary dialogue replacement.
     """
     result = bytearray(data)
-    for offset, original, replacement, label in NOV2_OPAQUE_CLEAR_PATCHES:
-        if len(result) <= offset or result[offset] != original:
-            raise UiPatchError(
-                f"NOV2 {label} clear at 0x{offset:04X} does not match source"
-            )
-        result[offset] = replacement
-    offset, original = NOV2_DIALOGUE_ROW_COPY
-    end = offset + len(original)
-    if len(result) < end or result[offset:end] != original:
+    for patch in NOV2_OPAQUE_CLEAR_PATCHES:
+        patch.apply_to(result)
+    dialogue_offset, dialogue_source = NOV2_DIALOGUE_ROW_COPY
+    end = dialogue_offset + len(dialogue_source)
+    if len(result) < end or result[dialogue_offset:end] != dialogue_source:
         raise UiPatchError(
-            f"NOV2 dialogue row copy at 0x{offset:04X} does not match source"
+            f"NOV2 dialogue row copy at 0x{dialogue_offset:04X} does not match source"
         )
     return bytes(result)
 
@@ -1424,15 +1469,8 @@ def _patched_single_choice_b_guard(data: bytes) -> bytes:
     Multi-choice Back/Cancel behavior is deliberately left untouched.
     """
     result = bytearray(data)
-    for offset, original, replacement, label in NOV2_SINGLE_CHOICE_B_PATCHES:
-        end = offset + len(original)
-        if len(original) != len(replacement):
-            raise UiPatchError(f"NOV2 {label} patch changed size")
-        if len(result) < end or result[offset:end] != original:
-            raise UiPatchError(
-                f"NOV2 {label} at 0x{offset:04X} does not match source"
-            )
-        result[offset:end] = replacement
+    for patch in NOV2_SINGLE_CHOICE_B_PATCHES:
+        patch.apply_to(result)
     return bytes(result)
 
 
@@ -1722,7 +1760,7 @@ def _patched_fixed_record_table(
     dictionary = _tt2_dictionary(data)
     replacement = b"".join(
         _encode_at_exact_record_size(text, dictionary, size)
-        for text, size in zip(records, original_sizes)
+        for text, size in zip(records, original_sizes, strict=True)
     )
     if len(replacement) != len(source):
         raise UiPatchError(

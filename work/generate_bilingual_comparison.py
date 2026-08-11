@@ -941,7 +941,7 @@ def _fixed_rows(start_sequence: int) -> list[ComparisonRow]:
         starts = ui._record_starts(packed, len(records))
         ends = (*starts[1:], len(packed))
         for index, (record, english, record_start, record_end) in enumerate(
-            zip(records, english_records, starts, ends)
+            zip(records, english_records, starts, ends, strict=True)
         ):
             japanese = render_symbols(record, dictionary)
             size = record_end - record_start

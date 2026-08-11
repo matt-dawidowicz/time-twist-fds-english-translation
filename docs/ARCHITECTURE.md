@@ -159,22 +159,32 @@ When adding a constant, document:
 
 ## Release-control architecture
 
-The release layer separates three approvals that were previously conflated:
+The release layer separates four approvals that were previously conflated:
 
 1. `work/release_sources.json` approves non-code inputs: both Japanese
    baselines, all playable scenario maps, and the title reference asset.
-2. `release-build --candidate` deterministically composes an unapproved build
-   and records scenario capacities, component hashes, and final image hashes.
-3. `release-promote` revalidates the exact candidate files and writes
+2. Code provenance records the active Git commit/dirty state when available and
+   always computes an authoritative digest over `work/time_twist/**/*.py`.
+3. `release-build --candidate` deterministically composes an unapproved build
+   and records scenario capacities, component hashes, final image hashes, and
+   the active code provenance.
+4. `release-promote` revalidates the exact candidate files and code tree, then writes
    `work/release_target.json`, tying output hashes to the active source-lock
-   SHA-256.
+   SHA-256 and release-critical implementation.
 
-A strict `release-build` requires that tie and reproduces the promoted sizes and
-hashes. Build files are prepared in a sibling staging directory and are not
-published when source or target validation fails. Verified files are copied to
-destination-local temporary files before atomic replacement so Windows outputs
-inherit the emulator user's directory permissions rather than the staging
-directory's private ACL.
+A strict `release-build` requires both ties and reproduces the promoted sizes
+and hashes. Legacy targets without code provenance fail closed and must be
+re-promoted from a reviewed candidate. Build files are prepared in a sibling
+staging directory and are not published when source, code, or target validation
+fails. Verified files are copied to destination-local temporary files before
+atomic replacement so Windows outputs inherit the emulator user's directory
+permissions rather than the staging directory's private ACL.
+
+The code-tree digest sorts normalized POSIX-relative paths, normalizes Python
+line endings to LF, and hashes length-prefixed path/content records. This is
+unambiguous and stable across Windows and Unix checkouts. Git metadata is
+informational: Git may be missing in an installed-tool environment, while the
+code-tree digest remains available and authoritative.
 
 Release commands operate on a project checkout rather than package data. This
 keeps the wheel free of translation project artifacts and all proprietary ROM

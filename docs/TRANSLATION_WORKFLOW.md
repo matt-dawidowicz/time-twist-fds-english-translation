@@ -152,8 +152,11 @@ time-twist release-lock --update
 time-twist release-build --candidate --output-dir build/candidate
 ```
 
-The candidate manifest records every scenario-bank capacity/hash and all final
-output hashes. Candidate mode is not approval. Inspect the diff and playtest the
+The candidate manifest records every scenario-bank capacity/hash, all final
+output hashes, and deterministic release-code provenance for
+`work/time_twist/**/*.py`. Git commit and dirty-state metadata are included
+when Git is available; the normalized code-tree SHA-256 is the authoritative
+fallback. Candidate mode is not approval. Inspect the diff and playtest the
 exact files in `build/candidate`.
 
 Maintainers with the private fixture overlay should also run:
@@ -171,7 +174,9 @@ time-twist release-build
 ```
 
 Promotion verifies candidate files and ties the new target to the active source
-lock. Strict rebuilding must then reproduce it byte for byte.
+lock and release-code tree. Strict rebuilding must then reproduce it byte for
+byte. Existing targets without code provenance intentionally fail closed and
+must be replaced through this reviewed promotion flow.
 
 ## 10. Playtest
 

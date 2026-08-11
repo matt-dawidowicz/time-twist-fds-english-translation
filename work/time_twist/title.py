@@ -17,8 +17,9 @@ from __future__ import annotations
 import hashlib
 from collections import Counter
 from dataclasses import dataclass
-from functools import lru_cache
+from functools import cache
 from pathlib import Path
+from typing import Any
 
 from PIL import Image, ImageDraw
 
@@ -220,6 +221,14 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest().upper()
 
 
+def _pixel_access(image: Image.Image) -> Any:
+    """Return Pillow's mode-dependent pixel accessor or fail explicitly."""
+    pixels = image.load()
+    if pixels is None:
+        raise TitlePatchError("Pillow image does not expose pixel access")
+    return pixels
+
+
 def decode_title_rle(
     data: bytes,
     start: int,
@@ -355,7 +364,7 @@ def _render_indexed_nametable(
         IndexError: If a referenced tile is missing from ``chr_data``.
     """
     image = Image.new("L", (256, 240), 0)
-    pixels = image.load()
+    pixels = _pixel_access(image)
     for tile_y in range(30):
         for tile_x in range(32):
             tile_id = nametable[tile_y * 32 + tile_x]
@@ -568,7 +577,7 @@ def _draw_text(
         Writes glyph pixels directly into ``image``. Characters advance six
         pixels; spaces advance four and draw nothing.
     """
-    pixels = image.load()
+    pixels = _pixel_access(image)
     cursor = x
     for character in text:
         if character == " ":
@@ -598,7 +607,7 @@ def _tile_bytes(image: Image.Image, tile_x: int, tile_y: int) -> bytes:
     Returns:
         Sixteen bytes: eight low-plane rows followed by eight high-plane rows.
     """
-    pixels = image.load()
+    pixels = _pixel_access(image)
     low = bytearray(8)
     high = bytearray(8)
     for y in range(8):
@@ -609,7 +618,7 @@ def _tile_bytes(image: Image.Image, tile_x: int, tile_y: int) -> bytes:
     return bytes((*low, *high))
 
 
-@lru_cache(maxsize=None)
+@cache
 def _pattern_values(pattern: bytes) -> tuple[int, ...]:
     """Decode one NES 2bpp tile to 64 row-major palette indices.
 
@@ -642,7 +651,7 @@ _COLOR_DISTANCE = tuple(
 )
 
 
-@lru_cache(maxsize=None)
+@cache
 def _pattern_distance(left: bytes, right: bytes) -> int:
     """Score color mismatch between two tiles.
 
@@ -656,7 +665,9 @@ def _pattern_distance(left: bytes, right: bytes) -> int:
     """
     return sum(
         _COLOR_DISTANCE[a][b]
-        for a, b in zip(_pattern_values(left), _pattern_values(right))
+        for a, b in zip(
+            _pattern_values(left), _pattern_values(right), strict=True
+        )
     )
 
 
@@ -733,11 +744,10 @@ def _refine_title_centers(
                 clusters[index].append(pattern)
 
         refined: list[bytes] = []
-        for old_center, cluster in zip(dynamic, clusters):
+        for old_center, cluster in zip(dynamic, clusters, strict=True):
             if not cluster:
                 refined.append(old_center)
                 continue
-            values: list[int] = []
             expanded = [
                 (
                     pattern,
@@ -746,20 +756,19 @@ def _refine_title_centers(
                 )
                 for pattern in cluster
             ]
-            for pixel in range(64):
-                values.append(
-                    min(
-                        range(4),
-                        key=lambda candidate: (
-                            sum(
-                                weight
-                                * _COLOR_DISTANCE[source[pixel]][candidate]
-                                for _, source, weight in expanded
-                            ),
-                            candidate,
+            values = [
+                min(
+                    range(4),
+                    key=lambda candidate: (
+                        sum(
+                            weight * _COLOR_DISTANCE[source[pixel]][candidate]
+                            for _, source, weight in expanded
                         ),
-                    )
+                        candidate,
+                    ),
                 )
+                for pixel in range(64)
+            ]
             refined.append(_values_to_pattern(values))
 
         unique_dynamic = sorted(set(refined) - set(fixed))
@@ -914,10 +923,10 @@ def _validate_source(data: bytes) -> None:
             "clock metasprite animation",
         ),
     )
-    for source, expected, label in checks:
-        if _sha256(source) != expected:
+    for source_bytes, expected_hash, description in checks:
+        if _sha256(source_bytes) != expected_hash:
             raise TitlePatchError(
-                f"NOV4 {label} does not match the recovered source"
+                f"NOV4 {description} does not match the recovered source"
             )
 
 
@@ -964,8 +973,8 @@ def build_title_assets(
     recovered = _target_to_indices(target)
 
     final_target = original_final.copy()
-    final_pixels = final_target.load()
-    recovered_pixels = recovered.load()
+    final_pixels = _pixel_access(final_target)
+    recovered_pixels = _pixel_access(recovered)
     for y in range(96):
         for x in range(256):
             final_pixels[x, y] = recovered_pixels[x, y]
@@ -1055,7 +1064,9 @@ def build_title_assets(
         top_patterns,
         key=lambda pattern: (-top_frequency[pattern], pattern),
     )
-    center_to_id = dict(zip(ordered_top_patterns, range(TOP_TILE_COUNT)))
+    center_to_id = dict(
+        zip(ordered_top_patterns, range(TOP_TILE_COUNT), strict=True)
+    )
     if (
         len(center_to_id) != TOP_TILE_COUNT
         or len(set(center_to_id.values())) != TOP_TILE_COUNT
@@ -1437,9 +1448,9 @@ def render_slide_logo_frame(
             nametable,
             assets.background_chr,
         ).crop((0, 0, 256, 96))
-        source = indexed.load()
+        source = _pixel_access(indexed)
         masked = Image.new("L", indexed.size, 0)
-        target = masked.load()
+        target = _pixel_access(masked)
         attributes = nametable[960:1024]
         for y in range(96):
             for x in range(256):
@@ -1480,8 +1491,8 @@ def render_monochrome_slide_frame(
     """Colorize one attribute-masked swipe frame as black and white."""
     indexed = render_slide_logo_frame(assets, scroll_origin)
     image = Image.new("RGB", (256, 240), TITLE_PALETTE[0])
-    source = indexed.load()
-    target = image.load()
+    source = _pixel_access(indexed)
+    target = _pixel_access(image)
     for y in range(96):
         for x in range(256):
             if source[x, y]:
@@ -1507,9 +1518,9 @@ def render_title_background(assets: TitleAssets) -> Image.Image:
         assets.bottom_chr,
     )
     attributes = assets.final_nametable[960:1024]
-    source = indexed.load()
+    source = _pixel_access(indexed)
     image = Image.new("RGB", indexed.size, TITLE_PALETTE[0])
-    target = image.load()
+    target = _pixel_access(image)
     for y in range(240):
         for x in range(256):
             attribute = attributes[(y // 32) * 8 + (x // 32)]
@@ -1548,7 +1559,7 @@ def overlay_clock_sprites(
             "clock preview needs 8 KB CHR and eight OAM sprites"
         )
     image = background.copy().convert("RGB")
-    pixels = image.load()
+    pixels = _pixel_access(image)
     for sprite in range(8):
         y, tile_id, attributes, x = oam[sprite * 4 : sprite * 4 + 4]
         tile = chr_dump[tile_id * 16 : tile_id * 16 + 16]

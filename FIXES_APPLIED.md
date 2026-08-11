@@ -3,6 +3,10 @@
 This revision closes the code-audit findings across binary validation,
 reproducibility, public packaging, tests, and editorial/build authority.
 
+Implementation details, recovered addresses, source/replacement byte tables,
+6502 helper behavior, and the title-screen construction process are documented
+in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md).
+
 ## Binary correctness
 
 - Scenario pointers must be strictly increasing; duplicate group pointers are

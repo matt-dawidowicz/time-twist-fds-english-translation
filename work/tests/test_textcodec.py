@@ -71,6 +71,23 @@ class PackedTextTests(unittest.TestCase):
             [(symbol.kind, symbol.value) for symbol in symbols],
         )
 
+    def test_maximum_symbol_values_round_trip(self) -> None:
+        symbols = (
+            PackedSymbol(SymbolKind.COMMON, 47, 0, 0),
+            PackedSymbol(SymbolKind.EXTENDED, 63, 0, 0),
+            PackedSymbol(SymbolKind.DICTIONARY, 31, 0, 0),
+            PackedSymbol(SymbolKind.CONTROL, 7, 0, 0),
+        )
+        writer = BitWriter()
+        for symbol in symbols:
+            encode_symbol(writer, symbol)
+        reader = BitReader(writer.to_bytes())
+        decoded = tuple(decode_symbol(reader) for _ in symbols)
+        self.assertEqual(
+            [(entry.kind, entry.value) for entry in decoded],
+            [(entry.kind, entry.value) for entry in symbols],
+        )
+
     def test_encoder_rejects_zero_dictionary_reference(self) -> None:
         writer = BitWriter()
         with self.assertRaisesRegex(Exception, "one-based"):

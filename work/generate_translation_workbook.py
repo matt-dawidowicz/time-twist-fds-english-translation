@@ -17,10 +17,10 @@ import html
 import json
 import re
 from collections import Counter
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Iterable
 
 from generate_bilingual_comparison import _romanize
 
@@ -2129,7 +2129,7 @@ def parse_review(
             f"review has {len(data_rows)} rows; source has {len(source_rows)}"
         )
     output: dict[str, dict] = {}
-    for source, review in zip(source_rows, data_rows):
+    for source, review in zip(source_rows, data_rows, strict=True):
         if len(review) != 9:
             raise ValueError(f"review row has {len(review)} columns")
         id_lines = review[1].splitlines()
@@ -2477,16 +2477,15 @@ def linguistic_notes(source_row: dict, review: dict, register: str) -> str:
             "地上げ屋 is a bubble-era 'land shark' or developer who pressures "
             "residents to leave so parcels can be assembled."
         )
-    if source_row["bank"] == "TT5" or source_row["bank"] == "T25":
-        if any(
-            term in source_row["japanese_exact"]
-            for term in ("どれい", "さべつ", "なんぶ")
-        ):
-            notes.append(
-                "The source is depicting nineteenth-century slavery/racism; harmful "
-                "content is translated as character speech or narration without "
-                "endorsing or sanitizing it."
-            )
+    if source_row["bank"] in {"TT5", "T25"} and any(
+        term in source_row["japanese_exact"]
+        for term in ("どれい", "さべつ", "なんぶ")
+    ):
+        notes.append(
+            "The source is depicting nineteenth-century slavery/racism; harmful "
+            "content is translated as character speech or narration without "
+            "endorsing or sanitizing it."
+        )
     notes.append(
         "Reconstructed Japanese is conservative editorial normalization; any kana "
         "left unreconstructed remains deliberately unresolved rather than being "
@@ -3470,8 +3469,10 @@ def write_progress(
         "## Bank coverage",
         "",
     ]
-    for bank in BANK_ORDER:
-        progress.append(f"- {bank}: {bank_counts[bank]} records complete")
+    progress.extend(
+        f"- {bank}: {bank_counts[bank]} records complete"
+        for bank in BANK_ORDER
+    )
     progress.extend(
         [
             "",
@@ -3497,10 +3498,11 @@ def write_progress(
         ]
     )
     if gameplay:
-        for row in gameplay:
-            progress.append(
-                f"- `{row.original_record_id}` — {row.unresolved_ambiguity or row.translation_status}"
-            )
+        progress.extend(
+            f"- `{row.original_record_id}` — "
+            f"{row.unresolved_ambiguity or row.translation_status}"
+            for row in gameplay
+        )
     else:
         progress.append("- None.")
     progress.extend(
@@ -3511,11 +3513,11 @@ def write_progress(
         ]
     )
     if technical:
-        for row in technical:
-            progress.append(
-                f"- `{row.original_record_id}` — {row.apparent_capacity}; "
-                f"{row.nuance_lost_in_patch_safe_version}"
-            )
+        progress.extend(
+            f"- `{row.original_record_id}` — {row.apparent_capacity}; "
+            f"{row.nuance_lost_in_patch_safe_version}"
+            for row in technical
+        )
     else:
         progress.append("- None.")
     progress.extend(
@@ -3533,10 +3535,11 @@ def write_progress(
             "",
         ]
     )
-    for row in unresolved:
-        progress.append(
-            f"- `{row.original_record_id}` ({row.confidence_level}) — {row.unresolved_ambiguity}"
-        )
+    progress.extend(
+        f"- `{row.original_record_id}` ({row.confidence_level}) — "
+        f"{row.unresolved_ambiguity}"
+        for row in unresolved
+    )
     (OUTPUTS / "Time_Twist_translation_progress.md").write_text(
         "\n".join(progress) + "\n", encoding="utf-8"
     )
@@ -3581,12 +3584,12 @@ def write_voice_guide(glossary: list[dict]) -> None:
             ]
         )
     lines.extend(["## Core terminology", ""])
-    for entry in glossary:
-        lines.append(
-            f"- **{entry['chosen_english']}** — exact `{entry['exact_japanese']}`; "
-            f"reconstructed `{entry['reconstructed_japanese']}`; first "
-            f"`{entry['first_occurrence']}`. {entry['notes']}"
-        )
+    lines.extend(
+        f"- **{entry['chosen_english']}** — exact `{entry['exact_japanese']}`; "
+        f"reconstructed `{entry['reconstructed_japanese']}`; first "
+        f"`{entry['first_occurrence']}`. {entry['notes']}"
+        for entry in glossary
+    )
     lines.extend(
         [
             "",

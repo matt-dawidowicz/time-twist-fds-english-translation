@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=69"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,15 +8,18 @@ version = "0.2.0"
 description = "Reproducible FDS analysis and English translation build tools for Time Twist"
 readme = "README.md"
 requires-python = ">=3.11"
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = [
   "Pillow>=10,<13",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "black>=24.10,<27",
+  "black>=24.10,<26",
   "build>=1.2,<2",
+  "hypothesis>=6.100,<7",
+  "mypy>=1.14,<2",
   "pydocstyle>=6.3,<7",
   "ruff>=0.9,<1",
 ]
@@ -38,4 +41,19 @@ line-length = 79
 target-version = "py311"
 
 [tool.ruff.lint]
-select = ["E4", "E7", "E9", "F", "I"]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP", "SIM", "PERF", "RUF"]
+ignore = [
+  # The tooling intentionally embeds Japanese source punctuation verbatim.
+  "RUF001",
+  # Changing the enum base would alter str(SymbolKind), not just modernize it.
+  "UP042",
+]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["work/time_twist"]
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true
