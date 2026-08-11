@@ -35,6 +35,12 @@ the shared English validator before packing. A reordered or hand-edited JSON
 file therefore cannot redirect otherwise valid text into the wrong record, and
 an overwide line cannot bypass `scenario-merge` by invoking insertion directly.
 
+The lower-level `rebuild_scenario_bank()` API now independently enforces the
+source bank's per-group record counts and the native 31-entry dictionary limit.
+Callers outside the CLI therefore cannot accidentally serialize a structurally
+shifted record layout or an impossible dictionary merely because the outer
+group count still matches.
+
 ## Dictionary reservation boundary
 
 Ordinary scenario records are not necessarily the only users of a source
@@ -48,22 +54,41 @@ references transitively. `dictionary_end_offset` therefore covers entries
 proven reachable from either dialogue or the source fixed UI, without assuming
 that every bank has 31 source entries.
 
+Translated fixed-address UI tables are a separate case: their patcher indexes a
+complete 31-slot English dictionary. `required_dictionary_entries()` marks
+those banks as full-dictionary consumers. The compressor therefore accepts a
+fast result only when it contains all 31 entries, retries with candidate pruning
+disabled when necessary, and fails closed if the exhaustive positive-saving
+search still cannot produce a complete dictionary. This applies equally to the
+manual `scenario-insert`/`ui-patch` workflow and the canonical release builder.
+
+A fully translated fixed-UI bank also rejects `scenario-insert --no-compress`.
+That diagnostic mode deliberately preserves the Japanese dictionary, so it
+cannot be a safe input to the English fixed-table `ui-patch` step. The command
+now fails before writing an output rather than allowing that unsafe workflow.
+
 The hardening is folded into the canonical CLI, parser, compressor, and release
 modules rather than hidden behind compatibility facades. The recovered binary
 logic remains structurally unchanged except where this note documents a new
 validation or capacity boundary.
 
-## Capacity-only compressor fallback
+## Capacity and dictionary-completeness fallback
 
 The normal compressor still evaluates the top 200 estimated candidates per
 greedy iteration for speed. Callers that know a fixed packed-byte reservation
-now pass it as `max_bytes`. If the fast result misses that reservation, the
+pass it as `max_bytes`. If the fast result misses that reservation, the
 compressor reruns the same deterministic greedy search with candidate pruning
 disabled and keeps the smaller result.
 
-This is a bounded robustness fallback, not a claim of globally optimal
+Fixed-UI banks also trigger that exhaustive retry if the fast pass stops before
+all 31 dictionary slots are populated. A result with fewer than 31 entries is
+rejected for those banks rather than allowing the later fixed-table encoder to
+scan beyond the generated dictionary.
+
+This remains a bounded robustness fallback, not a claim of globally optimal
 compression. Successful fast-path builds are unchanged, and the extra search
-cost is paid only when the native reservation would otherwise be exceeded.
+cost is paid only when the native reservation or full-dictionary contract would
+otherwise be missed.
 
 ## Regression coverage
 
@@ -74,11 +99,20 @@ private ROM bytes. It verifies:
 - direct insertion rejects mismatched stable IDs;
 - direct insertion rejects overwide English;
 - an explicit fixed-UI dictionary floor extends the preserved tail boundary;
-- the personality-question wrapping exception remains intact; and
-- a capacity miss triggers an unpruned compressor retry.
+- fixed-UI dictionary generation fails closed before an incomplete dictionary
+  can reach the UI patcher;
+- fully translated fixed-UI insertion rejects `--no-compress` without writing
+  an unsafe intermediate bank;
+- direct scenario rebuilding rejects changed per-group record counts;
+- direct scenario rebuilding rejects dictionaries larger than 31 entries;
+- the personality-question wrapping exception remains intact;
+- a capacity miss triggers an unpruned compressor retry;
+- raw and headered zero-side FDS images are rejected;
+- negative packed-record decode limits are rejected; and
+- the release dependency metadata keeps Pillow pinned to the approved version.
 
 The existing public CI matrix continues to run Black, Ruff, pydocstyle, mypy,
-public-tree validation, unit tests on Python 3.11/3.12, and the Python 3.12
-package/wheel smoke tests. Private integration tests remain a separate local
-release gate because original ROM-derived fixtures are intentionally absent
-from the repository.
+public-tree validation, 90 fixture-free unit tests on Python 3.11/3.12, and the
+Python 3.12 package/wheel smoke tests. Private integration tests remain a
+separate local release gate because original ROM-derived fixtures are
+intentionally absent from the repository.

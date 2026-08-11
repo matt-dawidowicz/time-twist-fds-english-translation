@@ -391,12 +391,13 @@ def rebuild_scenario_bank(
         Rebuilt bank bytes with updated group/dictionary pointers.
 
     Raises:
-        ScenarioError: If the group count changes, a loaded pointer exceeds
-            16 bits, total scenario data exceeds address space, or a preserved
-            footprint is too small.
+        ScenarioError: If the group count or any per-group record count changes,
+            the replacement dictionary exceeds 31 entries, a loaded pointer
+            exceeds 16 bits, total scenario data exceeds address space, or a
+            preserved footprint is too small.
         PackedTextError: If any replacement token cannot be packed.
 
-    ``groups`` must match the original group count. When
+    ``groups`` must match the original group and per-group record counts. When
     ``preserve_memory_footprint`` is true, the rebuilt group/table/dictionary
     area cannot cross the original ``dictionary_end_offset`` and any unused
     bytes before that boundary are copied from the source. The suffix begins
@@ -407,6 +408,23 @@ def rebuild_scenario_bank(
     if len(groups) != len(bank.group_addresses):
         raise ScenarioError(
             f"expected {len(bank.group_addresses)} groups, got {len(groups)}"
+        )
+    expected_record_counts = tuple(
+        sum(record.group_index == group_index for record in bank.records)
+        for group_index in range(len(bank.group_addresses))
+    )
+    for group_index, (records, expected_count) in enumerate(
+        zip(groups, expected_record_counts, strict=True)
+    ):
+        if len(records) != expected_count:
+            raise ScenarioError(
+                f"group {group_index} expected {expected_count} records, "
+                f"got {len(records)}"
+            )
+    if len(dictionary) > MAX_DICTIONARY_ENTRY_COUNT:
+        raise ScenarioError(
+            f"dictionary has {len(dictionary)} entries; maximum is "
+            f"{MAX_DICTIONARY_ENTRY_COUNT}"
         )
 
     old_group_zero_offset = bank.group_addresses[0] - bank.load_address

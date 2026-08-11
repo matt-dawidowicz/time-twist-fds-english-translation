@@ -10,9 +10,20 @@ from unittest.mock import patch
 from time_twist.cli import command_scenario_extract, command_scenario_insert
 from time_twist.compression import compress_english_groups, packed_size
 from time_twist.english import EnglishTextError, encode_english
-from time_twist.scenario import parse_scenario_bank
+from time_twist.fds import FdsFormatError, FdsImage
+from time_twist.project import required_dictionary_entries
+from time_twist.scenario import (
+    ScenarioError,
+    parse_scenario_bank,
+    rebuild_scenario_bank,
+)
 from time_twist.scenario_validation import encode_validated_english
-from time_twist.textcodec import PackedSymbol, SymbolKind, pack_records
+from time_twist.textcodec import (
+    PackedSymbol,
+    SymbolKind,
+    pack_records,
+    split_records,
+)
 
 LOAD_ADDRESS = 0xA200
 
@@ -142,6 +153,78 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
                 reachable.dictionary_end_offset,
             )
 
+    def test_fixed_ui_dictionary_requirement_fails_closed(self) -> None:
+        groups = ((encode_english("AB"),),)
+        required = required_dictionary_entries("TT2")
+        self.assertTrue(getattr(required, "requires_full_dictionary", False))
+        with self.assertRaisesRegex(ValueError, "exactly 31"):
+            compress_english_groups(groups, required_entries=required)
+
+    def test_fixed_ui_insert_rejects_no_compress(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            bank_path = root / "bank.bin"
+            scenario = root / "scenario.json"
+            output = root / "rebuilt.bin"
+            _synthetic_bank(bank_path)
+            bank = parse_scenario_bank(bank_path)
+            scenario.write_text(
+                json.dumps(
+                    {
+                        "groups": [
+                            {
+                                "group": 0,
+                                "records": [
+                                    {
+                                        "id": "TT2/g0/r0",
+                                        "record": 0,
+                                        "english": "A",
+                                    }
+                                ],
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            args = SimpleNamespace(
+                bank=bank_path,
+                translation=scenario,
+                output=output,
+                no_compress=True,
+            )
+            with (
+                patch(
+                    "time_twist.cli._parse_source_bank",
+                    return_value=("TT2", bank),
+                ),
+                self.assertRaisesRegex(SystemExit, "--no-compress"),
+            ):
+                command_scenario_insert(args)
+            self.assertFalse(output.exists())
+
+    def test_rebuild_rejects_per_group_record_count_change(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "bank.bin"
+            _synthetic_bank(path)
+            bank = parse_scenario_bank(path)
+            with self.assertRaisesRegex(ScenarioError, "expected 1 records"):
+                rebuild_scenario_bank(bank, ((),))
+
+    def test_rebuild_rejects_more_than_31_dictionary_entries(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "bank.bin"
+            _synthetic_bank(path)
+            bank = parse_scenario_bank(path)
+            groups = ((bank.records[0].symbols,),)
+            dictionary = tuple(encode_english("A") for _ in range(32))
+            with self.assertRaisesRegex(ScenarioError, "maximum is 31"):
+                rebuild_scenario_bank(
+                    bank,
+                    groups,
+                    dictionary=dictionary,
+                )
+
     def test_shared_validator_keeps_personality_wrap_exception(self) -> None:
         text = "A" * 23 + " " + "B" * 24
         with self.assertRaises(EnglishTextError):
@@ -163,6 +246,26 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
             )
         self.assertTrue(dictionary)
         self.assertLess(packed_size(compressed, dictionary), uncompressed)
+
+    def test_fds_parser_rejects_zero_side_images(self) -> None:
+        with self.assertRaisesRegex(FdsFormatError, "no sides"):
+            FdsImage.from_bytes(b"")
+
+        header = bytearray(16)
+        header[:4] = b"FDS\x1a"
+        with self.assertRaisesRegex(FdsFormatError, "no sides"):
+            FdsImage.from_bytes(bytes(header))
+
+    def test_split_records_rejects_negative_limit(self) -> None:
+        with self.assertRaisesRegex(ValueError, "cannot be negative"):
+            split_records(b"", limit=-1)
+
+    def test_release_pins_pillow_version(self) -> None:
+        project_root = Path(__file__).resolve().parents[2]
+        pyproject = (project_root / "pyproject.toml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn('"Pillow==12.3.0"', pyproject)
 
 
 if __name__ == "__main__":
