@@ -31,11 +31,11 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
   playable scenario maps.
 - Source-lock schema v2 records `lf` normalization for translation JSON and
   `raw` identity for ROM/title assets. Equivalent Windows CRLF and repository
-  LF text now share one digest without weakening binary guards.
+  LF text share one digest without weakening binary guards.
 - The source-lock document hash is LF-normalized, making candidate/target
   linkage platform-independent.
-- A promoted `work/release_target.json` records reviewed output sizes and
-  hashes tied to the active source-lock SHA-256.
+- A promoted `work/release_target.json` records reviewed output sizes and hashes
+  tied to the active source-lock SHA-256.
 - Candidate provenance hashes both the imported/executing package and the
   supplied checkout under identical logical paths and fails closed if they
   differ.
@@ -43,11 +43,20 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
   code provenance, build environment, all scenario-bank reports, fixed-component
   hashes, target state, and canonical output records.
 - Candidate manifests record Python implementation/version and Pillow version
-  as informational diagnostics. Source, code, and output hashes remain the
-  release authority.
-- `release-promote` validates every candidate output twice: once during review
-  validation and again immediately before the atomic target write, closing the
-  candidate-output time-of-check/time-of-use window.
+  as informational diagnostics. Source, code, component, and output identities
+  remain the release authority.
+- Promotion binds the candidate subtitle to the validated source lock.
+- `release-promote` performs a fresh candidate-mode rebuild from the active
+  source lock and current release code. The rebuilt scenario-bank records,
+  fixed-component hashes, and all three output records must exactly equal the
+  reviewed candidate before a target can be published.
+- Candidate files are validated before the rebuild proof and again immediately
+  before target publication; the manifest is also re-hashed at the final
+  publication boundary. This is a strong trusted-local-process TOCTOU
+  mitigation rather than a claim of hostile-filesystem transactionality.
+- Source-lock and target writers reject custom destination paths that collide
+  with authoritative sources, release-critical code, project metadata, the
+  active lock, candidate manifest, or candidate outputs as applicable.
 - Source locks, manifests, targets, and provenance fields receive strict
   structural validation; JSON booleans cannot masquerade as sizes or counts.
 - `release-build --candidate` creates reviewable unapproved output.
@@ -61,7 +70,7 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
 - Publication invalidates an older manifest before replacing outputs, so an
   interrupted multi-file update cannot leave stale metadata attesting a mixed
   output set.
-- External `--lock` paths are handled safely in manifests.
+- External `--lock` paths remain supported safely.
 - Intentional source updates no longer dead-end on hashes hardcoded in Python.
 - Known CLI failures produce concise `time-twist: error:` messages.
 - Commands work from any directory in a checkout or through `--project-root`.
@@ -75,21 +84,23 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
 - CI runs `work/tools/check_public_tree.py` before installation to reject ROMs,
   extracted banks, dumps, emulator state, build debris, and personal paths.
 - The wheel contains code only and can drive an external checkout explicitly.
-- CI builds and force-installs the wheel, proves `time_twist` imports outside
-  the checkout, and then smoke-tests the command.
+- Public source/style/type/unit checks run on Python 3.11 and 3.12.
+- Python 3.12 builds and force-installs the wheel, proves `time_twist` imports
+  outside the checkout, and then smoke-tests the command.
 - Personal workstation paths were removed from scripts and generated metadata.
 
 ## Tests
 
 - Public tests and ROM-derived integration tests are separated.
-- `python work/run_tests.py unit` runs 78 fixture-free tests in CI.
-- `python work/run_tests.py integration` runs 75 exact tests with the private
-  overlay.
+- `python work/run_tests.py unit` discovers 83 fixture-free tests.
+- `python work/run_tests.py integration` discovers 75 exact tests when the legal
+  private overlay is present.
 - The fixture manifest is validated before discovery.
 - Supported suites reject all skips.
-- The private overlay was recovered locally and all 92 fixture records matched
-  their manifest before the 75-test integration run. The proprietary files
-  remain excluded from the repository.
+- Private results are tied to the exact code revision on which they were run.
+  The earlier 75-test private run with all 92 fixture records hash-verified is
+  historical evidence for that snapshot, not a claim of a fresh private run on
+  every subsequent release-tool commit.
 
 ## Title-sequence candidate
 
@@ -113,7 +124,7 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
 
 ## Workbook/build authority
 
-- Every scenario patch-safe workbook row now comes directly from the playable
+- Every scenario patch-safe workbook row comes directly from the playable
   translation map.
 - Fixed/graphics patch-safe rows mirror installed English definitions.
 - Alternative reviewed wording remains in the natural-translation field.
@@ -122,10 +133,11 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
 
 ## Playtest handoff
 
-The previously recorded image hashes remain evidence for the pre-schema-v4
-candidate, but manifest schema v4 deliberately changes the release-code and
-audit metadata. Build a fresh candidate with the current code, playtest those
-exact files, and promote only that retained reviewed candidate.
+Previously recorded image hashes are historical evidence for earlier candidate
+revisions. Any change to release-critical Python changes the authoritative code
+provenance, so build a fresh candidate with the final code, retain and playtest
+those exact files, then promote that retained candidate. Promotion will perform
+its own independent rebuild proof before creating the target.
 
 Static and reproducible verification does not replace a complete emulator
 playthrough.
