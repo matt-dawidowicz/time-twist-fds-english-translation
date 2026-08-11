@@ -55,7 +55,9 @@ required. It validates controls, glyph support, and display width.
 Reports the fixed text reservation and, with a complete translation map,
 compressed use and remaining bytes. For banks with fixed-address UI text, the
 source reservation includes dictionary entries referenced by those verified
-source tables as well as ordinary scenario dialogue.
+source tables as well as ordinary scenario dialogue. Banks whose translated
+fixed UI consumes the English dictionary must also produce all 31 dictionary
+entries or the footprint check fails closed.
 
 ### `scenario-insert BANK TRANSLATION OUTPUT [--no-compress] [--bank-name NAME]`
 
@@ -64,8 +66,15 @@ record indices, stable IDs, control order, display width, and glyph support.
 Complete translations receive a new English dictionary; partial work keeps the
 Japanese dictionary. `--bank-name` is available when the input filename does
 not safely identify its bank. Capacity-constrained complete builds retry the
-deterministic compressor without candidate pruning only if the normal fast
-search misses the native reservation.
+deterministic compressor without candidate pruning if the normal fast search
+misses the native reservation. Fixed-UI banks also retry when the fast search
+stops before all 31 required English dictionary slots are populated, and fail
+if the exhaustive search still cannot produce a complete dictionary.
+
+`--no-compress` is diagnostic only. A fully translated bank whose fixed UI
+requires the 31-entry English dictionary rejects that option before writing an
+output, because preserving the Japanese dictionary cannot produce a safe input
+for the later `ui-patch` step.
 
 ## Asset and UI commands
 
@@ -115,10 +124,11 @@ Rebuilds all 13 scenario banks, applies fixed UI/font/title patches, produces
 Zenpen and Kouhen, combines four sides, and writes `release_manifest.json`.
 
 Release manifest schema v4 is a complete audit record. It includes source-lock
-and release-code provenance, informational Python/Pillow environment versions,
-all scenario-bank capacity/hash reports, fixed-component hashes, target state,
-and canonical final-output records. Generated manifests are structurally
-validated before publication.
+and release-code provenance, Python/Pillow environment versions, all
+scenario-bank capacity/hash reports, fixed-component hashes, target state, and
+canonical final-output records. Generated manifests are structurally validated
+before publication. Package metadata pins Pillow 12.3.0; the manifest records
+the version that actually executed the build.
 
 Default strict mode verifies `PROJECT/work/release_target.json`, including its
 tie to the active source-lock SHA-256 and the active release-code provenance.
@@ -161,11 +171,12 @@ release-critical Python code, or project metadata. The canonical
 Candidate and target metadata record an optional checkout Git commit and dirty
 flag, plus an authoritative SHA-256 over normalized logical
 `work/time_twist/**/*.py` paths and contents. Git is not required. Candidate and
-verified manifests also record Python implementation/version and Pillow version
-for diagnostics; those environment fields are informational rather than release
-authority. A legacy target without code provenance, or a target made by a
-different active code tree, is rejected and must be re-created through candidate
-review and promotion.
+verified manifests also record Python implementation/version and the executing
+Pillow version for diagnostics. The package-level Pillow pin narrows the
+expected release environment; source, code, component, and output hashes remain
+the release authority. A legacy target without code provenance, or a target
+made by a different active code tree, is rejected and must be re-created through
+candidate review and promotion.
 
 ## Failure interpretation
 
