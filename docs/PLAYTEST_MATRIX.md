@@ -2,15 +2,25 @@
 
 ## Candidate under test
 
-Use the candidate named below. Do not test an older `outputs/` image or a save state made from an earlier hash.
+**A fresh candidate is required after the final pre-playtest hardening.** The
+previously listed candidate predates release-code changes and must not be used
+for the continuity run, even if a fresh build happens to reproduce the same FDS
+byte hashes. Build from the exact revision you intend to test, then copy the new
+manifest values into this section before starting.
 
 | Build | SHA-256 | Bytes |
 | --- | --- | ---: |
-| Four-side | `CC58DDAFAB3C3E85FE6E06E9A7657AE0D17FE2AFFC34560F0615D415BD805C37` | 262,000 |
-| Zenpen | `B499CA548A0012EDA77450873EF66545D4420C02D654674608BBD64344AFCDE9` | 131,000 |
-| Kouhen | `EA56360D36730FDE372F7FC118B81D3C7C2937FD54D30288B7F56D6BCA7DD718` | 131,000 |
+| Four-side | `PENDING FRESH CANDIDATE BUILD` | Pending |
+| Zenpen | `PENDING FRESH CANDIDATE BUILD` | Pending |
+| Kouhen | `PENDING FRESH CANDIDATE BUILD` | Pending |
+
+Candidate manifest SHA-256: `PENDING FRESH CANDIDATE BUILD`.
+
+Release-code tree SHA-256: `PENDING FRESH CANDIDATE BUILD`.
 
 Source-lock SHA-256: `238E98039F1D6FDD2E8A287766106C1C4F456B88DD25D9190E2CB32B98E7BD44`.
+The approved non-code inputs are unchanged by the final hardening; the fresh
+candidate is required because the release-code provenance changed.
 
 ## Test protocol
 
