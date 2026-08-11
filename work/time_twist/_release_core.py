@@ -893,6 +893,9 @@ def _validated_scenario_report(
                 raise ReleaseBuildError(
                     f"{label} scenario bank {bank_name} has invalid {field}"
                 )
+        assert isinstance(packed_bytes, int)
+        assert isinstance(capacity_bytes, int)
+        assert isinstance(remaining_bytes, int)
         if remaining_bytes != capacity_bytes - packed_bytes:
             raise ReleaseBuildError(
                 f"{label} scenario bank {bank_name} has inconsistent capacity"
@@ -923,6 +926,7 @@ def _validated_component_hashes(
             raise ReleaseBuildError(
                 f"{label} component {component} has invalid SHA-256"
             )
+        assert isinstance(digest, str)
         output[component] = digest
     return output
 
