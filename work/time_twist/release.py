@@ -10,11 +10,13 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import platform
 import shutil
 import subprocess
 import tempfile
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from importlib.metadata import version as package_version
 from pathlib import Path, PurePosixPath
 
 from .compression import compress_english_groups, packed_size
@@ -102,7 +104,9 @@ CODE_TREE_HASH_ALGORITHM = (
     "sha256-length-prefixed-posix-path-and-lf-normalized-content-v1"
 )
 CODE_LOGICAL_ROOT = "work/time_twist"
-RELEASE_MANIFEST_SCHEMA = "Time Twist reproducible release manifest v3"
+BUILD_ENVIRONMENT_SCHEMA = "Time Twist build environment v1"
+RELEASE_MANIFEST_SCHEMA = "Time Twist reproducible release manifest v4"
+LEGACY_RELEASE_MANIFEST_SCHEMA = "Time Twist reproducible release manifest v3"
 RELEASE_TARGET_SCHEMA = "Time Twist release target v2"
 LEGACY_RELEASE_TARGET_SCHEMA = "Time Twist release target v1"
 RELEASE_FILENAMES = {
@@ -235,6 +239,16 @@ def _is_sha256(value: object) -> bool:
         and len(value) == 64
         and all(character in "0123456789ABCDEF" for character in value)
     )
+
+
+def build_environment_provenance() -> dict[str, str]:
+    """Return informational versions that can explain reproduction differences."""
+    return {
+        "schema": BUILD_ENVIRONMENT_SCHEMA,
+        "python_implementation": platform.python_implementation(),
+        "python_version": platform.python_version(),
+        "pillow_version": package_version("Pillow"),
+    }
 
 
 def release_code_paths(project_root: Path) -> tuple[Path, ...]:
@@ -756,6 +770,207 @@ def _validated_code_provenance(
     return dict(payload)
 
 
+def _validated_build_environment(
+    payload: object,
+    *,
+    label: str,
+) -> dict[str, str]:
+    """Validate informational Python and Pillow build-environment metadata."""
+    if not isinstance(payload, dict):
+        raise ReleaseBuildError(f"{label} has no build environment")
+    required_fields = {
+        "schema",
+        "python_implementation",
+        "python_version",
+        "pillow_version",
+    }
+    if set(payload) != required_fields:
+        raise ReleaseBuildError(
+            f"{label} build environment fields must be exactly "
+            f"{sorted(required_fields)}"
+        )
+    if payload.get("schema") != BUILD_ENVIRONMENT_SCHEMA:
+        raise ReleaseBuildError(f"{label} has unsupported build environment")
+    result: dict[str, str] = {}
+    for field in required_fields:
+        value = payload.get(field)
+        if not isinstance(value, str) or not value.strip():
+            raise ReleaseBuildError(
+                f"{label} build environment has invalid {field}"
+            )
+        result[field] = value
+    return result
+
+
+def _validated_scenario_report(
+    payload: object,
+    *,
+    label: str,
+) -> dict[str, dict[str, object]]:
+    """Validate the complete per-bank audit summary in a release manifest."""
+    if not isinstance(payload, dict) or set(payload) != set(SCENARIO_LOCATIONS):
+        raise ReleaseBuildError(
+            f"{label} scenario banks must contain exactly "
+            f"{sorted(SCENARIO_LOCATIONS)}"
+        )
+    output: dict[str, dict[str, object]] = {}
+    required_fields = {
+        "records",
+        "dictionary_entries",
+        "packed_bytes",
+        "capacity_bytes",
+        "remaining_bytes",
+        "sha256",
+    }
+    for bank_name in SCENARIO_LOCATIONS:
+        record = payload[bank_name]
+        if not isinstance(record, dict) or set(record) != required_fields:
+            raise ReleaseBuildError(
+                f"{label} scenario bank {bank_name} fields must be exactly "
+                f"{sorted(required_fields)}"
+            )
+        records = record.get("records")
+        dictionary_entries = record.get("dictionary_entries")
+        packed_bytes = record.get("packed_bytes")
+        capacity_bytes = record.get("capacity_bytes")
+        remaining_bytes = record.get("remaining_bytes")
+        if type(records) is not int or records <= 0:
+            raise ReleaseBuildError(
+                f"{label} scenario bank {bank_name} has invalid record count"
+            )
+        if (
+            type(dictionary_entries) is not int
+            or dictionary_entries < 0
+            or dictionary_entries > 31
+        ):
+            raise ReleaseBuildError(
+                f"{label} scenario bank {bank_name} has invalid dictionary count"
+            )
+        for field, value in (
+            ("packed_bytes", packed_bytes),
+            ("capacity_bytes", capacity_bytes),
+            ("remaining_bytes", remaining_bytes),
+        ):
+            if type(value) is not int or value < 0:
+                raise ReleaseBuildError(
+                    f"{label} scenario bank {bank_name} has invalid {field}"
+                )
+        if remaining_bytes != capacity_bytes - packed_bytes:
+            raise ReleaseBuildError(
+                f"{label} scenario bank {bank_name} has inconsistent capacity"
+            )
+        if not _is_sha256(record.get("sha256")):
+            raise ReleaseBuildError(
+                f"{label} scenario bank {bank_name} has invalid SHA-256"
+            )
+        output[bank_name] = dict(record)
+    return output
+
+
+def _validated_component_hashes(
+    payload: object,
+    *,
+    label: str,
+) -> dict[str, str]:
+    """Validate the fixed release-component hashes in a manifest."""
+    expected = {"NOV2", "NOV4", "SON-KOUH"}
+    if not isinstance(payload, dict) or set(payload) != expected:
+        raise ReleaseBuildError(
+            f"{label} component hashes must contain exactly {sorted(expected)}"
+        )
+    output: dict[str, str] = {}
+    for component in sorted(expected):
+        digest = payload.get(component)
+        if not _is_sha256(digest):
+            raise ReleaseBuildError(
+                f"{label} component {component} has invalid SHA-256"
+            )
+        output[component] = digest
+    return output
+
+
+def validate_release_manifest_metadata(
+    payload: object,
+    *,
+    label: str = "release manifest",
+) -> dict[str, object]:
+    """Validate a complete candidate or verified release audit manifest."""
+    if not isinstance(payload, dict):
+        raise ReleaseBuildError(f"{label} must be a JSON object")
+    schema = payload.get("schema")
+    if schema == LEGACY_RELEASE_MANIFEST_SCHEMA:
+        raise ReleaseBuildError(
+            "legacy release manifest v3 lacks the complete audit metadata "
+            "required by the v4 release pipeline; rebuild the candidate"
+        )
+    if schema != RELEASE_MANIFEST_SCHEMA:
+        raise ReleaseBuildError(
+            f"unsupported release manifest schema: {schema!r}"
+        )
+    required_fields = {
+        "schema",
+        "mode",
+        "project_source_lock",
+        "source_lock_sha256",
+        "code_provenance",
+        "build_environment",
+        "release_target",
+        "release_target_sha256",
+        "release_id",
+        "subtitle",
+        "scenario_banks",
+        "component_sha256",
+        "outputs",
+    }
+    if set(payload) != required_fields:
+        raise ReleaseBuildError(
+            f"{label} fields must be exactly {sorted(required_fields)}"
+        )
+    mode = payload.get("mode")
+    if mode not in ("candidate", "verified"):
+        raise ReleaseBuildError(f"{label} has invalid mode: {mode!r}")
+    lock_path = payload.get("project_source_lock")
+    if not isinstance(lock_path, str) or not lock_path.strip():
+        raise ReleaseBuildError(f"{label} has invalid source-lock path")
+    if not _is_sha256(payload.get("source_lock_sha256")):
+        raise ReleaseBuildError(f"{label} has invalid source-lock SHA-256")
+    _validated_code_provenance(payload.get("code_provenance"), label=label)
+    _validated_build_environment(payload.get("build_environment"), label=label)
+    subtitle = payload.get("subtitle")
+    if not isinstance(subtitle, str) or not subtitle:
+        raise ReleaseBuildError(f"{label} has invalid subtitle")
+    _validated_scenario_report(payload.get("scenario_banks"), label=label)
+    _validated_component_hashes(payload.get("component_sha256"), label=label)
+    _validated_output_records(
+        payload.get("outputs"), label=label, include_path=True
+    )
+    release_target = payload.get("release_target")
+    release_target_sha256 = payload.get("release_target_sha256")
+    release_id = payload.get("release_id")
+    if mode == "candidate":
+        if any(
+            value is not None
+            for value in (release_target, release_target_sha256, release_id)
+        ):
+            raise ReleaseBuildError(
+                f"{label} candidate target fields must all be null"
+            )
+    else:
+        if not isinstance(release_target, str) or not release_target.strip():
+            raise ReleaseBuildError(
+                f"{label} verified build has invalid target path"
+            )
+        if not _is_sha256(release_target_sha256):
+            raise ReleaseBuildError(
+                f"{label} verified build has invalid target SHA-256"
+            )
+        if not isinstance(release_id, str) or not release_id.strip():
+            raise ReleaseBuildError(
+                f"{label} verified build has invalid release ID"
+            )
+    return dict(payload)
+
+
 def validate_code_provenance(
     payload: object,
     *,
@@ -1001,6 +1216,32 @@ def _target_mismatches(
     return mismatches
 
 
+def _validate_candidate_outputs(
+    manifest_path: Path,
+    output_records: Mapping[str, Mapping[str, object]],
+) -> None:
+    """Fail unless candidate files still match their validated manifest records."""
+    for name in RELEASE_OUTPUT_KEYS:
+        record = output_records[name]
+        output_path = manifest_path.parent / RELEASE_FILENAMES[name]
+        if output_path.is_symlink():
+            raise ReleaseBuildError(
+                f"candidate output must not be a symlink: {output_path}"
+            )
+        if not output_path.is_file():
+            raise ReleaseBuildError(
+                f"candidate output is missing: {output_path}"
+            )
+        if output_path.stat().st_size != record["bytes"]:
+            raise ReleaseBuildError(
+                f"candidate output size changed: {output_path}"
+            )
+        if sha256_file(output_path) != record["sha256"]:
+            raise ReleaseBuildError(
+                f"candidate output hash changed: {output_path}"
+            )
+
+
 def _atomic_publish_file(source: Path, destination: Path) -> None:
     """Atomically publish a staged file with destination-directory access.
 
@@ -1163,6 +1404,7 @@ def build_release(
         "project_source_lock": display_path(lock_path, root),
         "source_lock_sha256": lock_sha256,
         "code_provenance": code_provenance,
+        "build_environment": build_environment_provenance(),
         "release_target": (
             display_path(target_path, root) if verify_target else None
         ),
@@ -1181,6 +1423,9 @@ def build_release(
         },
         "outputs": outputs,
     }
+    validate_release_manifest_metadata(
+        manifest, label="generated release manifest"
+    )
 
     destination = output_directory.expanduser().resolve()
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -1229,11 +1474,10 @@ def promote_release_target(
             f"candidate manifest is missing: {manifest_path}"
         )
     manifest_sha256 = sha256_file(manifest_path)
-    manifest = _read_json_object(
-        manifest_path, label="candidate release manifest"
+    manifest = validate_release_manifest_metadata(
+        _read_json_object(manifest_path, label="candidate release manifest"),
+        label="candidate release manifest",
     )
-    if manifest.get("schema") != RELEASE_MANIFEST_SCHEMA:
-        raise ReleaseBuildError("unsupported candidate manifest schema")
     if manifest.get("mode") != "candidate":
         raise ReleaseBuildError(
             "release-promote requires a candidate-mode manifest"
@@ -1276,40 +1520,22 @@ def promote_release_target(
         label="candidate manifest",
         include_path=True,
     )
-    for name, record in output_records.items():
-        relative = RELEASE_FILENAMES[name]
-        output_path = manifest_path.parent / relative
-        if output_path.is_symlink():
-            raise ReleaseBuildError(
-                f"candidate output must not be a symlink: {output_path}"
-            )
-        if not output_path.is_file():
-            raise ReleaseBuildError(
-                f"candidate output is missing: {output_path}"
-            )
-        if output_path.stat().st_size != record["bytes"]:
-            raise ReleaseBuildError(
-                f"candidate output size changed: {output_path}"
-            )
-        if sha256_file(output_path) != record["sha256"]:
-            raise ReleaseBuildError(
-                f"candidate output hash changed: {output_path}"
-            )
+    _validate_candidate_outputs(manifest_path, output_records)
 
     selected_release_id = (
         release_id if release_id is not None else "english-playtest"
     )
     if not selected_release_id.strip():
         raise ReleaseBuildError("release ID must not be empty")
-    if sha256_file(manifest_path) != manifest_sha256:
-        raise ReleaseBuildError(
-            "candidate manifest changed while it was being validated"
-        )
     _validate_release_code_stable(active_code_provenance, root)
     validate_source_lock(lock_path, project_root=root)
     if source_lock_sha256(lock_path) != lock_sha256:
         raise ReleaseBuildError(
             "release source lock changed while the candidate was validated"
+        )
+    if sha256_file(manifest_path) != manifest_sha256:
+        raise ReleaseBuildError(
+            "candidate manifest changed while it was being validated"
         )
 
     target: dict[str, object] = {
@@ -1327,5 +1553,6 @@ def promote_release_target(
         },
     }
     destination = (target_path or paths.release_target).expanduser().resolve()
+    _validate_candidate_outputs(manifest_path, output_records)
     _atomic_write_json(destination, target)
     return target
