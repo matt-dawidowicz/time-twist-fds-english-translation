@@ -45,6 +45,8 @@ select = ["E4", "E7", "E9", "F", "I", "B", "UP", "SIM", "PERF", "RUF"]
 ignore = [
   # Temporary while the canonicalization workflow re-exports a historical CLI name.
   "E402",
+  # E402 is temporarily disabled, so its existing noqa would otherwise trip RUF100.
+  "RUF100",
   # The tooling intentionally embeds Japanese source punctuation verbatim.
   "RUF001",
   # Changing the enum base would alter str(SymbolKind), not just modernize it.
