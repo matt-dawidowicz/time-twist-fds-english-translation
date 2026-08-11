@@ -11,10 +11,11 @@ import hashlib
 import json
 import os
 import shutil
+import subprocess
 import tempfile
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Mapping
 
 from .compression import compress_english_groups, packed_size
 from .english import (
@@ -36,6 +37,7 @@ from .scenario import (
     rebuild_scenario_bank,
     render_symbols,
 )
+from .textcodec import PackedSymbol
 from .title import DEFAULT_SUBTITLE, patched_nov4_title
 from .ui import (
     patched_kouhen_boot_guard,
@@ -91,6 +93,12 @@ DEFAULT_KOUHEN_BASELINE = (
 )
 
 RELEASE_OUTPUT_KEYS = ("zenpen", "kouhen", "four_side")
+CODE_PROVENANCE_SCHEMA = "Time Twist release code provenance v1"
+CODE_TREE_HASH_ALGORITHM = (
+    "sha256-length-prefixed-posix-path-and-lf-normalized-content-v1"
+)
+RELEASE_MANIFEST_SCHEMA = "Time Twist reproducible release manifest v3"
+RELEASE_TARGET_SCHEMA = "Time Twist release target v2"
 RELEASE_FILENAMES = {
     "zenpen": "Time Twist Zenpen - reproducible English playtest.fds",
     "kouhen": "Time Twist Kouhen - reproducible English playtest.fds",
@@ -147,7 +155,7 @@ class ReleasePaths:
     translations: Path
 
     @classmethod
-    def from_project_root(cls, project_root: Path) -> "ReleasePaths":
+    def from_project_root(cls, project_root: Path) -> ReleasePaths:
         """Create canonical paths beneath a validated project checkout."""
         root = project_root.resolve()
         work = root / "work"
@@ -184,6 +192,102 @@ def sha256_bytes(data: bytes) -> str:
 def sha256_file(path: Path) -> str:
     """Return an uppercase SHA-256 digest for a file."""
     return sha256_bytes(path.read_bytes())
+
+
+def release_code_paths(project_root: Path) -> tuple[Path, ...]:
+    """Return release-critical Python sources in deterministic path order."""
+    root = project_root.resolve()
+    code_root = root / "work" / "time_twist"
+    if not code_root.is_dir():
+        raise ReleaseBuildError(
+            f"release-critical code directory is missing: {code_root}"
+        )
+    paths = tuple(
+        sorted(
+            (path for path in code_root.rglob("*.py") if path.is_file()),
+            key=lambda path: _project_relative(path, root),
+        )
+    )
+    if not paths:
+        raise ReleaseBuildError(
+            f"release-critical code directory contains no Python files: {code_root}"
+        )
+    return paths
+
+
+def _release_code_tree_sha256(
+    project_root: Path, paths: tuple[Path, ...]
+) -> str:
+    """Hash a stable release-code path set and its normalized contents."""
+    root = project_root.resolve()
+    digest = hashlib.sha256()
+    digest.update(b"Time Twist release code tree v1\0")
+    digest.update(len(paths).to_bytes(8, "big"))
+    for path in paths:
+        relative = _project_relative(path, root).encode("utf-8")
+        contents = (
+            path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+        )
+        digest.update(len(relative).to_bytes(8, "big"))
+        digest.update(relative)
+        digest.update(len(contents).to_bytes(8, "big"))
+        digest.update(contents)
+    return digest.hexdigest().upper()
+
+
+def release_code_tree_sha256(project_root: Path) -> str:
+    """Hash release code by normalized path and platform-neutral contents.
+
+    Each record contains an eight-byte big-endian path length, its UTF-8
+    POSIX-relative path, an eight-byte content length, and source bytes with
+    all line endings normalized to LF. Length prefixes make path/content
+    boundaries unambiguous, while normalization makes equivalent Git
+    checkouts hash identically on Windows and Unix.
+    """
+    root = project_root.resolve()
+    return _release_code_tree_sha256(root, release_code_paths(root))
+
+
+def _git_provenance(project_root: Path) -> tuple[str | None, bool | None]:
+    """Return optional Git commit and dirty state without requiring Git."""
+    command = ["git", "-C", str(project_root.resolve())]
+    try:
+        commit_result = subprocess.run(
+            [*command, "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        status_result = subprocess.run(
+            [*command, "status", "--porcelain", "--untracked-files=normal"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None, None
+    commit = commit_result.stdout.strip().lower()
+    if len(commit) not in (40, 64) or any(
+        character not in "0123456789abcdef" for character in commit
+    ):
+        return None, None
+    return commit, bool(status_result.stdout)
+
+
+def build_code_provenance(project_root: Path) -> dict[str, object]:
+    """Describe the exact release implementation active in a checkout."""
+    root = project_root.resolve()
+    paths = release_code_paths(root)
+    commit, dirty = _git_provenance(root)
+    return {
+        "schema": CODE_PROVENANCE_SCHEMA,
+        "code_root": "work/time_twist",
+        "hash_algorithm": CODE_TREE_HASH_ALGORITHM,
+        "tree_sha256": _release_code_tree_sha256(root, paths),
+        "file_count": len(paths),
+        "git_commit": commit,
+        "git_dirty": dirty,
+    }
 
 
 def _is_project_root(path: Path) -> bool:
@@ -416,12 +520,67 @@ def _validated_output_records(
     return output
 
 
+def _validated_code_provenance(
+    payload: object,
+    *,
+    label: str,
+) -> dict[str, object]:
+    """Validate the shape of a manifest or target provenance record."""
+    if not isinstance(payload, dict):
+        raise ReleaseBuildError(f"{label} has no code provenance")
+    if payload.get("schema") != CODE_PROVENANCE_SCHEMA:
+        raise ReleaseBuildError(f"{label} has unsupported code provenance")
+    if payload.get("code_root") != "work/time_twist":
+        raise ReleaseBuildError(f"{label} has an unexpected code root")
+    if payload.get("hash_algorithm") != CODE_TREE_HASH_ALGORITHM:
+        raise ReleaseBuildError(f"{label} has an unsupported code-tree hash")
+    digest = payload.get("tree_sha256")
+    if (
+        not isinstance(digest, str)
+        or len(digest) != 64
+        or any(character not in "0123456789ABCDEF" for character in digest)
+    ):
+        raise ReleaseBuildError(f"{label} has an invalid code-tree SHA-256")
+    file_count = payload.get("file_count")
+    if not isinstance(file_count, int) or file_count <= 0:
+        raise ReleaseBuildError(f"{label} has an invalid code file count")
+    commit = payload.get("git_commit")
+    if commit is not None and (
+        not isinstance(commit, str)
+        or len(commit) not in (40, 64)
+        or any(character not in "0123456789abcdef" for character in commit)
+    ):
+        raise ReleaseBuildError(f"{label} has an invalid Git commit")
+    if payload.get("git_dirty") not in (True, False, None):
+        raise ReleaseBuildError(f"{label} has an invalid Git dirty state")
+    return dict(payload)
+
+
+def validate_code_provenance(
+    payload: object,
+    *,
+    project_root: Path,
+    label: str,
+) -> dict[str, object]:
+    """Reject provenance that does not match active release-critical code."""
+    expected = _validated_code_provenance(payload, label=label)
+    actual = build_code_provenance(project_root)
+    for field in ("tree_sha256", "file_count"):
+        if expected[field] != actual[field]:
+            raise ReleaseBuildError(
+                f"{label} belongs to different release-critical code; "
+                "build and review a new candidate"
+            )
+    return expected
+
+
 def validate_release_target(
     path: Path,
     *,
     source_lock_sha256: str,
+    project_root: Path,
 ) -> dict[str, object]:
-    """Validate a promoted output target against the active source lock."""
+    """Validate a promoted target against active inputs and implementation."""
     target_path = path.expanduser().resolve()
     if not target_path.is_file():
         raise ReleaseBuildError(
@@ -429,13 +588,18 @@ def validate_release_target(
             "release-promote"
         )
     payload = json.loads(target_path.read_text(encoding="utf-8"))
-    if payload.get("schema") != "Time Twist release target v1":
+    if payload.get("schema") != RELEASE_TARGET_SCHEMA:
         raise ReleaseBuildError("unsupported release target schema")
     if payload.get("source_lock_sha256") != source_lock_sha256:
         raise ReleaseBuildError(
             "release target belongs to a different source lock; build a candidate "
             "and promote it after review"
         )
+    validate_code_provenance(
+        payload.get("code_provenance"),
+        project_root=project_root,
+        label="release target",
+    )
     _validated_output_records(payload.get("outputs"), label="release target")
     return payload
 
@@ -459,7 +623,7 @@ def _encoded_groups(
     bank: ScenarioBank,
     bank_name: str,
     translations: dict[str, str],
-) -> tuple[tuple[tuple[object, ...], ...], ...]:
+) -> tuple[tuple[tuple[PackedSymbol, ...], ...], ...]:
     records_by_id = {
         f"{bank_name}/g{record.group_index}/r{record.record_index}": record
         for record in bank.records
@@ -472,7 +636,7 @@ def _encoded_groups(
             f"unknown={unknown[:1]}, missing={missing[:1]}"
         )
 
-    encoded: dict[str, tuple[object, ...]] = {}
+    encoded: dict[str, tuple[PackedSymbol, ...]] = {}
     for record_id, record in records_by_id.items():
         english = translations[record_id]
         if not english:
@@ -568,11 +732,11 @@ def _output_records(
 def _target_mismatches(
     target: Mapping[str, object],
     outputs: Mapping[str, Mapping[str, object]],
-) -> dict[str, dict[str, object]]:
+) -> dict[str, dict[str, dict[str, object]]]:
     expected = _validated_output_records(
         target.get("outputs"), label="release target"
     )
-    mismatches: dict[str, dict[str, object]] = {}
+    mismatches: dict[str, dict[str, dict[str, object]]] = {}
     for name in RELEASE_OUTPUT_KEYS:
         expected_record = expected[name]
         actual_record = outputs[name]
@@ -654,6 +818,7 @@ def build_release(
     )
     lock = validate_source_lock(lock_path, project_root=root)
     lock_sha256 = sha256_file(lock_path)
+    code_provenance = build_code_provenance(root)
     if subtitle != lock.get("subtitle"):
         raise ReleaseBuildError(
             "release subtitle differs from the approved lock"
@@ -710,6 +875,7 @@ def build_release(
         target_payload = validate_release_target(
             target_path,
             source_lock_sha256=lock_sha256,
+            project_root=root,
         )
         mismatches = _target_mismatches(target_payload, outputs)
         if mismatches:
@@ -719,10 +885,11 @@ def build_release(
             )
 
     manifest: dict[str, object] = {
-        "schema": "Time Twist reproducible release manifest v2",
+        "schema": RELEASE_MANIFEST_SCHEMA,
         "mode": "verified" if verify_target else "candidate",
         "project_source_lock": display_path(lock_path, root),
         "source_lock_sha256": lock_sha256,
+        "code_provenance": code_provenance,
         "release_target": (
             display_path(target_path, root) if verify_target else None
         ),
@@ -777,7 +944,7 @@ def promote_release_target(
             f"candidate manifest is missing: {manifest_path}"
         )
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    if manifest.get("schema") != "Time Twist reproducible release manifest v2":
+    if manifest.get("schema") != RELEASE_MANIFEST_SCHEMA:
         raise ReleaseBuildError("unsupported candidate manifest schema")
     if manifest.get("mode") != "candidate":
         raise ReleaseBuildError(
@@ -796,6 +963,11 @@ def promote_release_target(
         raise ReleaseBuildError(
             "candidate manifest does not match the current source lock"
         )
+    code_provenance = validate_code_provenance(
+        manifest.get("code_provenance"),
+        project_root=root,
+        label="candidate manifest",
+    )
 
     output_records = _validated_output_records(
         manifest.get("outputs"),
@@ -821,10 +993,11 @@ def promote_release_target(
                 f"candidate output hash changed: {output_path}"
             )
 
-    target = {
-        "schema": "Time Twist release target v1",
+    target: dict[str, object] = {
+        "schema": RELEASE_TARGET_SCHEMA,
         "release_id": release_id or "english-playtest",
         "source_lock_sha256": lock_sha256,
+        "code_provenance": code_provenance,
         "promoted_from_manifest_sha256": sha256_file(manifest_path),
         "outputs": {
             name: {

@@ -64,7 +64,9 @@ def _reference_to_indices(path: Path) -> Image.Image:
                     range(4),
                     key=lambda index: sum(
                         (left - right) ** 2
-                        for left, right in zip(pixel, TITLE_PALETTE[index])
+                        for left, right in zip(
+                            pixel, TITLE_PALETTE[index], strict=True
+                        )
                     ),
                 ),
             )
@@ -104,7 +106,7 @@ def build_native_title(
             )
         result.putpixel(coordinate, value)
     for before, after in zip(
-        raw.get_flattened_data(), result.get_flattened_data()
+        raw.get_flattened_data(), result.get_flattened_data(), strict=True
     ):
         if (before == 0) != (after == 0) or (before == 1) != (after == 1):
             raise ValueError(

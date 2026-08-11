@@ -100,8 +100,9 @@ Rebuilds all 13 scenario banks, applies fixed UI/font/title patches, produces
 Zenpen and Kouhen, combines four sides, and writes `release_manifest.json`.
 
 Default strict mode verifies `PROJECT/work/release_target.json`, including its
-tie to the active source-lock SHA-256. It stages output and does not publish a
-new build when target verification fails.
+tie to the active source-lock SHA-256 and the active release-code provenance.
+It stages output and does not publish a new build when target verification
+fails.
 
 `--candidate` skips target approval and publishes a candidate manifest for
 review. Candidate mode is required after an intentional source/output change.
@@ -109,9 +110,15 @@ review. Candidate mode is required after an intentional source/output change.
 ### `release-promote CANDIDATE_MANIFEST [--target PATH] [--release-id ID]`
 
 Accepts only a candidate-mode manifest. It verifies the candidate's active
-source lock, output paths, sizes, and SHA-256 hashes, then atomically writes the
-versioned release target. A subsequent strict `release-build` must reproduce
-that target.
+source lock, release-code tree, output paths, sizes, and SHA-256 hashes, then
+atomically writes the versioned release target. A subsequent strict
+`release-build` must reproduce that target.
+
+Candidate and target manifests record an optional Git commit and dirty flag,
+plus an authoritative SHA-256 over normalized `work/time_twist/**/*.py` paths
+and contents. Git is not required. A legacy target without code provenance, or
+a target made by a different active code tree, is rejected and must be
+re-created through candidate review and promotion.
 
 ## Failure interpretation
 

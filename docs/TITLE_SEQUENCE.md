@@ -1,5 +1,10 @@
 # Title sequence architecture
 
+This page is the concise architectural summary. For the full recovered memory
+map, exact patch sites, appended-region layout, helper semantics, historical
+failure modes, and test evidence, read the
+[bug-fix and title-screen implementation guide](BUG_FIXES_AND_TITLE_IMPLEMENTATION.md#english-title-screen-reconstruction).
+
 The title is owned by NOV4, loaded at `$A200`. The source overlay is `$2375`
 bytes. The patched overlay must end below resident NOV3 at `$D7B5`.
 

@@ -579,9 +579,11 @@ class TitlePatchTests(unittest.TestCase):
             )
         )
         for invalid in (-1, 0x200):
-            with self.subTest(invalid=invalid):
-                with self.assertRaises(title.TitlePatchError):
-                    title.render_slide_logo_frame(self.assets, invalid)
+            with (
+                self.subTest(invalid=invalid),
+                self.assertRaises(title.TitlePatchError),
+            ):
+                title.render_slide_logo_frame(self.assets, invalid)
 
     def test_attribute_tables_and_runtime_palette_are_locked(self) -> None:
         source_final, _ = title.decode_title_rle(
@@ -836,7 +838,7 @@ class TitlePatchTests(unittest.TestCase):
         actual = {
             index
             for index, (before, after) in enumerate(
-                zip(self.source, self.patched)
+                zip(self.source, self.patched, strict=True)
             )
             if before != after
         }
@@ -939,9 +941,11 @@ class TitlePatchTests(unittest.TestCase):
             for name, image in invalid_images:
                 path = temporary_path / name
                 image.save(path)
-                with self.subTest(name=name):
-                    with self.assertRaises(title.TitlePatchError):
-                        title._target_to_indices(path)
+                with (
+                    self.subTest(name=name),
+                    self.assertRaises(title.TitlePatchError),
+                ):
+                    title._target_to_indices(path)
 
             bad_index = Image.new("L", (256, 240), 0)
             bad_index.putpixel((0, 0), 4)

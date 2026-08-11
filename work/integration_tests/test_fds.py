@@ -104,7 +104,7 @@ class FdsRoundTripTests(unittest.TestCase):
         translated = FdsImage.read(output)
         self.assertEqual(len(translated.sides), len(original.sides))
         for side_index, (source_side, translated_side) in enumerate(
-            zip(original.sides, translated.sides)
+            zip(original.sides, translated.sides, strict=True)
         ):
             self.assertEqual(translated_side.disk_info, source_side.disk_info)
             self.assertEqual(
@@ -114,7 +114,7 @@ class FdsRoundTripTests(unittest.TestCase):
                 len(translated_side.files), len(source_side.files)
             )
             for source_file, translated_file in zip(
-                source_side.files, translated_side.files
+                source_side.files, translated_side.files, strict=True
             ):
                 if side_index == 0 and source_file.name == "NOV4":
                     self.assertEqual(
@@ -179,8 +179,8 @@ class FdsRoundTripTests(unittest.TestCase):
         original = FdsImage.read(KOUHEN)
         translated = FdsImage.read(output)
         self.assertEqual(len(translated.sides), len(original.sides))
-        for side_index, (source_side, translated_side) in enumerate(
-            zip(original.sides, translated.sides)
+        for _side_index, (source_side, translated_side) in enumerate(
+            zip(original.sides, translated.sides, strict=True)
         ):
             self.assertEqual(translated_side.disk_info, source_side.disk_info)
             self.assertEqual(
@@ -190,7 +190,7 @@ class FdsRoundTripTests(unittest.TestCase):
                 len(translated_side.files), len(source_side.files)
             )
             for source_file, translated_file in zip(
-                source_side.files, translated_side.files
+                source_side.files, translated_side.files, strict=True
             ):
                 self.assertEqual(translated_file.header, source_file.header)
                 if source_file.name in translated_files:

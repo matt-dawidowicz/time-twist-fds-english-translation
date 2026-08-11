@@ -28,10 +28,15 @@ Famicom Disk System adventure game *Time Twist: Rekishi no Katasumi de...*
 | `work/time_twist/ui.py` | Playable fixed-address/interface text |
 | `work/time_twist/font.py` and `title.py` | Playable font/title transformations |
 | `work/release_sources.json` | Approved non-code release inputs and hashes |
-| `work/release_target.json` | Promoted output sizes and SHA-256 hashes |
+| `work/release_target.json` | Promoted output and release-code provenance hashes |
 | `outputs/Time_Twist_complete_translation_workbook.*` | Review surface; patch-safe text mirrors the playable sources |
 
 Do not edit generated ROMs or rebuilt banks as source material.
+
+For a source-level account of the verified game fixes, fixed-address records,
+font corrections, title-screen memory map, 6502 hooks, native swipe geometry,
+and validation evidence, read the
+[bug-fix and title-screen implementation guide](docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md).
 
 ## Repository layout
 
@@ -72,7 +77,7 @@ time-twist --help
 python work/run_tests.py unit
 ```
 
-The public suite contains **39 fixture-free tests** and permits no skips.
+The public suite contains **55 fixture-free tests** and permits no skips.
 Public CI also builds the wheel, force-installs it, and smoke-tests the
 installed `time-twist` command.
 
@@ -84,7 +89,7 @@ python work/run_tests.py integration
 python work/run_tests.py all
 ```
 
-The integration suite contains **73 tests** and also permits no skips. The
+The integration suite contains **74 tests** and also permits no skips. The
 runner validates every fixture against `work/integration_fixtures.json` before
 test discovery, so missing fixtures produce an explicit setup failure rather
 than a misleading green run with skipped tests. See
@@ -119,6 +124,12 @@ time-twist release-build
 
 Strict builds are staged and hash-checked before publication. A target mismatch
 fails without publishing new ROMs to the requested output directory.
+Candidate manifests record the active Git commit and dirty state when Git is
+available, plus an authoritative platform-independent SHA-256 over
+`work/time_twist/**/*.py`. Promotion copies that provenance into the release
+target; strict builds reject targets produced by different release-critical
+code. Git is optional because validation relies on the deterministic code-tree
+digest.
 
 The installed wheel contains code only. It intentionally does not package
 translation project data, title assets, ROMs, or generated banks. From outside

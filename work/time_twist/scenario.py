@@ -8,9 +8,10 @@ and leave the fixed tail at its original loaded address.
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
+from itertools import pairwise
 from pathlib import Path
-from typing import Iterable
 
 from .charmap import decode_common, decode_extended
 from .textcodec import (
@@ -314,10 +315,7 @@ def parse_scenario_bank(
         for offset in range(0, table_size, 2)
     )
     group_addresses = (group_zero_address, *extra_group_addresses)
-    if any(
-        first >= second
-        for first, second in zip(group_addresses, group_addresses[1:])
-    ):
+    if any(first >= second for first, second in pairwise(group_addresses)):
         raise ScenarioError("text-group pointers are not strictly ordered")
 
     group_offsets = tuple(
@@ -330,7 +328,7 @@ def parse_scenario_bank(
 
     records: list[ScenarioRecord] = []
     for group_index, (start, end) in enumerate(
-        zip(group_offsets, group_end_offsets)
+        zip(group_offsets, group_end_offsets, strict=True)
     ):
         group_records = _decode_records_to_end(data, start, end)
         records.extend(

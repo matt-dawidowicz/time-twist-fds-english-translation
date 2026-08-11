@@ -133,7 +133,9 @@ class StaticUiTests(unittest.TestCase):
         permitted.update(range(KOUHEN_BOOT_GUARD_CHR_OFFSET, chr_end))
         changed = {
             index
-            for index, (source, target) in enumerate(zip(original, patched))
+            for index, (source, target) in enumerate(
+                zip(original, patched, strict=True)
+            )
             if source != target
         }
         self.assertTrue(changed)
@@ -233,12 +235,15 @@ class StaticUiTests(unittest.TestCase):
             )
         )
         expected_changed.update(
-            offset for offset, _, _, _ in NOV2_OPAQUE_CLEAR_PATCHES
+            patch.file_offset for patch in NOV2_OPAQUE_CLEAR_PATCHES
         )
         expected_changed.update(
             index
-            for offset, source, _, _ in NOV2_SINGLE_CHOICE_B_PATCHES
-            for index in range(offset, offset + len(source))
+            for patch in NOV2_SINGLE_CHOICE_B_PATCHES
+            for index in range(
+                patch.file_offset,
+                patch.file_offset + len(patch.expected),
+            )
         )
         self.assertEqual(len(patched), len(original))
         for offset, source, english in DISK_PROMPT_PATCHES:
@@ -256,7 +261,9 @@ class StaticUiTests(unittest.TestCase):
         self.assertEqual(
             {
                 index
-                for index, pair in enumerate(zip(original, patched))
+                for index, pair in enumerate(
+                    zip(original, patched, strict=True)
+                )
                 if pair[0] != pair[1]
             },
             {
@@ -275,10 +282,21 @@ class StaticUiTests(unittest.TestCase):
         original = path.read_bytes()
         patched = patched_nov2_ui(original)
 
-        for offset, source, replacement, _ in NOV2_OPAQUE_CLEAR_PATCHES:
-            self.assertEqual(original[offset], source)
-            self.assertEqual(replacement, NOV2_BLANK_TILE)
-            self.assertEqual(patched[offset], replacement)
+        for patch in NOV2_OPAQUE_CLEAR_PATCHES:
+            self.assertEqual(
+                original[
+                    patch.file_offset : patch.file_offset + len(patch.expected)
+                ],
+                patch.expected,
+            )
+            self.assertEqual(patch.replacement, bytes((NOV2_BLANK_TILE,)))
+            self.assertEqual(
+                patched[
+                    patch.file_offset : patch.file_offset
+                    + len(patch.replacement)
+                ],
+                patch.replacement,
+            )
 
         # Dialogue keeps its original transparent tail fill, avoiding phantom
         # typing.  The scroll uploader must also copy the real bottom row;
@@ -312,11 +330,19 @@ class StaticUiTests(unittest.TestCase):
         original = path.read_bytes()
         patched = patched_nov2_ui(original)
 
-        for offset, source, replacement, _ in NOV2_SINGLE_CHOICE_B_PATCHES:
-            self.assertEqual(original[offset : offset + len(source)], source)
+        for patch in NOV2_SINGLE_CHOICE_B_PATCHES:
             self.assertEqual(
-                patched[offset : offset + len(replacement)],
-                replacement,
+                original[
+                    patch.file_offset : patch.file_offset + len(patch.expected)
+                ],
+                patch.expected,
+            )
+            self.assertEqual(
+                patched[
+                    patch.file_offset : patch.file_offset
+                    + len(patch.replacement)
+                ],
+                patch.replacement,
             )
 
         # $99DC-$99E0 retains the original saved-destination guard.  Its
@@ -381,7 +407,9 @@ class StaticUiTests(unittest.TestCase):
         self.assertEqual(
             {
                 index
-                for index, pair in enumerate(zip(original, patched))
+                for index, pair in enumerate(
+                    zip(original, patched, strict=True)
+                )
                 if pair[0] != pair[1]
             },
             {

@@ -28,6 +28,7 @@ conventions used throughout the tooling. Run the complete style gate with:
 python -m black --check work
 python -m ruff check work
 python -m pydocstyle --convention=pep257 work
+python -m mypy
 ```
 
 Use `python -m black work` and `python -m ruff check --fix work` for safe
@@ -41,9 +42,10 @@ mechanical corrections, then review docstring changes manually.
 python work/run_tests.py unit
 ```
 
-This suite is fixture-free, runs in public CI, and currently contains 38 tests.
-It covers codecs, synthetic FDS behavior, comparison/workbook integrity, and
-release-control logic. Skips are treated as failures.
+This suite is fixture-free, runs in public CI, and currently contains 55 tests.
+It covers codecs, synthetic FDS behavior, compression invariants,
+comparison/workbook integrity, declarative patch guards, and release-control
+logic. Skips are treated as failures.
 
 ### Private integration suite
 
@@ -51,7 +53,7 @@ release-control logic. Skips are treated as failures.
 python work/run_tests.py integration
 ```
 
-This suite currently contains 67 exact-ROM tests. Before discovery, the runner
+This suite currently contains 74 exact-ROM tests. Before discovery, the runner
 validates the private local overlay against `work/integration_fixtures.json`.
 Missing or changed fixtures stop the run as a setup error; integration tests do
 not quietly disappear behind `skipTest()`.
@@ -74,6 +76,7 @@ python -m pip install -e ".[dev]"
 python -m black --check work
 python -m ruff check work
 python -m pydocstyle --convention=pep257 work
+python -m mypy
 python work/run_tests.py unit
 python -m build
 python -m pip install --force-reinstall dist/*.whl
@@ -179,7 +182,7 @@ shutdown, or the next game state.
 
 `work/release_sources.json` locks all approved non-code inputs. Strict builds
 also require `work/release_target.json`, whose hashes are tied to that exact
-source lock.
+source lock and to the active release-critical Python code.
 
 Verify the current target:
 
@@ -200,8 +203,11 @@ time-twist release-build
 ```
 
 Candidate output is not approval. `release-promote` re-hashes every candidate
-file and verifies its active source lock. A strict build stages everything and
-publishes only after target validation succeeds.
+file and verifies its active source lock and deterministic
+`work/time_twist/**/*.py` code-tree hash. A strict build stages everything and
+publishes only after target validation succeeds. Git commit and dirty-state
+metadata are recorded when Git is available, but the platform-independent
+code-tree hash is authoritative.
 
 External source-lock paths are supported. Manifests record a project-relative
 path when possible and an absolute path otherwise.
@@ -227,7 +233,7 @@ reference/preview images.
 - [ ] Error messages identify the failed invariant.
 - [ ] Control-code order is unchanged or the exception is documented/tested.
 - [ ] Fixed record/table/bank sizes and tail addresses are preserved.
-- [ ] Black, Ruff, and pydocstyle checks pass.
+- [ ] Black, Ruff, pydocstyle, and mypy checks pass.
 - [ ] Public tests pass with zero skips.
 - [ ] Private integration tests pass with zero skips when fixtures are available.
 - [ ] Wheel build/install smoke test passes.

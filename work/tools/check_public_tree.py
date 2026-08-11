@@ -30,12 +30,11 @@ REQUIRED_PUBLIC_MARKERS = (
 def check_public_tree(root: Path) -> list[str]:
     """Return human-readable public-source policy violations beneath ``root``."""
     root = root.expanduser().resolve()
-    problems: list[str] = []
-    for marker in REQUIRED_PUBLIC_MARKERS:
-        if not (root / marker).exists():
-            problems.append(
-                f"missing required public source path: {marker.as_posix()}"
-            )
+    problems = [
+        f"missing required public source path: {marker.as_posix()}"
+        for marker in REQUIRED_PUBLIC_MARKERS
+        if not (root / marker).exists()
+    ]
 
     for path in root.rglob("*"):
         try:

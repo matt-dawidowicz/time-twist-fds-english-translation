@@ -346,7 +346,7 @@ class ScenarioTests(unittest.TestCase):
                 for _ in range(len(bank.data) * 2)
             ),
         )
-        oversized = (oversized_group,) + short_groups[1:]
+        oversized = (oversized_group, *short_groups[1:])
         with self.assertRaises(ScenarioError):
             rebuild_scenario_bank(
                 bank,
@@ -537,7 +537,7 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(actual, expected)
         for question in actual:
             validate_display_width(question, allow_wrap=True)
-        for question, (first, second) in zip(actual, rows):
+        for question, (first, second) in zip(actual, rows, strict=True):
             self.assertEqual(question[:24].rstrip(), first)
             if second is not None:
                 self.assertEqual(question[24:], second)
@@ -588,7 +588,7 @@ class ScenarioTests(unittest.TestCase):
             packed_size(compressed, dictionary),
             packed_size(groups, ()),
         )
-        for original, rebuilt in zip(groups[0], compressed[0]):
+        for original, rebuilt in zip(groups[0], compressed[0], strict=True):
             self.assertEqual(
                 expand_dictionary_symbols(rebuilt, dictionary), original
             )
