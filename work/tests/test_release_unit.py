@@ -569,6 +569,32 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
                 "code_provenance": build_code_provenance(
                     root, executing_code_root=code_root
                 ),
+                "build_environment": {
+                    "schema": "Time Twist build environment v1",
+                    "python_implementation": "CPython",
+                    "python_version": "3.12",
+                    "pillow_version": "12.0",
+                },
+                "release_target": None,
+                "release_target_sha256": None,
+                "release_id": None,
+                "subtitle": "On the Outskirts of History...",
+                "scenario_banks": {
+                    bank: {
+                        "records": 1,
+                        "dictionary_entries": 0,
+                        "packed_bytes": 1,
+                        "capacity_bytes": 2,
+                        "remaining_bytes": 1,
+                        "sha256": "A" * 64,
+                    }
+                    for bank in KNOWN_SCENARIO_BANKS
+                },
+                "component_sha256": {
+                    "NOV2": "B" * 64,
+                    "NOV4": "C" * 64,
+                    "SON-KOUH": "D" * 64,
+                },
                 "outputs": outputs,
             }
             manifest_path.write_text(
