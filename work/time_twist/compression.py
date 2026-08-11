@@ -328,34 +328,49 @@ def compress_english_groups(
     tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
     tuple[tuple[PackedSymbol, ...], ...],
 ]:
-    """Compress groups, widening candidate search only on capacity failure.
+    """Compress groups, widening search on capacity or dictionary-count failure.
 
     Args:
         groups: Fully encoded English scenario groups with no separators.
-        required_entries: Literal entries reserved for fixed-address text.
+        required_entries: Literal entries reserved for fixed-address text. A
+            project-supplied tuple may additionally require all 31 slots so a
+            fixed-address UI patch never decodes beyond the generated dictionary.
         max_bytes: Optional packed groups-plus-dictionary byte reservation.
 
     Returns:
         Compressed groups and ordered flat dictionary.
 
     Raises:
-        ValueError: If ``max_bytes`` is negative or required entries are invalid.
+        ValueError: If ``max_bytes`` is negative, required entries are invalid,
+            or a fixed-UI bank cannot produce all 31 dictionary entries.
 
     The normal pass evaluates only the top estimated candidates for each greedy
-    step. If that result exceeds ``max_bytes``, a deterministic fallback reruns
-    greedy selection while evaluating every positive-saving candidate. The
-    smaller result is retained; callers remain responsible for rejecting a
-    result that still exceeds the native reservation.
+    step. If that result exceeds ``max_bytes`` or a fixed-UI caller requires all
+    31 entries but the fast pass stops early, a deterministic fallback reruns
+    greedy selection while evaluating every positive-saving candidate. For a
+    full-dictionary request the exhaustive result must contain all 31 entries;
+    otherwise the build fails closed instead of letting a later UI patch read
+    following code/data as dictionary records.
     """
     if max_bytes is not None and max_bytes < 0:
         raise ValueError("max_bytes must be nonnegative")
+    requires_full_dictionary = bool(
+        getattr(required_entries, "requires_full_dictionary", False)
+    )
     primary = _compress_english_groups_greedy(
         groups,
         required_entries=required_entries,
         candidate_limit=MAX_CANDIDATES_TO_EVALUATE,
     )
     primary_size = packed_size(*primary)
-    if max_bytes is None or primary_size <= max_bytes:
+    primary_complete = (
+        not requires_full_dictionary
+        or len(primary[1]) == MAX_DICTIONARY_ENTRIES
+    )
+    if (
+        (max_bytes is None or primary_size <= max_bytes)
+        and primary_complete
+    ):
         return primary
 
     fallback = _compress_english_groups_greedy(
@@ -363,7 +378,15 @@ def compress_english_groups(
         required_entries=required_entries,
         candidate_limit=None,
     )
-    if packed_size(*fallback) < primary_size:
+    fallback_size = packed_size(*fallback)
+    if requires_full_dictionary:
+        if len(fallback[1]) != MAX_DICTIONARY_ENTRIES:
+            raise ValueError(
+                "fixed-address UI requires exactly 31 dictionary entries; "
+                f"compressor produced {len(fallback[1])}"
+            )
+        return fallback
+    if fallback_size < primary_size:
         return fallback
     return primary
 
