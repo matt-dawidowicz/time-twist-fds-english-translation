@@ -148,14 +148,23 @@ _FIXED_SOURCE_TABLES = {
 }
 
 
+class FullDictionaryEntries(tuple[tuple[PackedSymbol, ...], ...]):
+    """Mark required entries for a bank whose fixed UI needs all 31 slots."""
+
+    requires_full_dictionary = True
+
+
 def required_dictionary_entries(
     bank_name: str,
 ) -> tuple[tuple[PackedSymbol, ...], ...]:
     """Encode dictionary entries reserved by a bank's fixed-address text."""
-    return tuple(
+    entries = tuple(
         encode_english(text)
         for text in BANK_REQUIRED_DICTIONARY_TEXT.get(bank_name, ())
     )
+    if bank_name in _FIXED_SOURCE_TABLES:
+        return FullDictionaryEntries(entries)
+    return entries
 
 
 def source_dictionary_reference_floor(bank_name: str, data: bytes) -> int:
