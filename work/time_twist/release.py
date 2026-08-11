@@ -1590,7 +1590,9 @@ def promote_release_target(
     protected[lock_path.resolve()] = "active source lock"
     protected[manifest_path] = "candidate manifest"
     for filename in RELEASE_FILENAMES.values():
-        protected[(manifest_path.parent / filename).resolve()] = "candidate output"
+        protected[
+            (manifest_path.parent / filename).resolve()
+        ] = "candidate output"
     _validate_destination_collision(
         destination,
         protected,
