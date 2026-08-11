@@ -534,9 +534,8 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
         self.assertIn("time-twist: error:", rendered)
         self.assertNotIn("Traceback", rendered)
 
-    def test_promotion_accepts_reviewed_noncanonical_hashes_and_external_lock(
-        self,
-    ) -> None:
+    def test_promotion_accepts_external_lock_when_rebuild_matches(self) -> None:
+        """Keep external-lock support while requiring canonical reproduction."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             work = root / "work"
@@ -602,8 +601,14 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
                 encoding="utf-8",
             )
             target_path = work / "release_target.json"
-            with mock.patch(
-                "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+            with (
+                mock.patch(
+                    "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+                ),
+                mock.patch(
+                    "time_twist.release.build_release",
+                    return_value=manifest_payload,
+                ),
             ):
                 target = promote_release_target(
                     manifest_path,
@@ -615,10 +620,6 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             self.assertEqual(
                 target["outputs"]["kouhen"]["sha256"],
                 sha256_bytes(output_payloads["kouhen"]),
-            )
-            self.assertNotEqual(
-                target["outputs"]["kouhen"]["sha256"],
-                "18445D6DA88278F5C52A8EBFC001F00FD00261D640EBDCD66D6AE2147A2A4421",
             )
 
             outputs["zenpen"]["path"] = "..\\escaped.fds"
