@@ -36,21 +36,27 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
   linkage platform-independent.
 - A promoted `work/release_target.json` records reviewed output sizes and
   hashes tied to the active source-lock SHA-256.
-- Candidate provenance now hashes both the imported/executing package and the
+- Candidate provenance hashes both the imported/executing package and the
   supplied checkout under identical logical paths and fails closed if they
   differ.
-- Source locks, candidate records, targets, and provenance fields receive
-  strict structural validation; JSON booleans cannot masquerade as sizes or
-  file counts.
+- Release manifest schema v4 requires the complete audit record: source-lock and
+  code provenance, build environment, all scenario-bank reports, fixed-component
+  hashes, target state, and canonical output records.
+- Candidate manifests record Python implementation/version and Pillow version
+  as informational diagnostics. Source, code, and output hashes remain the
+  release authority.
+- `release-promote` validates every candidate output twice: once during review
+  validation and again immediately before the atomic target write, closing the
+  candidate-output time-of-check/time-of-use window.
+- Source locks, manifests, targets, and provenance fields receive strict
+  structural validation; JSON booleans cannot masquerade as sizes or counts.
 - `release-build --candidate` creates reviewable unapproved output.
-- `release-promote` verifies every candidate file and atomically updates the
-  target.
 - Strict `release-build` stages all files and publishes only after source-lock
   and target validation.
 - The obsolete v1 target was removed. No target is checked in until the current
   candidate is reviewed, playtested, and explicitly promoted.
-- Publication now atomically replaces files from destination-local temporary
-  files, preserving the output directory's Windows ACL inheritance so desktop
+- Publication atomically replaces files from destination-local temporary files,
+  preserving the output directory's Windows ACL inheritance so desktop
   emulators can open newly built ROMs.
 - Publication invalidates an older manifest before replacing outputs, so an
   interrupted multi-file update cannot leave stale metadata attesting a mixed
@@ -76,7 +82,7 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
 ## Tests
 
 - Public tests and ROM-derived integration tests are separated.
-- `python work/run_tests.py unit` runs 75 fixture-free tests in CI.
+- `python work/run_tests.py unit` runs 78 fixture-free tests in CI.
 - `python work/run_tests.py integration` runs 75 exact tests with the private
   overlay.
 - The fixture manifest is validated before discovery.
@@ -114,16 +120,12 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
 - The one intentional `NOV2/wait` control-layout exception is named and tested.
 - Workbook generation no longer depends on personal absolute paths.
 
-## Current unpromoted playtest candidate
+## Playtest handoff
 
-Two independent source builds produced byte-identical manifests and images.
-These hashes are reproducibility evidence, not a promoted release target.
-
-| Image | SHA-256 |
-| --- | --- |
-| Zenpen | `203B0D72731A3CD31345DB3658AE290731CFFCAB38AB596BAF0D3F4F1CA1C84C` |
-| Kouhen | `0975E9AE9B097375FBF785C56D84F2C75A7EB41135F5D9AA90AB57701A416CE6` |
-| Four-side | `21C96A5A2B032D68C6894C094C2659971E6345124FC17C09D213968EC5C42D95` |
+The previously recorded image hashes remain evidence for the pre-schema-v4
+candidate, but manifest schema v4 deliberately changes the release-code and
+audit metadata. Build a fresh candidate with the current code, playtest those
+exact files, and promote only that retained reviewed candidate.
 
 Static and reproducible verification does not replace a complete emulator
 playthrough.
