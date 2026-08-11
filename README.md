@@ -80,7 +80,7 @@ time-twist --help
 python work/run_tests.py unit
 ```
 
-The public suite contains **75 fixture-free tests** and permits no skips.
+The public suite contains **78 fixture-free tests** and permits no skips.
 Public CI also builds the wheel, force-installs it, and smoke-tests the
 installed `time-twist` command.
 
@@ -141,6 +141,13 @@ same logical `work/time_twist/...` paths and requires them to match. Promotion
 copies that validated provenance into the release target; strict builds reject
 targets produced by different release-critical code. Git is optional because
 validation relies on the deterministic code-tree digest.
+
+Release manifests also record the Python implementation/version and Pillow
+version as informational build-environment metadata. Promotion validates the
+complete candidate manifest shape, including scenario/component audit fields,
+and rechecks every candidate output immediately before atomically writing the
+release target. These fields improve reproducibility diagnosis without replacing
+the authoritative source, code, and output hashes.
 
 The installed wheel contains code only. It intentionally does not package
 translation project data, title assets, ROMs, or generated banks. From outside
