@@ -41,7 +41,7 @@ jobs:
           text = text.replace(old_english, "from .english import EnglishTextError\n", 1)
 
           old_project = '''from .project import (\n    PERSONALITY_QUESTION_IDS,\n    infer_bank_name,\n    required_dictionary_entries,\n)\n'''
-          new_project = '''from .project import (\n    infer_bank_name,\n    required_dictionary_entries,\n    source_dictionary_reference_floor,\n)\nfrom .scenario_validation import encode_validated_english, scenario_record_id\n'''
+          new_project = '''from .project import (\n    PERSONALITY_QUESTION_IDS,\n    infer_bank_name,\n    required_dictionary_entries,\n    source_dictionary_reference_floor,\n)\nfrom .scenario_validation import encode_validated_english, scenario_record_id\n'''
           if text.count(old_project) != 1:
               raise SystemExit("CLI project import block did not match")
           text = text.replace(old_project, new_project, 1)
