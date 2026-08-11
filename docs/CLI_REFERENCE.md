@@ -97,7 +97,10 @@ inputs. The lock document's identity is also LF-normalized, so the same
 approved checkout has one `source_lock_sha256` on Windows and Unix.
 
 `--update` rewrites the lock from the current project inputs. It approves input
-changes only; it does not approve new output hashes.
+changes only; it does not approve new output hashes. Custom lock destinations
+are rejected when they would overwrite an approved source, release-critical
+Python file, project metadata, or the release target. The canonical
+`PROJECT/work/release_sources.json` destination remains valid.
 
 ### `release-build [--output-dir PATH] [--lock PATH] [--target PATH] [--candidate]`
 
@@ -126,24 +129,36 @@ can be promoted.
 
 ### `release-promote CANDIDATE_MANIFEST [--target PATH] [--release-id ID]`
 
-Accepts only a complete current-schema candidate manifest. It verifies the
-candidate's active source lock, release-code tree, full audit metadata, output
-paths, sizes, and SHA-256 hashes. Candidate outputs are checked once during
-validation and again immediately before the target is atomically written,
-closing the promotion time-of-check/time-of-use window. A subsequent strict
-`release-build` must reproduce that target.
+Accepts only a complete current-schema candidate manifest. It validates the
+active source lock, requires the candidate subtitle to match that lock, proves
+the executing package is identical to the checkout release-code tree, and
+checks the reviewed candidate files against their manifest records.
+
+Promotion then performs an **independent candidate-mode rebuild** from the
+validated source lock and current release code. The fresh rebuild's complete
+`scenario_banks`, `component_sha256`, and `outputs` records must exactly equal
+the reviewed manifest. This means a hand-edited manifest cannot promote
+arbitrary bytes merely by supplying matching hand-edited hashes.
+
+After the reproduction proof, candidate outputs are checked again and the
+candidate manifest is re-hashed immediately before the target is atomically
+written. These checks are a strong trusted-local-process mitigation for
+concurrent changes; they are not a claim of hostile-filesystem transactional
+semantics across the candidate's multiple files.
+
+Custom target destinations are rejected if they collide with the active source
+lock, candidate manifest, candidate outputs, approved project inputs,
+release-critical Python code, or project metadata. The canonical
+`PROJECT/work/release_target.json` destination remains valid.
 
 Candidate and target metadata record an optional checkout Git commit and dirty
 flag, plus an authoritative SHA-256 over normalized logical
-`work/time_twist/**/*.py` paths and contents. The executing/imported package
-and supplied project checkout are hashed independently with those same logical
-identities and must match before either build or promotion proceeds. Git is not
-required. Candidate/verified manifests additionally record Python
-implementation/version and Pillow version for reproduction diagnostics; those
-environment fields are informational rather than release authority. A legacy
-target without code provenance, or a target made by a different active code
-tree, is rejected and must be re-created through candidate review and
-promotion.
+`work/time_twist/**/*.py` paths and contents. Git is not required. Candidate and
+verified manifests also record Python implementation/version and Pillow version
+for diagnostics; those environment fields are informational rather than release
+authority. A legacy target without code provenance, or a target made by a
+different active code tree, is rejected and must be re-created through candidate
+review and promotion.
 
 ## Failure interpretation
 
