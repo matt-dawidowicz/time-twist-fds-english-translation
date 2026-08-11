@@ -42,7 +42,7 @@ mechanical corrections, then review docstring changes manually.
 python work/run_tests.py unit
 ```
 
-This suite is fixture-free, runs in public CI, and currently contains 75 tests.
+This suite is fixture-free, runs in public CI, and currently contains 78 tests.
 It covers codecs, synthetic FDS behavior, compression invariants,
 comparison/workbook integrity, declarative patch guards, and release-control
 logic. Skips are treated as failures.
@@ -216,14 +216,23 @@ time-twist release-promote build/candidate/release_manifest.json `
 time-twist release-build
 ```
 
-Candidate output is not approval. `release-promote` re-hashes every candidate
-file and verifies its active source lock and deterministic
-code-tree hash. The command separately hashes the executing/imported package
-and the checkout tree using logical `work/time_twist/...` identities and fails
-if they differ. A strict build stages everything and publishes only after
-target validation succeeds. Git commit and dirty-state metadata are recorded
-when Git is available, but the platform-independent code-tree hash is
-authoritative.
+Candidate output is not approval. Manifest schema v4 binds promotion to a
+complete audit record: source-lock and release-code provenance, informational
+Python/Pillow environment versions, all scenario-bank reports, fixed-component
+hashes, target state, and canonical output records. Legacy v3 candidate
+manifests must be rebuilt with the current release code before promotion.
+
+`release-promote` re-hashes every candidate file during validation and again
+immediately before atomically writing the target. The second pass closes the
+candidate-output time-of-check/time-of-use window. The command also verifies
+the active source lock and deterministic code-tree hash. It separately hashes
+the executing/imported package and the checkout tree using logical
+`work/time_twist/...` identities and fails if they differ. A strict build stages
+everything and publishes only after target validation succeeds. Git commit and
+dirty-state metadata are recorded when Git is available, but the
+platform-independent code-tree hash is authoritative. Python and Pillow
+versions are diagnostic metadata only; promoted output hashes remain the final
+reproduction gate.
 
 External source-lock paths are supported. Manifests record a project-relative
 path when possible and an absolute path otherwise.
