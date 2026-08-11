@@ -163,8 +163,14 @@ The release layer separates four approvals that were previously conflated:
 
 1. `work/release_sources.json` approves non-code inputs: both Japanese
    baselines, all playable scenario maps, and the title reference asset.
-2. Code provenance records the active Git commit/dirty state when available and
-   always computes an authoritative digest over `work/time_twist/**/*.py`.
+   Schema v2 declares LF-normalized identity for translation JSON and raw-byte
+   identity for FDS/PNG inputs. The lock document is itself hashed after LF
+   normalization, so Windows checkout policy cannot change its release
+   identity.
+2. Code provenance records the checkout Git commit/dirty state when available.
+   It computes the same authoritative digest for the imported/executing
+   `time_twist` package and the checkout's `work/time_twist/**/*.py`, using
+   checkout-equivalent logical paths, and fails unless those trees match.
 3. `release-build --candidate` deterministically composes an unapproved build
    and records scenario capacities, component hashes, final image hashes, and
    the active code provenance.
@@ -173,18 +179,26 @@ The release layer separates four approvals that were previously conflated:
    SHA-256 and release-critical implementation.
 
 A strict `release-build` requires both ties and reproduces the promoted sizes
-and hashes. Legacy targets without code provenance fail closed and must be
-re-promoted from a reviewed candidate. Build files are prepared in a sibling
-staging directory and are not published when source, code, or target validation
-fails. Verified files are copied to destination-local temporary files before
-atomic replacement so Windows outputs inherit the emulator user's directory
-permissions rather than the staging directory's private ACL.
+and hashes. No target is checked in while the current candidate awaits
+playtesting; strict mode fails closed until that exact candidate is promoted.
+Legacy targets without code provenance remain unsupported. Build files are
+prepared in a sibling staging directory and are not published when source,
+code, or target validation fails. Verified files are copied to
+destination-local temporary files before atomic replacement so Windows outputs
+inherit the emulator user's directory permissions rather than the staging
+directory's private ACL.
 
-The code-tree digest sorts normalized POSIX-relative paths, normalizes Python
-line endings to LF, and hashes length-prefixed path/content records. This is
-unambiguous and stable across Windows and Unix checkouts. Git metadata is
-informational: Git may be missing in an installed-tool environment, while the
-code-tree digest remains available and authoritative.
+The code-tree digest sorts normalized POSIX-relative logical paths, normalizes
+Python line endings to LF, and hashes length-prefixed path/content records
+under a versioned domain marker. Physical install paths never enter the hash.
+This is unambiguous and stable across Windows and Unix checkouts. Git metadata
+is informational: Git may be missing in an installed-tool environment, while
+the code-tree digest remains available and authoritative.
+
+Source normalization is narrower than code normalization. Only the 13
+translation JSON files may use `lf`; executable game images and title artwork
+must use `raw`. Metadata validation enforces that path-to-policy mapping so a
+binary record cannot opt into lossy text treatment.
 
 Release commands operate on a project checkout rather than package data. This
 keeps the wheel free of translation project artifacts and all proprietary ROM

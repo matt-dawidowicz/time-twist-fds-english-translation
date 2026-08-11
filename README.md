@@ -28,7 +28,7 @@ Famicom Disk System adventure game *Time Twist: Rekishi no Katasumi de...*
 | `work/time_twist/ui.py` | Playable fixed-address/interface text |
 | `work/time_twist/font.py` and `title.py` | Playable font/title transformations |
 | `work/release_sources.json` | Approved non-code release inputs and hashes |
-| `work/release_target.json` | Promoted output and release-code provenance hashes |
+| `work/release_target.json` | Created only by promotion; reviewed v2 output/provenance authority |
 | `outputs/Time_Twist_complete_translation_workbook.*` | Review surface; patch-safe text mirrors the playable sources |
 
 Do not edit generated ROMs or rebuilt banks as source material.
@@ -37,6 +37,9 @@ For a source-level account of the verified game fixes, fixed-address records,
 font corrections, title-screen memory map, 6502 hooks, native swipe geometry,
 and validation evidence, read the
 [bug-fix and title-screen implementation guide](docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md).
+The [release risk assessment](docs/RELEASE_RISK_ASSESSMENT.md) records which
+non-playtest risks are closed, mitigated, accepted, or still dependent on the
+manual Zenpen-to-Kouhen playthrough.
 
 ## Repository layout
 
@@ -77,7 +80,7 @@ time-twist --help
 python work/run_tests.py unit
 ```
 
-The public suite contains **55 fixture-free tests** and permits no skips.
+The public suite contains **75 fixture-free tests** and permits no skips.
 Public CI also builds the wheel, force-installs it, and smoke-tests the
 installed `time-twist` command.
 
@@ -89,7 +92,7 @@ python work/run_tests.py integration
 python work/run_tests.py all
 ```
 
-The integration suite contains **74 tests** and also permits no skips. The
+The integration suite contains **75 tests** and also permits no skips. The
 runner validates every fixture against `work/integration_fixtures.json` before
 test discovery, so missing fixtures produce an explicit setup failure rather
 than a misleading green run with skipped tests. See
@@ -111,6 +114,12 @@ time-twist release-lock
 time-twist release-build
 ```
 
+Repository state note: **No release target is checked in.** The obsolete v1
+target was removed instead of being mechanically upgraded or assigned invented
+provenance. A maintainer with the legal baselines must build and playtest a new
+candidate, then explicitly promote that exact reviewed candidate before a
+normal strict `release-build` can succeed.
+
 An intentional translation or asset change uses a candidate/promotion cycle:
 
 ```powershell
@@ -125,11 +134,13 @@ time-twist release-build
 Strict builds are staged and hash-checked before publication. A target mismatch
 fails without publishing new ROMs to the requested output directory.
 Candidate manifests record the active Git commit and dirty state when Git is
-available, plus an authoritative platform-independent SHA-256 over
-`work/time_twist/**/*.py`. Promotion copies that provenance into the release
-target; strict builds reject targets produced by different release-critical
-code. Git is optional because validation relies on the deterministic code-tree
-digest.
+available, plus an authoritative platform-independent SHA-256 over the Python
+release tree. Before building or promoting, the command hashes both the actual
+imported `time_twist` package and `<project-root>/work/time_twist` under the
+same logical `work/time_twist/...` paths and requires them to match. Promotion
+copies that validated provenance into the release target; strict builds reject
+targets produced by different release-critical code. Git is optional because
+validation relies on the deterministic code-tree digest.
 
 The installed wheel contains code only. It intentionally does not package
 translation project data, title assets, ROMs, or generated banks. From outside

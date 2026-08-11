@@ -42,7 +42,7 @@ mechanical corrections, then review docstring changes manually.
 python work/run_tests.py unit
 ```
 
-This suite is fixture-free, runs in public CI, and currently contains 55 tests.
+This suite is fixture-free, runs in public CI, and currently contains 75 tests.
 It covers codecs, synthetic FDS behavior, compression invariants,
 comparison/workbook integrity, declarative patch guards, and release-control
 logic. Skips are treated as failures.
@@ -53,7 +53,7 @@ logic. Skips are treated as failures.
 python work/run_tests.py integration
 ```
 
-This suite currently contains 74 exact-ROM tests. Before discovery, the runner
+This suite currently contains 75 exact-ROM tests. Before discovery, the runner
 validates the private local overlay against `work/integration_fixtures.json`.
 Missing or changed fixtures stop the run as a setup error; integration tests do
 not quietly disappear behind `skipTest()`.
@@ -180,9 +180,23 @@ shutdown, or the next game state.
 
 ## Release lifecycle
 
-`work/release_sources.json` locks all approved non-code inputs. Strict builds
-also require `work/release_target.json`, whose hashes are tied to that exact
-source lock and to the active release-critical Python code.
+`work/release_sources.json` locks all approved non-code inputs. Schema v2
+declares `lf` normalization for `work/translations/*.json` and `raw` for the
+Japanese FDS baselines and indexed title PNG. This makes equivalent LF/CRLF
+translation checkouts portable while retaining byte-exact binary guards. The
+lock document's own SHA-256 is likewise calculated after LF normalization.
+`.gitattributes` reinforces this representation, but validation does not
+depend on Git.
+
+Strict builds also require a promoted `work/release_target.json`, whose hashes
+are tied to that exact logical source lock and to the active release-critical
+Python code.
+
+No target is checked in while the current candidate awaits playtesting. The
+obsolete v1 target was removed rather than being converted by hand. Therefore,
+the strict command below becomes usable only after a maintainer with legal
+baselines has built, reviewed, playtested, and explicitly promoted the exact
+candidate.
 
 Verify the current target:
 
@@ -204,13 +218,24 @@ time-twist release-build
 
 Candidate output is not approval. `release-promote` re-hashes every candidate
 file and verifies its active source lock and deterministic
-`work/time_twist/**/*.py` code-tree hash. A strict build stages everything and
-publishes only after target validation succeeds. Git commit and dirty-state
-metadata are recorded when Git is available, but the platform-independent
-code-tree hash is authoritative.
+code-tree hash. The command separately hashes the executing/imported package
+and the checkout tree using logical `work/time_twist/...` identities and fails
+if they differ. A strict build stages everything and publishes only after
+target validation succeeds. Git commit and dirty-state metadata are recorded
+when Git is available, but the platform-independent code-tree hash is
+authoritative.
 
 External source-lock paths are supported. Manifests record a project-relative
 path when possible and an absolute path otherwise.
+
+The private release integration test deliberately builds two candidates and
+requires their manifests and images to be byte-identical. A separate test
+requires the unpromoted checkout to reject strict publication because its
+target is absent. Candidate reproducibility is evidence; it is not promotion.
+
+See [`RELEASE_RISK_ASSESSMENT.md`](RELEASE_RISK_ASSESSMENT.md) for the audited
+failure modes, mitigations, accepted threat boundary, and remaining manual
+playtest obligations.
 
 ## Generated and ignored files
 

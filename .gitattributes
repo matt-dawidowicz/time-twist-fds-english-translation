@@ -1,0 +1,3 @@
+/work/release_sources.json text eol=lf
+/work/release_target.json text eol=lf
+/work/translations/*.json text eol=lf

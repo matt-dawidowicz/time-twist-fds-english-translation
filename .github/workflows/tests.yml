@@ -23,5 +23,14 @@ jobs:
       - run: python work/run_tests.py unit
       - run: python -m build
       - run: python -m pip install --force-reinstall dist/*.whl
+      - name: Prove smoke test imports the installed wheel
+        run: >-
+          python -c "from pathlib import Path; import time_twist;
+          from time_twist.release import build_code_provenance;
+          imported = Path(time_twist.__file__).resolve();
+          checkout = Path('work/time_twist').resolve(); print(imported);
+          assert checkout not in imported.parents,
+          f'import leaked from checkout: {imported}';
+          build_code_provenance(Path.cwd())"
       - run: time-twist --help
       - run: time-twist release-build --help

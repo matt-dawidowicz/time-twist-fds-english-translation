@@ -15,7 +15,7 @@ import subprocess
 import tempfile
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from .compression import compress_english_groups, packed_size
 from .english import (
@@ -58,6 +58,7 @@ from .ui import (
 )
 
 SOURCE_CHECKOUT_ROOT = Path(__file__).resolve().parents[2]
+EXECUTING_PACKAGE_ROOT = Path(__file__).resolve().parent
 DEFAULT_PROJECT_ROOT = (
     SOURCE_CHECKOUT_ROOT
     if (SOURCE_CHECKOUT_ROOT / "work" / "translations").is_dir()
@@ -93,12 +94,17 @@ DEFAULT_KOUHEN_BASELINE = (
 )
 
 RELEASE_OUTPUT_KEYS = ("zenpen", "kouhen", "four_side")
+SOURCE_LOCK_SCHEMA = "Time Twist release source lock v2"
+SOURCE_NORMALIZATION_RAW = "raw"
+SOURCE_NORMALIZATION_LF = "lf"
 CODE_PROVENANCE_SCHEMA = "Time Twist release code provenance v1"
 CODE_TREE_HASH_ALGORITHM = (
     "sha256-length-prefixed-posix-path-and-lf-normalized-content-v1"
 )
+CODE_LOGICAL_ROOT = "work/time_twist"
 RELEASE_MANIFEST_SCHEMA = "Time Twist reproducible release manifest v3"
 RELEASE_TARGET_SCHEMA = "Time Twist release target v2"
+LEGACY_RELEASE_TARGET_SCHEMA = "Time Twist release target v1"
 RELEASE_FILENAMES = {
     "zenpen": "Time Twist Zenpen - reproducible English playtest.fds",
     "kouhen": "Time Twist Kouhen - reproducible English playtest.fds",
@@ -194,39 +200,93 @@ def sha256_file(path: Path) -> str:
     return sha256_bytes(path.read_bytes())
 
 
+def _lf_normalized_bytes(data: bytes) -> bytes:
+    """Return bytes with CRLF and bare CR line endings normalized to LF."""
+    return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def source_lock_sha256(path: Path) -> str:
+    """Hash a source-lock document independently of host line endings."""
+    return sha256_bytes(_lf_normalized_bytes(path.read_bytes()))
+
+
+def _read_json_object(path: Path, *, label: str) -> dict[str, object]:
+    """Read a UTF-8 JSON object with a path-specific release error."""
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise ReleaseBuildError(
+            f"{label} is malformed JSON: {path} "
+            f"(line {error.lineno}, column {error.colno})"
+        ) from error
+    except UnicodeError as error:
+        raise ReleaseBuildError(
+            f"{label} is not valid UTF-8 JSON: {path}"
+        ) from error
+    if not isinstance(payload, dict):
+        raise ReleaseBuildError(f"{label} must contain a JSON object: {path}")
+    return payload
+
+
+def _is_sha256(value: object) -> bool:
+    """Return whether ``value`` is one uppercase hexadecimal SHA-256."""
+    return (
+        isinstance(value, str)
+        and len(value) == 64
+        and all(character in "0123456789ABCDEF" for character in value)
+    )
+
+
 def release_code_paths(project_root: Path) -> tuple[Path, ...]:
     """Return release-critical Python sources in deterministic path order."""
     root = project_root.resolve()
     code_root = root / "work" / "time_twist"
-    if not code_root.is_dir():
+    return tuple(path for _, path in _release_code_entries(code_root))
+
+
+def _release_code_entries(code_root: Path) -> tuple[tuple[str, Path], ...]:
+    """Return logical release paths paired with their physical source files."""
+    root = code_root.expanduser().resolve()
+    if not root.is_dir():
         raise ReleaseBuildError(
-            f"release-critical code directory is missing: {code_root}"
+            f"release-critical code directory is missing: {root}"
         )
-    paths = tuple(
+    entries = tuple(
         sorted(
-            (path for path in code_root.rglob("*.py") if path.is_file()),
-            key=lambda path: _project_relative(path, root),
+            (
+                (
+                    f"{CODE_LOGICAL_ROOT}/{path.relative_to(root).as_posix()}",
+                    path,
+                )
+                for path in root.rglob("*.py")
+                if path.is_file()
+            ),
+            key=lambda entry: entry[0],
         )
     )
-    if not paths:
+    if not entries:
         raise ReleaseBuildError(
-            f"release-critical code directory contains no Python files: {code_root}"
+            f"release-critical code directory contains no Python files: {root}"
         )
-    return paths
+    for _, path in entries:
+        if path.is_symlink():
+            raise ReleaseBuildError(
+                f"release-critical source must not be a symlink: {path}"
+            )
+    return entries
 
 
-def _release_code_tree_sha256(
-    project_root: Path, paths: tuple[Path, ...]
-) -> str:
+def _release_code_tree_sha256(entries: tuple[tuple[str, Path], ...]) -> str:
     """Hash a stable release-code path set and its normalized contents."""
-    root = project_root.resolve()
     digest = hashlib.sha256()
     digest.update(b"Time Twist release code tree v1\0")
-    digest.update(len(paths).to_bytes(8, "big"))
-    for path in paths:
-        relative = _project_relative(path, root).encode("utf-8")
+    digest.update(len(entries).to_bytes(8, "big"))
+    for logical_path, physical_path in entries:
+        relative = logical_path.encode("utf-8")
         contents = (
-            path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+            physical_path.read_bytes()
+            .replace(b"\r\n", b"\n")
+            .replace(b"\r", b"\n")
         )
         digest.update(len(relative).to_bytes(8, "big"))
         digest.update(relative)
@@ -245,7 +305,18 @@ def release_code_tree_sha256(project_root: Path) -> str:
     checkouts hash identically on Windows and Unix.
     """
     root = project_root.resolve()
-    return _release_code_tree_sha256(root, release_code_paths(root))
+    return _release_code_tree_sha256(
+        _release_code_entries(root / "work" / "time_twist")
+    )
+
+
+def executing_release_code_tree_sha256(
+    code_root: Path | None = None,
+) -> str:
+    """Hash the imported package using checkout-equivalent logical paths."""
+    return _release_code_tree_sha256(
+        _release_code_entries(code_root or EXECUTING_PACKAGE_ROOT)
+    )
 
 
 def _git_provenance(project_root: Path) -> tuple[str | None, bool | None]:
@@ -274,17 +345,33 @@ def _git_provenance(project_root: Path) -> tuple[str | None, bool | None]:
     return commit, bool(status_result.stdout)
 
 
-def build_code_provenance(project_root: Path) -> dict[str, object]:
-    """Describe the exact release implementation active in a checkout."""
+def build_code_provenance(
+    project_root: Path,
+    *,
+    executing_code_root: Path | None = None,
+) -> dict[str, object]:
+    """Describe code proven identical in the executor and project checkout."""
     root = project_root.resolve()
-    paths = release_code_paths(root)
+    project_entries = _release_code_entries(root / "work" / "time_twist")
+    executing_entries = _release_code_entries(
+        executing_code_root or EXECUTING_PACKAGE_ROOT
+    )
+    project_digest = _release_code_tree_sha256(project_entries)
+    executing_digest = _release_code_tree_sha256(executing_entries)
+    if executing_digest != project_digest:
+        raise ReleaseBuildError(
+            "installed/executing time_twist package differs from the supplied "
+            "project checkout release code; "
+            f"executing={executing_digest}, project={project_digest}. "
+            "Reinstall or update the package, or execute the matching checkout."
+        )
     commit, dirty = _git_provenance(root)
     return {
         "schema": CODE_PROVENANCE_SCHEMA,
-        "code_root": "work/time_twist",
+        "code_root": CODE_LOGICAL_ROOT,
         "hash_algorithm": CODE_TREE_HASH_ALGORITHM,
-        "tree_sha256": _release_code_tree_sha256(root, paths),
-        "file_count": len(paths),
+        "tree_sha256": project_digest,
+        "file_count": len(project_entries),
         "git_commit": commit,
         "git_dirty": dirty,
     }
@@ -370,6 +457,30 @@ def authoritative_source_paths(paths: ReleasePaths) -> tuple[Path, ...]:
     )
 
 
+def _source_normalization(relative: str) -> str:
+    """Return the established content policy for one locked source path."""
+    logical_path = PurePosixPath(relative)
+    if (
+        len(logical_path.parts) == 3
+        and logical_path.parts[:2] == ("work", "translations")
+        and logical_path.suffix == ".json"
+    ):
+        return SOURCE_NORMALIZATION_LF
+    return SOURCE_NORMALIZATION_RAW
+
+
+def _source_bytes(path: Path, normalization: object) -> bytes:
+    """Read bytes according to an explicitly validated lock policy."""
+    data = path.read_bytes()
+    if normalization == SOURCE_NORMALIZATION_RAW:
+        return data
+    if normalization == SOURCE_NORMALIZATION_LF:
+        return _lf_normalized_bytes(data)
+    raise ReleaseBuildError(
+        f"unsupported source normalization {normalization!r}: {path}"
+    )
+
+
 def build_source_lock_payload(
     project_root: Path | None = None,
 ) -> dict[str, object]:
@@ -382,12 +493,16 @@ def build_source_lock_payload(
             raise ReleaseBuildError(
                 f"required release source is missing: {path}"
             )
-        files[_project_relative(path, root)] = {
-            "sha256": sha256_file(path),
-            "bytes": path.stat().st_size,
+        relative = _project_relative(path, root)
+        normalization = _source_normalization(relative)
+        contents = _source_bytes(path, normalization)
+        files[relative] = {
+            "normalization": normalization,
+            "sha256": sha256_bytes(contents),
+            "bytes": len(contents),
         }
     return {
-        "schema": "Time Twist release source lock v1",
+        "schema": SOURCE_LOCK_SCHEMA,
         "authority": (
             "The locked scenario maps, fixed UI/font/title code in this revision, "
             "and the locked title asset are the playable release authority. "
@@ -405,6 +520,7 @@ def _atomic_write_json(path: Path, payload: Mapping[str, object]) -> None:
     with tempfile.NamedTemporaryFile(
         mode="w",
         encoding="utf-8",
+        newline="\n",
         dir=path.parent,
         prefix=f".{path.name}.",
         suffix=".tmp",
@@ -447,9 +563,10 @@ def validate_source_lock(
         raise ReleaseBuildError(
             f"release source lock is missing: {lock_path}; run release-lock --update"
         )
-    payload = json.loads(lock_path.read_text(encoding="utf-8"))
-    if payload.get("schema") != "Time Twist release source lock v1":
-        raise ReleaseBuildError("unsupported release source lock schema")
+    payload = validate_source_lock_metadata(
+        _read_json_object(lock_path, label="release source lock")
+    )
+
     expected_files = payload.get("files")
     if not isinstance(expected_files, dict):
         raise ReleaseBuildError("release source lock has no file mapping")
@@ -472,13 +589,15 @@ def validate_source_lock(
         record = expected_files[relative]
         if not isinstance(record, dict):
             raise ReleaseBuildError(f"invalid lock record for {relative}")
-        actual_hash = sha256_file(source_path)
+        normalization = record.get("normalization")
+        contents = _source_bytes(source_path, normalization)
+        actual_hash = sha256_bytes(contents)
         if record.get("sha256") != actual_hash:
             raise ReleaseBuildError(
                 f"unapproved release input changed: {relative}; "
                 f"expected {record.get('sha256')}, got {actual_hash}"
             )
-        if record.get("bytes") != source_path.stat().st_size:
+        if record.get("bytes") != len(contents):
             raise ReleaseBuildError(f"locked size mismatch for {relative}")
     if payload.get("subtitle") != DEFAULT_SUBTITLE:
         raise ReleaseBuildError(
@@ -487,8 +606,69 @@ def validate_source_lock(
     return payload
 
 
+def validate_source_lock_metadata(payload: object) -> dict[str, object]:
+    """Validate source-lock JSON structure without requiring private files."""
+    if not isinstance(payload, dict):
+        raise ReleaseBuildError("release source lock must be a JSON object")
+    required_fields = {"schema", "authority", "subtitle", "files"}
+    if set(payload) != required_fields:
+        raise ReleaseBuildError(
+            "release source lock fields must be exactly "
+            f"{sorted(required_fields)}"
+        )
+    if payload.get("schema") != SOURCE_LOCK_SCHEMA:
+        raise ReleaseBuildError("unsupported release source lock schema")
+    authority = payload.get("authority")
+    if not isinstance(authority, str) or not authority.strip():
+        raise ReleaseBuildError(
+            "release source lock has invalid authority text"
+        )
+    subtitle = payload.get("subtitle")
+    if not isinstance(subtitle, str) or not subtitle:
+        raise ReleaseBuildError("release source lock has an invalid subtitle")
+    expected_files = payload.get("files")
+    if not isinstance(expected_files, dict):
+        raise ReleaseBuildError("release source lock has no file mapping")
+    if not expected_files:
+        raise ReleaseBuildError("release source lock file mapping is empty")
+    for relative, record in expected_files.items():
+        if not isinstance(relative, str):
+            raise ReleaseBuildError("release source lock path is not a string")
+        logical_path = PurePosixPath(relative)
+        if (
+            "\\" in relative
+            or logical_path.is_absolute()
+            or logical_path.as_posix() != relative
+            or not logical_path.parts
+            or logical_path.parts[0] != "work"
+            or ".." in logical_path.parts
+        ):
+            raise ReleaseBuildError(
+                f"release source lock has unsafe path: {relative!r}"
+            )
+        if not isinstance(record, dict) or set(record) != {
+            "normalization",
+            "sha256",
+            "bytes",
+        }:
+            raise ReleaseBuildError(f"invalid lock record for {relative}")
+        normalization = record.get("normalization")
+        expected_normalization = _source_normalization(relative)
+        if normalization != expected_normalization:
+            raise ReleaseBuildError(
+                f"invalid source normalization for {relative}; expected "
+                f"{expected_normalization!r}, got {normalization!r}"
+            )
+        if not _is_sha256(record.get("sha256")):
+            raise ReleaseBuildError(f"invalid locked SHA-256 for {relative}")
+        locked_size = record.get("bytes")
+        if type(locked_size) is not int or locked_size < 0:
+            raise ReleaseBuildError(f"invalid locked size for {relative}")
+    return dict(payload)
+
+
 def _validated_output_records(
-    payload: object, *, label: str
+    payload: object, *, label: str, include_path: bool = False
 ) -> dict[str, dict[str, object]]:
     """Validate release output records shared by target and build manifests."""
     if not isinstance(payload, dict) or set(payload) != set(
@@ -502,19 +682,28 @@ def _validated_output_records(
         record = payload[name]
         if not isinstance(record, dict):
             raise ReleaseBuildError(f"{label} output {name} is not an object")
+        required_fields = {"bytes", "sha256"}
+        if include_path:
+            required_fields.add("path")
+        if set(record) != required_fields:
+            raise ReleaseBuildError(
+                f"{label} output {name} fields must be exactly "
+                f"{sorted(required_fields)}"
+            )
         digest = record.get("sha256")
         size = record.get("bytes")
-        if (
-            not isinstance(digest, str)
-            or len(digest) != 64
-            or any(character not in "0123456789ABCDEF" for character in digest)
-        ):
+        if not _is_sha256(digest):
             raise ReleaseBuildError(
                 f"{label} output {name} has an invalid SHA-256"
             )
-        if not isinstance(size, int) or size <= 0:
+        if type(size) is not int or size <= 0:
             raise ReleaseBuildError(
                 f"{label} output {name} has an invalid byte size"
+            )
+        if include_path and record.get("path") != RELEASE_FILENAMES[name]:
+            raise ReleaseBuildError(
+                f"{label} output {name} must use canonical path "
+                f"{RELEASE_FILENAMES[name]!r}"
             )
         output[name] = dict(record)
     return output
@@ -528,21 +717,31 @@ def _validated_code_provenance(
     """Validate the shape of a manifest or target provenance record."""
     if not isinstance(payload, dict):
         raise ReleaseBuildError(f"{label} has no code provenance")
+    required_fields = {
+        "schema",
+        "code_root",
+        "hash_algorithm",
+        "tree_sha256",
+        "file_count",
+        "git_commit",
+        "git_dirty",
+    }
+    if set(payload) != required_fields:
+        raise ReleaseBuildError(
+            f"{label} code provenance fields must be exactly "
+            f"{sorted(required_fields)}"
+        )
     if payload.get("schema") != CODE_PROVENANCE_SCHEMA:
         raise ReleaseBuildError(f"{label} has unsupported code provenance")
-    if payload.get("code_root") != "work/time_twist":
+    if payload.get("code_root") != CODE_LOGICAL_ROOT:
         raise ReleaseBuildError(f"{label} has an unexpected code root")
     if payload.get("hash_algorithm") != CODE_TREE_HASH_ALGORITHM:
         raise ReleaseBuildError(f"{label} has an unsupported code-tree hash")
     digest = payload.get("tree_sha256")
-    if (
-        not isinstance(digest, str)
-        or len(digest) != 64
-        or any(character not in "0123456789ABCDEF" for character in digest)
-    ):
+    if not _is_sha256(digest):
         raise ReleaseBuildError(f"{label} has an invalid code-tree SHA-256")
     file_count = payload.get("file_count")
-    if not isinstance(file_count, int) or file_count <= 0:
+    if type(file_count) is not int or file_count <= 0:
         raise ReleaseBuildError(f"{label} has an invalid code file count")
     commit = payload.get("git_commit")
     if commit is not None and (
@@ -551,7 +750,8 @@ def _validated_code_provenance(
         or any(character not in "0123456789abcdef" for character in commit)
     ):
         raise ReleaseBuildError(f"{label} has an invalid Git commit")
-    if payload.get("git_dirty") not in (True, False, None):
+    dirty = payload.get("git_dirty")
+    if dirty is not None and type(dirty) is not bool:
         raise ReleaseBuildError(f"{label} has an invalid Git dirty state")
     return dict(payload)
 
@@ -574,6 +774,19 @@ def validate_code_provenance(
     return expected
 
 
+def _validate_release_code_stable(
+    initial: Mapping[str, object], project_root: Path
+) -> None:
+    """Fail if release-critical source changed during one operation."""
+    current = build_code_provenance(project_root)
+    for field in ("tree_sha256", "file_count"):
+        if current[field] != initial[field]:
+            raise ReleaseBuildError(
+                "release-critical code changed while the release operation "
+                "was running; discard the result and retry from a stable tree"
+            )
+
+
 def validate_release_target(
     path: Path,
     *,
@@ -587,10 +800,45 @@ def validate_release_target(
             f"release target is missing: {target_path}; build a candidate and run "
             "release-promote"
         )
-    payload = json.loads(target_path.read_text(encoding="utf-8"))
-    if payload.get("schema") != RELEASE_TARGET_SCHEMA:
-        raise ReleaseBuildError("unsupported release target schema")
-    if payload.get("source_lock_sha256") != source_lock_sha256:
+    payload = _read_json_object(target_path, label="release target")
+    schema = payload.get("schema")
+    if schema == LEGACY_RELEASE_TARGET_SCHEMA:
+        raise ReleaseBuildError(
+            "legacy release target v1 is intentionally untrusted by the v2 "
+            "release pipeline; rebuild a candidate with the current code, "
+            "review and playtest it, then run release-promote"
+        )
+    if schema != RELEASE_TARGET_SCHEMA:
+        raise ReleaseBuildError(
+            f"unsupported release target schema: {schema!r}"
+        )
+    required_fields = {
+        "schema",
+        "release_id",
+        "source_lock_sha256",
+        "code_provenance",
+        "promoted_from_manifest_sha256",
+        "outputs",
+    }
+    if set(payload) != required_fields:
+        raise ReleaseBuildError(
+            "release target fields must be exactly "
+            f"{sorted(required_fields)}"
+        )
+    release_id = payload.get("release_id")
+    if not isinstance(release_id, str) or not release_id.strip():
+        raise ReleaseBuildError("release target has an invalid release ID")
+    promoted_digest = payload.get("promoted_from_manifest_sha256")
+    if not _is_sha256(promoted_digest):
+        raise ReleaseBuildError(
+            "release target has an invalid promoted-manifest SHA-256"
+        )
+    target_lock_digest = payload.get("source_lock_sha256")
+    if not _is_sha256(target_lock_digest):
+        raise ReleaseBuildError(
+            "release target has an invalid source-lock SHA-256"
+        )
+    if target_lock_digest != source_lock_sha256:
         raise ReleaseBuildError(
             "release target belongs to a different source lock; build a candidate "
             "and promote it after review"
@@ -608,15 +856,15 @@ def _load_translation_map(
     bank_name: str, translations_directory: Path
 ) -> dict[str, str]:
     path = translations_directory / f"{bank_name}.json"
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(payload, dict):
-        raise ReleaseBuildError(f"{path} must contain a JSON object")
-    if any(
-        not isinstance(key, str) or not isinstance(value, str)
-        for key, value in payload.items()
-    ):
-        raise ReleaseBuildError(f"{path} must map string IDs to string text")
-    return payload
+    payload = _read_json_object(path, label=f"{bank_name} translation map")
+    translations: dict[str, str] = {}
+    for key, value in payload.items():
+        if not isinstance(key, str) or not isinstance(value, str):
+            raise ReleaseBuildError(
+                f"{path} must map string IDs to string text"
+            )
+        translations[key] = value
+    return translations
 
 
 def _encoded_groups(
@@ -785,6 +1033,9 @@ def _atomic_publish_file(source: Path, destination: Path) -> None:
 def _publish_staged_release(staging: Path, output_directory: Path) -> None:
     """Publish verified staged files, writing the manifest last."""
     output_directory.mkdir(parents=True, exist_ok=True)
+    # A previous manifest must never attest a partially updated output set if
+    # publication fails between individual atomic file replacements.
+    (output_directory / "release_manifest.json").unlink(missing_ok=True)
     for name in RELEASE_OUTPUT_KEYS:
         filename = RELEASE_FILENAMES[name]
         _atomic_publish_file(staging / filename, output_directory / filename)
@@ -812,17 +1063,45 @@ def build_release(
     """
     root = discover_project_root(project_root)
     paths = ReleasePaths.from_project_root(root)
+    code_provenance = build_code_provenance(root)
     lock_path = (source_lock or paths.source_lock).expanduser().resolve()
     target_path = (
         (release_target or paths.release_target).expanduser().resolve()
     )
+    if not lock_path.is_file():
+        validate_source_lock(lock_path, project_root=root)
+    lock_sha256_before = source_lock_sha256(lock_path)
     lock = validate_source_lock(lock_path, project_root=root)
-    lock_sha256 = sha256_file(lock_path)
-    code_provenance = build_code_provenance(root)
+    lock_sha256 = source_lock_sha256(lock_path)
+    if lock_sha256 != lock_sha256_before:
+        raise ReleaseBuildError(
+            "release source lock changed while it was being validated"
+        )
     if subtitle != lock.get("subtitle"):
         raise ReleaseBuildError(
             "release subtitle differs from the approved lock"
         )
+
+    target_payload: dict[str, object] | None = None
+    target_sha256: str | None = None
+    if verify_target:
+        if not target_path.is_file():
+            validate_release_target(
+                target_path,
+                source_lock_sha256=lock_sha256,
+                project_root=root,
+            )
+        target_sha256_before = sha256_file(target_path)
+        target_payload = validate_release_target(
+            target_path,
+            source_lock_sha256=lock_sha256,
+            project_root=root,
+        )
+        target_sha256 = sha256_file(target_path)
+        if target_sha256 != target_sha256_before:
+            raise ReleaseBuildError(
+                "release target changed while it was being validated"
+            )
 
     zenpen = FdsImage.read(paths.zenpen_baseline)
     kouhen = FdsImage.read(paths.kouhen_baseline)
@@ -870,13 +1149,7 @@ def build_release(
     }
     outputs = _output_records(output_bytes)
 
-    target_payload: dict[str, object] | None = None
-    if verify_target:
-        target_payload = validate_release_target(
-            target_path,
-            source_lock_sha256=lock_sha256,
-            project_root=root,
-        )
+    if target_payload is not None:
         mismatches = _target_mismatches(target_payload, outputs)
         if mismatches:
             raise ReleaseBuildError(
@@ -893,9 +1166,7 @@ def build_release(
         "release_target": (
             display_path(target_path, root) if verify_target else None
         ),
-        "release_target_sha256": (
-            sha256_file(target_path) if verify_target else None
-        ),
+        "release_target_sha256": (target_sha256 if verify_target else None),
         "release_id": (
             target_payload.get("release_id") if target_payload else None
         ),
@@ -924,6 +1195,19 @@ def build_release(
             json.dumps(manifest, indent=2) + "\n",
             encoding="utf-8",
         )
+        _validate_release_code_stable(code_provenance, root)
+        validate_source_lock(lock_path, project_root=root)
+        if source_lock_sha256(lock_path) != lock_sha256:
+            raise ReleaseBuildError(
+                "release source lock changed while the release was built"
+            )
+        if verify_target and (
+            not target_path.is_file()
+            or sha256_file(target_path) != target_sha256
+        ):
+            raise ReleaseBuildError(
+                "release target changed while the release was built"
+            )
         _publish_staged_release(staging, destination)
     return manifest
 
@@ -938,12 +1222,16 @@ def promote_release_target(
     """Promote a reviewed candidate manifest into the strict output target."""
     root = discover_project_root(project_root)
     paths = ReleasePaths.from_project_root(root)
+    active_code_provenance = build_code_provenance(root)
     manifest_path = candidate_manifest.expanduser().resolve()
     if not manifest_path.is_file():
         raise ReleaseBuildError(
             f"candidate manifest is missing: {manifest_path}"
         )
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest_sha256 = sha256_file(manifest_path)
+    manifest = _read_json_object(
+        manifest_path, label="candidate release manifest"
+    )
     if manifest.get("schema") != RELEASE_MANIFEST_SCHEMA:
         raise ReleaseBuildError("unsupported candidate manifest schema")
     if manifest.get("mode") != "candidate":
@@ -956,9 +1244,23 @@ def promote_release_target(
         raise ReleaseBuildError("candidate manifest has no source-lock path")
     lock_path = Path(lock_path_value)
     if not lock_path.is_absolute():
-        lock_path = root / lock_path
+        lock_path = (root / lock_path).resolve()
+        try:
+            lock_path.relative_to(root)
+        except ValueError as error:
+            raise ReleaseBuildError(
+                "candidate manifest source-lock path escapes the project; "
+                "external source locks must use an absolute path"
+            ) from error
+    if not lock_path.is_file():
+        validate_source_lock(lock_path, project_root=root)
+    lock_sha256_before = source_lock_sha256(lock_path)
     validate_source_lock(lock_path, project_root=root)
-    lock_sha256 = sha256_file(lock_path)
+    lock_sha256 = source_lock_sha256(lock_path)
+    if lock_sha256 != lock_sha256_before:
+        raise ReleaseBuildError(
+            "release source lock changed while it was being validated"
+        )
     if manifest.get("source_lock_sha256") != lock_sha256:
         raise ReleaseBuildError(
             "candidate manifest does not match the current source lock"
@@ -972,14 +1274,15 @@ def promote_release_target(
     output_records = _validated_output_records(
         manifest.get("outputs"),
         label="candidate manifest",
+        include_path=True,
     )
     for name, record in output_records.items():
-        relative = record.get("path")
-        if not isinstance(relative, str) or Path(relative).name != relative:
-            raise ReleaseBuildError(
-                f"candidate output {name} has an unsafe path"
-            )
+        relative = RELEASE_FILENAMES[name]
         output_path = manifest_path.parent / relative
+        if output_path.is_symlink():
+            raise ReleaseBuildError(
+                f"candidate output must not be a symlink: {output_path}"
+            )
         if not output_path.is_file():
             raise ReleaseBuildError(
                 f"candidate output is missing: {output_path}"
@@ -993,12 +1296,28 @@ def promote_release_target(
                 f"candidate output hash changed: {output_path}"
             )
 
+    selected_release_id = (
+        release_id if release_id is not None else "english-playtest"
+    )
+    if not selected_release_id.strip():
+        raise ReleaseBuildError("release ID must not be empty")
+    if sha256_file(manifest_path) != manifest_sha256:
+        raise ReleaseBuildError(
+            "candidate manifest changed while it was being validated"
+        )
+    _validate_release_code_stable(active_code_provenance, root)
+    validate_source_lock(lock_path, project_root=root)
+    if source_lock_sha256(lock_path) != lock_sha256:
+        raise ReleaseBuildError(
+            "release source lock changed while the candidate was validated"
+        )
+
     target: dict[str, object] = {
         "schema": RELEASE_TARGET_SCHEMA,
-        "release_id": release_id or "english-playtest",
+        "release_id": selected_release_id,
         "source_lock_sha256": lock_sha256,
         "code_provenance": code_provenance,
-        "promoted_from_manifest_sha256": sha256_file(manifest_path),
+        "promoted_from_manifest_sha256": manifest_sha256,
         "outputs": {
             name: {
                 "bytes": output_records[name]["bytes"],

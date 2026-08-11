@@ -29,16 +29,32 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
 
 - `work/release_sources.json` locks both baselines, the title asset, and all 13
   playable scenario maps.
-- `work/release_target.json` records promoted output sizes and hashes tied to
-  the active source-lock SHA-256.
+- Source-lock schema v2 records `lf` normalization for translation JSON and
+  `raw` identity for ROM/title assets. Equivalent Windows CRLF and repository
+  LF text now share one digest without weakening binary guards.
+- The source-lock document hash is LF-normalized, making candidate/target
+  linkage platform-independent.
+- A promoted `work/release_target.json` records reviewed output sizes and
+  hashes tied to the active source-lock SHA-256.
+- Candidate provenance now hashes both the imported/executing package and the
+  supplied checkout under identical logical paths and fails closed if they
+  differ.
+- Source locks, candidate records, targets, and provenance fields receive
+  strict structural validation; JSON booleans cannot masquerade as sizes or
+  file counts.
 - `release-build --candidate` creates reviewable unapproved output.
 - `release-promote` verifies every candidate file and atomically updates the
   target.
 - Strict `release-build` stages all files and publishes only after source-lock
   and target validation.
+- The obsolete v1 target was removed. No target is checked in until the current
+  candidate is reviewed, playtested, and explicitly promoted.
 - Publication now atomically replaces files from destination-local temporary
   files, preserving the output directory's Windows ACL inheritance so desktop
   emulators can open newly built ROMs.
+- Publication invalidates an older manifest before replacing outputs, so an
+  interrupted multi-file update cannot leave stale metadata attesting a mixed
+  output set.
 - External `--lock` paths are handled safely in manifests.
 - Intentional source updates no longer dead-end on hashes hardcoded in Python.
 - Known CLI failures produce concise `time-twist: error:` messages.
@@ -53,22 +69,21 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
 - CI runs `work/tools/check_public_tree.py` before installation to reject ROMs,
   extracted banks, dumps, emulator state, build debris, and personal paths.
 - The wheel contains code only and can drive an external checkout explicitly.
-- CI builds and force-installs the wheel before smoke-testing the command.
+- CI builds and force-installs the wheel, proves `time_twist` imports outside
+  the checkout, and then smoke-tests the command.
 - Personal workstation paths were removed from scripts and generated metadata.
 
 ## Tests
 
 - Public tests and ROM-derived integration tests are separated.
-- `python work/run_tests.py unit` runs 39 fixture-free tests in CI.
-- `python work/run_tests.py integration` runs 73 exact tests with the private
+- `python work/run_tests.py unit` runs 75 fixture-free tests in CI.
+- `python work/run_tests.py integration` runs 75 exact tests with the private
   overlay.
 - The fixture manifest is validated before discovery.
 - Supported suites reject all skips.
-- The current candidate run discovers 112 tests with zero skips: 111 pass and
-  the sole expected release-target gate rejects the intentionally unpromoted
-  title candidate.
-- Four obsolete intermediate-build tests were removed rather than retained as
-  permanent skips.
+- The private overlay was recovered locally and all 92 fixture records matched
+  their manifest before the 75-test integration run. The proprietary files
+  remain excluded from the repository.
 
 ## Title-sequence candidate
 
@@ -99,25 +114,16 @@ in [`docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md`](docs/BUG_FIXES_AND_TITLE_IMPLE
 - The one intentional `NOV2/wait` control-layout exception is named and tested.
 - Workbook generation no longer depends on personal absolute paths.
 
-## Verified promoted outputs
+## Current unpromoted playtest candidate
+
+Two independent source builds produced byte-identical manifests and images.
+These hashes are reproducibility evidence, not a promoted release target.
 
 | Image | SHA-256 |
 | --- | --- |
-| Zenpen | `60F646296635B13391A8666BA99F8B025D4A75865BD25DFD830F540BBE51F3FE` |
-| Kouhen | `18445D6DA88278F5C52A8EBFC001F00FD00261D640EBDCD66D6AE2147A2A4421` |
-| Four-side | `21A48E6F0B955E7E970E3AAF86F147B366BB5AC02AFCEB681169ADD17E7C657F` |
+| Zenpen | `203B0D72731A3CD31345DB3658AE290731CFFCAB38AB596BAF0D3F4F1CA1C84C` |
+| Kouhen | `0975E9AE9B097375FBF785C56D84F2C75A7EB41135F5D9AA90AB57701A416CE6` |
+| Four-side | `21C96A5A2B032D68C6894C094C2659971E6345124FC17C09D213968EC5C42D95` |
 
 Static and reproducible verification does not replace a complete emulator
 playthrough.
-
-## Unpromoted title test candidate
-
-Two independent source builds produced byte-identical manifests and images.
-The Zenpen candidate was also cold-booted twice through the complete title
-sequence in Mesen with byte-identical frame evidence.
-
-| Image | SHA-256 |
-| --- | --- |
-| Zenpen | `10C893513CC97C3D8657DDF3BF1DC333DC9B0960D0061A227B5D89621F35769B` |
-| Kouhen | `EA56360D36730FDE372F7FC118B81D3C7C2937FD54D30288B7F56D6BCA7DD718` |
-| Four-side | `908A73606DFDC08D8A3F88BF5C389BB82D10BE866196A0677F4BE1ED6EAC7856` |
