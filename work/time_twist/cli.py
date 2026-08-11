@@ -26,9 +26,6 @@ from .project import (
     required_dictionary_entries,
     source_dictionary_reference_floor,
 )
-from .scenario_validation import encode_validated_english, scenario_record_id
-
-PERSONALITY_QUESTION_IDS = _PERSONALITY_QUESTION_IDS
 from .release import (
     build_release,
     discover_project_root,
@@ -41,6 +38,7 @@ from .scenario import (
     rebuild_scenario_bank,
     render_symbols,
 )
+from .scenario_validation import encode_validated_english, scenario_record_id
 from .textcodec import PackedSymbol, pack_records
 from .title import DEFAULT_SUBTITLE, patched_nov4_title
 from .ui import (
@@ -60,6 +58,8 @@ from .ui import (
     patched_tt6b_ui,
     patched_tt6c_ui,
 )
+
+PERSONALITY_QUESTION_IDS = _PERSONALITY_QUESTION_IDS
 
 
 def safe_filename(name: str) -> str:
