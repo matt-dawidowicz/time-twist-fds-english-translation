@@ -15,18 +15,16 @@ from pathlib import Path
 from typing import Any, cast
 
 from .compression import compress_english_groups, packed_size
-from .english import (
-    EnglishTextError,
-    control_values,
-    encode_english,
-    validate_display_width,
-)
+from .english import EnglishTextError
 from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
 from .project import (
-    PERSONALITY_QUESTION_IDS,
+    PERSONALITY_QUESTION_IDS as _PERSONALITY_QUESTION_IDS,
+)
+from .project import (
     infer_bank_name,
     required_dictionary_entries,
+    source_dictionary_reference_floor,
 )
 from .release import (
     build_release,
@@ -40,6 +38,7 @@ from .scenario import (
     rebuild_scenario_bank,
     render_symbols,
 )
+from .scenario_validation import encode_validated_english, scenario_record_id
 from .textcodec import PackedSymbol, pack_records
 from .title import DEFAULT_SUBTITLE, patched_nov4_title
 from .ui import (
@@ -59,6 +58,8 @@ from .ui import (
     patched_tt6b_ui,
     patched_tt6c_ui,
 )
+
+PERSONALITY_QUESTION_IDS = _PERSONALITY_QUESTION_IDS
 
 
 def safe_filename(name: str) -> str:
@@ -175,52 +176,65 @@ def command_combine(args: argparse.Namespace) -> None:
     print(f"{args.output} ({len(image.sides)} sides)")
 
 
-def command_scenario_extract(args: argparse.Namespace) -> None:
-    """Run scenario extraction while retaining compatible English edits.
-
-    Args:
-        args: Namespace with extracted ``bank`` and destination ``output``.
-
-    Raises:
-        OSError: If either file cannot be read or written.
-        JSONDecodeError: If an existing output file is not valid JSON.
-        ScenarioError: If bank pointers or packed records are invalid.
-
-    Side Effects:
-        Creates parent directories and replaces ``output`` with formatted
-        UTF-8 JSON. Existing English is retained only when group and record
-        coordinates still match; Japanese and raw symbols are always refreshed.
-    """
-    bank = parse_scenario_bank(args.bank)
+def _parse_source_bank(args: argparse.Namespace):
+    """Parse a named source bank including fixed-UI dictionary references."""
     bank_name = infer_bank_name(args.bank, getattr(args, "bank_name", None))
-    existing_english: dict[tuple[int, int], str] = {}
+    source = args.bank.read_bytes()
+    bank = parse_scenario_bank(
+        args.bank,
+        minimum_dictionary_entries=source_dictionary_reference_floor(
+            bank_name,
+            source,
+        ),
+    )
+    return bank_name, bank
+
+
+def command_scenario_extract(args: argparse.Namespace) -> None:
+    """Decode a bank while retaining English only for matching stable IDs."""
+    bank_name, bank = _parse_source_bank(args)
+    existing_english: dict[str, str] = {}
     if args.output.is_file():
         previous = json.loads(args.output.read_text(encoding="utf-8"))
-        for previous_group in previous.get("groups", []):
-            group_number = previous_group.get("group")
-            if not isinstance(group_number, int):
-                continue
-            for previous_record in previous_group.get("records", []):
-                record_number = previous_record.get("record")
-                english = previous_record.get("english", "")
-                if isinstance(record_number, int) and isinstance(english, str):
-                    existing_english[(group_number, record_number)] = english
+        if isinstance(previous, dict):
+            previous_groups = previous.get("groups", [])
+            if isinstance(previous_groups, list):
+                for previous_group in previous_groups:
+                    if not isinstance(previous_group, dict):
+                        continue
+                    previous_records = previous_group.get("records", [])
+                    if not isinstance(previous_records, list):
+                        continue
+                    for previous_record in previous_records:
+                        if not isinstance(previous_record, dict):
+                            continue
+                        record_id = previous_record.get("id")
+                        english = previous_record.get("english", "")
+                        if isinstance(record_id, str) and isinstance(
+                            english, str
+                        ):
+                            existing_english[record_id] = english
+
     groups: list[dict[str, object]] = []
     for group_index, group_address in enumerate(bank.group_addresses):
         records: list[dict[str, object]] = []
         for record in bank.records:
             if record.group_index != group_index:
                 continue
+            record_id = scenario_record_id(
+                bank_name,
+                group_index,
+                record.record_index,
+            )
             records.append(
                 {
-                    "id": f"{bank_name}/g{group_index}/r{record.record_index}",
+                    "id": record_id,
                     "record": record.record_index,
                     "japanese": render_symbols(
-                        record.symbols, bank.dictionary
+                        record.symbols,
+                        bank.dictionary,
                     ),
-                    "english": existing_english.get(
-                        (group_index, record.record_index), ""
-                    ),
+                    "english": existing_english.get(record_id, ""),
                     "symbols": [
                         {"kind": symbol.kind.value, "value": symbol.value}
                         for symbol in record.symbols
@@ -251,31 +265,11 @@ def command_scenario_extract(args: argparse.Namespace) -> None:
 
 
 def command_scenario_insert(args: argparse.Namespace) -> None:
-    """Run scenario insertion with control and RAM-footprint validation.
-
-    Args:
-        args: Namespace with source ``bank``, merged ``translation`` JSON,
-            destination ``output``, and ``no_compress`` flag.
-
-    Raises:
-        OSError: If files cannot be read or written.
-        JSONDecodeError: If translation JSON is malformed.
-        SystemExit: If group/record counts, field types, or control sequences
-            differ from the source.
-        EnglishTextError: If translated text cannot be encoded.
-        ScenarioError: If packed data cannot fit the preserved bank footprint.
-
-    Side Effects:
-        Creates the output directory, writes the rebuilt bank, and prints
-        translation/compression statistics.
-
-    A partial translation retains the Japanese dictionary because untranslated
-    source records may still reference it. A complete translation normally
-    builds a deterministic English dictionary.
-    """
-    bank = parse_scenario_bank(args.bank)
-    bank_name = infer_bank_name(args.bank, getattr(args, "bank_name", None))
+    """Insert merged JSON only after structural and display validation."""
+    bank_name, bank = _parse_source_bank(args)
     document = json.loads(args.translation.read_text(encoding="utf-8"))
+    if not isinstance(document, dict):
+        raise SystemExit("translation document must contain a JSON object")
     json_groups = document.get("groups")
     if not isinstance(json_groups, list) or len(json_groups) != len(
         bank.group_addresses
@@ -288,6 +282,12 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
     translated_count = 0
     total_count = 0
     for group_index, json_group in enumerate(json_groups):
+        if not isinstance(json_group, dict):
+            raise SystemExit(f"translation group {group_index} is invalid")
+        if json_group.get("group") != group_index:
+            raise SystemExit(
+                f"translation group index mismatch at position {group_index}"
+            )
         original_records = tuple(
             record
             for record in bank.records
@@ -300,36 +300,65 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
             raise SystemExit(
                 f"translation record count mismatch in group {group_index}"
             )
+
         rebuilt_records: list[tuple[PackedSymbol, ...]] = []
         for original, translated in zip(
-            original_records, json_records, strict=True
+            original_records,
+            json_records,
+            strict=True,
         ):
             total_count += 1
+            if not isinstance(translated, dict):
+                raise SystemExit(
+                    "translation record "
+                    f"{group_index}/{original.record_index} is invalid"
+                )
+            record_id = scenario_record_id(
+                bank_name,
+                group_index,
+                original.record_index,
+            )
+            if translated.get("id") != record_id:
+                raise SystemExit(
+                    f"record ID mismatch at group {group_index}, record "
+                    f"{original.record_index}; expected {record_id}"
+                )
+            if translated.get("record") != original.record_index:
+                raise SystemExit(f"record index mismatch in {record_id}")
             english = translated.get("english", "")
             if not isinstance(english, str):
                 raise SystemExit(
-                    f"English text must be a string in group {group_index}, "
-                    f"record {original.record_index}"
+                    f"English text must be a string in {record_id}"
                 )
-            if english:
-                translated_count += 1
-                japanese = render_symbols(original.symbols, bank.dictionary)
-                if control_values(english) != control_values(japanese):
-                    raise SystemExit(
-                        f"control tags changed in group {group_index}, "
-                        f"record {original.record_index}"
-                    )
-                rebuilt_records.append(encode_english(english))
-            else:
+            if not english:
                 rebuilt_records.append(original.symbols)
+                continue
+
+            translated_count += 1
+            japanese = render_symbols(original.symbols, bank.dictionary)
+            try:
+                encoded = encode_validated_english(
+                    record_id,
+                    english,
+                    japanese,
+                )
+            except EnglishTextError as error:
+                raise SystemExit(
+                    f"invalid English text in {record_id}: {error}"
+                ) from error
+            rebuilt_records.append(encoded)
         rebuilt_groups.append(tuple(rebuilt_records))
 
     packed_groups = tuple(rebuilt_groups)
+    text_start = bank.group_addresses[0] - bank.load_address
+    capacity = bank.dictionary_end_offset - text_start
+    pointer_bytes = 2 * (len(packed_groups) - 1)
     if translated_count == total_count and not args.no_compress:
         original_size = packed_size(packed_groups, ())
         packed_groups, dictionary = compress_english_groups(
             packed_groups,
             required_entries=required_dictionary_entries(bank_name),
+            max_bytes=capacity - pointer_bytes,
         )
         compressed_size = packed_size(packed_groups, dictionary)
         print(
@@ -339,8 +368,9 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
     elif translated_count == total_count:
         dictionary = bank.dictionary
         print(
-            f"uncompressed layout build: {translated_count}/{total_count} records; "
-            "preserving the original dictionary region"
+            "uncompressed layout build: "
+            f"{translated_count}/{total_count} records; preserving the "
+            "original dictionary region"
         )
     else:
         dictionary = bank.dictionary
@@ -366,29 +396,25 @@ def merge_translation_document(
     *,
     require_complete: bool = True,
 ) -> dict[str, Any]:
-    """Validate and merge English text by stable record ID.
-
-    Args:
-        document: Scenario-extract JSON object.
-        translations: Mapping from stable IDs to nonempty English strings.
-        require_complete: Require every scenario ID to be present.
-
-    Returns:
-        A deep copy of ``document`` with validated ``english`` fields replaced.
-        Neither input mapping is modified.
-
-    Raises:
-        SystemExit: If document IDs are missing/duplicated, translation IDs are
-            unknown/incomplete, values are invalid, controls differ, a segment
-            is display-unsafe, or a character cannot be encoded.
-
-    Personality-test records are the only records allowed to use validated
-    automatic wrapping; all other control-delimited segments must fit one row.
-    """
+    """Validate and merge English by stable record ID through one policy."""
     result = copy.deepcopy(document)
     records_by_id: dict[str, dict[str, object]] = {}
-    for group in result.get("groups", []):
-        for record in group.get("records", []):
+    groups = result.get("groups", [])
+    if not isinstance(groups, list):
+        raise SystemExit("scenario document groups must be a list")
+    for group in groups:
+        if not isinstance(group, dict):
+            raise SystemExit("scenario document contains an invalid group")
+        records = group.get("records", [])
+        if not isinstance(records, list):
+            raise SystemExit(
+                "scenario document contains an invalid record list"
+            )
+        for record in records:
+            if not isinstance(record, dict):
+                raise SystemExit(
+                    "scenario document contains an invalid record"
+                )
             record_id = record.get("id")
             if not isinstance(record_id, str):
                 raise SystemExit(
@@ -405,26 +431,17 @@ def merge_translation_document(
         missing = sorted(set(records_by_id) - set(translations))
         if missing:
             raise SystemExit(
-                f"translation map is missing {len(missing)} IDs; first: {missing[0]}"
+                f"translation map is missing {len(missing)} IDs; "
+                f"first: {missing[0]}"
             )
 
     for record_id, english in translations.items():
-        if not isinstance(english, str) or not english:
-            raise SystemExit(
-                f"English translation for {record_id} must be nonempty"
-            )
         record = records_by_id[record_id]
         japanese = record.get("japanese")
         if not isinstance(japanese, str):
             raise SystemExit(f"Japanese source for {record_id} is invalid")
-        if control_values(english) != control_values(japanese):
-            raise SystemExit(f"control tags changed in {record_id}")
         try:
-            validate_display_width(
-                english,
-                allow_wrap=record_id in PERSONALITY_QUESTION_IDS,
-            )
-            encode_english(english)
+            encode_validated_english(record_id, english, japanese)
         except EnglishTextError as error:
             raise SystemExit(
                 f"invalid English text in {record_id}: {error}"
@@ -470,26 +487,8 @@ def command_scenario_merge(args: argparse.Namespace) -> None:
 
 
 def command_scenario_footprint(args: argparse.Namespace) -> None:
-    """Report native scenario capacity and optionally simulate compression.
-
-    Args:
-        args: Namespace with source ``bank`` and optional ID-keyed
-            ``translations`` JSON.
-
-    Raises:
-        OSError: If input files cannot be read.
-        ScenarioError: If the bank layout is invalid.
-        SystemExit: If translation IDs/text/controls are invalid or the
-            complete compressed result exceeds the fixed reservation.
-
-    Side Effects:
-        Prints bank layout, translation progress, and final footprint. No files
-        are modified.
-
-    Pointer-table bytes are included in final usage because each group after
-    group zero adds one two-byte loaded address.
-    """
-    bank = parse_scenario_bank(args.bank)
+    """Report capacity using the same boundary and validation as insertion."""
+    bank_name, bank = _parse_source_bank(args)
     text_start_offset = bank.group_addresses[0] - bank.load_address
     capacity = bank.dictionary_end_offset - text_start_offset
     print(f"bank bytes: {len(bank.data)}")
@@ -515,9 +514,12 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
         raise SystemExit(
             "translation file must contain an ID-keyed JSON object"
         )
-    bank_name = infer_bank_name(args.bank, getattr(args, "bank_name", None))
     records_by_id = {
-        f"{bank_name}/g{record.group_index}/r{record.record_index}": record
+        scenario_record_id(
+            bank_name,
+            record.group_index,
+            record.record_index,
+        ): record
         for record in bank.records
     }
     unknown = sorted(set(translations) - set(records_by_id))
@@ -527,24 +529,18 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
     encoded_by_id: dict[str, tuple[PackedSymbol, ...]] = {}
     literal_bytes = 0
     for record_id, english in translations.items():
-        if not isinstance(english, str) or not english:
-            raise SystemExit(
-                f"English translation for {record_id} must be nonempty"
-            )
         record = records_by_id[record_id]
         japanese = render_symbols(record.symbols, bank.dictionary)
-        if control_values(english) != control_values(japanese):
-            raise SystemExit(f"control tags changed in {record_id}")
         try:
-            validate_display_width(
+            encoded = encode_validated_english(
+                record_id,
                 english,
-                allow_wrap=record_id in PERSONALITY_QUESTION_IDS,
+                japanese,
             )
         except EnglishTextError as error:
             raise SystemExit(
                 f"invalid English text in {record_id}: {error}"
             ) from error
-        encoded = encode_english(english)
         encoded_by_id[record_id] = encoded
         literal_bytes += len(pack_records((encoded,)))
     print(
@@ -558,24 +554,33 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
 
     groups = tuple(
         tuple(
-            encoded_by_id[f"{bank_name}/g{group_index}/r{record.record_index}"]
+            encoded_by_id[
+                scenario_record_id(
+                    bank_name,
+                    group_index,
+                    record.record_index,
+                )
+            ]
             for record in bank.records
             if record.group_index == group_index
         )
         for group_index in range(len(bank.group_addresses))
     )
+    pointer_bytes = 2 * (len(groups) - 1)
     compressed_groups, dictionary = compress_english_groups(
         groups,
         required_entries=required_dictionary_entries(bank_name),
+        max_bytes=capacity - pointer_bytes,
     )
-    used = packed_size(compressed_groups, dictionary) + 2 * (len(groups) - 1)
+    used = packed_size(compressed_groups, dictionary) + pointer_bytes
     print(
         f"final compressed footprint: {used}/{capacity} bytes; "
         f"remaining: {capacity - used} bytes"
     )
     if used > capacity:
         raise SystemExit(
-            f"translation exceeds fixed RAM reservation by {used - capacity} bytes"
+            "translation exceeds fixed RAM reservation by "
+            f"{used - capacity} bytes"
         )
 
 
@@ -835,7 +840,7 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Decode group pointers, packed records, dictionary references, "
             "Japanese text, and raw symbols. Existing English in the output "
-            "is retained at matching group/record coordinates."
+            "is retained only for matching stable record IDs."
         ),
     )
     scenario_extract.add_argument(

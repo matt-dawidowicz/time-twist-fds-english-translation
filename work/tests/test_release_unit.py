@@ -534,7 +534,9 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
         self.assertIn("time-twist: error:", rendered)
         self.assertNotIn("Traceback", rendered)
 
-    def test_promotion_accepts_external_lock_when_rebuild_matches(self) -> None:
+    def test_promotion_accepts_external_lock_when_rebuild_matches(
+        self,
+    ) -> None:
         """Keep external-lock support while requiring canonical reproduction."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")

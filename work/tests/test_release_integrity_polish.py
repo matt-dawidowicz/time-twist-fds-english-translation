@@ -172,7 +172,8 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
                     "time_twist.release.build_release", return_value=rebuilt
                 ) as rebuild,
                 self.assertRaisesRegex(
-                    ReleaseBuildError, "outputs does not match a fresh canonical"
+                    ReleaseBuildError,
+                    "outputs does not match a fresh canonical",
                 ),
             ):
                 promote_release_target(manifest_path, project_root=root)
@@ -222,9 +223,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             )._validate_candidate_outputs
             calls = 0
 
-            def mutate_after_first_check(
-                path: Path, records: object
-            ) -> None:
+            def mutate_after_first_check(path: Path, records: object) -> None:
                 nonlocal calls
                 calls += 1
                 real_validator(path, records)
@@ -257,10 +256,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             baseline = (
-                root
-                / "work"
-                / "baseline"
-                / "time_twist_zenpen_japan.fds"
+                root / "work" / "baseline" / "time_twist_zenpen_japan.fds"
             )
             original = baseline.read_bytes()
             with self.assertRaisesRegex(
@@ -286,7 +282,9 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
                 mock.patch(
                     "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
                 ),
-                self.assertRaisesRegex(ReleaseBuildError, "candidate manifest"),
+                self.assertRaisesRegex(
+                    ReleaseBuildError, "candidate manifest"
+                ),
             ):
                 promote_release_target(
                     manifest_path,

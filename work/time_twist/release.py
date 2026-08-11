@@ -20,24 +20,23 @@ from importlib.metadata import version as package_version
 from pathlib import Path, PurePosixPath
 
 from .compression import compress_english_groups, packed_size
-from .english import (
-    EnglishTextError,
-    control_values,
-    encode_english,
-    validate_display_width,
-)
+from .english import EnglishTextError
 from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
 from .project import (
     KNOWN_SCENARIO_BANKS,
-    PERSONALITY_QUESTION_IDS,
     required_dictionary_entries,
+    source_dictionary_reference_floor,
 )
 from .scenario import (
     ScenarioBank,
     parse_scenario_bank,
     rebuild_scenario_bank,
     render_symbols,
+)
+from .scenario_validation import (
+    encode_validated_english,
+    scenario_record_id,
 )
 from .textcodec import PackedSymbol
 from .title import DEFAULT_SUBTITLE, patched_nov4_title
@@ -844,7 +843,9 @@ def _validated_scenario_report(
     label: str,
 ) -> dict[str, dict[str, object]]:
     """Validate the complete per-bank audit summary in a release manifest."""
-    if not isinstance(payload, dict) or set(payload) != set(SCENARIO_LOCATIONS):
+    if not isinstance(payload, dict) or set(payload) != set(
+        SCENARIO_LOCATIONS
+    ):
         raise ReleaseBuildError(
             f"{label} scenario banks must contain exactly "
             f"{sorted(SCENARIO_LOCATIONS)}"
@@ -891,6 +892,9 @@ def _validated_scenario_report(
                 raise ReleaseBuildError(
                     f"{label} scenario bank {bank_name} has invalid {field}"
                 )
+        assert isinstance(packed_bytes, int)
+        assert isinstance(capacity_bytes, int)
+        assert isinstance(remaining_bytes, int)
         if remaining_bytes != capacity_bytes - packed_bytes:
             raise ReleaseBuildError(
                 f"{label} scenario bank {bank_name} has inconsistent capacity"
@@ -921,6 +925,7 @@ def _validated_component_hashes(
             raise ReleaseBuildError(
                 f"{label} component {component} has invalid SHA-256"
             )
+        assert isinstance(digest, str)
         output[component] = digest
     return output
 
@@ -1123,8 +1128,13 @@ def _encoded_groups(
     bank_name: str,
     translations: dict[str, str],
 ) -> tuple[tuple[tuple[PackedSymbol, ...], ...], ...]:
+    """Validate release translations through the shared scenario policy."""
     records_by_id = {
-        f"{bank_name}/g{record.group_index}/r{record.record_index}": record
+        scenario_record_id(
+            bank_name,
+            record.group_index,
+            record.record_index,
+        ): record
         for record in bank.records
     }
     unknown = sorted(set(translations) - set(records_by_id))
@@ -1137,18 +1147,13 @@ def _encoded_groups(
 
     encoded: dict[str, tuple[PackedSymbol, ...]] = {}
     for record_id, record in records_by_id.items():
-        english = translations[record_id]
-        if not english:
-            raise ReleaseBuildError(f"empty English translation: {record_id}")
         japanese = render_symbols(record.symbols, bank.dictionary)
-        if control_values(english) != control_values(japanese):
-            raise ReleaseBuildError(f"control tags changed in {record_id}")
         try:
-            validate_display_width(
-                english,
-                allow_wrap=record_id in PERSONALITY_QUESTION_IDS,
+            encoded[record_id] = encode_validated_english(
+                record_id,
+                translations[record_id],
+                japanese,
             )
-            encoded[record_id] = encode_english(english)
         except EnglishTextError as error:
             raise ReleaseBuildError(
                 f"invalid English in {record_id}: {error}"
@@ -1156,7 +1161,13 @@ def _encoded_groups(
 
     return tuple(
         tuple(
-            encoded[f"{bank_name}/g{group_index}/r{record.record_index}"]
+            encoded[
+                scenario_record_id(
+                    bank_name,
+                    group_index,
+                    record.record_index,
+                )
+            ]
             for record in bank.records
             if record.group_index == group_index
         )
@@ -1171,18 +1182,28 @@ def build_scenario_bank(
     temporary_directory: Path,
     translations_directory: Path,
 ) -> ScenarioBuildResult:
-    """Build and fixed-UI-patch one scenario component from approved text."""
+    """Build one scenario bank with fixed-UI boundary and capacity guards."""
     source_path = temporary_directory / f"{bank_name}_source.bin"
     source_path.write_bytes(source)
-    bank = parse_scenario_bank(source_path)
+    bank = parse_scenario_bank(
+        source_path,
+        minimum_dictionary_entries=source_dictionary_reference_floor(
+            bank_name,
+            source,
+        ),
+    )
     groups = _encoded_groups(
         bank,
         bank_name,
         _load_translation_map(bank_name, translations_directory),
     )
+    text_start = bank.group_addresses[0] - bank.load_address
+    capacity = bank.dictionary_end_offset - text_start
+    pointer_bytes = 2 * (len(groups) - 1)
     compressed, dictionary = compress_english_groups(
         groups,
         required_entries=required_dictionary_entries(bank_name),
+        max_bytes=capacity - pointer_bytes,
     )
     if bank_name in SCENARIO_UI_PATCHERS and len(dictionary) != 31:
         raise ReleaseBuildError(
@@ -1199,9 +1220,7 @@ def build_scenario_bank(
     if patcher is not None:
         rebuilt = patcher(rebuilt)
 
-    text_start = bank.group_addresses[0] - bank.load_address
-    capacity = bank.dictionary_end_offset - text_start
-    used = packed_size(compressed, dictionary) + 2 * (len(groups) - 1)
+    used = packed_size(compressed, dictionary) + pointer_bytes
     return ScenarioBuildResult(
         data=rebuilt,
         records=len(bank.records),
@@ -1590,9 +1609,9 @@ def promote_release_target(
     protected[lock_path.resolve()] = "active source lock"
     protected[manifest_path] = "candidate manifest"
     for filename in RELEASE_FILENAMES.values():
-        protected[
-            (manifest_path.parent / filename).resolve()
-        ] = "candidate output"
+        protected[(manifest_path.parent / filename).resolve()] = (
+            "candidate output"
+        )
     _validate_destination_collision(
         destination,
         protected,

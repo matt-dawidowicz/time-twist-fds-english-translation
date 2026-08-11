@@ -80,6 +80,13 @@ Read:
 The title conversion reuses the existing pattern-table split and animated
 clock sprites and is guarded by source hashes and size checks.
 
+## Audit scenario translation safeguards
+
+Read [scenario translation pipeline hardening](SCENARIO_VALIDATION_HARDENING.md)
+for stable-ID refresh, shared English validation, direct-insert structure
+checks, fixed-UI dictionary boundaries, capacity-aware compressor fallback, and
+the fixture-free regression coverage added after code review.
+
 ## Add code or tests
 
 Read:

@@ -16,7 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "black>=24.10,<26",
+  "black==25.1.0",
   "build>=1.2,<2",
   "hypothesis>=6.100,<7",
   "mypy>=1.14,<2",

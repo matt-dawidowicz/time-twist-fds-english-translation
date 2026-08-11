@@ -208,10 +208,11 @@ def _replace_candidate(
     return tuple(rebuilt_groups)
 
 
-def compress_english_groups(
+def _compress_english_groups_greedy(
     groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
     *,
     required_entries: tuple[tuple[PackedSymbol, ...], ...] = (),
+    candidate_limit: int | None = MAX_CANDIDATES_TO_EVALUATE,
 ) -> tuple[
     tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
     tuple[tuple[PackedSymbol, ...], ...],
@@ -293,7 +294,10 @@ def compress_english_groups(
         dictionary_size = sum(
             _record_packed_size(entry) for entry in dictionary
         )
-        for _, candidate in ranked[:MAX_CANDIDATES_TO_EVALUATE]:
+        candidates = (
+            ranked if candidate_limit is None else ranked[:candidate_limit]
+        )
+        for _, candidate in candidates:
             candidate_size = _candidate_packed_size(
                 prepared_records, dictionary_size, candidate
             )
@@ -313,6 +317,55 @@ def compress_english_groups(
         current_size = best_size
 
     return compressed, dictionary
+
+
+def compress_english_groups(
+    groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
+    *,
+    required_entries: tuple[tuple[PackedSymbol, ...], ...] = (),
+    max_bytes: int | None = None,
+) -> tuple[
+    tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
+    tuple[tuple[PackedSymbol, ...], ...],
+]:
+    """Compress groups, widening candidate search only on capacity failure.
+
+    Args:
+        groups: Fully encoded English scenario groups with no separators.
+        required_entries: Literal entries reserved for fixed-address text.
+        max_bytes: Optional packed groups-plus-dictionary byte reservation.
+
+    Returns:
+        Compressed groups and ordered flat dictionary.
+
+    Raises:
+        ValueError: If ``max_bytes`` is negative or required entries are invalid.
+
+    The normal pass evaluates only the top estimated candidates for each greedy
+    step. If that result exceeds ``max_bytes``, a deterministic fallback reruns
+    greedy selection while evaluating every positive-saving candidate. The
+    smaller result is retained; callers remain responsible for rejecting a
+    result that still exceeds the native reservation.
+    """
+    if max_bytes is not None and max_bytes < 0:
+        raise ValueError("max_bytes must be nonnegative")
+    primary = _compress_english_groups_greedy(
+        groups,
+        required_entries=required_entries,
+        candidate_limit=MAX_CANDIDATES_TO_EVALUATE,
+    )
+    primary_size = packed_size(*primary)
+    if max_bytes is None or primary_size <= max_bytes:
+        return primary
+
+    fallback = _compress_english_groups_greedy(
+        groups,
+        required_entries=required_entries,
+        candidate_limit=None,
+    )
+    if packed_size(*fallback) < primary_size:
+        return fallback
+    return primary
 
 
 def expand_dictionary_symbols(

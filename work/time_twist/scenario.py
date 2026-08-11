@@ -52,6 +52,9 @@ class ScenarioBank:
         path: Source bank path used for provenance and stable naming.
         data: Complete immutable source bytes.
         load_address: CPU address corresponding to file offset zero.
+        minimum_dictionary_entries: Source dictionary entries that must be
+            included even when ordinary scenario records do not reference
+            them directly.
         dictionary_address: Loaded address of the dictionary stream.
         group_table_address: Loaded address of group pointers 1 through n.
         group_addresses: Loaded addresses for every group, including group 0.
@@ -228,6 +231,8 @@ def _decode_referenced_dictionary(
     data: bytes,
     start_offset: int,
     text_records: Iterable[Iterable[PackedSymbol]],
+    *,
+    minimum_entry_count: int = 0,
 ) -> tuple[tuple[tuple[PackedSymbol, ...], ...], int]:
     """Decode the transitive closure of dictionary references.
 
@@ -235,6 +240,8 @@ def _decode_referenced_dictionary(
         data: Complete scenario bank.
         start_offset: File offset of dictionary entry 1.
         text_records: Scenario records that seed the reachable entry count.
+        minimum_entry_count: Explicit source entries required by packed text
+            outside the ordinary scenario groups.
 
     Returns:
         Reachable dictionary entries and the byte offset after the final entry.
@@ -247,7 +254,14 @@ def _decode_referenced_dictionary(
     The dictionary is reparsed when a decoded entry references a later entry.
     This avoids assuming that source dictionaries are flat.
     """
-    required_count = _maximum_dictionary_reference(text_records)
+    if not 0 <= minimum_entry_count <= MAX_DICTIONARY_ENTRY_COUNT:
+        raise ScenarioError(
+            f"dictionary minimum {minimum_entry_count} is out of range"
+        )
+    required_count = max(
+        minimum_entry_count,
+        _maximum_dictionary_reference(text_records),
+    )
     if required_count > MAX_DICTIONARY_ENTRY_COUNT:
         raise ScenarioError(
             f"dictionary reference {required_count} is out of range"
@@ -271,6 +285,7 @@ def parse_scenario_bank(
     path: Path,
     *,
     load_address: int = LOAD_ADDRESS,
+    minimum_dictionary_entries: int = 0,
 ) -> ScenarioBank:
     """Parse group pointers, byte-aligned records, and referenced dictionary.
 
@@ -289,8 +304,9 @@ def parse_scenario_bank(
 
     The pointer table stores groups 1..n; group zero has its own header pointer.
     Group addresses must be ordered, and each group must end exactly at the
-    next group or the pointer table. Only as many dictionary records as are
-    reachable from text (including nested source references) are decoded.
+    next group or the pointer table. Dictionary decoding includes both the
+    explicit minimum and every entry reachable from scenario/nested source
+    references.
 
     The function reads the filesystem but never mutates the bank.
     """
@@ -340,6 +356,7 @@ def parse_scenario_bank(
         data,
         dictionary_offset,
         (record.symbols for record in records),
+        minimum_entry_count=minimum_dictionary_entries,
     )
     return ScenarioBank(
         path=path,
