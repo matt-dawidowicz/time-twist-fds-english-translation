@@ -160,6 +160,49 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "exactly 31"):
             compress_english_groups(groups, required_entries=required)
 
+    def test_fixed_ui_insert_rejects_no_compress(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            bank_path = root / "bank.bin"
+            scenario = root / "scenario.json"
+            output = root / "rebuilt.bin"
+            _synthetic_bank(bank_path)
+            bank = parse_scenario_bank(bank_path)
+            scenario.write_text(
+                json.dumps(
+                    {
+                        "groups": [
+                            {
+                                "group": 0,
+                                "records": [
+                                    {
+                                        "id": "TT2/g0/r0",
+                                        "record": 0,
+                                        "english": "A",
+                                    }
+                                ],
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            args = SimpleNamespace(
+                bank=bank_path,
+                translation=scenario,
+                output=output,
+                no_compress=True,
+            )
+            with (
+                patch(
+                    "time_twist.cli._parse_source_bank",
+                    return_value=("TT2", bank),
+                ),
+                self.assertRaisesRegex(SystemExit, "--no-compress"),
+            ):
+                command_scenario_insert(args)
+            self.assertFalse(output.exists())
+
     def test_rebuild_rejects_per_group_record_count_change(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "bank.bin"
