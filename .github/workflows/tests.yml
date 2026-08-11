@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 jobs:
-  fold-canonical-modules:
+  clean-canonical-hardening:
     if: github.head_ref == 'codex/scenario-validation-hardening'
     runs-on: ubuntu-latest
     steps:
@@ -20,215 +20,48 @@ jobs:
           cache: pip
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -e ".[dev]"
-      - name: Fold CLI facade into cli.py
+      - name: Move compatibility export below imports and restore Ruff policy
         shell: bash
         run: |
-          cp work/time_twist/cli.py /tmp/hardened_cli.py
-          cp work/time_twist/_cli_core.py work/time_twist/cli.py
-          python - <<'PY'
-          from __future__ import annotations
-
-          import ast
-          from pathlib import Path
-
-          path = Path("work/time_twist/cli.py")
-          text = path.read_text(encoding="utf-8")
-          facade = Path("/tmp/hardened_cli.py").read_text(encoding="utf-8")
-
-          old_english = '''from .english import (\n    EnglishTextError,\n    control_values,\n    encode_english,\n    validate_display_width,\n)\n'''
-          if text.count(old_english) != 1:
-              raise SystemExit("CLI English import block did not match")
-          text = text.replace(old_english, "from .english import EnglishTextError\n", 1)
-
-          old_project = '''from .project import (\n    PERSONALITY_QUESTION_IDS,\n    infer_bank_name,\n    required_dictionary_entries,\n)\n'''
-          new_project = '''from .project import (\n    PERSONALITY_QUESTION_IDS as _PERSONALITY_QUESTION_IDS,\n    infer_bank_name,\n    required_dictionary_entries,\n    source_dictionary_reference_floor,\n)\nfrom .scenario_validation import encode_validated_english, scenario_record_id\n\nPERSONALITY_QUESTION_IDS = _PERSONALITY_QUESTION_IDS\n'''
-          if text.count(old_project) != 1:
-              raise SystemExit("CLI project import block did not match")
-          text = text.replace(old_project, new_project, 1)
-
-          def function_source(source: str, name: str) -> str:
-              tree = ast.parse(source)
-              lines = source.splitlines()
-              for node in tree.body:
-                  if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == name:
-                      assert node.end_lineno is not None
-                      return "\n".join(lines[node.lineno - 1 : node.end_lineno]) + "\n"
-              raise SystemExit(f"function {name} not found")
-
-          def replace_function(source: str, name: str, replacement: str) -> str:
-              tree = ast.parse(source)
-              lines = source.splitlines(keepends=True)
-              for node in tree.body:
-                  if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name == name:
-                      assert node.end_lineno is not None
-                      lines[node.lineno - 1 : node.end_lineno] = [replacement]
-                      return "".join(lines)
-              raise SystemExit(f"function {name} not found for replacement")
-
-          helper = function_source(facade, "_parse_source_bank")
-          tree = ast.parse(text)
-          extract_node = next(
-              node
-              for node in tree.body
-              if isinstance(node, ast.FunctionDef)
-              and node.name == "command_scenario_extract"
-          )
-          lines = text.splitlines(keepends=True)
-          lines[extract_node.lineno - 1 : extract_node.lineno - 1] = [helper + "\n"]
-          text = "".join(lines)
-
-          for name in (
-              "command_scenario_extract",
-              "command_scenario_insert",
-              "merge_translation_document",
-              "command_scenario_footprint",
-          ):
-              text = replace_function(text, name, function_source(facade, name))
-
-          text = text.replace(
-              "is retained at matching group/record coordinates.",
-              "is retained only for matching stable record IDs.",
-          )
-          path.write_text(text, encoding="utf-8")
-          PY
-          rm work/time_twist/_cli_core.py
-      - name: Fold scenario boundary hardening into scenario.py
-        shell: bash
-        run: |
-          cp work/time_twist/_scenario_core.py work/time_twist/scenario.py
           python - <<'PY'
           from pathlib import Path
 
-          path = Path("work/time_twist/scenario.py")
-          text = path.read_text(encoding="utf-8")
-
-          text = text.replace(
-              '''def _decode_referenced_dictionary(\n    data: bytes,\n    start_offset: int,\n    text_records: Iterable[Iterable[PackedSymbol]],\n) -> tuple[tuple[tuple[PackedSymbol, ...], ...], int]:''',
-              '''def _decode_referenced_dictionary(\n    data: bytes,\n    start_offset: int,\n    text_records: Iterable[Iterable[PackedSymbol]],\n    *,\n    minimum_entry_count: int = 0,\n) -> tuple[tuple[tuple[PackedSymbol, ...], ...], int]:''',
-              1,
-          )
-          text = text.replace(
-              '''        text_records: Scenario records that seed the reachable entry count.\n''',
-              '''        text_records: Scenario records that seed the reachable entry count.\n        minimum_entry_count: Explicit source entries required by packed text\n            outside the ordinary scenario groups.\n''',
-              1,
-          )
-          old_required = '''    required_count = _maximum_dictionary_reference(text_records)\n    if required_count > MAX_DICTIONARY_ENTRY_COUNT:\n'''
-          new_required = '''    if not 0 <= minimum_entry_count <= MAX_DICTIONARY_ENTRY_COUNT:\n        raise ScenarioError(\n            f"dictionary minimum {minimum_entry_count} is out of range"\n        )\n    required_count = max(\n        minimum_entry_count,\n        _maximum_dictionary_reference(text_records),\n    )\n    if required_count > MAX_DICTIONARY_ENTRY_COUNT:\n'''
-          if text.count(old_required) != 1:
-              raise SystemExit("scenario dictionary seed block did not match")
-          text = text.replace(old_required, new_required, 1)
-
-          text = text.replace(
-              '''def parse_scenario_bank(\n    path: Path,\n    *,\n    load_address: int = LOAD_ADDRESS,\n) -> ScenarioBank:''',
-              '''def parse_scenario_bank(\n    path: Path,\n    *,\n    load_address: int = LOAD_ADDRESS,\n    minimum_dictionary_entries: int = 0,\n) -> ScenarioBank:''',
-              1,
-          )
-          text = text.replace(
-              '''        load_address: CPU address corresponding to file offset zero.\n''',
-              '''        load_address: CPU address corresponding to file offset zero.\n        minimum_dictionary_entries: Source dictionary entries that must be\n            included even when ordinary scenario records do not reference\n            them directly.\n''',
-              1,
-          )
-          text = text.replace(
-              '''    next group or the pointer table. Only as many dictionary records as are\n    reachable from text (including nested source references) are decoded.\n''',
-              '''    next group or the pointer table. Dictionary decoding includes both the\n    explicit minimum and every entry reachable from scenario/nested source\n    references.\n''',
-              1,
-          )
-          old_call = '''    dictionary, dictionary_end_offset = _decode_referenced_dictionary(\n        data,\n        dictionary_offset,\n        (record.symbols for record in records),\n    )\n'''
-          new_call = '''    dictionary, dictionary_end_offset = _decode_referenced_dictionary(\n        data,\n        dictionary_offset,\n        (record.symbols for record in records),\n        minimum_entry_count=minimum_dictionary_entries,\n    )\n'''
-          if text.count(old_call) != 1:
-              raise SystemExit("scenario dictionary parse call did not match")
-          text = text.replace(old_call, new_call, 1)
-          path.write_text(text, encoding="utf-8")
-          PY
-          rm work/time_twist/_scenario_core.py
-      - name: Fold capacity fallback into compression.py
-        shell: bash
-        run: |
-          cp work/time_twist/_compression_core.py work/time_twist/compression.py
-          python - <<'PY'
-          from pathlib import Path
-
-          path = Path("work/time_twist/compression.py")
-          text = path.read_text(encoding="utf-8")
-          text = text.replace(
-              "def compress_english_groups(\n",
-              "def _compress_english_groups_greedy(\n",
-              1,
-          )
-          text = text.replace(
-              '''    required_entries: tuple[tuple[PackedSymbol, ...], ...] = (),\n) -> tuple[\n''',
-              '''    required_entries: tuple[tuple[PackedSymbol, ...], ...] = (),\n    candidate_limit: int | None = MAX_CANDIDATES_TO_EVALUATE,\n) -> tuple[\n''',
-              1,
-          )
-          old_loop = '''        for _, candidate in ranked[:MAX_CANDIDATES_TO_EVALUATE]:\n'''
-          new_loop = '''        candidates = (\n            ranked if candidate_limit is None else ranked[:candidate_limit]\n        )\n        for _, candidate in candidates:\n'''
-          if text.count(old_loop) != 1:
-              raise SystemExit("compression candidate loop did not match")
-          text = text.replace(old_loop, new_loop, 1)
-
-          marker = '''    return compressed, dictionary\n\n\ndef expand_dictionary_symbols(\n'''
-          wrapper = '''    return compressed, dictionary\n\n\ndef compress_english_groups(\n    groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],\n    *,\n    required_entries: tuple[tuple[PackedSymbol, ...], ...] = (),\n    max_bytes: int | None = None,\n) -> tuple[\n    tuple[tuple[tuple[PackedSymbol, ...], ...], ...],\n    tuple[tuple[PackedSymbol, ...], ...],\n]:\n    """Compress groups, widening candidate search only on capacity failure.\n\n    Args:\n        groups: Fully encoded English scenario groups with no separators.\n        required_entries: Literal entries reserved for fixed-address text.\n        max_bytes: Optional packed groups-plus-dictionary byte reservation.\n\n    Returns:\n        Compressed groups and ordered flat dictionary.\n\n    Raises:\n        ValueError: If ``max_bytes`` is negative or required entries are invalid.\n\n    The normal pass evaluates only the top estimated candidates for each greedy\n    step. If that result exceeds ``max_bytes``, a deterministic fallback reruns\n    greedy selection while evaluating every positive-saving candidate. The\n    smaller result is retained; callers remain responsible for rejecting a\n    result that still exceeds the native reservation.\n    """\n    if max_bytes is not None and max_bytes < 0:\n        raise ValueError("max_bytes must be nonnegative")\n    primary = _compress_english_groups_greedy(\n        groups,\n        required_entries=required_entries,\n        candidate_limit=MAX_CANDIDATES_TO_EVALUATE,\n    )\n    primary_size = packed_size(*primary)\n    if max_bytes is None or primary_size <= max_bytes:\n        return primary\n\n    fallback = _compress_english_groups_greedy(\n        groups,\n        required_entries=required_entries,\n        candidate_limit=None,\n    )\n    if packed_size(*fallback) < primary_size:\n        return fallback\n    return primary\n\n\ndef expand_dictionary_symbols(\n'''
+          cli = Path("work/time_twist/cli.py")
+          text = cli.read_text(encoding="utf-8")
+          export = "PERSONALITY_QUESTION_IDS = _PERSONALITY_QUESTION_IDS\n"
+          if text.count(export) != 1:
+              raise SystemExit("expected one personality ID export")
+          text = text.replace(export, "", 1)
+          marker = "\n\ndef safe_filename("
           if text.count(marker) != 1:
-              raise SystemExit("compression wrapper insertion point did not match")
-          text = text.replace(marker, wrapper, 1)
-          path.write_text(text, encoding="utf-8")
-          PY
-          rm work/time_twist/_compression_core.py
-      - name: Update direct-module regression and documentation
-        shell: bash
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          test = Path("work/tests/test_scenario_validation_hardening.py")
-          text = test.read_text(encoding="utf-8")
+              raise SystemExit("safe_filename insertion point did not match")
           text = text.replace(
-              '"time_twist._compression_core.MAX_CANDIDATES_TO_EVALUATE",',
-              '"time_twist.compression.MAX_CANDIDATES_TO_EVALUATE",',
+              marker,
+              "\n\nPERSONALITY_QUESTION_IDS = _PERSONALITY_QUESTION_IDS\n" + marker,
+              1,
           )
-          test.write_text(text, encoding="utf-8")
+          cli.write_text(text, encoding="utf-8")
 
-          doc = Path("docs/SCENARIO_VALIDATION_HARDENING.md")
-          text = doc.read_text(encoding="utf-8")
-          old = '''The large recovered parsers/builders remain semantically unchanged in private\n`_core` modules. The copied release implementation received only the\nrepository-standard Black formatting required by CI. Small public facades add\nthe new policy checks around those cores, keeping the reverse-engineered binary\nimplementation easy to compare with its previous version.\n'''
-          new = '''The hardening is folded into the canonical CLI, parser, compressor, and release\nmodules rather than hidden behind compatibility facades. The recovered binary\nlogic remains structurally unchanged except where this note documents a new\nvalidation or capacity boundary.\n'''
-          if old not in text:
-              raise SystemExit("hardening documentation core paragraph did not match")
-          text = text.replace(old, new, 1)
-          doc.write_text(text, encoding="utf-8")
+          project = Path("pyproject.toml")
+          text = project.read_text(encoding="utf-8")
+          temporary = '''  # Temporary while the canonicalization workflow re-exports a historical CLI name.\n  "E402",\n  # E402 is temporarily disabled, so its existing noqa would otherwise trip RUF100.\n  "RUF100",\n'''
+          if text.count(temporary) != 1:
+              raise SystemExit("temporary Ruff exemptions were not found")
+          project.write_text(text.replace(temporary, "", 1), encoding="utf-8")
           PY
-      - name: Format and lint canonical modules
-        run: >-
-          python -m black
-          work/time_twist/cli.py
-          work/time_twist/scenario.py
-          work/time_twist/compression.py
-          work/tests/test_scenario_validation_hardening.py
-      - run: python -m ruff check --fix work/time_twist/cli.py work/time_twist/scenario.py work/time_twist/compression.py work/tests/test_scenario_validation_hardening.py
-      - run: >-
-          python -m black
-          work/time_twist/cli.py
-          work/time_twist/scenario.py
-          work/time_twist/compression.py
-          work/tests/test_scenario_validation_hardening.py
+      - run: python -m black work/time_twist/cli.py
+      - run: python work/tools/check_public_tree.py
+      - run: python -m black --check work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
       - run: python work/run_tests.py unit
       - run: git diff --check
-      - name: Commit canonical hardening modules
+      - name: Commit cleanup
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- \
-            work/time_twist/cli.py \
-            work/time_twist/scenario.py \
-            work/time_twist/compression.py \
-            work/time_twist/_cli_core.py \
-            work/time_twist/_scenario_core.py \
-            work/time_twist/_compression_core.py \
-            work/tests/test_scenario_validation_hardening.py \
-            docs/SCENARIO_VALIDATION_HARDENING.md
-          git commit -m "Fold scenario hardening into canonical modules"
+          git add -- work/time_twist/cli.py pyproject.toml
+          git commit -m "Clean scenario hardening compatibility export"
           git push origin HEAD:codex/scenario-validation-hardening
