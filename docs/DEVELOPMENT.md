@@ -42,7 +42,7 @@ mechanical corrections, then review docstring changes manually.
 python work/run_tests.py unit
 ```
 
-This suite is fixture-free, runs in public CI, and currently contains 78 tests.
+This suite is fixture-free, runs in public CI, and currently contains 83 tests.
 It covers codecs, synthetic FDS behavior, compression invariants,
 comparison/workbook integrity, declarative patch guards, and release-control
 logic. Skips are treated as failures.
@@ -64,11 +64,17 @@ Run both suites with:
 python work/run_tests.py all
 ```
 
+Private results must be attributed to the exact release-code revision on which
+they were run. An older private run remains historical evidence, but it is not a
+fresh validation of a later release-tool commit.
+
 See [`PRIVATE_FIXTURES.md`](PRIVATE_FIXTURES.md) for the public/private split.
 
 ## CI and wheel checks
 
-Public CI performs:
+Public CI runs the public-tree gate, style checks, type checking, and fixture-free
+unit suite on Python 3.11 and 3.12. Python 3.12 additionally performs the
+packaging and installed-wheel smoke checks:
 
 ```powershell
 python work/tools/check_public_tree.py
@@ -222,25 +228,39 @@ Python/Pillow environment versions, all scenario-bank reports, fixed-component
 hashes, target state, and canonical output records. Legacy v3 candidate
 manifests must be rebuilt with the current release code before promotion.
 
-`release-promote` re-hashes every candidate file during validation and again
-immediately before atomically writing the target. The second pass closes the
-candidate-output time-of-check/time-of-use window. The command also verifies
-the active source lock and deterministic code-tree hash. It separately hashes
-the executing/imported package and the checkout tree using logical
-`work/time_twist/...` identities and fails if they differ. A strict build stages
-everything and publishes only after target validation succeeds. Git commit and
-dirty-state metadata are recorded when Git is available, but the
-platform-independent code-tree hash is authoritative. Python and Pillow
-versions are diagnostic metadata only; promoted output hashes remain the final
-reproduction gate.
+Promotion independently proves the reviewed candidate rather than trusting its
+manifest. `release-promote` validates the active lock and code provenance, binds
+the candidate subtitle to the lock, then performs a fresh candidate-mode rebuild
+with the current code and approved inputs. The fresh rebuild's complete
+`scenario_banks`, `component_sha256`, and `outputs` records must exactly equal
+the reviewed manifest before a target can be written.
+
+Candidate files are checked both before that proof and immediately before target
+publication; the manifest itself is re-hashed at the final publication boundary.
+These checks strongly mitigate local time-of-check/time-of-use changes but do not
+claim hostile-filesystem transactional semantics across several independent
+files. The release threat model remains a trusted local build environment.
+
+Custom metadata destinations are fail-closed. A source-lock update cannot
+overwrite an approved source, project metadata, release code, or the release
+target. Promotion cannot write its target over the active source lock, candidate
+manifest, candidate outputs, approved sources, project metadata, or release
+code. The canonical source-lock and target locations remain valid exceptions for
+their respective commands.
+
+Git commit and dirty-state metadata are recorded when Git is available, but the
+platform-independent code-tree hash is authoritative. Python and Pillow versions
+are diagnostic metadata only; component and output identities decide whether a
+candidate reproduces.
 
 External source-lock paths are supported. Manifests record a project-relative
 path when possible and an absolute path otherwise.
 
-The private release integration test deliberately builds two candidates and
-requires their manifests and images to be byte-identical. A separate test
-requires the unpromoted checkout to reject strict publication because its
-target is absent. Candidate reproducibility is evidence; it is not promotion.
+The private release integration test can build two candidates and require their
+manifests and images to be byte-identical when the legal fixture overlay is
+available. A separate test requires the unpromoted checkout to reject strict
+publication because its target is absent. Candidate reproducibility evidence is
+not promotion; promotion repeats the reproducibility proof independently.
 
 See [`RELEASE_RISK_ASSESSMENT.md`](RELEASE_RISK_ASSESSMENT.md) for the audited
 failure modes, mitigations, accepted threat boundary, and remaining manual
@@ -268,8 +288,9 @@ reference/preview images.
 - [ ] Control-code order is unchanged or the exception is documented/tested.
 - [ ] Fixed record/table/bank sizes and tail addresses are preserved.
 - [ ] Black, Ruff, pydocstyle, and mypy checks pass.
-- [ ] Public tests pass with zero skips.
+- [ ] Public tests pass with zero skips on supported Python versions.
 - [ ] Private integration tests pass with zero skips when fixtures are available.
 - [ ] Wheel build/install smoke test passes.
 - [ ] Candidate manifest and outputs were reviewed before promotion.
+- [ ] Promotion's fresh rebuild matches the reviewed candidate exactly.
 - [ ] Manual playtest covers the affected scene and adjacent transitions.
