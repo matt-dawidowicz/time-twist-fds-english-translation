@@ -15,7 +15,7 @@ Famicom Disk System adventure game *Time Twist: Rekishi no Katasumi de...*
 - All **1,299 scenario records** have playable English entries.
 - Scenario, fixed UI, font, title, and FDS-container changes are built by one
   source-locked release pipeline.
-- The workbook's patch-safe field now mirrors the actual playable sources;
+- The workbook's patch-safe field mirrors the actual playable sources;
   alternative editorial rewrites remain in the natural-translation field.
 - The generated images remain **playtest builds**. A complete emulator
   playthrough is still required before calling the translation final.
@@ -80,9 +80,10 @@ time-twist --help
 python work/run_tests.py unit
 ```
 
-The public suite contains **78 fixture-free tests** and permits no skips.
-Public CI also builds the wheel, force-installs it, and smoke-tests the
-installed `time-twist` command.
+The public suite contains **83 fixture-free tests** and permits no skips. Public
+CI runs source/style/type/unit checks on both Python 3.11 and 3.12. Python 3.12
+also builds and force-installs the wheel, proves the smoke test imports the
+installed package rather than the checkout, and exercises the CLI.
 
 Maintainers with legally obtained local ROM-derived fixtures can overlay the
 private fixture bundle at the repository root and run:
@@ -97,6 +98,10 @@ runner validates every fixture against `work/integration_fixtures.json` before
 test discovery, so missing fixtures produce an explicit setup failure rather
 than a misleading green run with skipped tests. See
 [`docs/PRIVATE_FIXTURES.md`](docs/PRIVATE_FIXTURES.md).
+
+Private-suite results are recorded separately from public CI evidence. A result
+from an earlier release-code revision is historical evidence, not a claim that
+the private suite was rerun against the current commit.
 
 ## Build and promote a release
 
@@ -133,21 +138,30 @@ time-twist release-build
 
 Strict builds are staged and hash-checked before publication. A target mismatch
 fails without publishing new ROMs to the requested output directory.
-Candidate manifests record the active Git commit and dirty state when Git is
-available, plus an authoritative platform-independent SHA-256 over the Python
-release tree. Before building or promoting, the command hashes both the actual
-imported `time_twist` package and `<project-root>/work/time_twist` under the
-same logical `work/time_twist/...` paths and requires them to match. Promotion
-copies that validated provenance into the release target; strict builds reject
-targets produced by different release-critical code. Git is optional because
-validation relies on the deterministic code-tree digest.
 
-Release manifests also record the Python implementation/version and Pillow
-version as informational build-environment metadata. Promotion validates the
-complete candidate manifest shape, including scenario/component audit fields,
-and rechecks every candidate output immediately before atomically writing the
-release target. These fields improve reproducibility diagnosis without replacing
-the authoritative source, code, and output hashes.
+Candidate manifests record an authoritative platform-independent SHA-256 over
+the Python release tree. Before building or promoting, the command hashes both
+the imported `time_twist` package and `<project-root>/work/time_twist` under the
+same logical `work/time_twist/...` paths and requires them to match. Optional Git
+commit/dirty metadata is informational; the deterministic code-tree digest is
+authoritative.
+
+**Promotion independently proves reproducibility.** `release-promote` validates
+the reviewed candidate and source lock, performs a fresh candidate-mode rebuild
+from the current locked inputs and current release code, and requires the rebuilt
+scenario-bank reports, fixed-component hashes, and Zenpen/Kouhen/four-side
+output records to equal the reviewed manifest. A self-consistent hand-edited
+manifest therefore cannot promote arbitrary candidate bytes.
+
+Promotion also requires the manifest subtitle to match the source lock, rechecks
+candidate files immediately before target publication, and rejects custom
+source-lock/target destinations that collide with authoritative inputs,
+release-critical code, the candidate manifest, or candidate outputs.
+
+Release manifests record the Python implementation/version and Pillow version
+as informational build-environment metadata. These fields help diagnose a future
+reproducibility discrepancy without replacing source, code, component, and
+output hashes as the release authority.
 
 The installed wheel contains code only. It intentionally does not package
 translation project data, title assets, ROMs, or generated banks. From outside
