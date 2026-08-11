@@ -35,7 +35,7 @@ to `work/time_twist`.
 | Candidate manifest/output hashes are self-consistent but were not produced by the approved build | Promotion performs a fresh candidate-mode `build_release` from the active source lock and current release code and requires the rebuilt scenario reports, component hashes, and all three output records to equal the reviewed candidate manifest. |
 | Candidate file changes during promotion | Candidate outputs are checked before the rebuild proof and again immediately before target publication; the candidate manifest is also re-hashed before publication. This is a strong trusted-local-process mitigation, not a claim of hostile-filesystem atomicity across multiple files. |
 | Release metadata overwrites an authoritative input | Source-lock updates and target publication reject exact-path collisions with approved sources, release-critical code, project metadata, the active source lock, candidate manifest, and candidate outputs. |
-| Python/Pillow version ambiguity | Candidate and verified manifests record Python implementation/version and Pillow version as diagnostic metadata. Output hashes remain authoritative. |
+| Python/Pillow version ambiguity | Package metadata pins Pillow 12.3.0, and candidate/verified manifests record the Python implementation/version plus the actual Pillow version for audit evidence. |
 | Windows versus Unix translation bytes | Source-lock schema v2 uses explicit LF normalization only for translation JSON; FDS and PNG inputs remain raw byte identities. |
 | Interrupted multi-file publication | The previous manifest is removed before replacing outputs; each individual replacement is atomic and the new manifest is published last. A retry is required after interruption. |
 | Hostile in-process mutation | Outside the trusted local-build threat model. File provenance does not attest arbitrary runtime memory. |
@@ -73,7 +73,9 @@ which an unreproducible promotion is discovered.
 
 The build-environment record is deliberately excluded from the equality proof.
 Python and Pillow versions explain discrepancies, but the generated component
-and output identities decide whether a candidate is reproducible.
+and output identities decide whether a candidate is reproducible. The package
+pin narrows the expected Pillow environment further without replacing those
+output identities as the release authority.
 
 ## Destination collision policy
 
@@ -121,11 +123,11 @@ Legacy v3 candidate manifests must be rebuilt with the current release code.
 
 ## CI policy
 
-The package declares Python 3.11 or newer. Public CI therefore runs the public
-source gate, style checks, mypy, and fixture-free unit suite on both Python 3.11
-and 3.12. Packaging, force-installed-wheel provenance, and CLI smoke tests run on
-3.12 to avoid duplicating packaging work while still exercising the installed
-artifact.
+The package declares Python 3.11 or newer and pins Pillow 12.3.0. Public CI
+therefore runs the public source gate, style checks, mypy, and fixture-free unit
+suite on both Python 3.11 and 3.12. Packaging, force-installed-wheel provenance,
+and CLI smoke tests run on 3.12 to avoid duplicating packaging work while still
+exercising the installed artifact.
 
 A green public workflow does not imply the private ROM-derived integration suite
 ran. Private validation must be recorded separately when the legal fixture
