@@ -112,7 +112,7 @@ private ROM bytes. It verifies:
 - the release dependency metadata keeps Pillow pinned to the approved version.
 
 The existing public CI matrix continues to run Black, Ruff, pydocstyle, mypy,
-public-tree validation, 90 fixture-free unit tests on Python 3.11/3.12, and the
-Python 3.12 package/wheel smoke tests. Private integration tests remain a
+public-tree validation, the fixture-free unit suite on Python 3.11/3.12, and
+the Python 3.12 package/wheel smoke tests. Private integration tests remain a
 separate local release gate because original ROM-derived fixtures are
 intentionally absent from the repository.

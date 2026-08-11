@@ -52,9 +52,6 @@ class ScenarioBank:
         path: Source bank path used for provenance and stable naming.
         data: Complete immutable source bytes.
         load_address: CPU address corresponding to file offset zero.
-        minimum_dictionary_entries: Source dictionary entries that must be
-            included even when ordinary scenario records do not reference
-            them directly.
         dictionary_address: Loaded address of the dictionary stream.
         group_table_address: Loaded address of group pointers 1 through n.
         group_addresses: Loaded addresses for every group, including group 0.
@@ -292,6 +289,9 @@ def parse_scenario_bank(
     Args:
         path: Extracted scenario/program bank to read.
         load_address: CPU address corresponding to file offset zero.
+        minimum_dictionary_entries: Minimum number of source dictionary
+            entries to decode, including entries required by fixed-address
+            consumers outside ordinary scenario records.
 
     Returns:
         Parsed layout, source bytes, records, and reachable dictionary.
