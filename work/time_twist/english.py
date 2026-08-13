@@ -37,7 +37,10 @@ EXTENDED_CHARACTERS: dict[int, str] = {
     # translated record uses parentheses.  Reusing the same existing lookup
     # slot keeps NOV2's table and every loaded file exactly the same size.
     44: "é",
-    45: ")",
+    # This otherwise-unused source slot is a private NOV2 fixed-message
+    # ligature.  It draws the final ``de.`` in ``Wrong side.``; using one
+    # nine-bit token keeps the native eight-byte retry record intact.
+    45: "de.",
     46: "1",
     47: "2",
     48: "3",

@@ -22,14 +22,22 @@ SUPPORTED_NOV4_FONT_SOURCE_SHA256 = frozenset(
         "89F50DA5A0BD2CE318DD9DBBAF3CE976F353E5EC0AC6357FD91438CDAC927694",
         # The same bank after the size-neutral NOV4 UI patch.
         "B20913B933C9AC2E225B2A0E2CEF465C28AD9BA391171671FDAF808E4C5E0046",
+        # The same bank after the Title Case ``Start`` UI patch.  This is a
+        # separately guarded intermediate: the font must never accept an
+        # arbitrary same-size NOV4 overlay.
+        "A1F06D72FBEA6C695999A1A3419E0E07787852A4AF30872A2348C2B1FF06EE76",
+        # The same bank after the source-guarded title-menu ``Start`` and
+        # saved-game ``Load`` patches.  Keep this a concrete intermediate,
+        # not a wildcard for any six-byte NOV4 changes.
+        "D84D037891E41BCAC93A91E81ABA34F660272490764DE8E6E2E8F81C81DE9232",
     }
 )
 
 # A deterministic 5x7 pixel alphabet.  The previous milestone rasterized an
 # antialiased desktop font at only eight pixels high, leaving broken diagonals
 # and one-pixel fragments on real game screens.  Uppercase and lowercase codes
-# have distinct glyphs so dialogue can use natural mixed case while menu and
-# disk-change strings remain deliberately uppercase.
+# have distinct glyphs so dialogue, menus, and disk-change strings can use
+# natural mixed case.
 PIXEL_FONT_5X7 = {
     "A": ("01110", "10001", "10001", "11111", "10001", "10001", "10001"),
     "B": ("11110", "10001", "10001", "11110", "10001", "10001", "11110"),
@@ -148,6 +156,22 @@ EXTENDED_TILE_IDS = {
     63: 0xAC,
 }
 
+# Two extended codes are absent from the translated script and fixed UI copy.
+# NOV2's disk-change prompt has two immovable records that are one packed byte
+# too short for a literal ``Part 2`` / ``Side A``.  These dedicated glyphs
+# retain the original one-tile record footprint while visibly including the
+# missing word space.  They are emitted only by ``ui._encode_disk_prompt``;
+# ordinary English ``X`` and ``Z`` text remains unsupported by that helper.
+PART_2_LIGATURE_CODE = 42
+SIDE_A_LIGATURE_CODE = 43
+# Extended code 45 was the unused right-parenthesis slot in the English
+# character map.  Its font tile is reserved for the compact ``de.`` ending in
+# NOV2's size-locked ``Wrong side.`` retry line.
+WRONG_SIDE_LIGATURE_CODE = 45
+PART_2_LIGATURE_TILE_ID = EXTENDED_TILE_IDS[PART_2_LIGATURE_CODE]
+SIDE_A_LIGATURE_TILE_ID = EXTENDED_TILE_IDS[SIDE_A_LIGATURE_CODE]
+WRONG_SIDE_LIGATURE_TILE_ID = EXTENDED_TILE_IDS[WRONG_SIDE_LIGATURE_CODE]
+
 
 class FontPatchError(ValueError):
     """Report an unsupported glyph, invalid code, or incompatible NOV4 bank.
@@ -222,6 +246,65 @@ def render_glyph(char: str) -> bytes:
     return bytes(rows)
 
 
+def render_compact_suffix(char: str) -> bytes:
+    """Render a right-aligned fixed-prompt suffix with its leading gap.
+
+    ``Part 2`` and ``Side A`` each need a visible word space but their native
+    packed records cannot grow.  The returned tile leaves its first three
+    columns blank and draws a five-pixel glyph in columns 3 through 7.  The
+    preceding glyph's normal right padding plus this gap reads as a word space
+    while preserving exactly one runtime tile.
+
+    Args:
+        char: The one-character suffix glyph, currently ``"2"`` or ``"A"``.
+
+    Returns:
+        Eight inverse one-bit rows for the compact fixed-prompt suffix.
+
+    Raises:
+        FontPatchError: If ``char`` has no five-by-seven pattern.
+    """
+    try:
+        pattern = PIXEL_FONT_5X7[char]
+    except KeyError as error:
+        raise FontPatchError(
+            f"pixel font has no compact suffix for {char!r}"
+        ) from error
+    rows = bytearray(b"\xff" * 8)
+    for y, source_row in enumerate(pattern):
+        for x, pixel in enumerate(source_row, start=3):
+            if pixel == "1":
+                rows[y] &= ~(1 << (7 - x))
+    return bytes(rows)
+
+
+def render_wrong_side_ligature() -> bytes:
+    """Render the compact final ``de.`` of the fixed ``Wrong side.`` line.
+
+    The native retry record at NOV2 ``$86CC`` is only eight packed bytes.
+    ``Wrong side.`` is otherwise ten bytes, and the message is displayed from
+    this record alone rather than from the adjacent historical text record.
+    The final tile therefore uses a narrow 4-pixel ``d``, 3-pixel ``e``, and
+    one-pixel period.  It is private to extended code 45 and never changes any
+    ordinary dialogue glyph.
+    """
+    pattern = (
+        "00100000",
+        "00100000",
+        "01101100",
+        "10011010",
+        "10011110",
+        "10011000",
+        "01110111",
+    )
+    rows = bytearray(b"\xff" * 8)
+    for y, source_row in enumerate(pattern):
+        for x, pixel in enumerate(source_row):
+            if pixel == "1":
+                rows[y] &= ~(1 << (7 - x))
+    return bytes(rows)
+
+
 def patched_nov4_font(
     data: bytes,
 ) -> bytes:
@@ -258,9 +341,29 @@ def patched_nov4_font(
     for value, char in enumerate(COMMON_CHARACTERS):
         tile_characters[common_tile_id(value)] = char
     for value, char in EXTENDED_CHARACTERS.items():
+        if value == WRONG_SIDE_LIGATURE_CODE:
+            continue
         tile_characters[EXTENDED_TILE_IDS[value]] = char
 
     for tile_id, char in tile_characters.items():
         offset = NOV4_FONT_BASE_OFFSET + tile_id * 8
         result[offset : offset + 8] = render_glyph(char)
+    # These two tiles are private ligatures for size-locked disk prompts.
+    # Install them after the normal extended-code alphabet, intentionally
+    # replacing otherwise-unused X and Z glyph tiles in the generated font.
+    result[
+        NOV4_FONT_BASE_OFFSET
+        + PART_2_LIGATURE_TILE_ID * 8 : NOV4_FONT_BASE_OFFSET
+        + (PART_2_LIGATURE_TILE_ID + 1) * 8
+    ] = render_compact_suffix("2")
+    result[
+        NOV4_FONT_BASE_OFFSET
+        + SIDE_A_LIGATURE_TILE_ID * 8 : NOV4_FONT_BASE_OFFSET
+        + (SIDE_A_LIGATURE_TILE_ID + 1) * 8
+    ] = render_compact_suffix("A")
+    result[
+        NOV4_FONT_BASE_OFFSET
+        + WRONG_SIDE_LIGATURE_TILE_ID * 8 : NOV4_FONT_BASE_OFFSET
+        + (WRONG_SIDE_LIGATURE_TILE_ID + 1) * 8
+    ] = render_wrong_side_ligature()
     return bytes(result)

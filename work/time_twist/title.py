@@ -79,9 +79,30 @@ NINTENDO_CHR_SIZE = NINTENDO_TILE_COUNT * 16
 # Nintendo tile IDs are restored once, immediately before the original swipe.
 SLIDE_TITLE_TILE_COLUMNS = 32
 INITIAL_CHR_LOADER_SIZE = 12
-SLIDE_PREP_SIZE = 43
+# The pre-slide helper must restore the scroll origin before rendering is
+# visible again.  Its sixteen helper bytes are paid for by removing a duplicate
+# 608-byte restore copy: both title states now DMA the authoritative, already
+# patched base CHR at $B6D2.  It clears and later restores the $1C PPUMASK
+# mirror but deliberately leaves $2001 blank.  The next NMI applies the new
+# scroll/nametable state before copying $1C back to $2001; otherwise one frame
+# can show the old Nintendo nametable with the restored English-title CHR.
+# Keep the aggregate NOV4 payload at 12,214 bytes; a prior payload growth trial
+# caused FDS Disk Error 24.
+SLIDE_PREP_ORIGIN_AND_MASK_SIZE = 16
+SLIDE_PREP_SIZE = 43 + SLIDE_PREP_ORIGIN_AND_MASK_SIZE
+RESTORE_WORKSPACE_SIZE = NINTENDO_CHR_SIZE - SLIDE_PREP_ORIGIN_AND_MASK_SIZE
 TITLE_TRANSITION_SIZE = 97
-TITLE_EXIT_SIZE = 27
+# Keep the screen blank while the title-only lower CHR table and raster split
+# are dismantled.  Without the two PPUMASK stores below, the lower time-machine
+# tile IDs are briefly rendered through the upper logo CHR table after START,
+# producing a visibly scrambled machine.  Clear the $1C mirror first so an NMI
+# between the two stores cannot restore the old visible mask.
+TITLE_EXIT_HELPER = bytes.fromhex(
+    "A9 00 85 1C 8D 01 20 8D 22 40 85 48 85 4F 85 9C "
+    "A5 FF 09 10 85 FF 8D 00 20 "
+    "A9 02 A2 03 4C 19 61"
+)
+TITLE_EXIT_SIZE = len(TITLE_EXIT_HELPER)
 
 # Exact horizontal origins written by NOV4 states 3-5.  $57 supplies the fine
 # scroll and bit zero of $58 selects the neighboring horizontal nametable.
@@ -185,6 +206,9 @@ class TitleAssets:
         bottom_chr: Independent lower patterns loaded for the raster split.
         nintendo_chr: Temporary Nintendo-phase patterns for reserved tile IDs.
         restore_chr: Upper-title patterns restored over those temporary IDs.
+            This remains the independently verified source slice; runtime
+            helpers DMA the identical authoritative base-CHR location rather
+            than serializing a duplicate copy into the appended payload.
         final_nametable: Decoded final title-screen nametable and attributes.
         second_nametable: Decoded slide/Nintendo nametable and attributes.
         encoded_final: Native RLE for ``final_nametable``.
@@ -1154,6 +1178,39 @@ def build_title_assets(
     )
 
 
+def _pre_slide_restore_helper(slide_restore_address: int) -> bytes:
+    """Return the state-3 helper that hides the Nintendo-to-title remap.
+
+    The helper preserves the native monochrome-palette setup, blanks the
+    PPUMASK mirror/register, disables NMI, restores the title CHR over the
+    Nintendo-owned tile IDs, installs the first native scroll origin, then
+    restores PPUCTRL and the PPUMASK mirror. It intentionally does not restore
+    $2001 itself: the next NMI must first copy the new scroll origin into the
+    real PPU registers, then restore rendering from $1C. Restoring $2001 inside
+    this helper shows one frame of the old Nintendo nametable with restored
+    English-title CHR.
+    """
+    helper = (
+        bytes.fromhex(
+            "20 74 AB "
+            "A5 1C 48 A9 00 85 1C 8D 01 20 "
+            "A5 FF 48 29 7F 8D 00 20 "
+            "A0 1B A9 00 A2 26 20 AF EB"
+        )
+        + slide_restore_address.to_bytes(2, "little")
+        + bytes.fromhex(
+            "A9 01 85 58 A9 F0 85 57 85 4D "
+            "68 85 FF 09 10 85 FF 8D 00 20 "
+            "68 85 1C EA EA EA 60"
+        )
+    )
+    if len(helper) != SLIDE_PREP_SIZE:
+        raise TitlePatchError(
+            "pre-slide CHR restore helper has an unexpected size"
+        )
+    return helper
+
+
 def patched_nov4_title(
     data: bytes,
     target: Path,
@@ -1176,8 +1233,9 @@ def patched_nov4_title(
             expanded overlay would overlap NOV3, a source patch site differs,
             or any post-build verification fails.
 
-    The function appends lower-title CHR, Nintendo overlay/restore CHR, four
-    small 6502 helpers, and two compressed nametables.  It rewrites only the
+    The function appends lower-title CHR, Nintendo overlay CHR, a fixed
+    size-neutral workspace, four small 6502 helpers, and two compressed
+    nametables.  It rewrites only the
     recovered palette/call/pointer/origin sites and the background CHR region.
     The expanded overlay must finish below resident NOV3 at ``$D7B5``. Inputs
     and the native title file are not modified.
@@ -1185,8 +1243,8 @@ def patched_nov4_title(
     assets = build_title_assets(data, target, subtitle=subtitle)
     bottom_chr_offset = len(data)
     nintendo_chr_offset = bottom_chr_offset + BOTTOM_CHR_SIZE
-    restore_chr_offset = nintendo_chr_offset + NINTENDO_CHR_SIZE
-    initial_loader_offset = restore_chr_offset + NINTENDO_CHR_SIZE
+    restore_workspace_offset = nintendo_chr_offset + NINTENDO_CHR_SIZE
+    initial_loader_offset = restore_workspace_offset + RESTORE_WORKSPACE_SIZE
     slide_prep_offset = initial_loader_offset + INITIAL_CHR_LOADER_SIZE
     transition_offset = slide_prep_offset + SLIDE_PREP_SIZE
     exit_offset = transition_offset + TITLE_TRANSITION_SIZE
@@ -1209,7 +1267,6 @@ def patched_nov4_title(
 
     bottom_chr_address = loaded_address(bottom_chr_offset)
     nintendo_chr_address = loaded_address(nintendo_chr_offset)
-    restore_chr_address = loaded_address(restore_chr_offset)
     initial_loader_address = loaded_address(initial_loader_offset)
     slide_prep_address = loaded_address(slide_prep_offset)
     transition_address = loaded_address(transition_offset)
@@ -1219,7 +1276,8 @@ def patched_nov4_title(
     # The native loader has already copied the exact upper title into pattern
     # table 1. Temporarily overlay the Nintendo patterns on IDs $B0-$D5.  A
     # one-shot state-3 helper restores the underlying title patterns before
-    # any slide pixels become visible.
+    # any slide pixels become visible. The helper and later title state read
+    # the authoritative base CHR, so no serialized restore duplicate is needed.
     initial_loader = bytes.fromhex("A0 1B A9 00 A2 26 20 AF EB") + bytes(
         (nintendo_chr_address & 0xFF, nintendo_chr_address >> 8)
     )
@@ -1229,34 +1287,25 @@ def patched_nov4_title(
 
     # Preserve the original state-3 monochrome-palette call, then blank the
     # PPU/NMI while restoring the 38 Nintendo-temporary patterns directly from
-    # the patched base CHR in this bank.  The helper returns before the native
-    # code arms its first $01F0 scroll origin, so timing and 12-pixel motion
-    # remain native and no Nintendo pattern can enter the logo.
+    # the patched base CHR in this bank. Clear the PPUMASK mirror before
+    # blanking the register so a pending NMI cannot restore rendering during
+    # the blanked region. Restore the original $01F0 origin before NMI is
+    # restored, but leave $2001 blank so the next NMI can install the new
+    # scroll/nametable state before rendering becomes visible.
     slide_restore_address = loaded_address(
         TITLE_CHR_OFFSET + NINTENDO_FIRST_TILE * 16
     )
-    slide_prep = (
-        bytes.fromhex(
-            "20 74 AB "
-            "A9 00 8D 01 20 A5 FF 48 29 7F 8D 00 20 "
-            "A0 1B A9 00 A2 26 20 AF EB"
-        )
-        + slide_restore_address.to_bytes(2, "little")
-        + bytes.fromhex("68 85 FF 09 10 85 FF 8D 00 20 A5 1C 8D 01 20 60")
-    )
-    if len(slide_prep) != SLIDE_PREP_SIZE:
-        raise TitlePatchError(
-            "pre-slide CHR restore helper has an unexpected size"
-        )
+    slide_prep = _pre_slide_restore_helper(slide_restore_address)
 
-    # State $17 restores the exact upper patterns, installs the independent
-    # exact lower set in pattern table 0, and enables NOV4's existing
+    # State $17 restores the exact upper patterns from the same authoritative
+    # patched base CHR, installs the independent exact lower set in pattern
+    # table 0, and enables NOV4's existing
     # scene/dialogue raster split.  That proven split occurs in the blank band
     # between PUSH START and the time machine, never through visible artwork.
     transition = bytes.fromhex("A9 01 8D E1 07 20 E0 6F")
     transition += bytes.fromhex("A9 00 8D 01 20 A5 FF 48 29 7F 8D 00 20")
     transition += bytes.fromhex("A0 1B A9 00 A2 26 20 AF EB") + bytes(
-        (restore_chr_address & 0xFF, restore_chr_address >> 8)
+        (slide_restore_address & 0xFF, slide_restore_address >> 8)
     )
     transition += bytes.fromhex("A0 00 A9 00 A2 37 20 AF EB") + bytes(
         (bottom_chr_address & 0xFF, bottom_chr_address >> 8)
@@ -1272,18 +1321,17 @@ def patched_nov4_title(
     if len(transition) != TITLE_TRANSITION_SIZE:
         raise TitlePatchError("title transition helper has an unexpected size")
 
-    # Disable the title-only raster split before handing control to the game.
-    # Clear the saved menu-cancel pointer as well so the post-title flow cannot
-    # inherit a stale destination.  The menu engine may install a fresh pointer
-    # while constructing START; NOV2's separate one-choice B guard handles that
-    # case without affecting Back/Cancel on larger menus.
+    # Blank rendering, then disable the title-only raster split before handing
+    # control to the game.  Keeping both the PPUMASK mirror and register blank
+    # prevents the lower time-machine tile IDs from being rendered through the
+    # upper logo CHR table during teardown.  Clear the saved menu-cancel pointer
+    # as well so the post-title flow cannot inherit a stale destination.  The
+    # menu engine may install a fresh pointer while constructing START; NOV2's
+    # separate one-choice B guard handles that case without affecting
+    # Back/Cancel on larger menus.
     # The helper ends with the original state change, so it intentionally does
     # not return to the replaced START-button branch.
-    exit_helper = bytes.fromhex(
-        "A9 00 8D 22 40 85 48 85 4F 85 9C "
-        "A5 FF 09 10 85 FF 8D 00 20 "
-        "A9 02 A2 03 4C 19 61"
-    )
+    exit_helper = TITLE_EXIT_HELPER
     if len(exit_helper) != TITLE_EXIT_SIZE:
         raise TitlePatchError("title exit helper has an unexpected size")
 
@@ -1291,7 +1339,7 @@ def patched_nov4_title(
         (
             assets.bottom_chr,
             assets.nintendo_chr,
-            assets.restore_chr,
+            bytes(RESTORE_WORKSPACE_SIZE),
             initial_loader,
             slide_prep,
             transition,
@@ -1376,10 +1424,15 @@ def patched_nov4_title(
         )
     if result[bottom_chr_offset:nintendo_chr_offset] != assets.bottom_chr:
         raise TitlePatchError("exact lower-title tiles failed verification")
-    if result[nintendo_chr_offset:restore_chr_offset] != assets.nintendo_chr:
+    if (
+        result[nintendo_chr_offset:restore_workspace_offset]
+        != assets.nintendo_chr
+    ):
         raise TitlePatchError("Nintendo overlay tiles failed verification")
-    if result[restore_chr_offset:initial_loader_offset] != assets.restore_chr:
-        raise TitlePatchError("English restore tiles failed verification")
+    if result[restore_workspace_offset:initial_loader_offset] != bytes(
+        RESTORE_WORKSPACE_SIZE
+    ):
+        raise TitlePatchError("pre-slide workspace failed verification")
     if (
         result[
             SLIDE_PALETTE_COLOR1_OFFSET : SLIDE_PALETTE_COLOR1_OFFSET

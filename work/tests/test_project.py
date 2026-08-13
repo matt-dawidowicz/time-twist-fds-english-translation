@@ -31,12 +31,28 @@ class ProjectConfigurationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             infer_bank_name(Path("anything.bin"), "UNKNOWN")
 
-    def test_tt6c_reserves_dictionary_token_for_fixed_cougar_label(
+    def test_deep_menu_pass_reserves_proven_dictionary_tokens(
         self,
     ) -> None:
         self.assertEqual(
             required_dictionary_entries("TT6C"),
-            (encode_english("Cougar"),),
+            (encode_english("Cougar"), encode_english("Look")),
+        )
+        self.assertEqual(
+            required_dictionary_entries("T22"),
+            (
+                encode_english("Baron"),
+                encode_english("Bishop"),
+                encode_english("Jailer"),
+                encode_english("Lugot"),
+                encode_english("Jeanne"),
+                encode_english("Chino"),
+                encode_english("Look"),
+                encode_english("Crowd"),
+                encode_english("Ask"),
+                encode_english("Take"),
+                encode_english("Woman"),
+            ),
         )
 
 

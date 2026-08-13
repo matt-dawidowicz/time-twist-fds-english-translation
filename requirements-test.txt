@@ -1,0 +1,3 @@
+# Test-only dependencies for python work/run_tests.py unit
+# The package also exposes this through the [dev] extra in pyproject.toml.
+hypothesis>=6.100,<7

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import sys
@@ -20,6 +21,30 @@ WORK_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = WORK_ROOT.parent
 FIXTURE_MANIFEST = WORK_ROOT / "integration_fixtures.json"
 sys.path.insert(0, str(WORK_ROOT))
+
+UNIT_TEST_REQUIREMENTS = {
+    "hypothesis": "hypothesis>=6.100,<7",
+}
+
+
+def validate_unit_dependencies() -> None:
+    """Fail clearly when fixture-free unit-test dependencies are missing."""
+    missing = [
+        requirement
+        for module, requirement in UNIT_TEST_REQUIREMENTS.items()
+        if importlib.util.find_spec(module) is None
+    ]
+    if not missing:
+        return
+    shown = "\n".join(f"  - {requirement}" for requirement in missing)
+    raise SystemExit(
+        "unit test dependencies are missing. Install the development "
+        "dependencies before running the public test suite, for example:\n"
+        '  python -m pip install -e ".[dev]"\n'
+        "or, for test-only dependencies:\n"
+        "  python -m pip install -r requirements-test.txt\n"
+        f"Missing:\n{shown}"
+    )
 
 
 def sha256(path: Path) -> str:
@@ -86,6 +111,7 @@ def main(argv: list[str] | None = None) -> int:
 
     suite = unittest.TestSuite()
     if args.suite in {"unit", "all"}:
+        validate_unit_dependencies()
         suite.addTests(discover("tests"))
     if args.suite in {"integration", "all"}:
         validate_integration_fixtures()

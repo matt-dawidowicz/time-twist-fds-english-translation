@@ -1,5 +1,10 @@
 # Bug-fix and title-screen implementation guide
 
+> **Advanced implementation reference.** This document preserves recovered
+> offsets and runtime evidence. Begin with [Architecture](ARCHITECTURE.md) or
+> [Contributing code](../CONTRIBUTING_CODE.md) unless you are working directly
+> on a guarded UI, font, title, or engine patch.
+
 This guide documents the parts of the translation patch that repair runtime
 problems or replace the title screen. It is intentionally tied to the current
 source code rather than to a finished `.fds` file. The authoritative
@@ -41,6 +46,22 @@ Other suspected gameplay issues must be reproduced from equivalent Japanese
 and English save states before they are attributed to the original engine.
 The direct Kouhen warning, the disk-request waiting screen, and the original
 eight-pixel black strip at the left edge are intentional behavior.
+
+### Why the leftmost eight pixels remain black
+
+The NES PPU can suppress background and sprite rendering in the leftmost
+eight-pixel column through PPUMASK. Time Twist uses that native clipping region
+throughout ordinary scenes; the Japanese game shows the same strip. It hides
+partially updated tiles and horizontal-scroll seams at the edge of the
+nametable. The translation therefore does not force those pixels on globally:
+doing so would exchange one stable black column for scene-dependent garbage or
+sprite fragments.
+
+This is independent of display aspect ratio. Stretching the 256x240 signal to
+4:3 changes pixel shape but cannot create or remove the source-side clipping
+column. A player who does not want to see it should crop eight source pixels
+from the left in the emulator's overscan settings; that presentation-only crop
+does not alter the ROM or expose hidden edge data.
 
 ## Safety model shared by every patch
 
@@ -178,30 +199,54 @@ presentation at the exact packed-record slots already used by NOV2.
 
 | Purpose | File offset | Packed bytes | English source |
 | --- | ---: | ---: | --- |
-| Wait prompt | `$25D9` | 13 | `PLEASE WAIT... ` |
-| Part 1 label | `$260D` | 6 | `PART1 ` |
-| Part 2 label | `$2613` | 5 | `PART2` |
-| Side A line | `$2618` | 6 | `{CTRL:0}SIDEA` |
-| Side B line | `$261E` | 7 | `{CTRL:0}SIDE B` |
-| Insert instruction | `$2625` | 11 | `{CTRL:0}{CTRL:0}INSERT NOW` |
-| Live START prompt | `$2651` | 6 | `START ` |
-| Wrong-disk heading | `$26E8` | 11 | `WRONG DISK!` |
-| Wrong-disk instruction | `$26F3` | 14 | `{CTRL:0}TRY ANOTHER SIDE` |
+| Wait prompt | `$25D9` | 13 | `Please wait... ` |
+| Part 1 label | `$260D` | 6 | `Part 1` |
+| Part 2 label | `$2613` | 5 | `Part 2` (compact suffix glyph) |
+| Side A line | `$2618` | 6 | `{CTRL:0}Side A` (compact suffix glyph) |
+| Side B line | `$261E` | 7 | `{CTRL:0}Side B` |
+| Insert instruction | `$2625` | 11 | `{CTRL:0}{CTRL:0}Insert now.` |
+| Live Start prompt | `$2651` | 6 | `Start ` |
+| Saved-game label | `$2657` | 4 | `Load` |
+| Saved-game disk-status line | `$269A` bit 3 | 58 bits | `Bad Disk` |
+| Alternate side-heading record | `$26CC` | 8 | `Wrong side.` (private compact `de.` glyph) |
+| Visible same-side retry heading | `$26D4` | 10 | `Wrong side.` |
+| Same-side retry instruction | `$26DE` | 10 | `{CTRL:0}Try again.` |
+| Wrong-disk heading | `$26E8` | 11 | `Wrong disk! ` |
+| Wrong-disk instruction | `$26F3` | 14 | `{CTRL:0}Try another side` |
 
-The wrong-disk records are separate from the normal side-change message. They
-appear only after an incorrect disk is inserted, which is why an earlier pass
-missed them. Once the English font was installed, their remaining Japanese
-tile codes displayed as apparent gibberish.
+The saved-game label is a separate record immediately after the live START
+prompt. Its original Japanese loanword means “load”; with the English font it
+appeared as gibberish after a save was present. The native source has `A-B side
+/ disk number / error` records. The disk-swap save-state comparison shows that
+the same-side retry draws the `disk number` record at `$26D4`, followed by
+`$26DE`; it previously rendered as English-font garbage. `$26D4` holds
+ordinary packed `Wrong side.` exactly, while the alternate eight-byte `$26CC`
+record retains the compact final `de.` glyph for the same visible wording.
+This path does not reuse the later two-record `Wrong disk! / Try another side`
+recovery text.
+
+The saved-game loader has one additional, non-byte-aligned status record. If
+the player remounts the original disk while Load is waiting for the other
+side, the native Japanese `disk set` status stream would otherwise render as
+English-font garbage. Its first bit is at NOV2 file `$269A` bit 3. The
+original 55-bit text then pads to the next byte; `Bad Disk` uses 58 bits and
+still reaches that exact same alignment boundary. The patch changes no next
+record, pointer, disk-state branch, or decoder limit.
 
 Each record is encoded independently with `encode_english()` and
-`pack_records()`. The patch then requires its packed length to equal the
-original slot and compares the expected source bytes at the recovered offset.
+`pack_records()`, except the two short labels. `Part 2` and `Side A` retain
+their visible spaces by using two otherwise-unused extended glyph codes. Their
+right-aligned `2` and `A` suffixes leave a leading blank inside the final tile,
+so the rendered text reads naturally without growing either direct packed
+record. `ui._encode_disk_prompt()` owns this narrow exception and
+`patched_nov4_font()` installs the matching glyph rows only after the normal
+alphabet. Both byte lengths and exact Japanese source records remain guarded.
 No disk-state branch, requested-side variable, polling loop, or FDS BIOS call
 is altered.
 
-NOV4 owns another copy of the live START prompt at file offset `$0095`. It is
+NOV4 owns another copy of the live Start prompt at file offset `$0095`. It is
 patched separately because changing the NOV2 copy cannot affect text embedded
-inside NOV4. Both Japanese source records and `START ` occupy six packed
+inside NOV4. Both Japanese source records and `Start ` occupy six packed
 bytes.
 
 ## Kouhen direct-boot warning
@@ -218,7 +263,7 @@ It replaces only:
 - the private 1bpp glyph rows beginning at file `$0233`.
 
 The decoded tilemap contains 414 tile IDs beginning at PPU `$20D0`. The two
-centered lines are `PLEASE START WITH` on row 11 and `PART 1` on row 13.
+centered lines are `Please start with` on row 11 and `Part 1` on row 13.
 Eleven distinct visible characters are assigned private tile IDs; tile `$14`
 is the blank. Twenty-one eight-byte tile allocations remain reserved exactly
 as in the source.
@@ -322,6 +367,14 @@ frozen reference hand, kept the native `TM`, and made ten fill/bevel-only pixel
 edits. Those edits preserve the black silhouette and white outline while
 reducing the upper wordmark from 244 to exactly 236 unique patterns.
 
+The resulting native asset has zero approximation error in the production
+builder and already uses every safe upper-title pattern `$00-$EB`. Further
+"polish" is therefore an artwork revision, not a renderer fix: it must start
+from a separately reviewed indexed authority and recover an equal number of
+pattern-sharing opportunities without touching the clock-owned `$EC-$FF`
+tail. The START-transition repair below deliberately leaves this approved
+geometry, palette, and complete sliding sequence byte-for-byte unchanged.
+
 The subtitle is not baked into the authority PNG. `build_title_assets()`
 clears rows 92-105 and redraws `On the Outskirts of History...` at y=96 with
 the deterministic pixel font. This keeps subtitle wording and glyph rendering
@@ -398,14 +451,21 @@ The patch uses temporal ownership:
 
 1. The initial helper uploads the 38 Nintendo patterns to `$B0-$D5` for the
    Nintendo phase.
-2. At the original state-3 call site, a 43-byte helper preserves the native
+2. At the original state-3 call site, a 59-byte helper preserves the native
    monochrome-palette call.
-3. Rendering and NMI are briefly disabled.
+3. The helper saves and clears the `$1C` PPUMASK mirror, blanks `$2001`, and
+   disables NMI.
 4. The English base patterns for `$B0-$D5` are uploaded from the patched CHR.
-5. PPU state is restored before the game arms the first `$01F0` origin.
+5. The helper installs the first `$01F0` origin while still blank, then
+   restores PPUCTRL/NMI and the `$1C` PPUMASK mirror only. It deliberately
+   leaves `$2001` blank so the next NMI can apply the new scroll/nametable
+   registers before rendering becomes visible again.
 
-The original timing and 12-pixel movement remain native, and no stale Nintendo
-pattern can enter a swipe frame.
+The original timing and 12-pixel movement remain native. The helper remains
+size-neutral at the NOV4 level: it reuses the authoritative patched base CHR
+for both restoration points instead of serializing a second 608-byte copy, shrinks
+the unused workspace by the same six bytes the helper gained, and uses the
+released 12,214-byte payload footprint.
 
 ### Making the monochrome completion match the colored logo
 
@@ -450,24 +510,24 @@ overwriting unknown code. With the approved title, the layout is:
 | --- | --- | --- | ---: |
 | Exact lower CHR | `$2375-$26E4` | `$C575-$C8E4` | `$0370` |
 | Nintendo temporary CHR | `$26E5-$2944` | `$C8E5-$CB44` | `$0260` |
-| English restore CHR | `$2945-$2BA4` | `$CB45-$CDA4` | `$0260` |
-| Initial Nintendo loader | `$2BA5-$2BB0` | `$CDA5-$CDB0` | 12 bytes |
-| Pre-slide restore helper | `$2BB1-$2BDB` | `$CDB1-$CDDB` | 43 bytes |
+| Size-neutral helper workspace | `$2945-$2B94` | `$CB45-$CD94` | `$0250` |
+| Initial Nintendo loader | `$2B95-$2BA0` | `$CD95-$CDA0` | 12 bytes |
+| Pre-slide restore helper | `$2BA1-$2BDB` | `$CDA1-$CDDB` | 59 bytes |
 | Final-title transition helper | `$2BDC-$2C3C` | `$CDDC-$CE3C` | 97 bytes |
-| Title exit helper | `$2C3D-$2C57` | `$CE3D-$CE57` | 27 bytes |
-| Relocated nametable stream | `$2C58-$2FB0` | `$CE58-$D1B0` | `$0359` |
+| Title exit helper | `$2C3D-$2C5C` | `$CE3D-$CE5C` | 32 bytes |
+| Relocated nametable stream | `$2C5D-$2FB5` | `$CE5D-$D1B5` | `$0359` |
 
-The patched payload is 12,209 bytes (`$2FB1`) and ends at CPU `$D1B1`.
-Resident NOV3 starts at `$D7B5`, leaving `$0604` bytes (1,540 decimal) of
+The patched payload is 12,214 bytes (`$2FB6`) and ends at CPU `$D1B6`.
+Resident NOV3 starts at `$D7B5`, leaving `$05FF` bytes (1,535 decimal) of
 verified headroom.
 
 ### Patch sites that enter the appended regions
 
 | File | CPU | Change |
 | ---: | ---: | --- |
-| `$01BC` | `$A3BC` | Point the native title decoder at relocated stream `$CE58` |
+| `$01BC` | `$A3BC` | Point the native title decoder at relocated stream `$CE5D` |
 | `$0296` | `$A496` | Call the appended 12-byte Nintendo loader and NOP the remainder of the old upload sequence |
-| `$02E4` | `$A4E4` | Replace `JSR $AB74` with `JSR` to the pre-slide restore helper |
+| `$02E4` | `$A4E4` | Replace `JSR $AB74` with `JSR` to the 59-byte pre-slide restore helper |
 | `$038E` | `$A58E` | Call the final-title transition helper and NOP the unused source bytes |
 | `$022F` | `$A42F` | Tail-jump to the title exit helper |
 | `$03CA` | `$A5CA` | Install corrected clock-hand origins |
@@ -483,10 +543,16 @@ NOPs so instruction boundaries remain explicit.
 
 ### Pre-slide helper
 
-The 43-byte helper first executes the original `JSR $AB74` palette behavior.
-It then disables rendering/NMI, restores the 38 English title patterns,
-restores the saved PPU control/mask state, and returns. It completes before the
-original scroll code chooses its first origin.
+The 59-byte helper first executes the original `JSR $AB74` palette behavior.
+It then saves the PPUMASK mirror, clears `$1C`, blanks `$2001`, disables NMI,
+restores the 38 English title patterns, sets the original first swipe origin
+(`$58:$57 = $01F0` and `$4D = $F0`), restores the saved PPU control state,
+restores only the `$1C` mirror, and returns with `$2001` still blank. The
+unchanged code immediately repeats those origin writes. The following NMI then
+copies `$57/$58` into the real PPU scroll/nametable state before copying `$1C`
+back to `$2001`. Save-state analysis showed why this matters: restoring
+`$2001` inside the helper can reveal one frame of the old Nintendo nametable
+with the restored English-title CHR.
 
 ### Final-title transition helper
 
@@ -495,12 +561,22 @@ English upper patterns, uploads the independent 55-tile lower set, and enables
 NOV4's existing raster split at tile row 16. It resets the recovered scroll,
 split, and timer variables to explicit known values before rendering resumes.
 
-### Exit helper and the post-START crash fix
+### Exit helper, post-START crash fix, and clean visual teardown
 
-The title-only raster split must be disabled before gameplay. The 27-byte exit
-helper disables the FDS timer IRQ through `$4022`, clears split state, clears
-the saved menu-cancel pointer `$9C`, restores the expected PPUCTRL state, and
-then performs the original game-state change.
+The title-only raster split must be disabled before gameplay. The 32-byte exit
+helper first clears the PPUMASK mirror at `$1C` and writes zero to `$2001`,
+blanking the screen before the split and pattern-table state change. It then
+disables the FDS timer IRQ through `$4022`, clears split state, clears the saved
+menu-cancel pointer `$9C`, restores the expected PPUCTRL state, and performs the
+original game-state change.
+
+The ordering is visible correctness, not cosmetic bookkeeping. The lower title
+rows use their own CHR table for the time-machine graphic. An earlier helper
+selected the upper logo table while those rows were still rendered, so pressing
+START briefly reinterpreted the machine's tile IDs as unrelated logo fragments.
+Clearing the `$1C` mirror before `$2001` also prevents an intervening NMI from
+restoring the old mask during teardown. The next game state owns and restores
+its normal display setup.
 
 The call form is critical. The original title exit tail-jumps to `$6119`, whose
 `RTS` returns directly to the main engine. A historical patch used `JSR` for
@@ -536,7 +612,8 @@ checks that:
 - both relocated streams decode to the generated nametables;
 - the combined stream ends exactly at the end of NOV4;
 - one `$FF` terminator follows the two 1,024-byte maps;
-- lower CHR, Nintendo CHR, and restore CHR occupy their computed ranges;
+- lower CHR, Nintendo CHR, and the fixed size-neutral workspace occupy their
+  computed ranges;
 - the palette byte and clock origins contain their replacements;
 - clock-source tiles and metasprite animation bytes still equal the input;
 - the expanded address stays strictly below NOV3 at `$D7B5`.
@@ -603,6 +680,7 @@ fails before generation if they differ.
 | Attribute-mask and palette behavior are native | `test_attribute_tables_and_runtime_palette_are_locked` |
 | RLE framing is legal and exact | `test_rle_fragments_are_legal_exact_and_singly_terminated` |
 | Appended helpers fit and are deterministic | `test_patch_layout_helpers_scope_memory_and_determinism` |
+| START blanks rendering before changing title CHR/split state | `test_exit_helper_blanks_rendering_before_split_teardown` |
 | Clock CHR/metasprites remain native | `test_clock_chr_metasprites_and_timing_stay_native_with_new_origin` |
 | Unknown source or malformed title authority fails closed | `test_source_and_native_asset_guards_fail_closed` |
 
@@ -623,7 +701,7 @@ Kouhen playthrough is still required for release certification.
 
 ### Auditing an expanded NOV4 correctly
 
-The source NOV4 is 9,077 bytes; the patched title component is 12,209 bytes.
+The source NOV4 is 9,077 bytes; the patched title component is 12,214 bytes.
 An allowed-difference audit must therefore compare the source against exactly
 the same-length prefix of the patched component. Strictly zipping the two full
 byte strings is itself an error because the appended helper/data region has no
@@ -632,8 +710,8 @@ source counterpart.
 The integration test now audits `patched[:len(source)]` against the documented
 mutable ranges. The appended 3,132 bytes are not exempt from verification:
 separate assertions lock the helper layout, title pointer, two decoded
-1,024-byte nametables, exact stream termination, final `$D1B1` address, and
-the `$0604` gap before resident NOV3 at `$D7B5`. This division makes the test
+1,024-byte nametables, exact stream termination, final `$D1B6` address, and
+the `$05FF` gap before resident NOV3 at `$D7B5`. This division makes the test
 match the binary layout rather than weakening it.
 
 ## Build-publication access fix
@@ -674,7 +752,7 @@ change.
 ## Related documentation
 
 - [Title sequence architecture](TITLE_SEQUENCE.md)
-- [Architecture and patch layers](ARCHITECTURE.md#patch-layers)
+- [Architecture and patch layers](ARCHITECTURE.md#ui-font-and-title-patches)
 - [Binary formats](FORMATS.md)
 - [Development guide](DEVELOPMENT.md#adding-or-changing-a-binary-patch)
 - [Runtime playtest matrix](PLAYTEST_MATRIX.md)
