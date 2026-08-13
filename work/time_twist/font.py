@@ -13,7 +13,10 @@ from __future__ import annotations
 
 import hashlib
 
-from .english import COMMON_CHARACTERS, EXTENDED_CHARACTERS
+from .english import (
+    COMMON_CHARACTERS,
+    EXTENDED_CHARACTERS,
+)
 
 NOV4_FONT_BASE_OFFSET = 0x1B7D
 SUPPORTED_NOV4_FONT_SOURCE_SHA256 = frozenset(
@@ -156,21 +159,14 @@ EXTENDED_TILE_IDS = {
     63: 0xAC,
 }
 
-# Two extended codes are absent from the translated script and fixed UI copy.
 # NOV2's disk-change prompt has two immovable records that are one packed byte
-# too short for a literal ``Part 2`` / ``Side A``.  These dedicated glyphs
-# retain the original one-tile record footprint while visibly including the
-# missing word space.  They are emitted only by ``ui._encode_disk_prompt``;
-# ordinary English ``X`` and ``Z`` text remains unsupported by that helper.
-PART_2_LIGATURE_CODE = 42
-SIDE_A_LIGATURE_CODE = 43
-# Extended code 45 was the unused right-parenthesis slot in the English
-# character map.  Its font tile is reserved for the compact ``de.`` ending in
-# NOV2's size-locked ``Wrong side.`` retry line.
-WRONG_SIDE_LIGATURE_CODE = 45
+# too short for a literal ``Part 2`` / ``Side A``.  These reserved extended
+# codes retain the original one-tile record footprint while visibly including
+# the missing word space.  They must never replace ordinary alphabet tiles.
+PART_2_LIGATURE_CODE = 45
+SIDE_A_LIGATURE_CODE = 63
 PART_2_LIGATURE_TILE_ID = EXTENDED_TILE_IDS[PART_2_LIGATURE_CODE]
 SIDE_A_LIGATURE_TILE_ID = EXTENDED_TILE_IDS[SIDE_A_LIGATURE_CODE]
-WRONG_SIDE_LIGATURE_TILE_ID = EXTENDED_TILE_IDS[WRONG_SIDE_LIGATURE_CODE]
 
 
 class FontPatchError(ValueError):
@@ -278,33 +274,6 @@ def render_compact_suffix(char: str) -> bytes:
     return bytes(rows)
 
 
-def render_wrong_side_ligature() -> bytes:
-    """Render the compact final ``de.`` of the fixed ``Wrong side.`` line.
-
-    The native retry record at NOV2 ``$86CC`` is only eight packed bytes.
-    ``Wrong side.`` is otherwise ten bytes, and the message is displayed from
-    this record alone rather than from the adjacent historical text record.
-    The final tile therefore uses a narrow 4-pixel ``d``, 3-pixel ``e``, and
-    one-pixel period.  It is private to extended code 45 and never changes any
-    ordinary dialogue glyph.
-    """
-    pattern = (
-        "00100000",
-        "00100000",
-        "01101100",
-        "10011010",
-        "10011110",
-        "10011000",
-        "01110111",
-    )
-    rows = bytearray(b"\xff" * 8)
-    for y, source_row in enumerate(pattern):
-        for x, pixel in enumerate(source_row):
-            if pixel == "1":
-                rows[y] &= ~(1 << (7 - x))
-    return bytes(rows)
-
-
 def patched_nov4_font(
     data: bytes,
 ) -> bytes:
@@ -341,16 +310,14 @@ def patched_nov4_font(
     for value, char in enumerate(COMMON_CHARACTERS):
         tile_characters[common_tile_id(value)] = char
     for value, char in EXTENDED_CHARACTERS.items():
-        if value == WRONG_SIDE_LIGATURE_CODE:
-            continue
         tile_characters[EXTENDED_TILE_IDS[value]] = char
 
     for tile_id, char in tile_characters.items():
         offset = NOV4_FONT_BASE_OFFSET + tile_id * 8
         result[offset : offset + 8] = render_glyph(char)
     # These two tiles are private ligatures for size-locked disk prompts.
-    # Install them after the normal extended-code alphabet, intentionally
-    # replacing otherwise-unused X and Z glyph tiles in the generated font.
+    # Install them after the normal extended-code alphabet without replacing
+    # any glyph emitted by the normal English encoder.
     result[
         NOV4_FONT_BASE_OFFSET
         + PART_2_LIGATURE_TILE_ID * 8 : NOV4_FONT_BASE_OFFSET
@@ -361,9 +328,4 @@ def patched_nov4_font(
         + SIDE_A_LIGATURE_TILE_ID * 8 : NOV4_FONT_BASE_OFFSET
         + (SIDE_A_LIGATURE_TILE_ID + 1) * 8
     ] = render_compact_suffix("A")
-    result[
-        NOV4_FONT_BASE_OFFSET
-        + WRONG_SIDE_LIGATURE_TILE_ID * 8 : NOV4_FONT_BASE_OFFSET
-        + (WRONG_SIDE_LIGATURE_TILE_ID + 1) * 8
-    ] = render_wrong_side_ligature()
     return bytes(result)

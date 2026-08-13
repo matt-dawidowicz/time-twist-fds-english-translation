@@ -12,8 +12,10 @@ python -m pip install -e ".[dev]"
 time-twist --help
 ```
 
-This installs Hypothesis, which is required by the fixture-free property tests.
-For test-only setup, use `python -m pip install -r requirements-test.txt`.
+This installs Pillow plus Hypothesis, which are required by the fixture-free
+public tests. For test-only setup, use
+`python -m pip install -r requirements-test.txt`; it installs the same runtime
+Pillow dependency plus Hypothesis without development tooling.
 
 The installed wheel contains the Python package only. Translation maps, title
 assets, source locks, and legal game inputs remain checkout data.

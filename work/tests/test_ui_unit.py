@@ -414,6 +414,13 @@ class FixedMenuCopyTests(unittest.TestCase):
             "Bad side.{CTRL:0}Try again.",
         )
         self.assertEqual(
+            render_english(ui._encode_disk_prompt("Part 2")), "Part 2"
+        )
+        self.assertEqual(
+            render_english(ui._encode_disk_prompt("{CTRL:0}Side A")),
+            "{CTRL:0}Side A",
+        )
+        self.assertEqual(
             tuple(patch[2] for patch in ui.WRONG_DISK_PATCHES),
             ("Wrong disk! ", "{CTRL:0}Try another side"),
         )

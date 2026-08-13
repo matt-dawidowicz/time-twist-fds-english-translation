@@ -23,6 +23,7 @@ FIXTURE_MANIFEST = WORK_ROOT / "integration_fixtures.json"
 sys.path.insert(0, str(WORK_ROOT))
 
 UNIT_TEST_REQUIREMENTS = {
+    "PIL": "Pillow==12.3.0",
     "hypothesis": "hypothesis>=6.100,<7",
 }
 

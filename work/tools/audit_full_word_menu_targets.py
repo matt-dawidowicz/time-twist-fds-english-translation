@@ -39,7 +39,7 @@ def rows() -> list[dict[str, object]]:
                 {
                     "bank": bank_name,
                     "index": index,
-                    "target_label": label,
+                    "full_word_target": label,
                     "packed_bytes_literal": packed_bytes,
                     "encode_ok": encode_ok,
                     "encode_error": encode_error,

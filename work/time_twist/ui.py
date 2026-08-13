@@ -22,7 +22,6 @@ from .english import encode_english
 from .font import (
     PART_2_LIGATURE_CODE,
     SIDE_A_LIGATURE_CODE,
-    WRONG_SIDE_LIGATURE_CODE,
     render_glyph,
 )
 from .textcodec import (
@@ -189,10 +188,10 @@ def _encode_disk_prompt(english: str) -> tuple[PackedSymbol, ...]:
 
     The native five-bit dictionary limit is unrelated to these fixed records:
     the two short labels are direct packed streams beside executable NOV2
-    code.  ``Part 2`` and ``Side A`` each use an otherwise-unused extended
-    glyph as a one-tile compact suffix, so their visible space fits the
-    original byte footprint.  All other disk prompts use the normal English
-    encoder unchanged.
+    code.  ``Part 2`` and ``Side A`` each use a reserved extended glyph as a
+    one-tile compact suffix, so their visible space fits the original byte
+    footprint.  All other disk prompts use the normal English encoder
+    unchanged.
     """
     if english == "Part 2":
         return (
@@ -208,19 +207,12 @@ def _encode_disk_prompt(english: str) -> tuple[PackedSymbol, ...]:
 
 
 def _encode_side_number_error(english: str) -> tuple[PackedSymbol, ...]:
-    """Encode one source-locked same-side retry record.
+    """Encode one source-locked same-side retry record normally.
 
-    ``Wrong side.`` needs ten bytes as ordinary packed English but NOV2's
-    actual visible source record is fixed at eight.  Its final private glyph
-    displays ``de.`` in one extended-code tile, preserving the record address
-    and avoiding a dependency on whichever scenario dictionary is resident
-    during a disk swap.
+    The visible eight-byte same-side retry heading uses the readable ``Bad
+    side.`` fallback.  The longer ``Wrong side.`` record has room for ordinary
+    English glyphs and is encoded by its caller without a compact ligature.
     """
-    if english == "Wrong side.":
-        return (
-            *encode_english("Wrong si"),
-            PackedSymbol(SymbolKind.EXTENDED, WRONG_SIDE_LIGATURE_CODE, 0, 0),
-        )
     return encode_english(english)
 
 

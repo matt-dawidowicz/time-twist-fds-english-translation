@@ -37,10 +37,6 @@ EXTENDED_CHARACTERS: dict[int, str] = {
     # translated record uses parentheses.  Reusing the same existing lookup
     # slot keeps NOV2's table and every loaded file exactly the same size.
     44: "é",
-    # This otherwise-unused source slot is a private NOV2 fixed-message
-    # ligature.  It draws the final ``de.`` in ``Wrong side.``; using one
-    # nine-bit token keeps the native eight-byte retry record intact.
-    45: "de.",
     46: "1",
     47: "2",
     48: "3",
@@ -58,7 +54,17 @@ EXTENDED_CHARACTERS: dict[int, str] = {
     60: "'",
     61: ":",
     62: "?",
-    63: " ",
+}
+
+# These codes are deliberately absent from ``EXTENDED_CHARACTERS`` so ordinary
+# translated text cannot emit them.  NOV2's two fixed disk-change records need
+# one compact tile each to retain their original packed lengths while showing a
+# word gap before the final character.  Keep the diagnostic rendering here so
+# pack/decode tests reflect the text a player sees without replacing active
+# alphabet tiles such as X or Z.
+DISK_PROMPT_LIGATURES: dict[int, str] = {
+    45: " 2",
+    63: " A",
 }
 
 CONTROL_PATTERN = re.compile(r"\{CTRL:([0-7])\}")
@@ -165,6 +171,11 @@ def render_english(symbols: Iterable[PackedSymbol]) -> str:
     for symbol in symbols:
         if symbol.kind is SymbolKind.COMMON and symbol.value in common:
             rendered.append(common[symbol.value])
+        elif (
+            symbol.kind is SymbolKind.EXTENDED
+            and symbol.value in DISK_PROMPT_LIGATURES
+        ):
+            rendered.append(DISK_PROMPT_LIGATURES[symbol.value])
         elif (
             symbol.kind is SymbolKind.EXTENDED
             and symbol.value in EXTENDED_CHARACTERS
