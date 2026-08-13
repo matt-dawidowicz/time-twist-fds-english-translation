@@ -1,0 +1,64 @@
+{
+  "blocked": 316,
+  "by_bank": {
+    "T22": {
+      "blocked": 12,
+      "full_word_dictionary": 10,
+      "full_word_literal": 11
+    },
+    "T25": {
+      "blocked": 2,
+      "full_word_dictionary": 20,
+      "full_word_literal": 20
+    },
+    "TT1B": {
+      "blocked": 0,
+      "full_word_dictionary": 23,
+      "full_word_literal": 30
+    },
+    "TT2": {
+      "blocked": 32,
+      "full_word_dictionary": 16,
+      "full_word_literal": 22
+    },
+    "TT3A": {
+      "blocked": 46,
+      "full_word_dictionary": 15,
+      "full_word_literal": 34
+    },
+    "TT3B": {
+      "blocked": 4,
+      "full_word_dictionary": 9,
+      "full_word_literal": 8
+    },
+    "TT4": {
+      "blocked": 52,
+      "full_word_dictionary": 9,
+      "full_word_literal": 36
+    },
+    "TT5": {
+      "blocked": 68,
+      "full_word_dictionary": 12,
+      "full_word_literal": 33
+    },
+    "TT6A": {
+      "blocked": 10,
+      "full_word_dictionary": 16,
+      "full_word_literal": 15
+    },
+    "TT6B": {
+      "blocked": 28,
+      "full_word_dictionary": 8,
+      "full_word_literal": 26
+    },
+    "TT6C": {
+      "blocked": 62,
+      "full_word_dictionary": 10,
+      "full_word_literal": 22
+    }
+  },
+  "full_word_dictionary": 148,
+  "full_word_literal": 257,
+  "mismatches": 0,
+  "records": 721
+}

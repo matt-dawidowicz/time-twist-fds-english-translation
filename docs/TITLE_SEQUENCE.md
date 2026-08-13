@@ -1,5 +1,9 @@
 # Title sequence architecture
 
+> **Advanced title reference.** Routine translation contributors can skip this
+> document. See [Architecture](ARCHITECTURE.md) for the conceptual model and
+> [Contributing code](../CONTRIBUTING_CODE.md) before changing title tooling.
+
 This page is the concise architectural summary. For the full recovered memory
 map, exact patch sites, appended-region layout, helper semantics, historical
 failure modes, and test evidence, read the
@@ -60,12 +64,17 @@ Previously the English slide avoided those IDs by blacking columns 27-31,
 which made the completed monochrome logo incomplete and caused a geometry
 jump when NT0 replaced it.
 
-The patch now hooks the original state-3 `JSR $AB74` at NOV4 file offset
-`$02E4`. The appended helper preserves that monochrome-palette call, blanks
-rendering/NMI, restores `$B0-$D5` from the patched base CHR, restores PPU state,
-and returns before the untouched code arms origin `$01F0`. The original
-12-pixel movement, state timing, later final-title transition, and title exit
-remain in place.
+The patch hooks the original state-3 `JSR $AB74` at NOV4 file offset `$02E4`.
+The appended helper preserves that monochrome-palette call, saves and clears
+the `$1C` PPUMASK mirror, blanks rendering, disables NMI, restores `$B0-$D5`
+from the patched base CHR, then writes the original first native origin
+`$01F0` while the PPU is still blank. Only after that does it restore the saved
+PPU control and mask state. The sixteen helper bytes are paid for by
+eliminating the unused serialized duplicate of the same `$B0-$D5` base-CHR
+source and shrinking the zero workspace accordingly, so NOV4 remains exactly
+12,214 bytes.
+The original 12-pixel movement, state timing, later final-title transition,
+and title exit remain in place.
 
 ## Verification helpers
 

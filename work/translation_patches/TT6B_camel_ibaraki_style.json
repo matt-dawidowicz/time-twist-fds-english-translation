@@ -1,0 +1,30 @@
+{
+  "schema": "Time Twist translation patch fragment v1",
+  "bank": "TT6B",
+  "title": "Camel Ibaraki-style dialect pass",
+  "status": "ready_to_apply_to_full_translation_checkout",
+  "rationale": "A playthrough note reported that the camel in the Israel/Nazareth chapter speaks with Ibaraki-style rural dialect. The English localization should preserve this as light rustic country speech, not as a heavy regional caricature.",
+  "records": [
+    {
+      "id": "TT6B/g0/r29",
+      "speaker": "Camel",
+      "current": "Camel: What do you want?{CTRL:1}Me: May I eat the hay?{CTRL:0}Camel: Eat all you like.",
+      "replacement": "Camel: Whaddya want?{CTRL:1}Me: May I eat the hay?{CTRL:0}Camel: Eat your fill.",
+      "notes": "Adds light rural informality through 'Whaddya' and the idiom 'Eat your fill' while preserving the player's standard phrasing."
+    },
+    {
+      "id": "TT6B/g0/r30",
+      "speaker": "Camel",
+      "current": "Camel: Honest to a fault",
+      "replacement": "Camel: I don't lie none.",
+      "notes": "Converts the description into a compact rustic self-characterization. This is exactly 24 visible columns."
+    },
+    {
+      "id": "TT6B/g0/r31",
+      "speaker": "Camel",
+      "current": "Camel: Of those three,{CTRL:0}one is always truthful.{CTRL:2}One tells only lies.{CTRL:6}The last lies at times.{CTRL:4}He is unreliable.",
+      "replacement": "Camel: Of them three,{CTRL:0}one always tells truth.{CTRL:2}One only tells lies.{CTRL:6}Last one lies sometimes.{CTRL:4}Can't trust that one.",
+      "notes": "Uses light country grammar and keeps the logic of the three-man truth/liar/unreliable puzzle intact."
+    }
+  ]
+}
