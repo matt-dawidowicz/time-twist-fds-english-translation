@@ -1,3 +1,4 @@
-# Test-only dependencies for python work/run_tests.py unit
-# The package also exposes this through the [dev] extra in pyproject.toml.
+# Runtime and test-only dependencies for python work/run_tests.py unit.
+# The package also exposes these through the [dev] extra in pyproject.toml.
+Pillow==12.3.0
 hypothesis>=6.100,<7

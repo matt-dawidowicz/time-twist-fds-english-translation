@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from time_twist import ui
 from time_twist.compression import expand_dictionary_symbols
@@ -20,6 +22,22 @@ from time_twist.release import SCENARIO_LOCATIONS
 from time_twist.scenario import parse_scenario_bank
 from time_twist.textcodec import split_records
 from time_twist.ui import _record_starts
+
+AUDIT_FIELDNAMES = (
+    "bank",
+    "index",
+    "source_label",
+    "decoded_label",
+    "slot_bytes",
+    "representation",
+    "proposed_full_label",
+    "fallback_label",
+    "status",
+    "width_ok",
+    "width_error",
+    "candidate_fds_sha256",
+    "bank_sha256",
+)
 
 
 def _side_index(image_name: str, side: int) -> int:
@@ -38,6 +56,7 @@ def _load_targets(path: Path | None) -> dict[tuple[str, int], str]:
             index = row.get("index")
             target = (
                 row.get("full_word_target")
+                or row.get("target_label")
                 or row.get("new")
                 or row.get("target")
             )
@@ -51,24 +70,31 @@ def audit(
 ) -> list[dict[str, object]]:
     """Return one audit row per fixed menu/choice label."""
     image = FdsImage.read(candidate_fds) if candidate_fds is not None else None
+    candidate_sha256 = (
+        hashlib.sha256(candidate_fds.read_bytes()).hexdigest().upper()
+        if candidate_fds is not None
+        else ""
+    )
     targets = _load_targets(targets_csv)
     rows: list[dict[str, object]] = []
-    for bank_name, location in SCENARIO_LOCATIONS.items():
-        records_name = f"{bank_name}_FIXED_TEXT_RECORDS"
-        if not hasattr(ui, records_name):
-            continue
-        records = getattr(ui, records_name)
-        decoded: list[str | None] = [None] * len(records)
-        slots: list[int | None] = [None] * len(records)
-        representation: list[str] = ["source-only"] * len(records)
-        if image is not None:
-            image_name, side = location
-            entry = image.sides[_side_index(image_name, side)].find_file(
-                bank_name
-            )
-            bank_path = Path(f".audit_{bank_name}.bin")
-            bank_path.write_bytes(entry.data)
-            try:
+    with TemporaryDirectory(prefix="time_twist_menu_audit_") as temporary:
+        for bank_name, location in SCENARIO_LOCATIONS.items():
+            records_name = f"{bank_name}_FIXED_TEXT_RECORDS"
+            if not hasattr(ui, records_name):
+                continue
+            records = getattr(ui, records_name)
+            decoded: list[str | None] = [None] * len(records)
+            slots: list[int | None] = [None] * len(records)
+            representation: list[str] = ["source-only"] * len(records)
+            bank_sha256 = ""
+            if image is not None:
+                image_name, side = location
+                entry = image.sides[_side_index(image_name, side)].find_file(
+                    bank_name
+                )
+                bank_sha256 = hashlib.sha256(entry.data).hexdigest().upper()
+                bank_path = Path(temporary) / f"{bank_name}.bin"
+                bank_path.write_bytes(entry.data)
                 bank = parse_scenario_bank(
                     bank_path, minimum_dictionary_entries=31
                 )
@@ -95,44 +121,46 @@ def audit(
                         )
                         else "literal"
                     )
-            finally:
-                bank_path.unlink(missing_ok=True)
-        for index, label in enumerate(records):
-            proposed = targets.get((bank_name, index), "")
-            decoded_label = decoded[index]
-            fallback = ui.FIXED_TEXT_BLOCKED_FALLBACKS.get(bank_name, {}).get(
-                index
-            )
-            status = "source-only"
-            if decoded_label is not None:
-                if decoded_label == label:
-                    status = "full-word"
-                elif fallback is not None and decoded_label == fallback:
-                    status = "blocked"
-                else:
-                    status = "mismatch"
-            width_ok = True
-            width_error = ""
-            try:
-                validate_display_width(decoded_label or label)
-            except Exception as error:  # pragma: no cover - diagnostic text
-                width_ok = False
-                width_error = str(error)
-            rows.append(
-                {
-                    "bank": bank_name,
-                    "index": index,
-                    "source_label": label,
-                    "decoded_label": decoded_label or "",
-                    "slot_bytes": slots[index] or "",
-                    "representation": representation[index],
-                    "proposed_full_label": proposed,
-                    "fallback_label": fallback or "",
-                    "status": status,
-                    "width_ok": width_ok,
-                    "width_error": width_error,
-                }
-            )
+            for index, label in enumerate(records):
+                proposed = targets.get((bank_name, index), "")
+                decoded_label = decoded[index]
+                fallback = ui.FIXED_TEXT_BLOCKED_FALLBACKS.get(
+                    bank_name, {}
+                ).get(index)
+                status = "source-only"
+                if decoded_label is not None:
+                    if decoded_label == label:
+                        status = "full-word"
+                    elif fallback is not None and decoded_label == fallback:
+                        status = "blocked"
+                    else:
+                        status = "mismatch"
+                width_ok = True
+                width_error = ""
+                try:
+                    validate_display_width(decoded_label or label)
+                except (
+                    Exception
+                ) as error:  # pragma: no cover - diagnostic text
+                    width_ok = False
+                    width_error = str(error)
+                rows.append(
+                    {
+                        "bank": bank_name,
+                        "index": index,
+                        "source_label": label,
+                        "decoded_label": decoded_label or "",
+                        "slot_bytes": slots[index] or "",
+                        "representation": representation[index],
+                        "proposed_full_label": proposed,
+                        "fallback_label": fallback or "",
+                        "status": status,
+                        "width_ok": width_ok,
+                        "width_error": width_error,
+                        "candidate_fds_sha256": candidate_sha256,
+                        "bank_sha256": bank_sha256,
+                    }
+                )
     return rows
 
 
@@ -146,20 +174,7 @@ def main() -> int:
     rows = audit(args.candidate_fds, args.targets_csv)
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
     with args.output_csv.open("w", newline="", encoding="utf-8") as handle:
-        fieldnames = [
-            "bank",
-            "index",
-            "source_label",
-            "decoded_label",
-            "slot_bytes",
-            "representation",
-            "proposed_full_label",
-            "fallback_label",
-            "status",
-            "width_ok",
-            "width_error",
-        ]
-        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer = csv.DictWriter(handle, fieldnames=AUDIT_FIELDNAMES)
         writer.writeheader()
         writer.writerows(rows)
     failures = [
