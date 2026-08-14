@@ -43,3 +43,14 @@ jobs:
         run: time-twist --help
       - if: matrix.python-version == '3.12'
         run: time-twist release-build --help
+
+  required-unit-tests:
+    # This stable check name is the branch-protection gate.  It passes only
+    # after both matrix variants above have completed successfully.
+    name: unit-tests
+    needs: unit-tests
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every supported Python version to pass
+        run: test "${{ needs.unit-tests.result }}" = "success"
