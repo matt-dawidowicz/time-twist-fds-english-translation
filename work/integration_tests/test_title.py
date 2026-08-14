@@ -1,3 +1,5 @@
+"""Private-overlay integration tests for the current title asset, layout, and runtime-patch contracts."""
+
 from __future__ import annotations
 
 import hashlib
@@ -77,10 +79,12 @@ SLIDE_MONOCHROME_SHA256 = {
 
 
 def _sha256(data: bytes) -> str:
+    """Provide a deterministic helper for the current contract tests."""
     return hashlib.sha256(data).hexdigest().upper()
 
 
 def _patterns(data: bytes) -> tuple[bytes, ...]:
+    """Provide a deterministic helper for the current contract tests."""
     if len(data) % 16:
         raise AssertionError("CHR data is not tile aligned")
     return tuple(
@@ -89,8 +93,11 @@ def _patterns(data: bytes) -> tuple[bytes, ...]:
 
 
 class TitlePatchTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     @classmethod
     def setUpClass(cls) -> None:
+        """Prepare shared fixtures for the current contract tests."""
         source = WORK_DIR / "build/NOV4_accented_font_ui.bin"
         if not source.exists():
             source = WORK_DIR / "extracted_zenpen/side0_08_NOV4_A200.bin"
@@ -119,6 +126,7 @@ class TitlePatchTests(unittest.TestCase):
         cls.patched = title.patched_nov4_title(cls.source, cls.native_path)
 
     def assert_legal_rle(self, encoded: bytes, expected: bytes) -> None:
+        """Assert the current contract against the prepared test fixture."""
         decoded = bytearray()
         offset = 0
         while offset < len(encoded):
@@ -142,6 +150,7 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(title.encode_title_rle(expected), encoded)
 
     def _layout(self) -> dict[str, int]:
+        """Provide a deterministic helper for the current contract tests."""
         bottom = len(self.source)
         nintendo = bottom + title.BOTTOM_CHR_SIZE
         restore = nintendo + title.NINTENDO_CHR_SIZE
@@ -162,6 +171,7 @@ class TitlePatchTests(unittest.TestCase):
         }
 
     def test_recovered_title_boundaries_and_source_hashes(self) -> None:
+        """Verify the current contract described by this regression test."""
         final, final_end = title.decode_title_rle(
             self.source, title.FINAL_NAMETABLE_START
         )
@@ -194,6 +204,7 @@ class TitlePatchTests(unittest.TestCase):
     def test_native_authority_regenerates_exactly_and_has_locked_geometry(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         regenerated = build_native_title(self.design_path, self.legacy_path)
         self.assertEqual(regenerated.mode, "L")
         self.assertEqual(regenerated.size, (256, 240))
@@ -221,6 +232,7 @@ class TitlePatchTests(unittest.TestCase):
     def test_completed_title_is_exact_and_lower_rom_art_is_unchanged(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         rendered = title._render_split_nametable(
             self.assets.final_nametable,
             self.assets.background_chr,
@@ -271,6 +283,7 @@ class TitlePatchTests(unittest.TestCase):
     def test_exact_tile_budgets_full_slide_identity_and_completed_origin(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         top = _patterns(
             self.assets.background_chr[: title.TOP_TILE_COUNT * 16]
         )
@@ -352,6 +365,7 @@ class TitlePatchTests(unittest.TestCase):
     def test_nintendo_overlay_and_pre_slide_restore_have_no_stale_logo_pixels(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         source_second, _ = title.decode_title_rle(
             self.source, title.SECOND_NAMETABLE_START
         )
@@ -386,6 +400,7 @@ class TitlePatchTests(unittest.TestCase):
     def test_native_slide_origins_wrap_and_representative_frames_are_locked(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         expected_origins = (
             0x1F0,
             0x01C,
@@ -586,6 +601,7 @@ class TitlePatchTests(unittest.TestCase):
                 title.render_slide_logo_frame(self.assets, invalid)
 
     def test_attribute_tables_and_runtime_palette_are_locked(self) -> None:
+        """Verify the current contract described by this regression test."""
         source_final, _ = title.decode_title_rle(
             self.source, title.FINAL_NAMETABLE_START
         )
@@ -601,7 +617,7 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(final_attributes[:24], bytes(24))
         self.assertEqual(second_attributes[:24], bytes((0x55,)) * 24)
 
-        cpu_capture = WORK_DIR / "mesen_capture/zenpen_title_cpu.dmp"
+        cpu_capture = WORK_DIR / "runtime_capture/zenpen_title_cpu.dmp"
         if not cpu_capture.exists():
             self.fail("original title RAM capture is not available")
         palette_buffer = cpu_capture.read_bytes()[0x300:0x320]
@@ -614,6 +630,7 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(title.TITLE_PALETTE[3], (92, 0, 126))
 
     def test_rle_fragments_are_legal_exact_and_singly_terminated(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(len(self.assets.encoded_final), 456)
         self.assertEqual(len(self.assets.encoded_second), 400)
         self.assertEqual(
@@ -658,9 +675,11 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(end, len(self.patched))
 
     def test_patch_layout_helpers_scope_memory_and_determinism(self) -> None:
+        """Verify the current contract described by this regression test."""
         layout = self._layout()
 
         def address(offset: int) -> int:
+            """Provide a deterministic helper for the current contract tests."""
             return title.NOV4_LOAD_ADDRESS + offset
 
         bottom_address = address(layout["bottom"])
@@ -867,6 +886,7 @@ class TitlePatchTests(unittest.TestCase):
     def test_clock_chr_metasprites_and_timing_stay_native_with_new_origin(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         source_clock = self.source[
             title.CLOCK_SOURCE_OFFSET : title.CLOCK_SOURCE_END
         ]
@@ -912,6 +932,7 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(new[5], old[5])
 
     def test_source_and_native_asset_guards_fail_closed(self) -> None:
+        """Verify the current contract described by this regression test."""
         damaged = bytearray(self.source)
         damaged[title.SLIDE_PREP_CALL_OFFSET] ^= 0x01
         with self.assertRaisesRegex(

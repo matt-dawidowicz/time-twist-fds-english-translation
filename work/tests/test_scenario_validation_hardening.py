@@ -1,3 +1,5 @@
+"""Regression tests for current scenario validation and capacity-safety behavior."""
+
 from __future__ import annotations
 
 import json
@@ -34,6 +36,7 @@ def _synthetic_bank(
     record: tuple[PackedSymbol, ...] | None = None,
     dictionary_text: tuple[str, ...] = (),
 ) -> None:
+    """Provide a deterministic helper for the current contract tests."""
     if record is None:
         record = encode_english("A")
     group_stream = pack_records((record,))
@@ -56,9 +59,12 @@ def _synthetic_bank(
 
 
 class ScenarioValidationHardeningTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     def test_extract_preserves_english_only_for_matching_stable_id(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             first = root / "TT1A_source.bin"
@@ -86,6 +92,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
             self.assertEqual(record["english"], "")
 
     def test_insert_rejects_mismatched_record_id(self) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             bank = root / "TT1A_source.bin"
@@ -111,6 +118,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
                 command_scenario_insert(args)
 
     def test_insert_enforces_display_width(self) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             bank = root / "TT1A_source.bin"
@@ -136,6 +144,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
     def test_dictionary_boundary_can_include_fixed_ui_only_entries(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "bank.bin"
             reference = (PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0),)
@@ -154,6 +163,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
             )
 
     def test_fixed_ui_dictionary_requirement_fails_closed(self) -> None:
+        """Verify the current contract described by this regression test."""
         groups = ((encode_english("AB"),),)
         required = required_dictionary_entries("TT2")
         self.assertTrue(getattr(required, "requires_full_dictionary", False))
@@ -161,6 +171,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
             compress_english_groups(groups, required_entries=required)
 
     def test_fixed_ui_insert_rejects_no_compress(self) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             bank_path = root / "bank.bin"
@@ -204,6 +215,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
             self.assertFalse(output.exists())
 
     def test_rebuild_rejects_per_group_record_count_change(self) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "bank.bin"
             _synthetic_bank(path)
@@ -212,6 +224,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
                 rebuild_scenario_bank(bank, ((),))
 
     def test_rebuild_rejects_more_than_31_dictionary_entries(self) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "bank.bin"
             _synthetic_bank(path)
@@ -226,6 +239,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
                 )
 
     def test_shared_validator_keeps_personality_wrap_exception(self) -> None:
+        """Verify the current contract described by this regression test."""
         text = "A" * 23 + " " + "B" * 24
         with self.assertRaises(EnglishTextError):
             encode_validated_english("TT2/g0/r0", text, "")
@@ -233,6 +247,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
         self.assertTrue(encoded)
 
     def test_capacity_fallback_retries_without_candidate_pruning(self) -> None:
+        """Verify the current contract described by this regression test."""
         record = encode_english("AB" * 16)
         groups = ((record,),)
         uncompressed = packed_size(groups, ())
@@ -248,6 +263,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
         self.assertLess(packed_size(compressed, dictionary), uncompressed)
 
     def test_fds_parser_rejects_zero_side_images(self) -> None:
+        """Verify the current contract described by this regression test."""
         with self.assertRaisesRegex(FdsFormatError, "no sides"):
             FdsImage.from_bytes(b"")
 
@@ -257,10 +273,12 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
             FdsImage.from_bytes(bytes(header))
 
     def test_split_records_rejects_negative_limit(self) -> None:
+        """Verify the current contract described by this regression test."""
         with self.assertRaisesRegex(ValueError, "cannot be negative"):
             split_records(b"", limit=-1)
 
     def test_release_pins_pillow_version(self) -> None:
+        """Verify the current contract described by this regression test."""
         project_root = Path(__file__).resolve().parents[2]
         pyproject = (project_root / "pyproject.toml").read_text(
             encoding="utf-8"

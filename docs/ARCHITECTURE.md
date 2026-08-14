@@ -181,9 +181,8 @@ The release layer separates four approvals that were previously conflated:
 A strict `release-build` requires both ties and reproduces the promoted sizes
 and hashes. No target is checked in while the current candidate awaits
 playtesting; strict mode fails closed until that exact candidate is promoted.
-Legacy targets without code provenance remain unsupported. Build files are
-prepared in a sibling staging directory and are not published when source,
-code, or target validation fails. Verified files are copied to
+Build files are prepared in a sibling staging directory and are not published
+when source, code, or target validation fails. Verified files are copied to
 destination-local temporary files before atomic replacement so Windows outputs
 inherit the emulator user's directory permissions rather than the staging
 directory's private ACL.

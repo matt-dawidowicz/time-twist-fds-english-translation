@@ -18,31 +18,36 @@ from tools import (
 class FixedMenuAuditToolTests(unittest.TestCase):
     """Keep the source target audit compatible with the candidate audit."""
 
-    def test_target_loader_accepts_canonical_and_legacy_label_columns(
-        self,
-    ) -> None:
-        """Load target CSVs written by either public audit field name."""
+    def test_target_loader_accepts_the_canonical_label_column(self) -> None:
+        """Load the current full-word-target CSV format."""
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "targets.csv"
             path.write_text(
-                "bank,index,target_label,full_word_target\n"
-                "TT1B,0,Legacy,\n"
-                "TT1B,1,,Canonical\n",
+                "bank,index,full_word_target\n" "TT1B,0,Canonical\n",
                 encoding="utf-8",
             )
             self.assertEqual(
                 audit_fixed_menu_labels._load_targets(path),
-                {("TT1B", 0): "Legacy", ("TT1B", 1): "Canonical"},
+                {("TT1B", 0): "Canonical"},
             )
 
-    def test_target_audit_emits_the_candidate_audits_canonical_column(
-        self,
-    ) -> None:
-        """Prevent a silent producer/consumer target-label schema drift."""
+    def test_target_audit_emits_the_current_target_schema(self) -> None:
+        """Prevent a silent producer/consumer schema drift."""
         targets = audit_full_word_menu_targets.rows()
         self.assertGreater(len(targets), 0)
-        self.assertIn("full_word_target", targets[0])
-        self.assertNotIn("target_label", targets[0])
+        self.assertEqual(
+            set(targets[0]),
+            {
+                "bank",
+                "index",
+                "full_word_target",
+                "packed_bytes_literal",
+                "encode_ok",
+                "encode_error",
+                "width_ok",
+                "width_error",
+            },
+        )
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "targets.csv"
             with path.open("w", newline="", encoding="utf-8") as handle:

@@ -1,3 +1,5 @@
+"""Synthetic tests for current FDS parsing, rebuilding, and side-order contracts."""
+
 from __future__ import annotations
 
 import unittest
@@ -12,6 +14,7 @@ from time_twist.fds import (
 
 
 def make_side(*, code: bytes = b"TEST", payload: bytes = b"abc") -> bytes:
+    """Provide a deterministic helper for the current contract tests."""
     disk_info = bytearray(56)
     disk_info[0] = 0x01
     disk_info[16:20] = code
@@ -33,7 +36,10 @@ def make_side(*, code: bytes = b"TEST", payload: bytes = b"abc") -> bytes:
 
 
 class SyntheticFdsTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     def test_raw_round_trip_and_manifest(self) -> None:
+        """Verify the current contract described by this regression test."""
         raw = make_side()
         image = FdsImage.from_bytes(raw)
         self.assertEqual(image.to_bytes(), raw)
@@ -41,6 +47,7 @@ class SyntheticFdsTests(unittest.TestCase):
         self.assertEqual(image.sides[0].find_file("DATA").data, b"abc")
 
     def test_headered_round_trip(self) -> None:
+        """Verify the current contract described by this regression test."""
         header = bytearray(FDS_HEADER_SIZE)
         header[:4] = b"FDS\x1a"
         header[4] = 1
@@ -49,6 +56,7 @@ class SyntheticFdsTests(unittest.TestCase):
         self.assertEqual(image.to_bytes(), raw)
 
     def test_growth_refreshes_size_and_consumes_padding(self) -> None:
+        """Verify the current contract described by this regression test."""
         image = FdsImage.from_bytes(make_side(payload=b"x"))
         entry = image.sides[0].find_file("DATA")
         old_padding = len(image.sides[0].padding)
@@ -58,6 +66,7 @@ class SyntheticFdsTests(unittest.TestCase):
         self.assertEqual(len(rebuilt.sides[0].padding), old_padding - 7)
 
     def test_combine_keeps_side_order(self) -> None:
+        """Verify the current contract described by this regression test."""
         first = FdsImage.from_bytes(make_side(code=b"ONE "))
         second = FdsImage.from_bytes(make_side(code=b"TWO "))
         combined = combine_images([first, second])
@@ -69,6 +78,7 @@ class SyntheticFdsTests(unittest.TestCase):
         )
 
     def test_rejects_bad_block_marker_and_capacity_overflow(self) -> None:
+        """Verify the current contract described by this regression test."""
         malformed = bytearray(make_side())
         malformed[0] = 0
         with self.assertRaises(FdsFormatError):

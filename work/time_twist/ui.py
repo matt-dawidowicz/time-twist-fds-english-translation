@@ -17,13 +17,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
 
+from . import ui_fixed_tables as _fixed_tables
 from .compression import symbol_bit_length
 from .english import encode_english
-from .font import (
-    PART_2_LIGATURE_CODE,
-    SIDE_A_LIGATURE_CODE,
-    render_glyph,
-)
+from .font import render_glyph
 from .textcodec import (
     BitReader,
     PackedSymbol,
@@ -32,6 +29,65 @@ from .textcodec import (
     pack_records,
     split_records,
 )
+from .ui_fixed_tables import (
+    T22_FIXED_TEXT_END_OFFSET,
+    T22_FIXED_TEXT_RECORDS,
+    T22_FIXED_TEXT_SOURCE_SHA256,
+    T22_FIXED_TEXT_START_OFFSET,
+    T25_FIXED_TEXT_END_OFFSET,
+    T25_FIXED_TEXT_RECORDS,
+    T25_FIXED_TEXT_SOURCE_SHA256,
+    T25_FIXED_TEXT_START_OFFSET,
+    TT1A_BLOOD_TYPE_PATCHES,
+    TT1A_CONFIRMATION_PATCHES,
+    TT1A_MONTH_PATCHES,
+    TT1B_FIXED_TEXT_END_OFFSET,
+    TT1B_FIXED_TEXT_RECORDS,
+    TT1B_FIXED_TEXT_SOURCE_SHA256,
+    TT1B_FIXED_TEXT_START_OFFSET,
+    TT2_DICTIONARY_ENTRIES,
+    TT2_DICTIONARY_POINTER_OFFSET,
+    TT2_FIXED_TEXT_END_OFFSET,
+    TT2_FIXED_TEXT_RECORDS,
+    TT2_FIXED_TEXT_SOURCE_SHA256,
+    TT2_FIXED_TEXT_START_OFFSET,
+    TT2_LOAD_ADDRESS,
+    TT3A_FIXED_TEXT_END_OFFSET,
+    TT3A_FIXED_TEXT_RECORDS,
+    TT3A_FIXED_TEXT_SOURCE_SHA256,
+    TT3A_FIXED_TEXT_START_OFFSET,
+    TT3B_FIXED_TEXT_END_OFFSET,
+    TT3B_FIXED_TEXT_RECORDS,
+    TT3B_FIXED_TEXT_SOURCE_SHA256,
+    TT3B_FIXED_TEXT_START_OFFSET,
+    TT4_FIXED_TEXT_END_OFFSET,
+    TT4_FIXED_TEXT_RECORDS,
+    TT4_FIXED_TEXT_SOURCE_SHA256,
+    TT4_FIXED_TEXT_START_OFFSET,
+    TT5_FIXED_TEXT_END_OFFSET,
+    TT5_FIXED_TEXT_RECORDS,
+    TT5_FIXED_TEXT_SOURCE_SHA256,
+    TT5_FIXED_TEXT_START_OFFSET,
+    TT6A_FIXED_TEXT_END_OFFSET,
+    TT6A_FIXED_TEXT_RECORDS,
+    TT6A_FIXED_TEXT_SOURCE_SHA256,
+    TT6A_FIXED_TEXT_START_OFFSET,
+    TT6B_FIXED_TEXT_END_OFFSET,
+    TT6B_FIXED_TEXT_RECORDS,
+    TT6B_FIXED_TEXT_SOURCE_SHA256,
+    TT6B_FIXED_TEXT_START_OFFSET,
+    TT6C_FIXED_TEXT_END_OFFSET,
+    TT6C_FIXED_TEXT_RECORDS,
+    TT6C_FIXED_TEXT_SOURCE_SHA256,
+    TT6C_FIXED_TEXT_START_OFFSET,
+)
+
+# These table declarations are looked up dynamically by ``project.py`` while
+# constructing per-bank dictionary reservations, so retain them on the public
+# ``time_twist.ui`` facade even though the local patchers do not reference them.
+TT1B_REQUIRED_DICTIONARY_TEXT = _fixed_tables.TT1B_REQUIRED_DICTIONARY_TEXT
+FIXED_UI_DICTIONARY_ENTRY_COUNT = _fixed_tables.FIXED_UI_DICTIONARY_ENTRY_COUNT
+T22_REQUIRED_DICTIONARY_TEXT = _fixed_tables.T22_REQUIRED_DICTIONARY_TEXT
 
 
 class UiPatchError(ValueError):
@@ -130,8 +186,8 @@ ENGLISH_LOAD_PROMPT = pack_records([encode_english("Load")])
 # replacement exactly the same size preserves the surrounding program data.
 DISK_PROMPT_PATCHES = (
     (0x260D, bytes.fromhex("C6 DB A3 B5 8F A0"), "Part 1"),
-    (0x2613, bytes.fromhex("24 27 2D 63 E8"), "Part 2"),
-    (0x2618, bytes.fromhex("F0 1E E2 1B 6C FA"), "{CTRL:0}Side A"),
+    (0x2613, bytes.fromhex("24 27 2D 63 E8"), "Part2"),
+    (0x2618, bytes.fromhex("F0 1E E2 1B 6C FA"), "{CTRL:0}SideA"),
     (0x261E, bytes.fromhex("F1 9A DC 43 6D 9F 40"), "{CTRL:0}Side B"),
     (
         0x2625,
@@ -143,7 +199,7 @@ DISK_PROMPT_PATCHES = (
 # Returning the same mounted disk/side at a side-change prompt can display this
 # older NOV2 status record before the shared retry instruction at $86DE. Earlier
 # static analysis treated the record as bit-aligned and translated only the
-# inner bits, but Mesen save-state evidence shows the visible renderer starts at
+# inner bits, but runtime save-state evidence shows the visible renderer starts at
 # byte $269A. Leaving the high three source bits untouched made the first line
 # render as Latin-glyph garbage while the second line correctly said
 # ``Try again.``.
@@ -161,10 +217,10 @@ DISK_SET_ERROR_ENGLISH = "Bad side."
 def _patched_disk_set_error_message(data: bytes) -> bytes:
     """Translate NOV2's byte-aligned same-side retry heading.
 
-    Mesen save states from the double disk-swap path show that the first visible
+    Runtime save states from the double disk-swap path show that the first visible
     line is read from byte $269A, then the shared retry line at $86DE is drawn.
     Use ordinary glyphs only.  The exact ``Wrong side.`` wording requires a
-    private compact suffix in this eight-byte record, and Mesen playtest
+    private compact suffix in this eight-byte record, and playtest
     screenshots showed that suffix was too visually cramped.
     """
     replacement = pack_records([encode_english(DISK_SET_ERROR_ENGLISH)])
@@ -187,22 +243,11 @@ def _encode_disk_prompt(english: str) -> tuple[PackedSymbol, ...]:
     """Encode one size-locked disk prompt without moving NOV2 data.
 
     The native five-bit dictionary limit is unrelated to these fixed records:
-    the two short labels are direct packed streams beside executable NOV2
-    code.  ``Part 2`` and ``Side A`` each use a reserved extended glyph as a
-    one-tile compact suffix, so their visible space fits the original byte
-    footprint.  All other disk prompts use the normal English encoder
-    unchanged.
+    the short labels are direct packed streams beside executable NOV2 code.
+    ``Part2`` and ``SideA`` are deliberately compact ordinary-glyph labels so
+    they fit the immutable records without repurposing a tile that title
+    rendering uses. All disk prompts use the normal English encoder.
     """
-    if english == "Part 2":
-        return (
-            *encode_english("Part"),
-            PackedSymbol(SymbolKind.EXTENDED, PART_2_LIGATURE_CODE, 0, 0),
-        )
-    if english == "{CTRL:0}Side A":
-        return (
-            *encode_english("{CTRL:0}Side"),
-            PackedSymbol(SymbolKind.EXTENDED, SIDE_A_LIGATURE_CODE, 0, 0),
-        )
     return encode_english(english)
 
 
@@ -398,940 +443,6 @@ NOV2_SINGLE_CHOICE_B_PATCHES = (
         replacement=bytes.fromhex("4C 2E 6A EA EA EA EA EA EA"),
         label="B action detour",
     ),
-)
-
-# ---------------------------------------------------------------------------
-# Bank-specific fixed-address record tables
-# ---------------------------------------------------------------------------
-
-# Experimental all-full-word target note:
-# The fixed-table tuples below intentionally name the desired full English
-# menu/choice labels. Some labels may not fit the current byte-for-byte fixed
-# slots until a follow-up compression/repacking pass reserves dictionary
-# entries, changes packing strategy, or otherwise proves a safe fit.
-
-# TT1A keeps the blood-type choices in a fixed-address record table before
-# its normal scenario groups.  NOV2 directly references the fourth record at
-# $A465, so every replacement must retain its individual byte length.  The
-# trailing spaces are invisible but preserve all four original addresses.
-TT1A_BLOOD_TYPE_PATCHES = (
-    (0x025B, bytes.fromhex("0F 71 F4"), "A "),
-    (0x025E, bytes.fromhex("CD 6E 3E 80"), "B  "),
-    (0x0262, bytes.fromhex("13 71 F4"), "O "),
-    (0x0265, bytes.fromhex("0F 71 9A DC 7D"), "AB   "),
-)
-
-# The month selector immediately follows the blood-type table.  It first
-# offers January-June plus a July-December branch, then a second set for
-# July-December.  Each label is chosen to fill exactly its original record.
-TT1A_MONTH_PATCHES = (
-    (0x026A, bytes.fromhex("D7 61 51 FA"), "Jan"),
-    (0x026E, bytes.fromhex("D7 E1 51 FA"), "Feb"),
-    (0x0272, bytes.fromhex("D8 61 51 FA"), "Mar"),
-    (0x0276, bytes.fromhex("D8 E1 51 FA"), "Apr"),
-    (0x027A, bytes.fromhex("D9 61 51 FA"), "May"),
-    (0x027E, bytes.fromhex("D9 E1 51 FA"), "Jun"),
-    (0x0282, bytes.fromhex("DA 61 51 04 90 BE 80"), "Jul-Dec"),
-    (0x0289, bytes.fromhex("DA 61 51 FA"), "Jul"),
-    (0x028D, bytes.fromhex("DA E1 51 FA"), "Aug"),
-    (0x0291, bytes.fromhex("DB 61 51 FA"), "Sep"),
-    (0x0295, bytes.fromhex("D7 6D F0 A8 FD"), "Oct"),
-    (0x029A, bytes.fromhex("D7 6B B0 A8 FD"), "Nov"),
-    (0x029F, bytes.fromhex("D7 6B F0 A8 FD"), "Dec"),
-)
-
-# The final fixed records before TT1A's first scenario group are its
-# confirmation choices.  The English strings exactly retain their original
-# packed lengths, so the scenario table that begins at $A4C2 does not move.
-TT1A_CONFIRMATION_PATCHES = (
-    (0x02A4, bytes.fromhex("04 33 3E 80"), "Yes"),
-    (0x02A8, bytes.fromhex("63 71 F4"), "No"),
-)
-
-# TT1B begins the museum investigation and keeps its command, object, and
-# interaction labels in a fixed-address table before the normal scenario
-# groups.  Several two-byte records can only hold readable English through a
-# dictionary reference, so the scenario rebuild reserves the entries below.
-# All 53 replacement records retain their original individual byte lengths.
-TT1B_FIXED_TEXT_START_OFFSET = 0x09F7
-TT1B_FIXED_TEXT_END_OFFSET = 0x0AC5
-TT1B_FIXED_TEXT_SOURCE_SHA256 = (
-    "AF6969B469081B6992DF4893FCE6308ABB51896B5D2DAAD49AF0B23500E5FD4F"
-)
-TT1B_REQUIRED_DICTIONARY_TEXT = (
-    "Look",
-    "Museum",
-    "Body",
-    "Eyes",
-    "Picture",
-    "Simon",
-    "Ask",
-    "Member",
-    "Devil",
-    "Nose",
-    "Ears",
-    "Sky",
-    "Sign",
-    "Chest",
-    "House",
-    "Church",
-    "Priest",
-    "Back",
-    "West",
-    "Pot",
-    "Praise",
-    "Map",
-    "North",
-)
-TT1B_FIXED_TEXT_RECORDS = (
-    "Look",
-    "Talk",
-    "Move",
-    "Sky",
-    "Area",
-    "Museum",
-    "Sign",
-    "Body",
-    "East",
-    "West",
-    "Use",
-    "Fight",
-    "Poke",
-    "Walk",
-    "Pot",
-    "Case",
-    "Room",
-    "Girl",
-    "Fiend",
-    "Charm",
-    "Hold",
-    "Hug",
-    "Smile",
-    "Praise",
-    "Yell",
-    "Eyes",
-    "Nose",
-    "Ears",
-    "Chest",
-    "Man",
-    "Map",
-    "North",
-    "House",
-    "Plate",
-    "Call",
-    "News",
-    "Lens",
-    "Picture",
-    "Elder",
-    "Out",
-    "Land",
-    "Go",
-    "Back",
-    "Simon",
-    "In",
-    "Ask",
-    "Church",
-    "Priest",
-    "Member",
-    "Sermon",
-    "Devil",
-    "Belt",
-    "Run",
-)
-
-# TT2 has a second packed-text table outside its scenario groups.  It contains
-# the command menu, inventory/object labels, choice verbs, and the twenty
-# history-quiz answers.  The game references individual records by absolute
-# address, so every replacement must retain its own original byte length.
-TT2_FIXED_TEXT_START_OFFSET = 0x0BB6
-TT2_FIXED_TEXT_END_OFFSET = 0x0CD8
-TT2_FIXED_TEXT_SOURCE_SHA256 = (
-    "FD956CF1D33EDA350549FC3079729458A1B8D20EFAF2D6883361E5FD8C3F0B9E"
-)
-TT2_DICTIONARY_POINTER_OFFSET = 0x0016
-TT2_LOAD_ADDRESS = 0xA200
-FIXED_UI_DICTIONARY_ENTRY_COUNT = 31
-TT2_DICTIONARY_ENTRIES = FIXED_UI_DICTIONARY_ENTRY_COUNT
-TT2_FIXED_TEXT_RECORDS = (
-    "Look",
-    "Talk",
-    "Take",
-    "Use",
-    "Ask",
-    "Smell",
-    "Move",
-    "In",
-    "Pierre",
-    "Body",
-    "Glass",
-    "Wine",
-    "Empty",
-    "Drink",
-    "Robe",
-    "Key",
-    "Out",
-    "Data",
-    "Walk",
-    "Area",
-    "Sign",
-    "Post",
-    "Bottle",
-    "Wear",
-    "Remove",
-    "Man",
-    "Damascus",
-    "Jerusalem",
-    "Crimea",
-    "Hundred Years",
-    "Pacific",
-    "Merchants",
-    "Commoners",
-    "Actors",
-    "Criminals",
-    "Guild",
-    "Zois",
-    "Geld",
-    "Guild",
-    "Oido",
-    "da Vinci",
-    "Lacoste",
-    "De Palma",
-    "Nero",
-    "Dante",
-    "U Thant",
-    "Tools",
-    "Move",
-    "Box",
-    "Chino",
-    "Gordo",
-    "White",
-    "No",
-    "Lugot",
-    "Yes",
-    "No",
-    "All",
-    "Guard",
-    "Crowd",
-    "Building",
-    "Jail",
-    "Town",
-    "Jail",
-    "Woman",
-    "Cell",
-    "Bishop",
-    "Jeanne",
-    "Rope",
-    "Lamp",
-    "Cell",
-)
-
-# T22 uses the same fixed-table mechanism for its command and object names.
-# Unlike TT2, its 125-byte reservation is tight enough that the scenario
-# compressor must reserve a few shared dictionary entries.  The resulting
-# dialogue still has 36 bytes of headroom, while this table remains exactly
-# at its original $A929-$A9A6 addresses.
-T22_FIXED_TEXT_START_OFFSET = 0x0729
-T22_FIXED_TEXT_END_OFFSET = 0x07A6
-T22_FIXED_TEXT_SOURCE_SHA256 = (
-    "AF59D34E1084B43CC754BB24582D85FE7B085C0C478E65A2DD21F0ACA1D7D44F"
-)
-T22_REQUIRED_DICTIONARY_TEXT = (
-    "Baron",
-    "Bishop",
-    "Jailer",
-    "Lugot",
-    "Jeanne",
-    "Chino",
-    "Look",
-    "Crowd",
-)
-T22_FIXED_TEXT_RECORDS = (
-    "Look",
-    "Talk",
-    "Use",
-    "Ask",
-    "Move",
-    "Baron",
-    "Jailer",
-    "Woman",
-    "Robe",
-    "Key",
-    "Pact",
-    "Remove",
-    "Cell",
-    "Out",
-    "Take",
-    "Passage",
-    "In",
-    "Chino",
-    "Well",
-    "Rope",
-    "Hill",
-    "Jail",
-    "Open",
-    "Box",
-    "Paper",
-    "Back",
-    "Scaffold",
-    "Jeanne",
-    "Bishop",
-    "Lugot",
-    "Crowd",
-    "Prison",
-    "Move",
-)
-
-# TT3A's fixed table combines normal commands and objects with the answer
-# choices for its wartime-history identity check.  This experimental branch
-# records the desired full labels first; the compression branch must prove
-# whether they can still fit the exact 424-byte reservation.
-TT3A_FIXED_TEXT_START_OFFSET = 0x0A04
-TT3A_FIXED_TEXT_END_OFFSET = 0x0BAC
-TT3A_FIXED_TEXT_SOURCE_SHA256 = (
-    "7CBFBAF8AEAE3831B8F9BB0E4A53BF746171BF554F8B7E6ADE7DBFE0AF47DCBA"
-)
-TT3A_FIXED_TEXT_RECORDS = (
-    "Look",
-    "Talk",
-    "Take",
-    "Use",
-    "Move",
-    "Area",
-    "Body",
-    "Pocket",
-    "Pliers",
-    "Out",
-    "Hit",
-    "Data",
-    "In",
-    "Wall",
-    "Charm",
-    "Out",
-    "Pass",
-    "In",
-    "Walk",
-    "Floor",
-    "Nick",
-    "Ralph",
-    "Frankie",
-    "Stove",
-    "Bed",
-    "Shower",
-    "Sheet",
-    "Rub",
-    "Mattress",
-    "Tile",
-    "Rock",
-    "Shower",
-    "Wear",
-    "Tunnel",
-    "Soil",
-    "Front",
-    "Back",
-    "Soldier",
-    "Yes",
-    "No",
-    "Gun",
-    "Toss",
-    "Fence",
-    "Woods",
-    "Bench",
-    "Man",
-    "Simon",
-    "Red",
-    "Blue",
-    "Notes",
-    "Pass",
-    "Greeting",
-    "Crumple",
-    "Burn",
-    "Tear",
-    "Join",
-    "North",
-    "East",
-    "West",
-    "Mill",
-    "Fountain",
-    "Bottle",
-    "Mita",
-    "No",
-    "South",
-    "Get",
-    "Paper",
-    "Back",
-    "Trash",
-    "Old man",
-    "Gestapo",
-    "Ghetto",
-    "Residence",
-    "Resistance",
-    "Register",
-    "Gunboat",
-    "Nazi",
-    "U-boat",
-    "Banana",
-    "Gabin",
-    "Delon",
-    "Belmondo",
-    "Philippe",
-    "Truffaut",
-    "Montgomery",
-    "Patton",
-    "Eisenhower",
-    "Roosevelt",
-    "Churchill",
-    "MacArthur",
-    "Yes",
-    "No",
-    "Broom",
-    "Lamp",
-    "Woman",
-)
-
-# TT3B's compact action/object table fits its original 87 bytes with one
-# natural five-letter battle verb (GUARD) in place of the longer DEFEND.
-TT3B_FIXED_TEXT_START_OFFSET = 0x0420
-TT3B_FIXED_TEXT_END_OFFSET = 0x0477
-TT3B_FIXED_TEXT_SOURCE_SHA256 = (
-    "999B38FD507E1B5777D893C1009551E63FBD9153DCDB59A383BAC72313A9D8E4"
-)
-TT3B_FIXED_TEXT_RECORDS = (
-    "Look",
-    "Talk",
-    "Take",
-    "Use",
-    "Move",
-    "Area",
-    "Mill",
-    "Simon",
-    "Woman",
-    "Gun",
-    "Charm",
-    "Schmidt",
-    "Out",
-    "Fight",
-    "Guard",
-    "Run",
-    "Ask",
-    "Road",
-    "Text",
-    "Hitler",
-    "Cougar",
-)
-
-# TT4's fixed-address table contains its command menu, medical-treatment
-# choices, characters and objects, the five-sages logic puzzle, and the Greek
-# history quiz.  As in the corrected Zenpen tables, every one of the 97
-# records must keep its own original byte allocation.
-TT4_FIXED_TEXT_START_OFFSET = 0x0CD3
-TT4_FIXED_TEXT_END_OFFSET = 0x0E8B
-TT4_FIXED_TEXT_SOURCE_SHA256 = (
-    "B28692367059E8AB5396FF23552FDD2E2279130845EA2964F05E1F7EA19D377C"
-)
-TT4_FIXED_TEXT_RECORDS = (
-    "Look",
-    "Talk",
-    "Treat",
-    "Use",
-    "Silver coin",
-    "Move",
-    "In",
-    "Statue",
-    "Priest",
-    "Head",
-    "Slap",
-    "Press",
-    "Chin",
-    "Knee",
-    "Ears",
-    "Eyes",
-    "Nose",
-    "Pause",
-    "Continuous",
-    "Olive",
-    "Oil",
-    "Bell",
-    "Give",
-    "Eat",
-    "Lick",
-    "Out",
-    "Area",
-    "Building",
-    "Merchant",
-    "Man",
-    "Body",
-    "Soil",
-    "Buy",
-    "Herb",
-    "No",
-    "Temple",
-    "South",
-    "Data",
-    "Dario",
-    "Youth",
-    "Up",
-    "Down",
-    "Level",
-    "Warm",
-    "Cool",
-    "Massage",
-    "Crush",
-    "Prick",
-    "None",
-    "Oil",
-    "Wrap",
-    "North",
-    "East",
-    "West",
-    "Girl",
-    "Mother",
-    "Plant",
-    "Fish mint",
-    "Jiaogulan",
-    "Grind",
-    "Boil",
-    "Road",
-    "Take",
-    "Soldier",
-    "Spear",
-    "Swing",
-    "Back",
-    "Walk",
-    "Socrates",
-    "Pythagoras",
-    "Plato",
-    "Herodotus",
-    "Homer",
-    "Sea",
-    "Fish",
-    "Kid",
-    "Nicras",
-    "Polis",
-    "Aristotle",
-    "Imelda",
-    "Jakarta",
-    "Sparta",
-    "Daedalus",
-    "Heracles",
-    "Napoleon",
-    "Gorbachev",
-    "Agamemnon",
-    "Kannon",
-    "Partisan",
-    "Aisnon",
-    "Parthenon",
-    "Strawberry",
-    "Melon",
-    "Fig",
-    "Rice",
-    "Pearl",
-    "Coffee",
-)
-
-# TT5's fixed-address table contains its action menu, plantation task and
-# quantity choices, American-history quiz answers, livestock puzzle digits,
-# bottle controls, and late-chapter locations.  This branch expands the target
-# text even when the current fixed allocations will need later compression work.
-TT5_FIXED_TEXT_START_OFFSET = 0x0AA5
-TT5_FIXED_TEXT_END_OFFSET = 0x0C92
-TT5_FIXED_TEXT_SOURCE_SHA256 = (
-    "443013AA1921DD6EDDC01E5C38E301624D27BFDCD8B4525DE237451751E44D54"
-)
-TT5_FIXED_TEXT_RECORDS = (
-    "Look",
-    "Talk",
-    "Ask",
-    "Move",
-    "George",
-    "Bell",
-    "Men",
-    "Area",
-    "Ruins",
-    "Hoofprints",
-    "North",
-    "East",
-    "West",
-    "Take",
-    "Open",
-    "Data",
-    "Room",
-    "Money",
-    "Woods",
-    "Drawer",
-    "Out",
-    "Use",
-    "Cotton",
-    "Yes",
-    "No",
-    "Okay",
-    "Again",
-    "Schedule",
-    "Call",
-    "Water",
-    "Cotton",
-    "Roof",
-    "Wood",
-    "Weed",
-    "4 cups",
-    "6 cups",
-    "8 cups",
-    "10 cups",
-    "25 baskets",
-    "26 baskets",
-    "27 baskets",
-    "28 baskets",
-    "1 place",
-    "2 places",
-    "3 places",
-    "4 places",
-    "60 centimeters",
-    "65 centimeters",
-    "70 centimeters",
-    "75 centimeters",
-    "30 minutes",
-    "60 minutes",
-    "90 minutes",
-    "120 minutes",
-    "Time",
-    "Trader",
-    "Marine",
-    "Cavalry",
-    "Red",
-    "White",
-    "Black",
-    "Madame Dewi",
-    "Mrs. Stowe",
-    "Mrs. Akino",
-    "Mrs. Mary",
-    "Whitney",
-    "Kilauea",
-    "Etna",
-    "Rushmore",
-    "Oiwake",
-    "Projector",
-    "Gin",
-    "Plow",
-    "Camera",
-    "Airplane",
-    "VCR",
-    "Back",
-    "Answer",
-    "Problem",
-    "Cow",
-    "Sheep",
-    "Pig",
-    "One",
-    "Two",
-    "Three",
-    "Four",
-    "Five",
-    "Six",
-    "Seven",
-    "Eight",
-    "Tens",
-    "Ones",
-    "Zero",
-    "One",
-    "Two",
-    "Three",
-    "Four",
-    "Five",
-    "Six up",
-    "Six",
-    "Seven",
-    "Eight",
-    "Nine",
-    "Pour",
-    "End",
-    "Large",
-    "Medium",
-    "Small",
-    "Mansion",
-    "Meyer",
-    "Cave",
-    "Statue",
-    "In",
-)
-
-# T25's fixed table contains the mansion investigation and flooded-island
-# action/object labels.  Each of its 42 records is referenced independently.
-T25_FIXED_TEXT_START_OFFSET = 0x098A
-T25_FIXED_TEXT_END_OFFSET = 0x0A43
-T25_FIXED_TEXT_SOURCE_SHA256 = (
-    "5B96A30331E8E68609B817B068A41F32ECDF3D8AB8A7C667D85CD3E612270DF6"
-)
-T25_FIXED_TEXT_RECORDS = (
-    "Look",
-    "Talk",
-    "Use",
-    "Move",
-    "Sky",
-    "Soldier",
-    "Coffee",
-    "Outside",
-    "Mansion",
-    "Room",
-    "Wagon",
-    "Meyer",
-    "George",
-    "Lincoln",
-    "Pot",
-    "Out",
-    "Wood",
-    "Hall",
-    "Area",
-    "Guest",
-    "Study",
-    "Stair",
-    "Take",
-    "Open",
-    "Desk",
-    "Drawer",
-    "First",
-    "Second",
-    "Third",
-    "Picture",
-    "Ask",
-    "Hide",
-    "Down",
-    "Up",
-    "On",
-    "Boat",
-    "Coyote",
-    "River",
-    "Me",
-    "Coyote 1",
-    "Coyote 2",
-    "Coyote 3",
-)
-
-# TT6A's fixed table contains the donkey-specific verbs and the Nazareth
-# village, home, and workshop object labels.
-TT6A_FIXED_TEXT_START_OFFSET = 0x0547
-TT6A_FIXED_TEXT_END_OFFSET = 0x05EC
-TT6A_FIXED_TEXT_SOURCE_SHA256 = (
-    "BAB73CA358662FF6D05E52B84AF7327850B3D29DAD118E19EDB5F53C6A548270"
-)
-TT6A_FIXED_TEXT_RECORDS = (
-    "Look",
-    "Ask",
-    "Smell",
-    "Hold",
-    "Move",
-    "Area",
-    "Sky",
-    "Body",
-    "Joseph",
-    "Nod",
-    "Turn",
-    "Soil",
-    "Village",
-    "Drink",
-    "Data",
-    "Elder",
-    "Kid",
-    "Well",
-    "Trough",
-    "Rope",
-    "Hay",
-    "Water",
-    "Hill",
-    "Right house",
-    "Left house",
-    "River",
-    "Room",
-    "Mary",
-    "Bowl",
-    "Mill",
-    "Bracelet",
-    "Necklace",
-    "Wheat",
-    "Out",
-    "On",
-    "Down",
-    "Tools",
-    "Stand",
-    "On stand",
-    "Tile",
-    "Kids",
-)
-
-# TT6B's fixed table contains travel, stable-animal, history-quiz, and animal
-# interaction labels.  The quiz answers are written as full target labels here
-# so the next branch can judge compression rather than preserve abbreviations.
-TT6B_FIXED_TEXT_START_OFFSET = 0x0580
-TT6B_FIXED_TEXT_END_OFFSET = 0x0687
-TT6B_FIXED_TEXT_SOURCE_SHA256 = (
-    "DABABCA65A7EB469E1CD0EB41B2711D9B2721FFD3C011676442C28193EE50B6B"
-)
-TT6B_FIXED_TEXT_RECORDS = (
-    "Look",
-    "Ask",
-    "Smell",
-    "Hold",
-    "Move",
-    "Area",
-    "Joseph",
-    "Mary",
-    "Body",
-    "Soil",
-    "Glare",
-    "Yell",
-    "Tongue",
-    "Wink",
-    "Talk",
-    "Eat",
-    "Tent",
-    "Camel",
-    "Men",
-    "North",
-    "East",
-    "West",
-    "South",
-    "Forward",
-    "Back",
-    "Fight",
-    "Walk",
-    "Room",
-    "Trough",
-    "Horse",
-    "Sheep",
-    "Cow",
-    "Dung",
-    "Wisdom",
-    "Knowledge",
-    "Isis",
-    "Baal",
-    "Jehovah",
-    "Iraq",
-    "Jordan",
-    "Syria",
-    "Egypt",
-    "David",
-    "Solomon",
-    "Samson",
-    "Jacob",
-    "Isaac",
-    "Saddam",
-    "Abraham",
-    "Satan",
-    "Christ",
-    "Zoroaster",
-    "Oil",
-    "Hay",
-    "Wag",
-    "Fleas",
-    "Hug",
-    "Smile",
-    "Praise",
-    "Hoof",
-    "Tail",
-    "Mane",
-)
-
-# TT6C's fixed table contains finale actions plus answer choices drawn from
-# every earlier chapter.  Full target labels are recorded here; preserving the
-# absolute record addresses is left to the follow-up compression/repacking pass.
-TT6C_FIXED_TEXT_START_OFFSET = 0x08B8
-TT6C_FIXED_TEXT_END_OFFSET = 0x0A4F
-TT6C_FIXED_TEXT_SOURCE_SHA256 = (
-    "580A8C45C48A3D468FA446DC6D4294A32D5CF78DFB76C630E63D8BB6282606BD"
-)
-TT6C_FIXED_TEXT_RECORDS = (
-    "Look",
-    "Down",
-    "Leap",
-    "Take",
-    "Jar",
-    "Talk",
-    "Ask",
-    "Eat",
-    "Use",
-    "Room",
-    "Joseph",
-    "Mary",
-    "Baby",
-    "Men",
-    "My body",
-    "Kashim",
-    "Body",
-    "Time Belt",
-    "Move",
-    "Open",
-    "Move",
-    "Area",
-    "Ground",
-    "Hill",
-    "Panel",
-    "Yes",
-    "Lid",
-    "North",
-    "East",
-    "West",
-    "South",
-    "Road",
-    "Bones",
-    "Paper",
-    "Text",
-    "Outside",
-    "Four",
-    "Five",
-    "Six",
-    "Seven",
-    "Cougar",
-    "Ruger",
-    "Hauer",
-    "Berger",
-    "Glazier",
-    "Blacksmith",
-    "Tavern",
-    "Tailor",
-    "Catherine",
-    "Mylene",
-    "Laura",
-    "Isabel",
-    "Morocco",
-    "Rebecca",
-    "Bread",
-    "Trader",
-    "Austria",
-    "France",
-    "Switzerland",
-    "Belgium",
-    "Plantain",
-    "Amacha",
-    "Fish mint",
-    "Swertia",
-    "Daedalus",
-    "Centaur",
-    "Atlas",
-    "Cerberus",
-    "Fred",
-    "Bob",
-    "Tom",
-    "Jim",
-    "Serow",
-    "Coyote",
-    "Reindeer",
-    "Puma",
-    "Gold",
-    "Silver",
-    "Copper",
-    "Tin",
-    "Magdala",
-    "Nazareth",
-    "Bethlehem",
-    "Jerusalem",
-    "Bishop",
-    "Meyer",
-    "Hitler",
-    "Nick",
-    "Jeanne",
-    "Alexander",
-    "Lincoln",
-    "Left",
-    "Up",
-    "Right",
 )
 
 

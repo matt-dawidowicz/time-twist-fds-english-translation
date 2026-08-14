@@ -107,6 +107,7 @@ class PackedBinaryPropertyTests(unittest.TestCase):
         self,
         records: tuple[tuple[PackedSymbol, ...], ...],
     ) -> None:
+        """Verify the current contract described by this regression test."""
         packed = pack_records(records)
         decoded, end = split_records(packed, limit=len(records))
         decoded_records = tuple(tuple(record) for record in decoded)
@@ -119,6 +120,7 @@ class PackedBinaryPropertyTests(unittest.TestCase):
         self,
         groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
     ) -> None:
+        """Verify the current contract described by this regression test."""
         compressed, dictionary = compress_english_groups(groups)
         expanded = tuple(
             tuple(
@@ -144,6 +146,7 @@ class PackedBinaryPropertyTests(unittest.TestCase):
         )
 
     def test_repeated_literal_compression_regression(self) -> None:
+        """Verify the current contract described by this regression test."""
         phrase = tuple(symbol(SymbolKind.COMMON, value) for value in range(12))
         groups = (((*phrase, *phrase), (*phrase, *phrase)),)
         compressed, dictionary = compress_english_groups(groups)
@@ -197,6 +200,7 @@ class FdsPropertyTests(unittest.TestCase):
         padding_byte: int,
         header_tail: bytes,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         sides = b"".join(
             make_side(payloads, padding_byte=padding_byte)
             for payloads in side_payloads
@@ -212,6 +216,7 @@ class FdsPropertyTests(unittest.TestCase):
         self.assertEqual(FdsImage.from_bytes(rebuilt).to_bytes(), raw)
 
     def test_single_file_exact_capacity_and_one_byte_overflow(self) -> None:
+        """Verify the current contract described by this regression test."""
         maximum_payload = SIDE_SIZE - DISK_INFO_SIZE - 2 - FILE_HEADER_SIZE - 1
         image = FdsImage.from_bytes(
             make_side((b"x" * maximum_payload,), padding_byte=0)

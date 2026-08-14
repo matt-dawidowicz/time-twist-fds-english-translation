@@ -54,12 +54,7 @@ def _load_targets(path: Path | None) -> dict[tuple[str, int], str]:
         for row in csv.DictReader(handle):
             bank = row.get("bank")
             index = row.get("index")
-            target = (
-                row.get("full_word_target")
-                or row.get("target_label")
-                or row.get("new")
-                or row.get("target")
-            )
+            target = row.get("full_word_target")
             if bank and index is not None and target:
                 targets[(bank, int(index))] = target
     return targets

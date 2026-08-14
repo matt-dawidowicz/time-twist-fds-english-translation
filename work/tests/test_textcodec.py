@@ -1,3 +1,5 @@
+"""Unit tests for current packed-text encoding and alignment behavior."""
+
 from __future__ import annotations
 
 import unittest
@@ -15,6 +17,7 @@ from time_twist.textcodec import (
 
 
 def bits_to_bytes(bits: str) -> bytes:
+    """Provide a deterministic helper for the current contract tests."""
     padding = (-len(bits)) % 8
     return int(bits + "0" * padding, 2).to_bytes(
         (len(bits) + padding) // 8, "big"
@@ -22,8 +25,11 @@ def bits_to_bytes(bits: str) -> bytes:
 
 
 class PackedTextTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     def test_prefix_tree(self) -> None:
         # common 17, extended 42, dictionary 9, control 6
+        """Verify the current contract described by this regression test."""
         data = bits_to_bytes("010001" "110101010" "111001001" "1111110")
         reader = BitReader(data)
         symbols = [decode_symbol(reader) for _ in range(4)]
@@ -40,6 +46,7 @@ class PackedTextTests(unittest.TestCase):
     def test_separator_aligns_the_next_record(self) -> None:
         # Record 0: common 1, control separator 5, three padding bits.
         # Record 1 begins at the following byte with common 2 and separator 5.
+        """Verify the current contract described by this regression test."""
         data = bits_to_bytes("000001" "1111101" "000" "000010" "1111101")
         records, next_offset = split_records(data, limit=2)
         self.assertEqual(
@@ -55,6 +62,7 @@ class PackedTextTests(unittest.TestCase):
         self.assertEqual(next_offset, 4)
 
     def test_encoder_round_trip(self) -> None:
+        """Verify the current contract described by this regression test."""
         symbols = (
             PackedSymbol(SymbolKind.COMMON, 17, 0, 0),
             PackedSymbol(SymbolKind.EXTENDED, 42, 0, 0),
@@ -72,6 +80,7 @@ class PackedTextTests(unittest.TestCase):
         )
 
     def test_maximum_symbol_values_round_trip(self) -> None:
+        """Verify the current contract described by this regression test."""
         symbols = (
             PackedSymbol(SymbolKind.COMMON, 47, 0, 0),
             PackedSymbol(SymbolKind.EXTENDED, 63, 0, 0),
@@ -89,6 +98,7 @@ class PackedTextTests(unittest.TestCase):
         )
 
     def test_encoder_rejects_zero_dictionary_reference(self) -> None:
+        """Verify the current contract described by this regression test."""
         writer = BitWriter()
         with self.assertRaisesRegex(Exception, "one-based"):
             encode_symbol(
@@ -97,6 +107,7 @@ class PackedTextTests(unittest.TestCase):
             )
 
     def test_pack_records_writes_aligned_separators(self) -> None:
+        """Verify the current contract described by this regression test."""
         records = (
             (PackedSymbol(SymbolKind.COMMON, 1, 0, 0),),
             (PackedSymbol(SymbolKind.COMMON, 2, 0, 0),),

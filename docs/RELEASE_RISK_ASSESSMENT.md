@@ -119,7 +119,7 @@ A v4 manifest contains:
 
 Schema validation proves structure. Promotion's fresh rebuild proves that the
 audit values are true for the current approved inputs and implementation.
-Legacy v3 candidate manifests must be rebuilt with the current release code.
+Candidate manifests must be built with the current release code.
 
 ## CI policy
 

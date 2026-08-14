@@ -1,3 +1,5 @@
+"""Regression tests for current deterministic English font behavior."""
+
 from __future__ import annotations
 
 import hashlib
@@ -7,19 +9,16 @@ from unittest import mock
 from time_twist.font import (
     EXTENDED_TILE_IDS,
     NOV4_FONT_BASE_OFFSET,
-    PART_2_LIGATURE_CODE,
-    PART_2_LIGATURE_TILE_ID,
     PIXEL_FONT_5X7,
-    SIDE_A_LIGATURE_CODE,
-    SIDE_A_LIGATURE_TILE_ID,
     SUPPORTED_NOV4_FONT_SOURCE_SHA256,
     patched_nov4_font,
-    render_compact_suffix,
     render_glyph,
 )
 
 
 class PixelFontTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     def test_title_case_start_intermediate_is_explicitly_allowlisted(
         self,
     ) -> None:
@@ -39,6 +38,7 @@ class PixelFontTests(unittest.TestCase):
         )
 
     def test_apostrophe_is_a_closing_mark(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(
             PIXEL_FONT_5X7["'"],
             (
@@ -53,26 +53,8 @@ class PixelFontTests(unittest.TestCase):
         )
         self.assertEqual(len(render_glyph("'")), 8)
 
-    def test_disk_prompt_ligature_tiles_are_distinct_right_aligned_suffixes(
-        self,
-    ) -> None:
-        """Keep the size-locked Part 2 and Side A spaces visibly intact."""
-        self.assertNotEqual(PART_2_LIGATURE_TILE_ID, SIDE_A_LIGATURE_TILE_ID)
-        self.assertNotIn(
-            PART_2_LIGATURE_CODE,
-            {42, 43},
-        )
-        self.assertNotIn(
-            SIDE_A_LIGATURE_CODE,
-            {42, 43},
-        )
-        self.assertEqual(render_compact_suffix("A")[0], 0xF1)
-        self.assertEqual(render_compact_suffix("2")[0], 0xF1)
-        for glyph in (render_compact_suffix("A"), render_compact_suffix("2")):
-            self.assertTrue(all(row & 0xE0 == 0xE0 for row in glyph))
-
     def test_patched_font_keeps_the_active_x_and_z_glyphs(self) -> None:
-        """Never replace active uppercase letters with prompt ligatures."""
+        """Never replace active uppercase letters with prompt-only glyphs."""
         source = bytes(NOV4_FONT_BASE_OFFSET + (0xFE + 1) * 8)
         source_hash = hashlib.sha256(source).hexdigest().upper()
         with mock.patch(
@@ -87,6 +69,21 @@ class PixelFontTests(unittest.TestCase):
                 self.assertEqual(
                     patched[offset : offset + 8], render_glyph(character)
                 )
+
+    def test_patched_font_preserves_the_title_background_tile(self) -> None:
+        """Do not repurpose NOV4 tile $AC, which the title nametable draws."""
+        source = bytes(NOV4_FONT_BASE_OFFSET + (0xFE + 1) * 8)
+        source_hash = hashlib.sha256(source).hexdigest().upper()
+        with mock.patch(
+            "time_twist.font.SUPPORTED_NOV4_FONT_SOURCE_SHA256",
+            frozenset({source_hash}),
+        ):
+            patched = patched_nov4_font(source)
+        tile_id = EXTENDED_TILE_IDS[63]
+        offset = NOV4_FONT_BASE_OFFSET + tile_id * 8
+        self.assertEqual(
+            patched[offset : offset + 8], source[offset : offset + 8]
+        )
 
 
 if __name__ == "__main__":

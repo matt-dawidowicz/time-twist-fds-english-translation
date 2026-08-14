@@ -10,7 +10,17 @@ import argparse
 import re
 from pathlib import Path
 
-FORBIDDEN_SUFFIXES = {".fds", ".nes", ".rom", ".bin", ".dmp", ".pyc", ".pyo"}
+FORBIDDEN_SUFFIXES = {
+    ".fds",
+    ".mss",
+    ".nes",
+    ".rom",
+    ".bin",
+    ".dmp",
+    ".pyc",
+    ".pyo",
+    ".zip",
+}
 FORBIDDEN_DIRECTORY_NAMES = {"build", "dist", "__pycache__"}
 PERSONAL_PATH_PATTERNS = (
     re.compile(r"[A-Za-z]:\\Users\\[^\\/\s]+", re.IGNORECASE),
@@ -55,18 +65,12 @@ def check_public_tree(root: Path) -> list[str]:
             continue
         if path.resolve() == Path(__file__).resolve():
             continue
-        lower_name = path.name.lower()
         if path.suffix.lower() in FORBIDDEN_SUFFIXES:
             problems.append(
                 f"private/generated file present: {relative.as_posix()}"
             )
             continue
-        if lower_name.startswith("mesen_") and lower_name.endswith(".zip"):
-            problems.append(f"emulator archive present: {relative.as_posix()}")
-            continue
-        if lower_name.startswith("mesen_settings") and lower_name.endswith(
-            ".json"
-        ):
+        if "settings" in path.stem.lower() and path.suffix.lower() == ".json":
             problems.append(
                 f"machine-local emulator settings present: {relative.as_posix()}"
             )

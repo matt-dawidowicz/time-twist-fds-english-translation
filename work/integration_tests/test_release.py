@@ -1,3 +1,5 @@
+"""Private-overlay integration tests for current source-lock, candidate, and release-promotion safeguards."""
+
 from __future__ import annotations
 
 import json
@@ -20,7 +22,10 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 class ReleaseBuildTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     def test_source_lock_rejects_changed_hashes(self) -> None:
+        """Verify the current contract described by this regression test."""
         payload = json.loads(DEFAULT_SOURCE_LOCK.read_text(encoding="utf-8"))
         first = next(iter(payload["files"].values()))
         first["sha256"] = "0" * 64
@@ -31,6 +36,7 @@ class ReleaseBuildTests(unittest.TestCase):
                 validate_source_lock(path, project_root=PROJECT_ROOT)
 
     def test_complete_candidate_rebuild_is_byte_deterministic(self) -> None:
+        """Verify the current contract described by this regression test."""
         required = (
             DEFAULT_SOURCE_LOCK,
             DEFAULT_ZENPEN_BASELINE,
@@ -75,6 +81,7 @@ class ReleaseBuildTests(unittest.TestCase):
             self.assertEqual(four_side, zenpen + kouhen)
 
     def test_strict_release_rejects_unpromoted_checkout(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertFalse(DEFAULT_RELEASE_TARGET.exists())
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "strict"

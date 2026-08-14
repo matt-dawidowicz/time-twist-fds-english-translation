@@ -18,12 +18,11 @@ Python version or invoke the interpreter by its local path.
 From the repository root:
 
 ```powershell
-python -m pip install -e ".[dev]"
+python -m pip install -r requirements.txt
 ```
 
-This installs the command-line tool and the optional development tools used by
-the project, including Hypothesis for the public unit suite. For a test-only
-setup, use `python -m pip install -r requirements-test.txt`.
+This installs the command-line tool and every public development and test tool
+used by the project, including Hypothesis for the public unit suite.
 
 ## Public tests
 
@@ -79,5 +78,5 @@ later against their legal local overlay.
 
 - Improve the English script: [Contributing translation](CONTRIBUTING_TRANSLATION.md)
 - Improve the tools or tests: [Contributing code](CONTRIBUTING_CODE.md)
-- Playtest a candidate: [Playtest checklist](PLAYTEST_CHECKLIST.md)
+- Playtest a candidate: [Playtesting guide](PLAYTESTING.md)
 - Learn the deeper design: [Technical documentation index](docs/README.md)

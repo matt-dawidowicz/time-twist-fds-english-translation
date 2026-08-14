@@ -3,6 +3,14 @@
 Contributions are welcome for translation review, reverse engineering,
 tooling, tests, and documentation.
 
+## Choose your contribution path
+
+- **Playtest a candidate:** [Playtesting guide](PLAYTESTING.md)
+- **Review or improve English:** [Translation contributor guide](CONTRIBUTING_TRANSLATION.md)
+- **Change tools or tests:** [Code contributor guide](CONTRIBUTING_CODE.md)
+
+The remainder of this page covers rules shared by all source contributions.
+
 ## Before editing
 
 Read:
@@ -51,7 +59,7 @@ a replacement is safe.
 Run the public suite:
 
 ```powershell
-python -m pip install -e ".[dev]"
+python -m pip install -r requirements.txt
 python work/run_tests.py unit
 python -m build
 ```

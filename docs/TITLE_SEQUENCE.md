@@ -87,10 +87,10 @@ These are deterministic static evidence, not substitutes for emulator proof.
 
 The unpromoted Zenpen candidate with SHA-256
 `10C893513CC97C3D8657DDF3BF1DC333DC9B0960D0061A227B5D89621F35769B`
-was cold-booted twice in headless Mesen 2.2.1 for 1,150 frames. All 1,153
+was cold-booted twice in a headless FDS emulator for 1,150 frames. All 1,153
 compared artifacts from the two runs were byte-identical. The moving assembly
 occupies frames 896-915, the exact completed monochrome logo remains visible
 through frame 979, the palette-only refinement occupies frames 980-983, the
 final colored map fades in at frames 1020-1027, and preserved hand animation
-is visible from frame 1029. Mesen stderr was empty. The capture harness retains
+is visible from frame 1029. Emulator stderr was empty. The capture harness retains
 no FDS BIOS.
