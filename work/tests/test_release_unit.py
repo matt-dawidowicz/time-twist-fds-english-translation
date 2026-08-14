@@ -1,3 +1,5 @@
+"""Unit tests for current source-lock, provenance, and safe publication behavior."""
+
 from __future__ import annotations
 
 import contextlib
@@ -12,7 +14,6 @@ from unittest import mock
 from time_twist.cli import build_parser, main
 from time_twist.project import KNOWN_SCENARIO_BANKS
 from time_twist.release import (
-    LEGACY_RELEASE_TARGET_SCHEMA,
     RELEASE_FILENAMES,
     RELEASE_MANIFEST_SCHEMA,
     RELEASE_TARGET_SCHEMA,
@@ -65,9 +66,12 @@ def make_synthetic_project(root: Path) -> Path:
 
 
 class ReleaseConfigurationUnitTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     def test_publisher_replaces_from_destination_local_temporary_files(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             staging = root / "private-stage"
@@ -87,6 +91,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             def recording_replace(
                 source: str | Path, destination: str | Path
             ) -> None:
+                """Provide a deterministic helper for the current contract tests."""
                 replacements.append((Path(source), Path(destination)))
                 real_replace(source, destination)
 
@@ -136,12 +141,14 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             self.assertFalse(previous_manifest.exists())
 
     def test_project_root_is_discovered_from_nested_directory(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(
             discover_project_root(start=PROJECT_ROOT / "work" / "tests"),
             PROJECT_ROOT,
         )
 
     def test_explicit_non_project_is_rejected(self) -> None:
+        """Verify the current contract described by this regression test."""
         with (
             tempfile.TemporaryDirectory() as directory,
             self.assertRaisesRegex(ReleaseBuildError, "not a Time Twist"),
@@ -149,6 +156,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             discover_project_root(Path(directory))
 
     def test_external_paths_are_manifest_safe(self) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             external = Path(directory) / "lock.json"
             self.assertEqual(
@@ -228,12 +236,14 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
                 validate_source_lock_metadata(payload)
 
     def test_source_lock_payload_uses_current_schema(self) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             payload = build_source_lock_payload(root)
             self.assertEqual(payload["schema"], SOURCE_LOCK_SCHEMA)
 
     def test_release_target_is_tied_to_source_lock(self) -> None:
+        """Verify the current contract described by this regression test."""
         payload = {
             "schema": RELEASE_TARGET_SCHEMA,
             "release_id": "test",
@@ -260,6 +270,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
     def test_code_tree_hash_is_path_order_and_line_ending_independent(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             first = Path(directory) / "first"
             second = Path(directory) / "second"
@@ -341,40 +352,8 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
                 )
             lock.assert_not_called()
 
-    def test_strict_build_rejects_legacy_target_before_rom_generation(
-        self,
-    ) -> None:
-        """Report the migration gate before parsing or rebuilding ROM inputs."""
-        with tempfile.TemporaryDirectory() as directory:
-            root = make_synthetic_project(Path(directory) / "project")
-            work = root / "work"
-            write_source_lock(project_root=root)
-            (work / "release_target.json").write_text(
-                json.dumps(
-                    {
-                        "schema": LEGACY_RELEASE_TARGET_SCHEMA,
-                        "source_lock_sha256": source_lock_sha256(
-                            work / "release_sources.json"
-                        ),
-                    }
-                ),
-                encoding="utf-8",
-            )
-            with (
-                mock.patch(
-                    "time_twist.release.EXECUTING_PACKAGE_ROOT",
-                    work / "time_twist",
-                ),
-                mock.patch("time_twist.release.FdsImage.read") as read_image,
-                self.assertRaisesRegex(ReleaseBuildError, "legacy.*playtest"),
-            ):
-                build_release(
-                    Path(directory) / "output",
-                    project_root=root,
-                )
-            read_image.assert_not_called()
-
     def test_code_tree_hash_binds_normalized_path_identity(self) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             code = root / "work" / "time_twist"
@@ -386,6 +365,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             self.assertNotEqual(original, release_code_tree_sha256(root))
 
     def test_code_provenance_does_not_require_git(self) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             code = root / "work" / "time_twist"
@@ -406,6 +386,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             )
 
     def test_release_target_rejects_different_code_tree(self) -> None:
+        """Verify the current contract described by this regression test."""
         provenance = build_code_provenance(PROJECT_ROOT)
         provenance["tree_sha256"] = "0" * 64
         payload = {
@@ -512,6 +493,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
     def test_cli_uses_console_script_name_and_repository_defaults(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         parser = build_parser()
         self.assertEqual(parser.prog, "time-twist")
         args = parser.parse_args(["release-build"])
@@ -522,6 +504,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
         self.assertFalse(args.candidate)
 
     def test_known_cli_error_has_no_traceback(self) -> None:
+        """Verify the current contract described by this regression test."""
         stderr = io.StringIO()
         with (
             tempfile.TemporaryDirectory() as directory,

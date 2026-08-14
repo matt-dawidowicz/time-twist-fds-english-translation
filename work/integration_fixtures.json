@@ -334,19 +334,19 @@
       "sha256": "C3F88A5E57A6048377FBD823653B7B0A401420A5048BD84BB6EFE58493097ECC",
       "bytes": 4096
     },
-    "work/mesen_capture/zenpen_opening_chr.dmp": {
+    "work/runtime_capture/zenpen_opening_chr.dmp": {
       "sha256": "45AB1AD06BEFB18DD2B1EB94ED5262A34215B9EF6D7F5B6F657FD5685313FE9C",
       "bytes": 8192
     },
-    "work/mesen_capture/zenpen_opening_cpu.dmp": {
+    "work/runtime_capture/zenpen_opening_cpu.dmp": {
       "sha256": "53DADA0E545661802821C6BE1B7B44548F5A7B15A880D703A84B84B555BFA158",
       "bytes": 65536
     },
-    "work/mesen_capture/zenpen_title_chr.dmp": {
+    "work/runtime_capture/zenpen_title_chr.dmp": {
       "sha256": "31A81C7F587FCB5A3E597F2E763F3F2A4119FC1DB9806D77937E561911B19C2F",
       "bytes": 8192
     },
-    "work/mesen_capture/zenpen_title_cpu.dmp": {
+    "work/runtime_capture/zenpen_title_cpu.dmp": {
       "sha256": "FB125B76190935AE8565A42E223AE7F1CEF127D9A69C219286C5B469AEB822A7",
       "bytes": 65536
     },

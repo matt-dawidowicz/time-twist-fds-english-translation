@@ -1,3 +1,5 @@
+"""Private-overlay integration tests for current packed scenario text, font, dictionary, and fixed-footprint contracts."""
+
 from __future__ import annotations
 
 import json
@@ -43,9 +45,12 @@ WORK_DIR = Path(__file__).resolve().parents[1]
 
 
 class ScenarioTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     def test_all_translation_maps_are_complete_and_contain_no_japanese(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         paths = sorted((WORK_DIR / "translations").glob("*.json"))
         if not paths:
             self.fail("translation maps are not available")
@@ -62,6 +67,7 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(total, 1299)
 
     def test_recovered_character_map(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(decode_common(0), "あ")
         self.assertEqual(decode_common(45), "ん")
         self.assertEqual(decode_extended(5), "が")
@@ -73,6 +79,7 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(decode_extended(63), " ")
 
     def test_dictionary_symbols_are_one_based(self) -> None:
+        """Verify the current contract described by this regression test."""
         common = PackedSymbol(SymbolKind.COMMON, 0, 0, 0)
         dictionary_symbol = PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0)
         dictionary = ((common,),)
@@ -81,6 +88,7 @@ class ScenarioTests(unittest.TestCase):
         )
 
     def test_duplicate_group_pointers_are_rejected(self) -> None:
+        """Verify the current contract described by this regression test."""
         source = WORK_DIR / "extracted_zenpen/side1_00_TT1B_A200.bin"
         data = bytearray(source.read_bytes())
         first_group = int.from_bytes(data[0x26:0x28], "little")
@@ -96,6 +104,7 @@ class ScenarioTests(unittest.TestCase):
                 parse_scenario_bank(path)
 
     def test_font_patch_rejects_unknown_same_size_source(self) -> None:
+        """Verify the current contract described by this regression test."""
         source = WORK_DIR / "extracted_zenpen/side0_08_NOV4_A200.bin"
         data = bytearray(source.read_bytes())
         data[0] ^= 0x01
@@ -103,6 +112,7 @@ class ScenarioTests(unittest.TestCase):
             patched_nov4_font(bytes(data))
 
     def test_tt1b_layout_and_first_record(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "extracted_zenpen/side1_00_TT1B_A200.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
@@ -113,6 +123,7 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(len(bank.dictionary), 29)
 
     def test_scenario_banks_rebuild_byte_identically(self) -> None:
+        """Verify the current contract described by this regression test."""
         paths = sorted((WORK_DIR / "extracted_zenpen").glob("*.bin"))
         paths += sorted((WORK_DIR / "extracted_kouhen").glob("*.bin"))
         scenario_names = {
@@ -154,6 +165,7 @@ class ScenarioTests(unittest.TestCase):
                 self.assertEqual(rebuilt, path.read_bytes())
 
     def test_original_scenario_dictionaries_are_flat(self) -> None:
+        """Verify the current contract described by this regression test."""
         paths = sorted((WORK_DIR / "extracted_zenpen").glob("*.bin"))
         paths += sorted((WORK_DIR / "extracted_kouhen").glob("*.bin"))
         scenario_names = {
@@ -190,6 +202,7 @@ class ScenarioTests(unittest.TestCase):
                 )
 
     def test_english_map_round_trip_and_capacity(self) -> None:
+        """Verify the current contract described by this regression test."""
         repertoire = "".join(
             dict.fromkeys(
                 COMMON_CHARACTERS + "".join(EXTENDED_CHARACTERS.values())
@@ -201,6 +214,7 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(render_english(encode_english(text)), text)
 
     def test_english_font_preserves_runtime_table_shape(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(set(EXTENDED_TILE_IDS), set(range(37, 64)))
         path = WORK_DIR / "extracted_zenpen/side0_08_NOV4_A200.bin"
         if not path.exists():
@@ -211,6 +225,7 @@ class ScenarioTests(unittest.TestCase):
         self.assertNotEqual(patched, original)
 
     def test_pixel_font_is_complete_and_case_legible(self) -> None:
+        """Verify the current contract described by this regression test."""
         repertoire = "".join(
             dict.fromkeys(
                 COMMON_CHARACTERS + "".join(EXTENDED_CHARACTERS.values())
@@ -223,6 +238,7 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(render_glyph(" "), b"\xff" * 8)
 
     def test_accented_e_shares_the_lowercase_e_baseline(self) -> None:
+        """Verify the current contract described by this regression test."""
         plain = render_glyph("e")
         accented = render_glyph("é")
         self.assertEqual(accented[2:7], plain[2:7])
@@ -231,10 +247,12 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(PIXEL_FONT_5X7["é"][:2], ("00010", "00100"))
 
     def test_lowercase_p_uses_the_shared_lowercase_x_height(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(PIXEL_FONT_5X7["p"][:2], ("00000", "00000"))
         self.assertEqual(PIXEL_FONT_5X7["p"][-2:], ("10000", "10000"))
 
     def test_tt1b_sky_line_is_natural_and_width_safe(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "translations/TT1B.json"
         if not path.exists():
             self.fail("TT1B translation fixture is not available")
@@ -244,6 +262,7 @@ class ScenarioTests(unittest.TestCase):
         validate_display_width(line)
 
     def test_tt1a_fortune_prediction_has_terminal_punctuation(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "translations/TT1A.json"
         if not path.exists():
             self.fail("TT1A translation fixture is not available")
@@ -255,7 +274,10 @@ class ScenarioTests(unittest.TestCase):
     def test_editorial_regressions_preserve_meaning_and_terminology(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
+
         def translations(bank_name: str) -> dict[str, str]:
+            """Provide a deterministic helper for the current contract tests."""
             path = WORK_DIR / f"translations/{bank_name}.json"
             if not path.exists():
                 self.fail(f"{bank_name} translation fixture is not available")
@@ -314,6 +336,7 @@ class ScenarioTests(unittest.TestCase):
     def test_fixed_footprint_rebuild_keeps_the_original_tail_address(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "extracted_zenpen/side1_01_TT1A_A200.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
@@ -357,6 +380,7 @@ class ScenarioTests(unittest.TestCase):
     def test_translated_banks_match_sources_and_preserve_fixed_tails(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         fixtures = (
             (
                 "TT1A",
@@ -479,6 +503,7 @@ class ScenarioTests(unittest.TestCase):
                     )
 
     def test_all_completed_translation_segments_fit_the_display(self) -> None:
+        """Verify the current contract described by this regression test."""
         for bank_name in (
             "TT1A",
             "TT1B",
@@ -506,6 +531,7 @@ class ScenarioTests(unittest.TestCase):
                     )
 
     def test_personality_questions_are_complete_and_width_safe(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "translations/TT1A.json"
         if not path.exists():
             self.fail("translation fixture is not available")
@@ -543,6 +569,7 @@ class ScenarioTests(unittest.TestCase):
                 self.assertEqual(question[24:], second)
 
     def test_scenario_refresh_preserves_existing_english(self) -> None:
+        """Verify the current contract described by this regression test."""
         bank_path = WORK_DIR / "extracted_zenpen/side1_01_TT1A_A200.bin"
         if not bank_path.exists():
             self.fail("workspace fixture is not available")
@@ -567,6 +594,7 @@ class ScenarioTests(unittest.TestCase):
     def test_english_dictionary_compresses_and_expands_losslessly(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         original_records = tuple(
             encode_english(
                 "the time traveler returned to the time machine."
@@ -594,6 +622,7 @@ class ScenarioTests(unittest.TestCase):
             )
 
     def test_translation_merge_validates_ids_and_controls(self) -> None:
+        """Verify the current contract described by this regression test."""
         document = {
             "groups": [
                 {

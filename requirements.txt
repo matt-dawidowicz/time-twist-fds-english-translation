@@ -1,0 +1,6 @@
+# Complete public development and test environment.
+#
+# Add runtime dependencies to [project].dependencies in pyproject.toml and
+# development/test dependencies to [project.optional-dependencies].dev there.
+# This editable install then picks up every required package from one authority.
+-e .[dev]

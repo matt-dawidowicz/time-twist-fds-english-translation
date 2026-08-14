@@ -105,6 +105,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
     """Exercise promotion and manifest integrity invariants."""
 
     def test_build_environment_records_python_and_pillow(self) -> None:
+        """Verify the current contract described by this regression test."""
         environment = build_environment_provenance()
         self.assertEqual(environment["schema"], BUILD_ENVIRONMENT_SCHEMA)
         self.assertTrue(environment["python_implementation"])
@@ -112,6 +113,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
         self.assertTrue(environment["pillow_version"])
 
     def test_manifest_validator_rejects_missing_audit_fields(self) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             write_source_lock(project_root=root)
@@ -128,6 +130,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
     def test_promotion_rejects_manifest_subtitle_not_in_source_lock(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             write_source_lock(project_root=root)
@@ -151,6 +154,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
     def test_promotion_rejects_candidate_not_matching_fresh_rebuild(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             write_source_lock(project_root=root)
@@ -181,6 +185,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             self.assertFalse((root / "work" / "release_target.json").exists())
 
     def test_promotion_accepts_candidate_matching_fresh_rebuild(self) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             write_source_lock(project_root=root)
@@ -209,6 +214,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
     def test_promotion_rechecks_candidate_outputs_before_target_write(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             write_source_lock(project_root=root)
@@ -224,6 +230,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             calls = 0
 
             def mutate_after_first_check(path: Path, records: object) -> None:
+                """Provide a deterministic helper for the current contract tests."""
                 nonlocal calls
                 calls += 1
                 real_validator(path, records)
@@ -253,6 +260,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
     def test_source_lock_update_rejects_approved_source_destination(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             baseline = (
@@ -268,6 +276,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
     def test_promotion_target_rejects_candidate_manifest_destination(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             write_source_lock(project_root=root)

@@ -201,8 +201,8 @@ presentation at the exact packed-record slots already used by NOV2.
 | --- | ---: | ---: | --- |
 | Wait prompt | `$25D9` | 13 | `Please wait... ` |
 | Part 1 label | `$260D` | 6 | `Part 1` |
-| Part 2 label | `$2613` | 5 | `Part 2` (compact suffix glyph) |
-| Side A line | `$2618` | 6 | `{CTRL:0}Side A` (compact suffix glyph) |
+| Part 2 label | `$2613` | 5 | `Part2` |
+| Side A line | `$2618` | 6 | `{CTRL:0}SideA` |
 | Side B line | `$261E` | 7 | `{CTRL:0}Side B` |
 | Insert instruction | `$2625` | 11 | `{CTRL:0}{CTRL:0}Insert now.` |
 | Live Start prompt | `$2651` | 6 | `Start ` |
@@ -234,15 +234,12 @@ still reaches that exact same alignment boundary. The patch changes no next
 record, pointer, disk-state branch, or decoder limit.
 
 Each record is encoded independently with `encode_english()` and
-`pack_records()`, except the two short labels. `Part 2` and `Side A` retain
-their visible spaces by using two otherwise-unused extended glyph codes. Their
-right-aligned `2` and `A` suffixes leave a leading blank inside the final tile,
-so the rendered text reads naturally without growing either direct packed
-record. `ui._encode_disk_prompt()` owns this narrow exception and
-`patched_nov4_font()` installs the matching glyph rows only after the normal
-alphabet. Both byte lengths and exact Japanese source records remain guarded.
-No disk-state branch, requested-side variable, polling loop, or FDS BIOS call
-is altered.
+`pack_records()`. The two short labels use the intentional compact spellings
+`Part2` and `SideA`, which fit their immutable direct packed records with
+ordinary glyphs. This avoids repurposing NOV4 tile `$AC`: the title nametable
+uses that tile for its background pattern. Both byte lengths and exact Japanese
+source records remain guarded. No disk-state branch, requested-side variable,
+polling loop, or FDS BIOS call is altered.
 
 NOV4 owns another copy of the live Start prompt at file offset `$0095`. It is
 patched separately because changing the NOV2 copy cannot affect text embedded
@@ -693,7 +690,7 @@ python work/render_title_preview.py
 ```
 
 Static evidence is necessary but not sufficient. The documented title
-candidate was cold-booted twice under Mesen 2.2.1 for 1,150 frames. Both runs
+candidate was cold-booted twice in a compatible FDS emulator for 1,150 frames. Both runs
 produced 1,153 byte-identical comparison artifacts: movement at frames
 896-915, settled monochrome through 979, palette refinement at 980-983, final
 fade-in at 1020-1027, and clock-hand animation from 1029. A complete Zenpen and
@@ -717,7 +714,7 @@ match the binary layout rather than weakening it.
 ## Build-publication access fix
 
 The release pipeline also fixes a Windows-specific failure that looked like a
-bad ROM: Mesen reported access denied when opening a newly generated `.fds`.
+bad ROM: an emulator reported access denied when opening a newly generated `.fds`.
 The bytes were valid, but moving a file directly out of a private temporary
 directory retained an ACL the interactive emulator account could not read.
 

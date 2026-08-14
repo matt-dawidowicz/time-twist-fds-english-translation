@@ -1,3 +1,5 @@
+"""Private-overlay integration tests for the current four-side FDS layout and byte-safe rebuild behavior."""
+
 from __future__ import annotations
 
 import sys
@@ -15,7 +17,10 @@ KOUHEN = BASELINE_DIR / "time_twist_kouhen_japan.fds"
 
 
 class FdsRoundTripTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     def test_baselines_round_trip_byte_identically(self) -> None:
+        """Verify the current contract described by this regression test."""
         for path in (ZENPEN, KOUHEN):
             with self.subTest(path=path.name):
                 original = path.read_bytes()
@@ -23,6 +28,7 @@ class FdsRoundTripTests(unittest.TestCase):
                 self.assertEqual(image.to_bytes(), original)
 
     def test_expected_time_twist_layout(self) -> None:
+        """Verify the current contract described by this regression test."""
         zenpen = FdsImage.read(ZENPEN)
         kouhen = FdsImage.read(KOUHEN)
         self.assertEqual(
@@ -37,6 +43,7 @@ class FdsRoundTripTests(unittest.TestCase):
         self.assertEqual(len(kouhen.to_bytes()), 2 * SIDE_SIZE)
 
     def test_combine_preserves_all_four_sides_in_order(self) -> None:
+        """Verify the current contract described by this regression test."""
         zenpen = FdsImage.read(ZENPEN)
         kouhen = FdsImage.read(KOUHEN)
         combined = combine_images([zenpen, kouhen])
@@ -55,6 +62,7 @@ class FdsRoundTripTests(unittest.TestCase):
         )
 
     def test_file_growth_updates_header_and_consumes_padding(self) -> None:
+        """Verify the current contract described by this regression test."""
         image = FdsImage.read(ZENPEN)
         side = image.sides[1]
         entry = side.find_file("TT1B")
@@ -70,6 +78,7 @@ class FdsRoundTripTests(unittest.TestCase):
         self.assertEqual(len(reparsed.sides[1].padding), old_padding - 1)
 
     def test_zenpen_output_changes_only_the_eight_english_files(self) -> None:
+        """Verify the current contract described by this regression test."""
         output = (
             WORK_DIR.parent
             / "outputs"
@@ -158,6 +167,7 @@ class FdsRoundTripTests(unittest.TestCase):
         self.assertEqual(actual_changed, expected_changed)
 
     def test_kouhen_output_changes_only_the_eight_english_files(self) -> None:
+        """Verify the current contract described by this regression test."""
         output = (
             WORK_DIR.parent
             / "outputs"

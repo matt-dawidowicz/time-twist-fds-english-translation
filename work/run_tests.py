@@ -14,6 +14,7 @@ import importlib.util
 import json
 import os
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -43,7 +44,7 @@ def validate_unit_dependencies() -> None:
         "dependencies before running the public test suite, for example:\n"
         '  python -m pip install -e ".[dev]"\n'
         "or, for test-only dependencies:\n"
-        "  python -m pip install -r requirements-test.txt\n"
+        "  python -m pip install -r requirements.txt\n"
         f"Missing:\n{shown}"
     )
 
@@ -110,17 +111,31 @@ def main(argv: list[str] | None = None) -> int:
     # the checkout that contains the runner itself.
     os.chdir(PROJECT_ROOT)
 
-    suite = unittest.TestSuite()
-    if args.suite in {"unit", "all"}:
-        validate_unit_dependencies()
-        suite.addTests(discover("tests"))
-    if args.suite in {"integration", "all"}:
-        validate_integration_fixtures()
-        suite.addTests(discover("integration_tests"))
+    # Hypothesis otherwise stores a database under ``.hypothesis`` in the
+    # checkout. Its generated examples are useful only for this invocation and
+    # violate the public-source-tree policy, so keep them in system temporary
+    # storage for the lifetime of the test run.
+    previous_storage = os.environ.get("HYPOTHESIS_STORAGE_DIRECTORY")
+    with tempfile.TemporaryDirectory(
+        prefix="time-twist-hypothesis-"
+    ) as temporary_storage:
+        os.environ["HYPOTHESIS_STORAGE_DIRECTORY"] = temporary_storage
+        suite = unittest.TestSuite()
+        if args.suite in {"unit", "all"}:
+            validate_unit_dependencies()
+            suite.addTests(discover("tests"))
+        if args.suite in {"integration", "all"}:
+            validate_integration_fixtures()
+            suite.addTests(discover("integration_tests"))
 
-    result = unittest.TextTestRunner(verbosity=1 if args.quiet else 2).run(
-        suite
-    )
+        result = unittest.TextTestRunner(verbosity=1 if args.quiet else 2).run(
+            suite
+        )
+
+    if previous_storage is None:
+        os.environ.pop("HYPOTHESIS_STORAGE_DIRECTORY", None)
+    else:
+        os.environ["HYPOTHESIS_STORAGE_DIRECTORY"] = previous_storage
     if result.skipped:
         print(
             "skipped tests are not permitted in supported test suites",

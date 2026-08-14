@@ -17,9 +17,11 @@ class TranslationPatchFragmentTests(unittest.TestCase):
     """Validate the public translation patch fragment format."""
 
     def test_camel_dialect_fragment_is_internally_valid(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(validate_fragment(PATCH), [])
 
     def test_camel_dialect_fragment_preserves_expected_records(self) -> None:
+        """Verify the current contract described by this regression test."""
         data = json.loads(PATCH.read_text(encoding="utf-8"))
         replacements = {
             record["id"]: record["replacement"] for record in data["records"]
@@ -46,6 +48,7 @@ class TranslationPatchFragmentTests(unittest.TestCase):
         )
 
     def test_camel_dialect_fragment_keeps_control_orders(self) -> None:
+        """Verify the current contract described by this regression test."""
         data = json.loads(PATCH.read_text(encoding="utf-8"))
         for record in data["records"]:
             self.assertEqual(

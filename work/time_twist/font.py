@@ -159,15 +159,6 @@ EXTENDED_TILE_IDS = {
     63: 0xAC,
 }
 
-# NOV2's disk-change prompt has two immovable records that are one packed byte
-# too short for a literal ``Part 2`` / ``Side A``.  These reserved extended
-# codes retain the original one-tile record footprint while visibly including
-# the missing word space.  They must never replace ordinary alphabet tiles.
-PART_2_LIGATURE_CODE = 45
-SIDE_A_LIGATURE_CODE = 63
-PART_2_LIGATURE_TILE_ID = EXTENDED_TILE_IDS[PART_2_LIGATURE_CODE]
-SIDE_A_LIGATURE_TILE_ID = EXTENDED_TILE_IDS[SIDE_A_LIGATURE_CODE]
-
 
 class FontPatchError(ValueError):
     """Report an unsupported glyph, invalid code, or incompatible NOV4 bank.
@@ -242,38 +233,6 @@ def render_glyph(char: str) -> bytes:
     return bytes(rows)
 
 
-def render_compact_suffix(char: str) -> bytes:
-    """Render a right-aligned fixed-prompt suffix with its leading gap.
-
-    ``Part 2`` and ``Side A`` each need a visible word space but their native
-    packed records cannot grow.  The returned tile leaves its first three
-    columns blank and draws a five-pixel glyph in columns 3 through 7.  The
-    preceding glyph's normal right padding plus this gap reads as a word space
-    while preserving exactly one runtime tile.
-
-    Args:
-        char: The one-character suffix glyph, currently ``"2"`` or ``"A"``.
-
-    Returns:
-        Eight inverse one-bit rows for the compact fixed-prompt suffix.
-
-    Raises:
-        FontPatchError: If ``char`` has no five-by-seven pattern.
-    """
-    try:
-        pattern = PIXEL_FONT_5X7[char]
-    except KeyError as error:
-        raise FontPatchError(
-            f"pixel font has no compact suffix for {char!r}"
-        ) from error
-    rows = bytearray(b"\xff" * 8)
-    for y, source_row in enumerate(pattern):
-        for x, pixel in enumerate(source_row, start=3):
-            if pixel == "1":
-                rows[y] &= ~(1 << (7 - x))
-    return bytes(rows)
-
-
 def patched_nov4_font(
     data: bytes,
 ) -> bytes:
@@ -315,17 +274,4 @@ def patched_nov4_font(
     for tile_id, char in tile_characters.items():
         offset = NOV4_FONT_BASE_OFFSET + tile_id * 8
         result[offset : offset + 8] = render_glyph(char)
-    # These two tiles are private ligatures for size-locked disk prompts.
-    # Install them after the normal extended-code alphabet without replacing
-    # any glyph emitted by the normal English encoder.
-    result[
-        NOV4_FONT_BASE_OFFSET
-        + PART_2_LIGATURE_TILE_ID * 8 : NOV4_FONT_BASE_OFFSET
-        + (PART_2_LIGATURE_TILE_ID + 1) * 8
-    ] = render_compact_suffix("2")
-    result[
-        NOV4_FONT_BASE_OFFSET
-        + SIDE_A_LIGATURE_TILE_ID * 8 : NOV4_FONT_BASE_OFFSET
-        + (SIDE_A_LIGATURE_TILE_ID + 1) * 8
-    ] = render_compact_suffix("A")
     return bytes(result)

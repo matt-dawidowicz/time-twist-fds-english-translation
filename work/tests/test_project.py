@@ -1,3 +1,5 @@
+"""Regression tests for current project configuration and dictionary reservations."""
+
 from __future__ import annotations
 
 import unittest
@@ -8,7 +10,10 @@ from time_twist.project import infer_bank_name, required_dictionary_entries
 
 
 class ProjectConfigurationTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     def test_bank_name_inference_accepts_supported_patterns(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(
             infer_bank_name(Path("side1_01_TT1A_A200.bin")),
             "TT1A",
@@ -21,12 +26,14 @@ class ProjectConfigurationTests(unittest.TestCase):
     def test_bank_name_inference_rejects_ambiguous_or_unknown_names(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         with self.assertRaises(ValueError):
             infer_bank_name(Path("translated_fixed_footprint.bin"))
         with self.assertRaises(ValueError):
             infer_bank_name(Path("TT1A_TT1B.bin"))
 
     def test_explicit_bank_name_is_validated(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(infer_bank_name(Path("anything.bin"), "TT6D"), "TT6D")
         with self.assertRaises(ValueError):
             infer_bank_name(Path("anything.bin"), "UNKNOWN")
@@ -34,6 +41,7 @@ class ProjectConfigurationTests(unittest.TestCase):
     def test_deep_menu_pass_reserves_proven_dictionary_tokens(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(
             required_dictionary_entries("TT6C"),
             (encode_english("Cougar"), encode_english("Look")),

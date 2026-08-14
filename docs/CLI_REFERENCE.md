@@ -141,8 +141,8 @@ missing-target error until that exact candidate is reviewed and promoted.
 
 `--candidate` skips target approval and publishes a candidate manifest for
 review. Candidate mode is required after an intentional source/output change.
-Legacy v3 candidate manifests must be rebuilt with the current code before they
-can be promoted.
+Candidate manifests must be built with the current code before they can be
+promoted.
 
 ### `release-promote CANDIDATE_MANIFEST [--target PATH] [--release-id ID]`
 

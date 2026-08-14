@@ -3,12 +3,23 @@
 The project serves translators, reverse engineers, and release maintainers.
 Choose the shortest path for your task.
 
+## First visit
+
+- **I want to play a candidate:** [Playtesting guide](../PLAYTESTING.md)
+- **I want to improve English text:** [Translation contributor guide](../CONTRIBUTING_TRANSLATION.md)
+- **I want to change Python tooling or tests:** [Code contributor guide](../CONTRIBUTING_CODE.md)
+- **I want a guided explanation of the code:** [Code tour](CODE_TOUR.md)
+- **I want to understand the full technical design:** continue below
+
+The public repository is source-only. Candidate images, original FDS images,
+BIOS files, extracted retail data, and emulator state belong in a private
+maintainer overlay, never in a pull request.
+
 ## Understand how the project was solved
 
 Read [the project retrospective](PROJECT_RETROSPECTIVE.md) for a connected
 explanation of the packed-text translation, historical difficulty, English
-title reconstruction, AI-assisted workflow, validation evidence, and remaining
-release work.
+title reconstruction, validation evidence, and remaining release work.
 
 For the recovered addresses, source-byte guards, 6502 patch records, title
 asset budgets, appended NOV4 layout, and regression evidence, use the
@@ -99,14 +110,18 @@ Read:
 Run `python work/run_tests.py unit` for public work and the integration/all
 suite when the private overlay is available. Supported suites allow no skips.
 
+For the Python entry points, companion modules, and matching test files, read
+the [module map](MODULE_MAP.md).
+
 ## Build or promote a release
 
 Read:
 
-1. [Release lifecycle](DEVELOPMENT.md#release-lifecycle)
-2. [Release risk assessment](RELEASE_RISK_ASSESSMENT.md)
-3. [Release commands](CLI_REFERENCE.md#release-commands)
-4. [Translation workflow](TRANSLATION_WORKFLOW.md)
+1. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
+2. [Release lifecycle](DEVELOPMENT.md#release-lifecycle)
+3. [Release risk assessment](RELEASE_RISK_ASSESSMENT.md)
+4. [Release commands](CLI_REFERENCE.md#release-commands)
+5. [Translation workflow](TRANSLATION_WORKFLOW.md)
 
 A source-lock refresh approves inputs; a candidate build exposes new outputs;
 promotion approves the exact reviewed hashes; a strict build reproduces them.

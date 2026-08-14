@@ -1,3 +1,5 @@
+"""Private-overlay integration tests for current fixed-UI text and source-verified binary-patch behavior."""
+
 from __future__ import annotations
 
 import unittest
@@ -114,7 +116,10 @@ def _decode_kouhen_guard_tilemap(data: bytes) -> bytes:
 
 
 class StaticUiTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     def test_kouhen_direct_boot_guard_is_horizontal_english(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "extracted_kouhen/side0_01_SON-KOUH_DD1D.bin"
         if not path.exists():
             self.fail("Kouhen direct-boot fixture is not available")
@@ -180,6 +185,7 @@ class StaticUiTests(unittest.TestCase):
         self.assertEqual(patched[blank_start : blank_start + 8], b"\x00" * 8)
 
     def test_kouhen_direct_boot_guard_rejects_unknown_source(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "extracted_kouhen/side0_01_SON-KOUH_DD1D.bin"
         if not path.exists():
             self.fail("Kouhen direct-boot fixture is not available")
@@ -189,11 +195,13 @@ class StaticUiTests(unittest.TestCase):
             patched_kouhen_boot_guard(bytes(modified))
 
     def test_start_prompt_patch_is_exactly_size_neutral(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(len(ORIGINAL_START_PROMPT), 6)
         self.assertEqual(len(ENGLISH_START_PROMPT), 6)
         self.assertEqual(ENGLISH_START_PROMPT.hex().upper(), "85C763700FA0")
 
     def test_zenpen_nov2_start_prompt_patch(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "extracted_zenpen/side0_06_NOV2_6000.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
@@ -207,6 +215,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_zenpen_nov2_disk_prompt_patch_is_size_neutral(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "extracted_zenpen/side0_06_NOV2_6000.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
@@ -276,6 +285,7 @@ class StaticUiTests(unittest.TestCase):
     def test_zenpen_nov2_preserves_dialogue_rows_and_transparent_tails(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "extracted_zenpen/side0_06_NOV2_6000.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
@@ -308,6 +318,7 @@ class StaticUiTests(unittest.TestCase):
         self.assertEqual(patched[offset : offset + len(source)], source)
 
     def test_zenpen_nov2_wait_prompt_patch_is_size_neutral(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "extracted_zenpen/side0_06_NOV2_6000.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
@@ -324,6 +335,7 @@ class StaticUiTests(unittest.TestCase):
     def test_zenpen_nov2_b_ignores_one_choice_but_keeps_normal_back(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "extracted_zenpen/side0_06_NOV2_6000.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
@@ -368,6 +380,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_zenpen_nov4_live_start_prompt_patch(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "extracted_zenpen/side0_08_NOV4_A200.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
@@ -385,6 +398,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_tt1a_choice_menu_patch_is_size_neutral(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "extracted_zenpen/side1_01_TT1A_A200.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
@@ -420,6 +434,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_translated_tt1a_contains_english_blood_type_choices(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "translated_banks/TT1A_fixed_footprint.bin"
         if not path.exists():
             self.fail("translated TT1A fixture is not available")
@@ -431,6 +446,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_translated_tt1a_contains_english_month_choices(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "translated_banks/TT1A_fixed_footprint.bin"
         if not path.exists():
             self.fail("translated TT1A fixture is not available")
@@ -460,6 +476,7 @@ class StaticUiTests(unittest.TestCase):
     def test_translated_tt1a_contains_english_confirmation_choices(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "translated_banks/TT1A_fixed_footprint.bin"
         if not path.exists():
             self.fail("translated TT1A fixture is not available")
@@ -471,6 +488,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_tt1b_fixed_menu_and_object_table_is_size_neutral(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/TT1B_english_scenario.bin"
         if not path.exists():
             self.fail("translated TT1B scenario fixture is not available")
@@ -535,6 +553,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_tt1b_fixed_table_rejects_unknown_source(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/TT1B_english_scenario.bin"
         if not path.exists():
             self.fail("translated TT1B scenario fixture is not available")
@@ -544,6 +563,7 @@ class StaticUiTests(unittest.TestCase):
             patched_tt1b_ui(bytes(damaged))
 
     def test_tt2_fixed_menu_and_quiz_table_is_size_neutral(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/TT2_english_scenario.bin"
         if not path.exists():
             self.fail("translated TT2 scenario fixture is not available")
@@ -597,6 +617,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_tt2_fixed_table_rejects_unknown_source(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/TT2_english_scenario.bin"
         if not path.exists():
             self.fail("translated TT2 scenario fixture is not available")
@@ -606,6 +627,7 @@ class StaticUiTests(unittest.TestCase):
             patched_tt2_ui(bytes(damaged))
 
     def test_t22_fixed_menu_and_object_table_is_size_neutral(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/T22_english_scenario.bin"
         if not path.exists():
             self.fail("translated T22 scenario fixture is not available")
@@ -659,6 +681,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_t22_fixed_table_rejects_unknown_source(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/T22_english_scenario.bin"
         if not path.exists():
             self.fail("translated T22 scenario fixture is not available")
@@ -668,6 +691,7 @@ class StaticUiTests(unittest.TestCase):
             patched_t22_ui(bytes(damaged))
 
     def test_tt3a_fixed_menu_and_quiz_table_is_size_neutral(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/TT3A_english_scenario.bin"
         if not path.exists():
             self.fail("translated TT3A scenario fixture is not available")
@@ -716,6 +740,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_tt3b_fixed_menu_and_battle_table_is_size_neutral(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/TT3B_english_scenario.bin"
         if not path.exists():
             self.fail("translated TT3B scenario fixture is not available")
@@ -764,6 +789,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_tt3_fixed_tables_reject_unknown_sources(self) -> None:
+        """Verify the current contract described by this regression test."""
         fixtures = (
             (
                 WORK_DIR / "build/TT3A_english_scenario.bin",
@@ -786,6 +812,7 @@ class StaticUiTests(unittest.TestCase):
                     patcher(bytes(damaged))
 
     def test_tt4_fixed_table_preserves_every_record_address(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/TT4_english_scenario.bin"
         if not path.exists():
             self.fail("translated TT4 scenario fixture is not available")
@@ -834,6 +861,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_tt4_fixed_table_rejects_unknown_source(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/TT4_english_scenario.bin"
         if not path.exists():
             self.fail("translated TT4 scenario fixture is not available")
@@ -843,6 +871,7 @@ class StaticUiTests(unittest.TestCase):
             patched_tt4_ui(bytes(damaged))
 
     def test_tt5_fixed_table_preserves_every_record_address(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/TT5_english_scenario.bin"
         if not path.exists():
             self.fail("translated TT5 scenario fixture is not available")
@@ -895,6 +924,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_tt5_fixed_table_rejects_unknown_source(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/TT5_english_scenario.bin"
         if not path.exists():
             self.fail("translated TT5 scenario fixture is not available")
@@ -904,6 +934,7 @@ class StaticUiTests(unittest.TestCase):
             patched_tt5_ui(bytes(damaged))
 
     def test_t25_fixed_table_preserves_every_record_address(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/T25_english_scenario.bin"
         if not path.exists():
             self.fail("translated T25 scenario fixture is not available")
@@ -952,6 +983,7 @@ class StaticUiTests(unittest.TestCase):
         )
 
     def test_t25_fixed_table_rejects_unknown_source(self) -> None:
+        """Verify the current contract described by this regression test."""
         path = WORK_DIR / "build/T25_english_scenario.bin"
         if not path.exists():
             self.fail("translated T25 scenario fixture is not available")
@@ -961,6 +993,7 @@ class StaticUiTests(unittest.TestCase):
             patched_t25_ui(bytes(damaged))
 
     def test_tt6_fixed_tables_preserve_every_record_address(self) -> None:
+        """Verify the current contract described by this regression test."""
         fixtures = (
             (
                 "TT6A",
@@ -1012,6 +1045,7 @@ class StaticUiTests(unittest.TestCase):
                 self.assertEqual(rendered, labels)
 
     def test_tt6_fixed_tables_reject_unknown_sources(self) -> None:
+        """Verify the current contract described by this regression test."""
         fixtures = (
             ("TT6A", TT6A_FIXED_TEXT_START_OFFSET, patched_tt6a_ui),
             ("TT6B", TT6B_FIXED_TEXT_START_OFFSET, patched_tt6b_ui),
@@ -1028,6 +1062,7 @@ class StaticUiTests(unittest.TestCase):
                     patcher(bytes(damaged))
 
     def test_start_prompt_patch_rejects_unknown_source(self) -> None:
+        """Verify the current contract described by this regression test."""
         data = bytearray(START_PROMPT_OFFSET + len(ORIGINAL_START_PROMPT))
         with self.assertRaises(UiPatchError):
             patched_nov2_ui(bytes(data))

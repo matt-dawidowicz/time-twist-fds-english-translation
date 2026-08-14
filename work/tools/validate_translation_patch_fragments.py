@@ -25,6 +25,12 @@ from time_twist.english import (
 
 
 def _load_fragment(path: Path) -> dict[str, Any]:
+    """Load one public patch fragment and reject non-object JSON early.
+
+    Keeping this boundary narrow means the validator can report a useful
+    per-file error before it attempts record-ID, control-code, glyph, or width
+    checks.  It never needs private full-bank translation maps.
+    """
     with path.open(encoding="utf-8") as handle:
         data = json.load(handle)
     if not isinstance(data, dict):

@@ -8,6 +8,26 @@ Famicom Disk System adventure game *Time Twist: Rekishi no Katasumi de...*
 - `Zenpen` (first part)
 - `Kouhen` (second part)
 
+## Start here
+
+This is a source-only project. It intentionally contains no original or
+patched game images, FDS BIOS files, extracted retail data, emulator bundles,
+or save states.
+
+Choose the shortest path for what you want to do:
+
+- **Play a candidate and report problems:** [Playtesting guide](PLAYTESTING.md)
+- **Set up a local source checkout:** [Quickstart](QUICKSTART.md)
+- **Improve English text:** [Translation contributor guide](CONTRIBUTING_TRANSLATION.md)
+- **Improve tools or tests:** [Code contributor guide](CONTRIBUTING_CODE.md)
+- **Check project-wide contribution rules:** [Contributing](CONTRIBUTING.md)
+- **Understand the project before editing:** [Documentation index](docs/README.md)
+- **Take a guided tour of the implementation:** [Code tour](docs/CODE_TOUR.md)
+
+If you are new to the project, read the playtesting guide or one contributor
+guide first. The deeper release and reverse-engineering documents are linked
+from those pages.
+
 ## Current status
 
 - All **2,052 extracted text records** are represented in the translation
@@ -33,6 +53,17 @@ Famicom Disk System adventure game *Time Twist: Rekishi no Katasumi de...*
 
 Do not edit generated ROMs or rebuilt banks as source material.
 
+## Where to look
+
+| If you are looking at... | Start here |
+| --- | --- |
+| Dialogue, narration, or a scenario choice | `work/translations/<BANK>.json` and [translation contributor guide](CONTRIBUTING_TRANSLATION.md) |
+| A fixed menu, disk prompt, Save/Load label, or other shared UI | `work/time_twist/ui.py`, `ui_fixed_tables.py`, and [implementation notes](docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md) |
+| Font glyphs or the title sequence | `work/time_twist/font.py`, `work/time_twist/title.py`, and [title sequence](docs/TITLE_SEQUENCE.md) |
+| Candidate creation, source locks, or reproducibility | `work/time_twist/release.py`, `release_metadata.py`, and [release commands](docs/CLI_REFERENCE.md#release-commands) |
+| A problem seen while playing | [playtesting guide](PLAYTESTING.md) |
+| Binary/format concepts | [architecture](docs/ARCHITECTURE.md) and [format reference](docs/FORMATS.md) |
+
 For a source-level account of the verified game fixes, fixed-address records,
 font corrections, title-screen memory map, 6502 hooks, native swipe geometry,
 and validation evidence, read the
@@ -54,6 +85,8 @@ manual Zenpen-to-Kouhen playthrough.
 | `work/translation_workbook_banks/` | Per-bank linguistic review checkpoints |
 | `work/title_assets/` | Contributor-created English title reference art |
 | `outputs/` | Workbooks, glossary, reports, and previews |
+| `PLAYTESTING.md` | Player-focused setup, high-priority checks, and issue template |
+| `CONTRIBUTING_TRANSLATION.md` | Safe path from a reviewed line to its playable source |
 
 The searchable workbook is
 [`outputs/Time_Twist_complete_translation_workbook.html`](outputs/Time_Twist_complete_translation_workbook.html).
@@ -76,7 +109,7 @@ Python 3.11 or newer is required. The release dependency set pins Pillow
 
 ```powershell
 python work/tools/check_public_tree.py
-python -m pip install -e ".[dev]"
+python -m pip install -r requirements.txt
 time-twist --help
 python work/run_tests.py unit
 ```
@@ -120,11 +153,10 @@ time-twist release-lock
 time-twist release-build
 ```
 
-Repository state note: **No release target is checked in.** The obsolete v1
-target was removed instead of being mechanically upgraded or assigned invented
-provenance. A maintainer with the legal baselines must build and playtest a new
-candidate, then explicitly promote that exact reviewed candidate before a
-normal strict `release-build` can succeed.
+Repository state note: **No release target is checked in.** A maintainer with
+the legal baselines must build and playtest a new candidate, then explicitly
+promote that exact reviewed candidate before a normal strict `release-build`
+can succeed.
 
 An intentional translation or asset change uses a candidate/promotion cycle:
 
@@ -177,12 +209,17 @@ time-twist release-build --project-root C:\path\to\time-twist
 
 Start with [`docs/README.md`](docs/README.md). Important guides:
 
+- [`PLAYTESTING.md`](PLAYTESTING.md)
+- [`CONTRIBUTING_TRANSLATION.md`](CONTRIBUTING_TRANSLATION.md)
+- [`CONTRIBUTING_CODE.md`](CONTRIBUTING_CODE.md)
+- [`docs/MAINTAINER_RELEASE_PROCESS.md`](docs/MAINTAINER_RELEASE_PROCESS.md)
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/FORMATS.md`](docs/FORMATS.md)
 - [`docs/TRANSLATION_WORKFLOW.md`](docs/TRANSLATION_WORKFLOW.md)
 - [`docs/CLI_REFERENCE.md`](docs/CLI_REFERENCE.md)
 - [`docs/WORKBOOK_PIPELINE.md`](docs/WORKBOOK_PIPELINE.md)
 - [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)
+- [`docs/MODULE_MAP.md`](docs/MODULE_MAP.md)
 - [`docs/PRIVATE_FIXTURES.md`](docs/PRIVATE_FIXTURES.md)
 - [`docs/PROJECT_RETROSPECTIVE.md`](docs/PROJECT_RETROSPECTIVE.md)
 

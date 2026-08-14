@@ -3,18 +3,17 @@
 *.nes
 *.rom
 
-# Extracted or rebuilt ROM banks and emulator captures.
+# Extracted or rebuilt ROM banks, runtime captures, and local emulator files.
 *.bin
 *.dmp
+*.mss
+*.zip
+*settings*.json
 work/baseline/
 work/build/
 work/extracted_*/
 work/translated_banks/
-work/mesen_capture/
-
-# Third-party emulator packages and machine-local settings.
-work/Mesen_*.zip
-work/mesen_settings*.json
+work/runtime_capture/
 
 # Python caches, packaging output, environments, and test artifacts.
 **/__pycache__/
@@ -29,6 +28,13 @@ venv/
 .pytest_cache/
 .hypothesis/
 .coverage
+
+# Local title-preview render outputs.
+outputs/Time Twist clean title Nintendo and slide preview.png
+outputs/Time Twist clock and time machine preview.png
+outputs/Time Twist exact split-title preview.png
+outputs/Time Twist slide sequence contact sheet.png
+outputs/title-slide-frames/
 
 # Codex task metadata is local to this workspace.
 .agents/

@@ -1,3 +1,5 @@
+"""Regression tests for the current translation workbook and playable-text authority."""
+
 from __future__ import annotations
 
 import csv
@@ -38,12 +40,16 @@ REQUIRED_FIELDS = (
 
 
 class TranslationWorkbookTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     @classmethod
     def setUpClass(cls) -> None:
+        """Prepare shared fixtures for the current contract tests."""
         cls.rows, cls.source_payload, cls.review_path = make_rows()
         cls.glossary = make_glossary(cls.rows)
 
     def test_all_source_records_are_present_once_and_in_order(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(len(self.rows), 2052)
         self.assertEqual(
             [row.original_record_id for row in self.rows],
@@ -55,6 +61,7 @@ class TranslationWorkbookTests(unittest.TestCase):
         )
 
     def test_exact_japanese_is_byte_for_byte_source_text(self) -> None:
+        """Verify the current contract described by this regression test."""
         for workbook_row, source_row in zip(
             self.rows, self.source_payload["rows"], strict=True
         ):
@@ -65,6 +72,7 @@ class TranslationWorkbookTests(unittest.TestCase):
             )
 
     def test_every_record_has_required_translation_fields(self) -> None:
+        """Verify the current contract described by this regression test."""
         for row in self.rows:
             for field in REQUIRED_FIELDS:
                 value = getattr(row, field)
@@ -75,6 +83,7 @@ class TranslationWorkbookTests(unittest.TestCase):
     def test_patch_controls_match_source_except_documented_ui_override(
         self,
     ) -> None:
+        """Verify the current contract described by this regression test."""
         mismatches = {
             row.original_record_id
             for row in self.rows
@@ -84,6 +93,7 @@ class TranslationWorkbookTests(unittest.TestCase):
         self.assertEqual(mismatches, set(CONTROL_OVERRIDE_IDS))
 
     def test_patch_safe_text_matches_playable_authority(self) -> None:
+        """Verify the current contract described by this regression test."""
         scenario = load_playable_scenario_text()
         for row in self.rows:
             if row.record_type == "scenario":
@@ -100,6 +110,7 @@ class TranslationWorkbookTests(unittest.TestCase):
                 )
 
     def test_every_scenario_patch_is_encodable_by_the_rom_font(self) -> None:
+        """Verify the current contract described by this regression test."""
         for row in self.rows:
             if row.record_type == "scenario":
                 encode_english(row.patch_safe_english_translation)
@@ -110,6 +121,7 @@ class TranslationWorkbookTests(unittest.TestCase):
                 )
 
     def test_visible_words_after_ellipses_have_a_space(self) -> None:
+        """Verify the current contract described by this regression test."""
         missing_space = re.compile(r"\.\.\.(?=[A-Za-z0-9])")
         for row in self.rows:
             if row.record_type == "scenario":
@@ -119,11 +131,13 @@ class TranslationWorkbookTests(unittest.TestCase):
                 )
 
     def test_reconstruction_avoids_known_substring_corruption(self) -> None:
+        """Verify the current contract described by this regression test."""
         for row in self.rows:
             self.assertNotIn("き声る", row.reconstructed_japanese)
             self.assertNotIn("人らー", row.reconstructed_japanese)
 
     def test_romaji_contains_no_unromanized_japanese_characters(self) -> None:
+        """Verify the current contract described by this regression test."""
         japanese = re.compile(r"[ぁ-んァ-ヶ一-龯]")
         for row in self.rows:
             self.assertIsNone(
@@ -132,9 +146,11 @@ class TranslationWorkbookTests(unittest.TestCase):
             )
 
     def test_validation_function_accepts_completed_workbook(self) -> None:
+        """Verify the current contract described by this regression test."""
         validate(self.rows, self.source_payload, self.glossary)
 
     def test_machine_readable_outputs_round_trip(self) -> None:
+        """Verify the current contract described by this regression test."""
         json_path = OUTPUTS / "Time_Twist_complete_translation_workbook.json"
         csv_path = OUTPUTS / "Time_Twist_complete_translation_workbook.csv"
         payload = json.loads(json_path.read_text(encoding="utf-8"))
@@ -152,6 +168,7 @@ class TranslationWorkbookTests(unittest.TestCase):
         )
 
     def test_no_patch_safe_record_requires_storage_expansion(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertFalse(
             [
                 row.original_record_id
@@ -161,6 +178,7 @@ class TranslationWorkbookTests(unittest.TestCase):
         )
 
     def test_html_contains_required_filters_and_all_record_ids(self) -> None:
+        """Verify the current contract described by this regression test."""
         html = (
             OUTPUTS / "Time_Twist_complete_translation_workbook.html"
         ).read_text(encoding="utf-8")

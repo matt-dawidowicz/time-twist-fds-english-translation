@@ -5,7 +5,7 @@
 - Python 3.11 or newer is required.
 - Core parsing/patching uses the standard library.
 - Pillow is required for title and image-rendering code.
-- Mesen is optional and used only for manual playtesting/debugging.
+- An FDS emulator is optional and used only for manual playtesting/debugging.
 
 Install from the repository root:
 
@@ -198,11 +198,10 @@ Strict builds also require a promoted `work/release_target.json`, whose hashes
 are tied to that exact logical source lock and to the active release-critical
 Python code.
 
-No target is checked in while the current candidate awaits playtesting. The
-obsolete v1 target was removed rather than being converted by hand. Therefore,
-the strict command below becomes usable only after a maintainer with legal
-baselines has built, reviewed, playtested, and explicitly promoted the exact
-candidate.
+No target is checked in while the current candidate awaits playtesting.
+Therefore, the strict command below becomes usable only after a maintainer with
+legal baselines has built, reviewed, playtested, and explicitly promoted the
+exact candidate.
 
 Verify the current target:
 
@@ -225,8 +224,8 @@ time-twist release-build
 Candidate output is not approval. Manifest schema v4 binds promotion to a
 complete audit record: source-lock and release-code provenance, informational
 Python/Pillow environment versions, all scenario-bank reports, fixed-component
-hashes, target state, and canonical output records. Legacy v3 candidate
-manifests must be rebuilt with the current release code before promotion.
+hashes, target state, and canonical output records. Candidates must be built
+with the current release code before promotion.
 
 Promotion independently proves the reviewed candidate rather than trusting its
 manifest. `release-promote` validates the active lock and code provenance, binds

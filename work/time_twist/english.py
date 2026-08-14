@@ -56,17 +56,6 @@ EXTENDED_CHARACTERS: dict[int, str] = {
     62: "?",
 }
 
-# These codes are deliberately absent from ``EXTENDED_CHARACTERS`` so ordinary
-# translated text cannot emit them.  NOV2's two fixed disk-change records need
-# one compact tile each to retain their original packed lengths while showing a
-# word gap before the final character.  Keep the diagnostic rendering here so
-# pack/decode tests reflect the text a player sees without replacing active
-# alphabet tiles such as X or Z.
-DISK_PROMPT_LIGATURES: dict[int, str] = {
-    45: " 2",
-    63: " A",
-}
-
 CONTROL_PATTERN = re.compile(r"\{CTRL:([0-7])\}")
 DISPLAY_COLUMNS = 24
 
@@ -171,11 +160,6 @@ def render_english(symbols: Iterable[PackedSymbol]) -> str:
     for symbol in symbols:
         if symbol.kind is SymbolKind.COMMON and symbol.value in common:
             rendered.append(common[symbol.value])
-        elif (
-            symbol.kind is SymbolKind.EXTENDED
-            and symbol.value in DISK_PROMPT_LIGATURES
-        ):
-            rendered.append(DISK_PROMPT_LIGATURES[symbol.value])
         elif (
             symbol.kind is SymbolKind.EXTENDED
             and symbol.value in EXTENDED_CHARACTERS

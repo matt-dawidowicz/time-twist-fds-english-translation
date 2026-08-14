@@ -1,3 +1,5 @@
+"""Regression tests for the current bilingual comparison review corpus."""
+
 from __future__ import annotations
 
 import json
@@ -29,8 +31,11 @@ BANK_ORDER = (
 
 
 class BilingualComparisonTests(unittest.TestCase):
+    """Group current regression tests by project contract."""
+
     @classmethod
     def setUpClass(cls) -> None:
+        """Prepare shared fixtures for the current contract tests."""
         payload = json.loads(COMPARISON.read_text(encoding="utf-8"))
         cls.assert_schema(payload)
         cls.rows = payload["rows"]
@@ -43,6 +48,7 @@ class BilingualComparisonTests(unittest.TestCase):
 
     @staticmethod
     def assert_schema(payload: object) -> None:
+        """Assert the current contract against the prepared test fixture."""
         if not isinstance(payload, dict):
             raise AssertionError("comparison output is not a JSON object")
         if payload.get("schema") != "time-twist-bilingual-comparison-v1":
@@ -51,6 +57,7 @@ class BilingualComparisonTests(unittest.TestCase):
             raise AssertionError("comparison output has no row list")
 
     def test_all_scenario_records_are_present_once(self) -> None:
+        """Verify the current contract described by this regression test."""
         scenario = [row for row in self.rows if row["kind"] == "scenario"]
         self.assertEqual(len(scenario), 1299)
         self.assertEqual(len({row["text_id"] for row in scenario}), 1299)
@@ -59,11 +66,13 @@ class BilingualComparisonTests(unittest.TestCase):
         )
 
     def test_every_row_keeps_japanese_and_english(self) -> None:
+        """Verify the current contract described by this regression test."""
         for row in self.rows:
             self.assertTrue(row["japanese_exact"], row["text_id"])
             self.assertTrue(row["current_english_exact"], row["text_id"])
 
     def test_scenario_control_sequences_and_playable_text_match(self) -> None:
+        """Verify the current contract described by this regression test."""
         scenario = [row for row in self.rows if row["kind"] == "scenario"]
         self.assertEqual(
             {row["text_id"] for row in scenario}, set(self.playable)
@@ -77,6 +86,7 @@ class BilingualComparisonTests(unittest.TestCase):
             )
 
     def test_comparison_ids_are_unique_and_complete(self) -> None:
+        """Verify the current contract described by this regression test."""
         self.assertEqual(len(self.rows), 2052)
         self.assertEqual(
             len(self.rows), len({row["text_id"] for row in self.rows})

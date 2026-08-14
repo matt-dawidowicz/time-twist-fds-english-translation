@@ -20,8 +20,8 @@ from time_twist.title import (
 
 SOURCE = Path("work/build/NOV4_accented_font_ui.bin")
 REFERENCE = Path("work/title_assets/Time Twist approved native title.png")
-CHR_CAPTURE = Path("work/mesen_capture/zenpen_title_chr.dmp")
-CPU_CAPTURE = Path("work/mesen_capture/zenpen_title_cpu.dmp")
+CHR_CAPTURE = Path("work/runtime_capture/zenpen_title_chr.dmp")
+CPU_CAPTURE = Path("work/runtime_capture/zenpen_title_cpu.dmp")
 OUTPUT = Path("outputs/Time Twist exact split-title preview.png")
 SLIDE_OUTPUT_DIR = Path("outputs/title-slide-frames")
 SLIDE_CONTACT_SHEET = Path(

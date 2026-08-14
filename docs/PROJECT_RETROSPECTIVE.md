@@ -2,8 +2,8 @@
 
 This document explains the technical and editorial path behind the English
 translation of *Time Twist: Rekishi no Katasumi de...*, why the game resisted
-ordinary ROM-translation methods, how the current title sequence was changed,
-and what the AI-assisted workflow contributed.
+ordinary ROM-translation methods, and how the current title sequence was
+changed.
 
 It is a technical retrospective, not a claim that the game was solved from
 nothing or that earlier researchers lacked ability. The current result depends
@@ -252,63 +252,11 @@ at `$D7B5`, leaving 1,540 bytes of verified headroom. Both nametables decode to
 exactly 1,024 bytes, title RLE uses legal markers, and the clock-source tail
 remains unchanged.
 
-The final candidate was cold-booted twice in headless Mesen for 1,150 frames.
+The final candidate was cold-booted twice in a headless FDS emulator for 1,150 frames.
 The two runs produced 1,153 byte-identical comparison artifacts. The moving
 slide occupies frames 896-915, the completed white logo remains through frame
 979, the colored screen fades in at frames 1020-1027, and hand animation is
 visible from frame 1029.
-
-## What the AI-assisted process actually changed
-
-The AI contribution was speed and integration, not a magical one-step
-decompilation.
-
-### It kept several evidence layers connected
-
-The workflow could inspect documentation, Python tooling, packed binary data,
-6502 call sites, screenshots, hashes, and emulator captures in one loop. That
-made it easier to connect a visible symptom to the correct layer instead of
-patching the rendered symptom blindly.
-
-For example, the defective slide initially looked like a simple scrolling-art
-problem. Static nametable reconstruction alone suggested a whole-logo
-oscillation. Decoding the actual attribute tables and palette upload then
-showed the real behavior: a masked alternating reveal. The simulator and tests
-were corrected to match the ROM rather than preserving the first explanation.
-
-### It converted discoveries into executable checks
-
-Once a layout was understood, the process immediately encoded it as a source
-guard, deterministic generator, or regression test. Important examples include
-bitstream round trips, stable controls, fixed tail addresses, exact record
-slots, tile budgets, all 21 slide origins, palette/attribute behavior, clock
-data preservation, NOV4 bounds, release hashes, and destination-access tests.
-
-This reduced dependence on memory and made later changes fail closed.
-
-### It could search and compare at machine scale
-
-The project contains thousands of records and many near-duplicate binary
-structures. Automated inventory, hash comparison, record-ID joins, width
-checks, dictionary scoring, CHR pattern deduplication, and frame fingerprints
-made exhaustive checks practical where manual inspection would be slow and
-error-prone.
-
-### It used parallel analyses but required reconciliation
-
-Art geometry, 6502/title architecture, validation design, and emulator timing
-could be investigated separately, then checked against the same ROM-bound
-facts. Parallelism shortened the feedback loop, but conflicting conclusions
-were not accepted by vote; the decoded palette, attributes, runtime frames,
-and exact hashes decided which model was correct.
-
-### The user's playtesting remained essential
-
-Screenshots identified punctuation, glyph alignment, wording, title geometry,
-and animation defects that static tests could not predict. The user also set
-the editorial target and decided what looked faithful. The AI process supplied
-instrumentation, repeatable patches, and fast iteration; it did not replace
-human translation judgment or full-game playtesting.
 
 ## Why the work moved faster than many earlier attempts
 

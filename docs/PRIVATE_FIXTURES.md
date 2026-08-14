@@ -29,7 +29,7 @@ work/extracted_zenpen/*.bin
 work/extracted_kouhen/*.bin
 work/translated_banks/*.bin
 work/build/*.bin
-work/mesen_capture/*.dmp
+work/runtime_capture/*.dmp
 outputs/*.fds
 ```
 

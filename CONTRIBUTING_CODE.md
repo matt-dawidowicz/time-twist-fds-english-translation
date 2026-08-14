@@ -3,19 +3,23 @@
 This guide is for Python tooling, validation, and test changes. It does not
 authorize changes to ROM-derived fixtures or release metadata.
 
+If you want to report game behavior rather than change source, start with the
+[playtesting guide](PLAYTESTING.md). For prose-only work, use the
+[translation contributor guide](CONTRIBUTING_TRANSLATION.md).
+
 ## Local setup
 
 Python 3.11 or newer is required. From the repository root:
 
 ```powershell
-python -m pip install -e ".[dev]"
+python -m pip install -r requirements.txt
 time-twist --help
 ```
 
-This installs Pillow plus Hypothesis, which are required by the fixture-free
-public tests. For test-only setup, use
-`python -m pip install -r requirements-test.txt`; it installs the same runtime
-Pillow dependency plus Hypothesis without development tooling.
+This installs the project plus every public runtime, test, and development
+dependency: Pillow, Hypothesis, Black, Ruff, mypy, pydocstyle, and build.
+Add a new dependency to `pyproject.toml`; `requirements.txt` automatically
+installs it for contributors and CI.
 
 The installed wheel contains the Python package only. Translation maps, title
 assets, source locks, and legal game inputs remain checkout data.
@@ -62,14 +66,33 @@ for the overlay layout.
 
 | Area | Main module |
 | --- | --- |
+| Command-line entry point | `work/time_twist/cli.py` (`cli_commands.py`, `cli_parser.py`) |
 | FDS parsing and rebuilding | `work/time_twist/fds.py` |
 | Packed symbols and native codec | `work/time_twist/textcodec.py` |
 | English encoding and validation | `work/time_twist/english.py`, `scenario_validation.py` |
 | Scenario parsing/recompression | `work/time_twist/scenario.py`, `compression.py` |
-| Fixed UI patches | `work/time_twist/ui.py` |
-| Font and title patches | `work/time_twist/font.py`, `title.py` |
-| Candidate/release assembly | `work/time_twist/release.py` |
-| Command-line interface | `work/time_twist/cli.py` |
+| Fixed UI patches and data | `work/time_twist/ui.py`, `ui_fixed_tables.py` |
+| Font and title patches | `work/time_twist/font.py`, `title.py`, `title_layout.py`, `title_assets.py`, `title_patch.py` |
+| Candidate/release assembly | `work/time_twist/release.py`, `release_metadata.py` |
+
+See the [full module map](docs/MODULE_MAP.md) for the public-facade rule and
+matching test files.
+
+## Documentation is part of the change
+
+Start with the [code tour](docs/CODE_TOUR.md) before changing an unfamiliar
+module. It explains how each layer serves the playable, source-only translation
+goal and which constraints belong to packed text, FDS layout, fixed UI, title,
+or release assembly.
+
+Every maintained Python module, class, and function must have a purpose
+docstring. Explain non-obvious lines with comments that answer **why** a
+recovered address, byte sequence, capacity limit, or fail-closed condition
+exists. Do not pad routine syntax with line-by-line narration; it makes the
+binary constraints harder to find.
+
+`work/tests/test_documentation_contract.py` enforces this baseline in the
+public unit suite. A new function without a docstring is an incomplete change.
 
 ## High-risk areas
 
