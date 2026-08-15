@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import hashlib
 import unittest
+from unittest import mock
 
 from time_twist.english import COMMON_CHARACTERS, EXTENDED_CHARACTERS
 from time_twist.font import (
     EXTENDED_TILE_IDS,
     NOV4_FONT_BASE_OFFSET,
     common_tile_id,
+    patched_nov4_font,
 )
 
 # Recovered post-title NOV4 source ownership.  The direct 2bpp LoadTileset
@@ -55,6 +58,27 @@ class Nov4FontSourceSafetyTests(unittest.TestCase):
             FONT_1BPP_SOURCE_END,
         )
         self.assertEqual(DIRECT_2BPP_SLOT_MAX + 1, FONT_SLOT_MIN)
+
+    def test_font_patch_preserves_entire_direct_graphics_source(self) -> None:
+        """Exercise production patching and protect every byte in $203D-$20FC."""
+        source = bytearray(FONT_1BPP_SOURCE_END)
+        protected_size = FONT_1BPP_SOURCE_START - DIRECT_2BPP_SOURCE_START
+        protected = bytes(
+            (index * 37 + 11) & 0xFF for index in range(protected_size)
+        )
+        source[DIRECT_2BPP_SOURCE_START:FONT_1BPP_SOURCE_START] = protected
+        source_hash = hashlib.sha256(source).hexdigest().upper()
+
+        with mock.patch(
+            "time_twist.font.SUPPORTED_NOV4_FONT_SOURCE_SHA256",
+            frozenset({source_hash}),
+        ):
+            patched = patched_nov4_font(bytes(source))
+
+        self.assertEqual(
+            patched[DIRECT_2BPP_SOURCE_START:FONT_1BPP_SOURCE_START],
+            protected,
+        )
 
     def test_active_english_tiles_stay_in_proven_font_source(self) -> None:
         """Fail if any active glyph enters slots $98-$AF or leaves $B0-$FE."""
