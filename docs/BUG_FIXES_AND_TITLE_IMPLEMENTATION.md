@@ -207,8 +207,8 @@ presentation at the exact packed-record slots already used by NOV2.
 | Insert instruction | `$2625` | 11 | `{CTRL:0}{CTRL:0}Insert now.` |
 | Live Start prompt | `$2651` | 6 | `Start ` |
 | Saved-game label | `$2657` | 4 | `Load` |
-| Saved-game disk-status line | `$269A` bit 3 | 58 bits | `Bad Disk` |
-| Alternate side-heading record | `$26CC` | 8 | `Wrong side.` (private compact `de.` glyph) |
+| Saved-game disk-status line | `$269A` | 8 | `Bad side.` |
+| Alternate side-heading record | `$26CC` | 8 | `Bad side.` |
 | Visible same-side retry heading | `$26D4` | 10 | `Wrong side.` |
 | Same-side retry instruction | `$26DE` | 10 | `{CTRL:0}Try again.` |
 | Wrong-disk heading | `$26E8` | 11 | `Wrong disk! ` |
@@ -219,19 +219,18 @@ prompt. Its original Japanese loanword means “load”; with the English font i
 appeared as gibberish after a save was present. The native source has `A-B side
 / disk number / error` records. The disk-swap save-state comparison shows that
 the same-side retry draws the `disk number` record at `$26D4`, followed by
-`$26DE`; it previously rendered as English-font garbage. `$26D4` holds
-ordinary packed `Wrong side.` exactly, while the alternate eight-byte `$26CC`
-record retains the compact final `de.` glyph for the same visible wording.
-This path does not reuse the later two-record `Wrong disk! / Try another side`
+`$26DE`; it previously rendered as English-font garbage. `$26D4` has room for
+ordinary packed `Wrong side.`. The alternate eight-byte `$26CC` record instead
+uses ordinary-glyph `Bad side.` so no private compact suffix is required. This
+path does not reuse the later two-record `Wrong disk! / Try another side`
 recovery text.
 
-The saved-game loader has one additional, non-byte-aligned status record. If
-the player remounts the original disk while Load is waiting for the other
-side, the native Japanese `disk set` status stream would otherwise render as
-English-font garbage. Its first bit is at NOV2 file `$269A` bit 3. The
-original 55-bit text then pads to the next byte; `Bad Disk` uses 58 bits and
-still reaches that exact same alignment boundary. The patch changes no next
-record, pointer, disk-state branch, or decoder limit.
+The saved-game loader has one additional status record. Runtime save-state
+evidence superseded an earlier bit-aligned interpretation: the visible renderer
+starts at NOV2 file `$269A`, so the complete eight-byte source record is
+replaced in place with ordinary-glyph `Bad side.`. The patch changes no next
+record, pointer, disk-state branch, requested-side variable, decoder limit, or
+FDS BIOS call.
 
 Each record is encoded independently with `encode_english()` and
 `pack_records()`. The two short labels use the intentional compact spellings

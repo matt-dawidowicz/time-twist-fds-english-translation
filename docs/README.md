@@ -24,15 +24,19 @@ title reconstruction, validation evidence, and remaining release work.
 For the recovered addresses, source-byte guards, 6502 patch records, title
 asset budgets, appended NOV4 layout, and regression evidence, use the
 [bug-fix and title-screen implementation guide](BUG_FIXES_AND_TITLE_IMPLEMENTATION.md).
+For the recovered boundary between post-title direct 2bpp source graphics and
+the writable 1bpp English font source, including the historical `$AC` alias,
+read [NOV4 font-source safety](NOV4_FONT_SOURCE_SAFETY.md).
 
 ## Audit a bug fix
 
 Read:
 
 1. [Bug-fix and title-screen implementation guide](BUG_FIXES_AND_TITLE_IMPLEMENTATION.md)
-2. [Patch layers](ARCHITECTURE.md#patch-layers)
-3. [Adding a binary patch](DEVELOPMENT.md#adding-or-changing-a-binary-patch)
-4. [Runtime playtest matrix](PLAYTEST_MATRIX.md)
+2. [NOV4 font-source safety](NOV4_FONT_SOURCE_SAFETY.md)
+3. [Patch layers](ARCHITECTURE.md#patch-layers)
+4. [Adding a binary patch](DEVELOPMENT.md#adding-or-changing-a-binary-patch)
+5. [Runtime playtest matrix](PLAYTEST_MATRIX.md)
 
 The guide distinguishes a proven original-engine defect from localization
 completeness fixes, translation regressions, presentation corrections, and
@@ -81,12 +85,13 @@ Read:
 Read:
 
 1. [Bug-fix and title-screen implementation guide](BUG_FIXES_AND_TITLE_IMPLEMENTATION.md#english-title-screen-reconstruction)
-2. [Font/title formats](FORMATS.md#font-and-title-assets)
-3. [Title sequence architecture](TITLE_SEQUENCE.md)
-4. [Patch layers](ARCHITECTURE.md#patch-layers)
-5. `work/time_twist/font.py`
-6. `work/time_twist/title.py`
-7. `work/integration_tests/test_title.py`
+2. [NOV4 font-source safety](NOV4_FONT_SOURCE_SAFETY.md)
+3. [Font/title formats](FORMATS.md#font-and-title-assets)
+4. [Title sequence architecture](TITLE_SEQUENCE.md)
+5. [Patch layers](ARCHITECTURE.md#patch-layers)
+6. `work/time_twist/font.py`
+7. `work/time_twist/title.py`
+8. `work/integration_tests/test_title.py`
 
 The title conversion reuses the existing pattern-table split and animated
 clock sprites and is guarded by source hashes and size checks.
