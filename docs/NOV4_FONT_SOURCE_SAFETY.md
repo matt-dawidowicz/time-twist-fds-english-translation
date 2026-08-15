@@ -14,6 +14,12 @@ The current source intentionally leaves extended codes 45 and 63 inactive. The d
 
 `work/tests/test_nov4_font_source_safety.py` generalizes the regression guard from one protected tile to the complete recovered source ranges.
 
+## Distribution provenance hazard
+
+A corrected source tree does not guarantee that a GUI patcher is using the corrected BPS files. The Windows patcher historically persisted an advanced `ManifestPath` in `%LOCALAPPDATA%` and auto-loaded that saved manifest on the next startup. If a user upgraded by extracting a new package while an older manifest still existed elsewhere, the new GUI could silently select the older BPS set. That older set contains the retired `$AC` compact-A bytes and reproduces the exact repeated-A Start-screen failure even though the bundled current manifest is correct.
+
+The broken Zenpen signature is NOV4 file `$20DD-$20E4` = `F1 EE EE E0 EE EE EE FF`. A corrected output has NOV4 file `$20DD-$20EC` = sixteen bytes of `FF`. Distribution tooling should verify that exact 16-byte post-title source range after applying the Zenpen and four-side patches, and upgraded patchers should start from their bundled manifest rather than auto-loading a persisted external manifest. Advanced manifests may still be selected explicitly for the current session.
+
 ## Current disk-retry records
 
 The short disk-set status at NOV2 file `$269A` is byte-aligned. Runtime save-state evidence superseded an earlier bit-3 interpretation. Its complete eight-byte record renders ordinary-glyph `Bad side.`.
