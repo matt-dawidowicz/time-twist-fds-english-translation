@@ -22,12 +22,8 @@ FONT_SLOT_MAX = 0xFE
 
 def active_english_font_tiles() -> frozenset[int]:
     """Return every runtime tile written by the active English font map."""
-    common_tiles = {
-        common_tile_id(value) for value, _ in enumerate(COMMON_CHARACTERS)
-    }
-    extended_tiles = {
-        EXTENDED_TILE_IDS[value] for value in EXTENDED_CHARACTERS
-    }
+    common_tiles = {common_tile_id(value) for value, _ in enumerate(COMMON_CHARACTERS)}
+    extended_tiles = {EXTENDED_TILE_IDS[value] for value in EXTENDED_CHARACTERS}
     return frozenset(common_tiles | extended_tiles)
 
 
