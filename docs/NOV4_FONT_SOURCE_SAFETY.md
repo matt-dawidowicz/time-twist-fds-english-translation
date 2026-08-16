@@ -30,6 +30,10 @@ Release creation is also whitelist-based: a clean staging directory receives onl
 
 Advanced manifests or individual BPS files may still be selected explicitly for the current session, but no external patch state is restored automatically on the next launch.
 
+### Native standalone successor
+
+The `current-main-sync4-native1` public patcher moves the default package-identity boundary entirely inside one native Windows x64 executable. The three approved BPS payloads are linked into `TimeTwistPatcher.exe`; the runtime default path does not load a manifest, adjacent patch directory, current-working-directory patch files, PowerShell state, or settings from an earlier patcher. The native patch core verifies each embedded BPS SHA-256 and BPS CRC before use, verifies the clean Zenpen/Kouhen SHA-256 identities, and rejects any translated result whose complete target SHA-256 differs from the approved current-main target. The public EXE also exposes a checked-by-default `Open output folder after patching finishes` option; this is a UI preference only and cannot redirect patch selection.
+
 ## Current disk-retry records
 
 The short disk-set status at NOV2 file `$269A` is byte-aligned. Runtime save-state evidence superseded an earlier bit-3 interpretation. Its complete eight-byte record renders ordinary-glyph `Bad side.`.
