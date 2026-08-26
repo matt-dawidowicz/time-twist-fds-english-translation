@@ -15,9 +15,9 @@ from pathlib import Path
 
 from .charmap import decode_common, decode_extended
 from .textcodec import (
-    BitReader,
     EXTENDED_DICTIONARY_ENTRY_COUNT,
     NATIVE_DICTIONARY_ENTRY_COUNT,
+    BitReader,
     PackedSymbol,
     SymbolKind,
     decode_symbol,

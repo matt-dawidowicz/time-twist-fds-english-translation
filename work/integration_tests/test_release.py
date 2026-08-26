@@ -17,8 +17,8 @@ from time_twist.release import (
     DEFAULT_SOURCE_LOCK,
     DEFAULT_TITLE_ASSET,
     DEFAULT_ZENPEN_BASELINE,
-    ReleaseBuildError,
     SCENARIO_LOCATIONS,
+    ReleaseBuildError,
     build_release,
     validate_source_lock,
 )
