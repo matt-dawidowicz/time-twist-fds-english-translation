@@ -68,10 +68,10 @@ at CPU `$81D3`:
 
 ```text
 source:      A5 3A C9 04 90 07 C9 20 B0 09 4C ED 81
-replacement: A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82
+replacement: A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82
 ```
 
-Values below 37 add 32 and enter the existing dictionary expander at `$82BE`.
+Values below 37 add 32 and enter the existing dictionary expander at `$82C5`, after the native five-bit dictionary-index reader.
 Values 37 and above retain the existing extended-glyph path at `$8226`. The
 patch does not grow or relocate NOV2. Native Japanese parsing remains the
 default in the tools; patched interpretation is enabled only for rebuilt

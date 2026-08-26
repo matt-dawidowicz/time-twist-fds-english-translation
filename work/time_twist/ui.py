@@ -450,12 +450,15 @@ NOV2_SINGLE_CHOICE_B_PATCHES = (
 # unreachable in translated text. Redirect that unused nine-bit range to
 # dictionary entries 32-68 without changing the native 1-31 encoding. The
 # replacement exactly occupies NOV2's original Japanese extended-glyph branch.
+# The extended payload has already been read into $3A, so the dictionary path
+# must resume at $82C5.  $82BE-$82C4 is the native five-bit index reader;
+# entering there would consume five bits from the following packed token.
 NOV2_EXTENDED_DICTIONARY_PATCH = SourceVerifiedPatch(
     component="NOV2",
     file_offset=0x21D3,
     cpu_address=0x81D3,
     expected=bytes.fromhex("A5 3A C9 04 90 07 C9 20 B0 09 4C ED 81"),
-    replacement=bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82"),
+    replacement=bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
     label="extended English dictionary decoder",
 )
 

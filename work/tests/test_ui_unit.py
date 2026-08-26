@@ -147,8 +147,12 @@ class SourceVerifiedPatchTests(unittest.TestCase):
         self.assertEqual(len(patch.replacement), 13)
         self.assertEqual(
             patch.replacement,
-            bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82"),
+            bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
         )
+        # $82BE-$82C4 is the native five-bit dictionary-index reader.
+        # Extended references have already consumed their six-bit payload, so
+        # they must resume at $82C5 or the packed stream is desynchronized.
+        self.assertEqual(patch.replacement[-3:], bytes.fromhex("4C C5 82"))
 
 
 class FixedPromptTests(unittest.TestCase):
