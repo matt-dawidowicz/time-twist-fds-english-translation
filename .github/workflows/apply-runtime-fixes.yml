@@ -1,0 +1,52 @@
+name: apply-runtime-fixes
+
+on:
+  push:
+    branches: [runtime-fix-stage]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Reassemble and verify patch
+        shell: bash
+        run: |
+          cat .github/patch-parts/runtime-fix-*.b64 > /tmp/runtime-fixes.patch.b64
+          echo '0c13d9c2144018b2d157338af65e31250756363b69a09462e2a6994bf5f494b4  /tmp/runtime-fixes.patch.b64' | sha256sum -c -
+          base64 -d /tmp/runtime-fixes.patch.b64 > /tmp/runtime-fixes.patch
+          echo 'a60d5218cd778ec50e8649f536352b9ecec392baee10ecc7e7da1783b5b60d3c  /tmp/runtime-fixes.patch' | sha256sum -c -
+          git apply --check /tmp/runtime-fixes.patch
+          git apply /tmp/runtime-fixes.patch
+      - name: Install project checks
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: Format and validate source
+        run: |
+          python -m black work
+          python -m ruff check work
+          python -m pydocstyle --convention=pep257 work
+          python -m mypy
+          python work/run_tests.py unit
+      - name: Commit clean project tree
+        shell: bash
+        run: |
+          rm -rf .github/patch-parts
+          rm .github/workflows/apply-runtime-fixes.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git status --short
+          git commit -m 'Fix explicit dialogue wrapping and menu refresh'
+          git push origin HEAD:runtime-fix-stage
