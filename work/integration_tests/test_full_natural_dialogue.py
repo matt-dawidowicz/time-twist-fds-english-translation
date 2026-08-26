@@ -4,7 +4,11 @@ from __future__ import annotations
 
 import unittest
 
-from time_twist.english import control_values, render_english, validate_display_width
+from time_twist.english import (
+    control_values,
+    render_english,
+    validate_display_width,
+)
 from time_twist.scenario_validation import (
     FULL_NATURAL_DIALOGUE_IDS,
     FULL_NATURAL_DIALOGUE_OVERRIDES,
@@ -18,6 +22,7 @@ class FullNaturalDialogueTests(unittest.TestCase):
     """Keep the experimental seven-record expansion narrow and reversible."""
 
     def test_exactly_seven_reviewed_records_are_overridden(self) -> None:
+        """Limit the experiment to the seven workbook-reviewed records."""
         self.assertEqual(len(FULL_NATURAL_DIALOGUE_IDS), 7)
         self.assertEqual(
             FULL_NATURAL_DIALOGUE_IDS,
@@ -35,7 +40,11 @@ class FullNaturalDialogueTests(unittest.TestCase):
         )
 
     def test_natural_overlay_preserves_controls_and_safe_wraps(self) -> None:
-        for record_id, (compact, natural) in FULL_NATURAL_DIALOGUE_OVERRIDES.items():
+        """Prove every expanded line retains controls and wrap boundaries."""
+        for record_id, (
+            compact,
+            natural,
+        ) in FULL_NATURAL_DIALOGUE_OVERRIDES.items():
             with self.subTest(record=record_id):
                 self.assertEqual(control_values(natural), control_values(compact))
                 self.assertIn(record_id, WRAPPED_SCENARIO_IDS)
@@ -44,6 +53,7 @@ class FullNaturalDialogueTests(unittest.TestCase):
                 self.assertEqual(render_english(encoded), natural)
 
     def test_explicit_caller_edit_is_not_silently_overridden(self) -> None:
+        """Leave an explicit non-promoted caller edit untouched."""
         record_id = "TT1B/g0/r1"
         custom = "Custom line."
         self.assertEqual(
@@ -52,6 +62,7 @@ class FullNaturalDialogueTests(unittest.TestCase):
         )
 
     def test_unrelated_records_are_unchanged(self) -> None:
+        """Leave every record outside the seven-ID allowlist untouched."""
         record_id = "TT1B/g0/r2"
         original = "No time for that now!"
         self.assertEqual(
