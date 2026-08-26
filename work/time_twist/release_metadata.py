@@ -21,6 +21,7 @@ from pathlib import Path, PurePosixPath
 from .project import (
     KNOWN_SCENARIO_BANKS,
 )
+from .textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT
 from .title import DEFAULT_SUBTITLE
 from .ui import (
     patched_t22_ui,
@@ -61,6 +62,14 @@ DEFAULT_TITLE_ASSET = (
     / "Time Twist approved native title.png"
     if DEFAULT_PROJECT_ROOT is not None
     else Path("work/title_assets/Time Twist approved native title.png")
+)
+DEFAULT_SLIDE_TITLE_ASSET = (
+    DEFAULT_PROJECT_ROOT
+    / "work"
+    / "title_assets"
+    / "Time Twist approved native slide.png"
+    if DEFAULT_PROJECT_ROOT is not None
+    else Path("work/title_assets/Time Twist approved native slide.png")
 )
 DEFAULT_ZENPEN_BASELINE = (
     DEFAULT_PROJECT_ROOT / "work" / "baseline" / "time_twist_zenpen_japan.fds"
@@ -136,6 +145,7 @@ class ReleasePaths:
     source_lock: Path
     release_target: Path
     title_asset: Path
+    slide_title_asset: Path
     zenpen_baseline: Path
     kouhen_baseline: Path
     translations: Path
@@ -153,6 +163,9 @@ class ReleasePaths:
             title_asset=work
             / "title_assets"
             / "Time Twist approved native title.png",
+            slide_title_asset=work
+            / "title_assets"
+            / "Time Twist approved native slide.png",
             zenpen_baseline=work / "baseline" / "time_twist_zenpen_japan.fds",
             kouhen_baseline=work / "baseline" / "time_twist_kouhen_japan.fds",
             translations=work / "translations",
@@ -443,6 +456,7 @@ def authoritative_source_paths(paths: ReleasePaths) -> tuple[Path, ...]:
         paths.zenpen_baseline,
         paths.kouhen_baseline,
         paths.title_asset,
+        paths.slide_title_asset,
         *translations,
     )
 
@@ -855,7 +869,7 @@ def _validated_scenario_report(
         if (
             type(dictionary_entries) is not int
             or dictionary_entries < 0
-            or dictionary_entries > 31
+            or dictionary_entries > EXTENDED_DICTIONARY_ENTRY_COUNT
         ):
             raise ReleaseBuildError(
                 f"{label} scenario bank {bank_name} has invalid dictionary count"

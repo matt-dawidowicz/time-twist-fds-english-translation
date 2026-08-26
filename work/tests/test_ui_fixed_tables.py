@@ -12,6 +12,27 @@ from time_twist.textcodec import SymbolKind, pack_records, split_records
 class FixedMenuCopyTests(unittest.TestCase):
     """Keep the proven full command labels consistent across scenario banks."""
 
+    def test_tt3b_fight_suffix_fits_the_fixed_record(self) -> None:
+        """Spell Fight in full within its four-byte native menu slot."""
+        dictionary = (encode_english("ight"),)
+        packed = ui._encode_at_exact_record_size("Fight", dictionary, 4)
+        record = split_records(packed, limit=1)[0][0]
+        expanded = tuple(
+            (
+                dictionary[symbol.value - 1]
+                if symbol.kind is SymbolKind.DICTIONARY
+                else (symbol,)
+            )
+            for symbol in record
+        )
+
+        self.assertEqual(
+            render_english(
+                tuple(symbol for part in expanded for symbol in part)
+            ).rstrip(),
+            "Fight",
+        )
+
     def test_proven_full_command_labels_use_title_case(self) -> None:
         """Protect the size-neutral replacements for cramped menu verbs."""
         expected = (

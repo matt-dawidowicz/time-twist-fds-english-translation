@@ -57,6 +57,18 @@ Keep the generated `release_manifest.json` with the candidate during review.
 It binds the code tree, source lock, component hashes, build environment, and
 Zenpen/Kouhen/four-side output hashes to one candidate.
 
+For a candidate using the full-word menu path, generate and retain its decoded
+label audit as well:
+
+```powershell
+python work/tools/audit_fixed_menu_labels.py `
+  --candidate-fds "build/candidate/Time Twist - reproducible English four-side playtest.fds" `
+  --output-csv build/candidate/fixed_menu_label_audit.csv
+```
+
+Promotion review requires `full-word=721`, `blocked=0`, and `failures=0` for
+the current menu inventory.
+
 ## Review and playtest
 
 Run the candidate from a clean boot and record the candidate hash, emulator
@@ -67,7 +79,8 @@ runtime gates are:
 - normal disk requests and one wrong-side recovery;
 - Zenpen-to-Kouhen continuity without a reset;
 - in-game save and normal reload;
-- representative menus and changed high-risk text;
+- menus on both sides of the record-32/64/96 page boundaries and changed
+  high-risk text;
 - no progression, rendering, input, or audio-timing regression.
 
 Use the [runtime playtest matrix](PLAYTEST_MATRIX.md) for complete coverage.

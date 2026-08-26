@@ -1140,6 +1140,7 @@ def _write_tsv(rows: list[ComparisonRow], path: Path) -> None:
             handle,
             fieldnames=ComparisonRow.__dataclass_fields__,
             dialect="excel-tab",
+            lineterminator="\n",
         )
         writer.writeheader()
         writer.writerows(asdict(row) for row in rows)

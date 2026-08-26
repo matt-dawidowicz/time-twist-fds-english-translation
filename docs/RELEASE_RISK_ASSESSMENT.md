@@ -41,6 +41,25 @@ to `work/time_twist`.
 | Hostile in-process mutation | Outside the trusted local-build threat model. File provenance does not attest arbitrary runtime memory. |
 | Complete gameplay behavior | Open until the manual Zenpen-to-Kouhen playtest matrix is complete. |
 
+## Current full-word menu candidate evidence
+
+The August 25, 2026 candidate was rebuilt from the source-locked Japanese
+images after the menu-table relocation and 68-entry English dictionary changes.
+Its fixed-menu audit decoded 721 labels: all 721 matched the configured full
+wording, with no compact fallbacks, mismatches, or display-width failures. Of
+those records, 443 use at least one dictionary reference and 278 are literal.
+
+All 13 scenario-bank reports retain positive capacity. The smallest remainders
+are TT6D with 9 bytes, TT1A with 13 bytes, and TT3B with 26 bytes. The four-side
+candidate SHA-256 is
+`E8FBF9B39278170278F22D2A1C6558DE04DD0F7711570737E584A7A37DA149F3`.
+See [the full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md) for
+the complete per-bank table and output identities.
+
+This closes the static abbreviation/packed-capacity risk. Runtime menu
+addressing remains a manual playtest gate, especially at the record-32/64/96
+page boundaries.
+
 ## Canonical promotion proof
 
 `release-promote` is intentionally more than a metadata copier. Before writing a
@@ -84,7 +103,7 @@ external source locks. Customization must not turn a metadata command into a
 source-destruction command.
 
 `release-lock --update` therefore rejects a destination that aliases an approved
-baseline, translation JSON, title asset, release target, release-critical Python
+baseline, translation JSON, title assets, release target, release-critical Python
 source, or project metadata. The canonical `work/release_sources.json` location
 is the one protected-path exception for source-lock updates.
 

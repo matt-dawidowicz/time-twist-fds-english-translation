@@ -26,15 +26,18 @@ record boundary, pointer, and dictionary location in that packed region.
 
 ### Compression is part of the file format
 
-Each scenario bank can use up to 31 one-based dictionary entries. Those entries
-are referenced from the packed records, and some fixed UI tables expect
-specific dictionary words. Translating a line therefore changes more than that
-line: it can change the best dictionary, the size of every affected record,
-and the placement of the pointer table and dictionary.
+The native decoder can use up to 31 one-based dictionary entries. The English
+release reclaims 37 extended-glyph values unused by its character map, giving
+it 68 entries without widening a token or growing NOV2. Those entries are
+referenced from packed dialogue and menu records. Translating a line therefore
+changes more than that line: it can change the best dictionary, the size of
+every affected record, and the placement of pointer tables and the dictionary.
 
-The English builder creates a flat native-compatible dictionary, reserves
-required entries first, and accepts a candidate entry only when it reduces the
-complete packed size. Dictionary reference zero is invalid and is rejected.
+The English builder creates a flat dictionary and accepts a candidate entry
+only when it reduces the complete packed size. Dictionary reference zero is
+invalid and is rejected. Native source parsing remains unchanged; only the
+source-verified English decoder interprets the reclaimed values as entries
+32-68.
 
 ### The overlays have fixed memory boundaries
 
@@ -55,10 +58,11 @@ the dialogue font, and title graphics are not all stored together. Some UI
 tables preserve only their total size; others must preserve every individual
 record boundary because 6502 code points directly to later entries.
 
-Those records cannot safely be handled by the normal scenario rebuilder.
-Source-verified fixed-table patches encode each replacement into its exact old
-slot, using dictionary references and invisible trailing space symbols when
-necessary.
+The release does not assume these records are freely movable. For the 11
+scenario menu banks, disassembly established a base pointer and a page pointer
+for each block of 32 records. The builder can therefore repack complete labels,
+regenerate every recovered page pointer, and shift only the pointer-addressed
+prefix data. Other fixed records still use source-verified exact-slot patches.
 
 ### The display is narrower than normal English prose
 
@@ -140,12 +144,14 @@ tail address is unchanged. Unknown IDs, missing IDs, reordered controls,
 unsupported glyphs, unsafe widths, duplicate pointers, and footprint overruns
 all fail before publication.
 
-### 6. Patch fixed UI separately
+### 6. Repack recovered menus and patch other fixed UI
 
-Menus, labels, answers, prompts, and program bytes are handled by named patch
-functions with exact source guards. Record-boundary-fixed tables retain every
-old slot length. Program changes compare the expected bytes at a recovered
-offset before writing the replacement.
+The 11 page-indexed menu tables are compressed together with their owning
+scenario banks, so unabbreviated labels and dialogue share one exact footprint.
+Their base/page pointers and the two affected secondary-table pointers are
+rewritten from the rebuilt layout. Other labels, prompts, and program bytes are
+handled by named patch functions with exact source guards. Truly
+record-boundary-fixed tables retain every old slot length.
 
 This prevents a translation that happens to fit from being applied to the
 wrong occurrence or an unsupported ROM revision.
@@ -171,49 +177,50 @@ disk switching, saves, progression, wording, and presentation.
 
 ## How the English logo was changed
 
-### Establishing one native artwork authority
+### Establishing two native artwork authorities
 
-The desired screenshot was converted deliberately to the NES's native
-256x240 indexed format. The production image uses only four values:
+The approved English opening GIF was inverted deliberately to the NES's native
+256x240 grid. The colored final image uses four values:
 
 - 0: black;
 - 1: white outline;
 - 2: pink fill;
 - 3: purple bevel.
 
-Only rows 0-95 contain the wordmark and retained `TM`. Subtitle, `PUSH START`,
-time-machine art, copyright, and the live blue hand remain owned by the game.
-Production does not resize or requantize a display screenshot.
+The separate completed swipe uses only black and white. The final authority may
+own rows 0-96; the swipe may own rows 0-95. Subtitle, `PUSH START`, time-machine
+art, copyright, and the live blue hand remain owned by the game.
 
-`work/rebuild_native_title_asset.py` records the review decisions: inverse
-display mapping, a `(-4,-4)` placement that preserves the lower composition,
-removal of the frozen hand visible in the reference, preservation of the
-existing `TM`, and ten pink/purple-only bevel edits.
-
-Those ten pixels make eight patterns reusable, reducing the upper wordmark
-from 244 to exactly 236 unique tiles without changing any black silhouette or
-white-outline pixel.
+`work/rebuild_native_title_asset.py` locks the GIF hash, all 29 frame delays,
+and the inverse display-cell mapping. It recovers the swipe from its completed
+white frame and the static final background by taking the temporal mode of 19
+frames, which removes the moving hand sprites without repainting the logo.
 
 ### Preserving the CHR split and live clock
 
-Tile IDs `$00-$EB` provide the 236 safe upper-title patterns. IDs `$EC-$FF`
-remain the original clock-hand source and are byte-identical. The lower screen
-continues to use exactly 55 patterns through the existing raster split.
+Tile IDs `$00-$EB` provide 236 safe upper-title slots. The exact two-phase union
+needs 291 patterns, so 55 contiguous IDs are reused over time: they contain
+slide patterns initially and receive an 880-byte exact final-pattern delta at
+the transition. IDs `$EC-$FF` remain the original clock-hand source and are
+byte-identical. The lower screen continues to use exactly 55 patterns through
+the existing raster split.
 
 The original hand graphics, frame layouts, and timing were retained. Only the
-metasprite origin changed: 16 pixels left and 8 pixels up, centering the native
-animation in the corrected clock face.
+metasprite origin changed: 14 pixels left and 3 pixels down, centering the
+native animation on the recovered clock pivot near `(127,78)`.
 
-### Making the slide and final title share geometry
+### Preserving the slide and final title as distinct phases
 
 The old English slide populated approximately 27 columns and forced the final
 five columns black. It eventually switched to a different complete nametable,
 which made the logo jump and left the moving phase structurally incomplete.
 
-The corrected second nametable is generated mechanically from all 32 columns
-of the approved final title's first twelve tile rows. The final colored title
-and the completed monochrome slide therefore cannot drift into separate art
-versions.
+The corrected second nametable comes from the GIF's own completed monochrome
+phase. The final colored title comes from the static temporal consensus plus a
+reviewed native-pixel cleanup of the lower T bevel, reference-traced clock rim, W/I/S
+outlines, and TM. Tests
+lock both pixel authorities and prove that the 55-tile transition reconstructs
+the final CHR table byte-for-byte.
 
 The original 21 nine-bit scroll origins are preserved. They alternate across
 the two horizontal nametables and settle at `$0100`. NT0's upper attributes
@@ -229,34 +236,24 @@ missing-column workaround; using them without restoration caused corrupted
 slide tiles.
 
 The title patch hooks the original state-3 call at NOV4 file offset `$02E4`.
-A 43-byte helper briefly blanks rendering, uploads the patched base patterns
+A 59-byte helper briefly blanks rendering, uploads the patched base patterns
 back into `$B0-$D5`, restores PPU/NMI state, and returns before the original
 scroll sequence begins.
 
-### Making the completed white logo match the colored logo
+### Keeping every completed-swipe pixel white
 
-The stock state-3 palette made only some nonzero pattern indices white, hiding
-the final title's white outline in the settled monochrome frame. A guarded
+The stock state-3 palette made only some nonzero pattern indices white. A guarded
 one-byte patch changes NOV4 offset `$0995` (CPU `$AB95`) from `$0F` to `$30`.
 Visible palette 1 becomes `$0F,$30,$30,$30`, so every nontransparent logo pixel
 is white while unrevealed attribute regions remain black.
 
-The completed slide now contains exactly the same 9,348 nontransparent pixels
-as the approved final geometry. Colorization changes the palette and title
-state rather than replacing visibly different artwork.
-
 ### Staying inside NOV4
 
-The patched NOV4 is 12,209 bytes and ends at CPU `$D1B1`. Resident NOV3 begins
-at `$D7B5`, leaving 1,540 bytes of verified headroom. Both nametables decode to
-exactly 1,024 bytes, title RLE uses legal markers, and the clock-source tail
-remains unchanged.
-
-The final candidate was cold-booted twice in a headless FDS emulator for 1,150 frames.
-The two runs produced 1,153 byte-identical comparison artifacts. The moving
-slide occupies frames 896-915, the completed white logo remains through frame
-979, the colored screen fades in at frames 1020-1027, and hand animation is
-visible from frame 1029.
+The builder computes the appended size from the 880-byte phase delta and both
+new RLE streams, then rejects any result that reaches resident NOV3 at `$D7B5`.
+Both nametables must decode to exactly 1,024 bytes, title RLE must use legal
+markers, and the clock-source tail must remain unchanged. A fresh emulator
+capture is required before this revision can be promoted.
 
 ## Why the work moved faster than many earlier attempts
 
@@ -288,7 +285,8 @@ model was the difficult part.
 | Fixed UI | `work/time_twist/ui.py` |
 | Workbook authority | `docs/WORKBOOK_PIPELINE.md` |
 | Font | `work/time_twist/font.py` |
-| Native title art | `work/title_assets/Time Twist approved native title.png` |
+| Native final title art | `work/title_assets/Time Twist approved native title.png` |
+| Native swipe title art | `work/title_assets/Time Twist approved native slide.png` |
 | Art reconstruction | `work/rebuild_native_title_asset.py` |
 | Title patch | `work/time_twist/title.py` |
 | Title architecture | `docs/TITLE_SEQUENCE.md` |
@@ -305,5 +303,5 @@ branch and ending coverage, and continued review of wrapping, clearing,
 speaker attribution, terminology, and natural English.
 
 Only the exact reviewed candidate should be promoted. Generated FDS images are
-outputs; the translation maps, patch code, native title asset, source lock, and
+outputs; the translation maps, patch code, native title assets, source lock, and
 tests remain the maintainable authority.

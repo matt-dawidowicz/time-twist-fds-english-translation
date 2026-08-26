@@ -15,6 +15,7 @@ from time_twist.ui import (
     ENGLISH_SAVE_PROMPT,
     ENGLISH_START_PROMPT,
     LOAD_PROMPT_OFFSET,
+    NOV2_EXTENDED_DICTIONARY_PATCH,
     NOV2_OPAQUE_CLEAR_PATCHES,
     NOV2_SINGLE_CHOICE_B_PATCHES,
     NOV4_LOAD_PROMPT_OFFSET,
@@ -103,6 +104,7 @@ class SourceVerifiedPatchTests(unittest.TestCase):
     ) -> None:
         """Audit every production record through its established load mapping."""
         patches = (
+            NOV2_EXTENDED_DICTIONARY_PATCH,
             *NOV2_OPAQUE_CLEAR_PATCHES,
             *NOV2_SINGLE_CHOICE_B_PATCHES,
         )
@@ -121,6 +123,7 @@ class SourceVerifiedPatchTests(unittest.TestCase):
             project_root / "docs" / "BUG_FIXES_AND_TITLE_IMPLEMENTATION.md"
         ).read_text(encoding="utf-8")
         patches = (
+            NOV2_EXTENDED_DICTIONARY_PATCH,
             *NOV2_OPAQUE_CLEAR_PATCHES,
             *NOV2_SINGLE_CHOICE_B_PATCHES,
         )
@@ -131,6 +134,21 @@ class SourceVerifiedPatchTests(unittest.TestCase):
                     f"`${patch.cpu_address:04X}` |"
                 )
                 self.assertIn(row_pair, documentation)
+
+    def test_extended_dictionary_decoder_is_an_exact_size_replacement(
+        self,
+    ) -> None:
+        """Lock the 13-byte escape decoder and its recovered load address."""
+        patch = NOV2_EXTENDED_DICTIONARY_PATCH
+
+        self.assertEqual(patch.file_offset, 0x21D3)
+        self.assertEqual(patch.cpu_address, 0x81D3)
+        self.assertEqual(len(patch.expected), 13)
+        self.assertEqual(len(patch.replacement), 13)
+        self.assertEqual(
+            patch.replacement,
+            bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82"),
+        )
 
 
 class FixedPromptTests(unittest.TestCase):

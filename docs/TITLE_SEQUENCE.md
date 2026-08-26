@@ -4,93 +4,130 @@
 > document. See [Architecture](ARCHITECTURE.md) for the conceptual model and
 > [Contributing code](../CONTRIBUTING_CODE.md) before changing title tooling.
 
-This page is the concise architectural summary. For the full recovered memory
-map, exact patch sites, appended-region layout, helper semantics, historical
-failure modes, and test evidence, read the
-[bug-fix and title-screen implementation guide](BUG_FIXES_AND_TITLE_IMPLEMENTATION.md#english-title-screen-reconstruction).
+The English opening is derived from the reviewed animation in
+`work/title_assets/Time Twist approved English opening.gif`. The GIF is a
+763x570 nearest-neighbor display capture with 29 frames. It contains two
+different pieces of background art:
 
-The title is owned by NOV4, loaded at `$A200`. The source overlay is `$2375`
-bytes. The patched overlay must end below resident NOV3 at `$D7B5`.
+- the completed white `TIME TWIST` swipe;
+- the colored final logo, clock face, and `TM`.
 
-## Native graphics
+They are intentionally not forced into one silhouette. The subtitle is exact:
+`On the Outskirts of History...`.
 
-- Background CHR begins at NOV4 file offset `$09D2`.
-- Tile IDs `$00-$EB` are the 236 title-safe background slots.
-- Tile IDs `$EC-$FF` are the original clock-hand source tail and remain
-  byte-identical.
-- The final upper title uses exactly 236 patterns.
-- The lower split set uses exactly 55 patterns.
-- The raster split remains at tile row 16, below PUSH START.
-- Both title nametables decode to exactly 1,024 bytes.
+## Pixel authorities
 
-The production artwork is `work/title_assets/Time Twist approved native
-title.png`. `title.py` rejects every non-native size, non-indexed mode, and
-palette index above 3. It never resizes the production source.
+`work/rebuild_native_title_asset.py` validates the GIF hash, dimensions, frame
+count, loop flag, and every frame delay. It then inverts the display scaling by
+majority vote within each native 256x240 pixel cell. An exhaustive round-trip
+search locks the non-integer capture phases at `x=0.81`, `y=0.0`; this is what
+preserves the one-pixel clock numerals, `TM`, and wordmark outline. The
+conversion never uses an image resizer or lossy palette matching.
 
-## Nametables and swipe
+The script writes two indexed authorities:
 
-The resident decoder writes the first decoded map to NT0 `$2000` and the
-second to NT1 `$2400`. NT0 holds the final title. The first twelve tile rows of
-NT1 are copied mechanically from the same final native pixels, including all
-32 columns. Therefore the terminal monochrome frame at origin `$0100` and the
-corresponding final geometry are identical by construction.
+| Phase | ROM-bound asset | Nonzero bounds | Pixel SHA-256 |
+| --- | --- | --- | --- |
+| Final | `Time Twist approved native title.png` | `(22,22)-(237,96)` | `27EE6BA45E19778B80EBBEACEEDC763EF896CE6A0A942D0C080114AB2C02B208` |
+| Swipe | `Time Twist approved native slide.png` | `(24,25)-(235,86)` | `34FF7674E69C187BBF504C126F5F1F4ACBEF93823633C2EB00D5E4558FFC95BB` |
 
-NOV4's original states 3-5 write these nine-bit horizontal origins:
+The final background uses the temporal mode of 19 colored-title frames. That
+removes only the moving blue hand sprites; the static logo pixels remain
+unchanged before a reviewed native-pixel cleanup regularizes the lower T
+bevel, reference-traced clock rim, W/I/S outlines, and tiny TM. The clock uses
+the unobstructed lower-left GIF quadrant mirrored across both axes, then closes
+the diagonal stair corners and top/bottom tangent so every pink, white, and
+purple rim is a continuous native-pixel contour.
+The swipe comes from the completed monochrome frame. Production builds consume
+the two PNGs and do not resample the GIF.
+
+The final authority may own rows 0-96 and indices 0-3. The slide may own rows
+0-95 and only indices 0-1. `title_assets.py` rejects every other size, mode,
+palette, or ownership range.
+
+## Subtitle and retained game art
+
+The builder copies the final authority through row 96, clears rows 97-111, and
+draws `On the Outskirts of History...` at `(42,102)` with the deterministic
+5x7 font. This leaves five blank rows below the logo and three blank rows above
+the original `PUSH START`, which begins at row 112. The time machine, copyright
+line, attributes, and lower title art continue to come from the supported NOV4.
+
+## Exact two-phase CHR allocation
+
+NOV4's title pattern table reserves IDs `$EC-$FF` for the original animated
+clock-hand source. The 236 IDs `$00-$EB` are available to the upper background.
+The union of the exact swipe and final upper patterns needs 291 IDs, 55 more
+than can coexist.
+
+The allocator therefore gives 55 contiguous IDs two temporal meanings:
+
+1. NOV4 initially contains the exact slide patterns in those IDs.
+2. The final-title transition uploads 55 replacement patterns (880 bytes) to
+   the same IDs while rendering and NMI are blanked.
+3. Every other upper pattern keeps one fixed ID across both phases.
+
+No pattern is clustered, substituted, or merged. Applying the stored delta to
+`slide_chr` reconstructs `background_chr` byte-for-byte. The `$EC-$FF` clock
+tail remains byte-identical in both tables.
+
+The lower screen still uses NOV4's recovered mid-screen split at tile row 16.
+Its exact 55-pattern set is independent of the upper title table, and the
+split falls in the blank band below `PUSH START`.
+
+## Swipe, Nintendo overlay, and transition
+
+The resident decoder writes the final map to NT0 `$2000` and the slide/Nintendo
+map to NT1 `$2400`. States 3-5 retain the original 21 damped horizontal scroll
+origins. The two physical attribute tables continue to mask and reveal pieces
+of the 512-pixel NT0/NT1 world.
+
+The Nintendo opening temporarily overlays 38 IDs `$B0-$D5`. Before the swipe,
+the 59-byte helper blanks the PPUMASK mirror and register, disables NMI,
+restores those IDs directly from the base slide CHR, installs the first scroll
+origin, queues the monochrome palette, and restores control state. The palette
+is deliberately queued after the FDS BIOS CHR upload, which can overwrite its
+staging state. The following NMI applies the new palette and scroll before
+rendering returns.
+
+At the final transition, the 97-byte helper:
+
+1. blanks rendering and disables NMI;
+2. uploads the 55-tile final delta to pattern table 1;
+3. uploads the 55 lower-title patterns to pattern table 0;
+4. enables the recovered raster split and restores rendering state.
+
+The slide palette remains `$0F,$30,$30,$30`, so every nonzero swipe pixel is
+white while the original attribute mask still controls visibility.
+
+## Clock alignment
+
+The source clock tiles, metasprite records, order, and timing are untouched.
+Only the two metasprite origins change:
 
 ```text
-1F0 01C 1D8 034 1C0 04C 1A8 064 190 07C 178
-094 160 0AC 148 0C4 130 0DC 118 0F4 100
+source: 78 00 37 04 80 00 3F
+patch:  6A 00 3A 04 72 00 42
 ```
 
-`$57` supplies PPUSCROLL and bit zero of `$58` selects NT0/NT1. This is one
-whole-screen origin; the title raster split is disabled during states 3-5.
-The origins retain the original damped left/right motion toward `$0100`.
-NT0's upper attributes select black palette 0 while NT1's upper attributes
-select visible palette 1, so the scroll produces the native blank-to-
-alternating-strip assembly rather than moving an already complete logo.
+That moves both origins 14 pixels left and 3 pixels down, aligning the shared
+elbow with the recovered clock pivot near native coordinate `(127,78)`.
 
-The stock state-3 palette hid native index 1, so its settled monochrome logo
-lost the final title's white outline. The patch source-checks and changes NOV4
-file offset `$0995` (CPU `$AB95`) from `$0F` to `$30`. Runtime palette 1 is now
-`$0F,$30,$30,$30`: every nontransparent native logo pixel becomes white, while
-the attribute mask still keeps unrevealed pixels black. The completed frame at
-origin `$0100` is therefore byte-identical in geometry to the approved colored
-logo before the palette/title-state transition.
+## Verification
 
-## Nintendo reuse and restoration
+Fixture-free tests regenerate both PNG authorities from the GIF and lock their
+pixel and file hashes. Separate semantic masks lock the four clock numerals,
+the `TM`, and the white letter boundary. Private-overlay integration tests
+additionally verify:
 
-The opening Nintendo art temporarily overlays 38 pattern IDs `$B0-$D5`.
-Previously the English slide avoided those IDs by blacking columns 27-31,
-which made the completed monochrome logo incomplete and caused a geometry
-jump when NT0 replaced it.
+- both exact phase renders and the 55-tile reconstruction identity;
+- all 21 native swipe origins and per-nametable attribute masking;
+- Nintendo overlay/restoration and final-delta upload addresses;
+- the relocated two-nametable RLE stream and single `$FF` terminator;
+- source fingerprints at every patched NOV4 site;
+- byte preservation of clock CHR and metasprite data;
+- the expanded NOV4 end address remains below resident NOV3 at `$D7B5`.
 
-The patch hooks the original state-3 `JSR $AB74` at NOV4 file offset `$02E4`.
-The appended helper preserves that monochrome-palette call, saves and clears
-the `$1C` PPUMASK mirror, blanks rendering, disables NMI, restores `$B0-$D5`
-from the patched base CHR, then writes the original first native origin
-`$01F0` while the PPU is still blank. Only after that does it restore the saved
-PPU control and mask state. The sixteen helper bytes are paid for by
-eliminating the unused serialized duplicate of the same `$B0-$D5` base-CHR
-source and shrinking the zero workspace accordingly, so NOV4 remains exactly
-12,214 bytes.
-The original 12-pixel movement, state timing, later final-title transition,
-and title exit remain in place.
-
-## Verification helpers
-
-`render_slide_logo_frame()` reconstructs the exact NT0/NT1 512-pixel world
-from ROM-bound CHR and nametables. `render_title_preview.py` emits all 21 native
-swipe frames plus a representative contact sheet and the final title preview.
-These are deterministic static evidence, not substitutes for emulator proof.
-
-## Runtime proof
-
-The unpromoted Zenpen candidate with SHA-256
-`10C893513CC97C3D8657DDF3BF1DC333DC9B0960D0061A227B5D89621F35769B`
-was cold-booted twice in a headless FDS emulator for 1,150 frames. All 1,153
-compared artifacts from the two runs were byte-identical. The moving assembly
-occupies frames 896-915, the exact completed monochrome logo remains visible
-through frame 979, the palette-only refinement occupies frames 980-983, the
-final colored map fades in at frames 1020-1027, and preserved hand animation
-is visible from frame 1029. Emulator stderr was empty. The capture harness retains
-no FDS BIOS.
+An emulator capture is still required before promotion. The playtest gate must
+cover cold boot, the full Nintendo/swipe/final sequence, clock rotation,
+subtitle spacing, `PUSH START`, and title exit with no mixed-CHR flash.

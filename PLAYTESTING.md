@@ -42,6 +42,12 @@ test. These checks are especially valuable:
 6. Exercise command, object, topic, answer, and quiz menus. Report clipped,
    garbled, abbreviated, stale, or untranslated labels.
 
+The current candidate's static audit decodes all 721 configured menu labels as
+full-word matches. Runtime testing should concentrate on what static decoding
+cannot prove: opening menus on both sides of records 32, 64, and 96, moving the
+cursor across those page boundaries, selecting each kind of entry, and using
+Back/Cancel without stale or misaddressed text.
+
 For the complete story-by-story checklist, use
 [the runtime playtest matrix](docs/PLAYTEST_MATRIX.md). It is intentionally
 more detailed than a first-session playtest.

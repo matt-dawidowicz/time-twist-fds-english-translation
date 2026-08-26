@@ -204,7 +204,7 @@ This guide accompanies the complete translation workbook. Exact Japanese always 
 - **TIME TWIST** — exact `タイムツイスト`; reconstructed `タイムツイスト`; first `TITLE/wordmark`. Title wordmark.
 - **On the Outskirts of History…** — exact `歴史のかたすみで……`; reconstructed `歴史の片隅で……`; first `TITLE/subtitle`. Requested localized subtitle.
 - **what you might call…** — exact `いわゆるひとつの`; reconstructed `いわゆる一つの`; first `TT1B/g0/r31`. Comic Nagashima-associated verbal mannerism.
-- **quite a pair / big breasts** — exact `ぼいん`; reconstructed `ボイン`; first `TT1B/g1/r14`. Dated, objectifying slang; tone is intentionally crude.
+- **busty / large breasts** — exact `ぼいん`; reconstructed `ボイン`; first `TT1B/g1/r14`. Dated, objectifying slang; tone is intentionally crude.
 
 ## Control-code policy
 

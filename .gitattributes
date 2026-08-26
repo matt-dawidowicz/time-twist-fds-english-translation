@@ -1,3 +1,6 @@
 /work/release_sources.json text eol=lf
 /work/release_target.json text eol=lf
 /work/translations/*.json text eol=lf
+/work/title_assets/*.gif binary
+/work/title_assets/*.png binary
+"outputs/Time Twist Japanese-English script comparison.tsv" whitespace=-blank-at-eol

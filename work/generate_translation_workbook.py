@@ -57,23 +57,23 @@ BANK_ORDER = (
     "SON-KOUH",
 )
 
-# Rebuilt with the project's native dictionary compressor after the playable
-# wording and corpus-wide ellipsis pass were finalized.  All scenario banks
-# were measured from the same candidate manifest; the fixed tails and every
-# original RAM footprint remain preserved.
+# Measured from the complete public scenario maps with the native encoder,
+# exact packed-size model, optimized dictionary search, and recorded fixed-tail
+# capacities. A private ROM-backed candidate rebuild remains a separate release
+# and playtest gate.
 PATCH_FOOTPRINT_RESULTS = {
-    "TT1A": {"used": 1660, "capacity": 1669, "remaining": 9},
-    "TT1B": {"used": 4024, "capacity": 4026, "remaining": 2},
-    "TT2": {"used": 3819, "capacity": 3847, "remaining": 28},
-    "T22": {"used": 1797, "capacity": 1812, "remaining": 15},
-    "TT3A": {"used": 3724, "capacity": 3741, "remaining": 17},
-    "TT3B": {"used": 1830, "capacity": 1840, "remaining": 10},
+    "TT1A": {"used": 1656, "capacity": 1669, "remaining": 13},
+    "TT1B": {"used": 4022, "capacity": 4026, "remaining": 4},
+    "TT2": {"used": 3834, "capacity": 3847, "remaining": 13},
+    "T22": {"used": 1801, "capacity": 1812, "remaining": 11},
+    "TT3A": {"used": 3733, "capacity": 3741, "remaining": 8},
+    "TT3B": {"used": 1837, "capacity": 1840, "remaining": 3},
     "TT4": {"used": 4738, "capacity": 4741, "remaining": 3},
-    "TT5": {"used": 3700, "capacity": 3702, "remaining": 2},
-    "T25": {"used": 2287, "capacity": 2374, "remaining": 87},
-    "TT6A": {"used": 2691, "capacity": 2833, "remaining": 142},
-    "TT6B": {"used": 2304, "capacity": 2336, "remaining": 32},
-    "TT6C": {"used": 3518, "capacity": 3536, "remaining": 18},
+    "TT5": {"used": 3693, "capacity": 3702, "remaining": 9},
+    "T25": {"used": 2363, "capacity": 2374, "remaining": 11},
+    "TT6A": {"used": 2823, "capacity": 2833, "remaining": 10},
+    "TT6B": {"used": 2298, "capacity": 2336, "remaining": 38},
+    "TT6C": {"used": 3520, "capacity": 3536, "remaining": 16},
     "TT6D": {"used": 323, "capacity": 332, "remaining": 9},
 }
 
@@ -1233,19 +1233,21 @@ MANUAL_PATCH = {
         "A magic charm?{CTRL:6}{CTRL:4}{CTRL:3}"
         "Well--act while I can!"
     ),
-    "TT1B/g0/r1": "A blue sky... how long?",
+    "TT1B/g0/r1": "Blue sky--how long gone?",
     "TT1B/g0/r17": (
         '"Devil\'s Hand"{CTRL:0}{CTRL:2}A bronze statue, emblem{CTRL:0}'
         "of a 19th-century cult.{CTRL:4}{CTRL:3}Its claws tore hearts{CTRL:4}"
         "from sacrifices."
     ),
-    "TT1B/g0/r28": ("Me: Um...{CTRL:1}Girl: Seen them all?{CTRL:0}Me: No..."),
-    "TT1B/g0/r31": (
-        "Me: You mean...{CTRL:0}What you'd call a devil.{CTRL:0}"
-        "Me: G-g-g-gah!{CTRL:6}Devil: Patient telepathy{CTRL:4}"
-        "finally paid off.{CTRL:4}Me: ..."
+    "TT1B/g0/r28": (
+        "Me: Um...{CTRL:1}Girl: Seen everything?{CTRL:0}Me: No..."
     ),
-    "TT1B/g1/r14": "Me: Quite a pair. Heh...{CTRL:1}Girl: Eek!",
+    "TT1B/g0/r31": (
+        "Me: You mean you're...{CTRL:0}Devil: You might say so.{CTRL:0}"
+        "Me: G-g-g-gah!{CTRL:6}Devil: My telepathy{CTRL:4}"
+        "finally paid off.{CTRL:4}Me: ........"
+    ),
+    "TT1B/g1/r14": "Me: You're busty. Heh...{CTRL:1}Girl: Eek!",
     "TT1B/g1/r26": "Man: Shut up! Move!",
     "TT1B/g1/r27": (
         "Man: Big resort comin'{CTRL:0}right here!{CTRL:2}"
@@ -1253,18 +1255,18 @@ MANUAL_PATCH = {
     ),
     "TT1B/g1/r28": "Money rules! For cash,{CTRL:0}I'd sell my soul!",
     "TT1B/g2/r5": (
-        "Man: Forty years here!{CTRL:0}I won't leave now!{CTRL:2}"
-        "Me: I'm no land shark.{CTRL:6}Man: Oh! Sorry."
+        "...: I've lived here{CTRL:0}40 years! I won't leave!{CTRL:2}"
+        "Me: I'm no land shark.{CTRL:6}...: Oh! Sorry."
     ),
     "TT1B/g2/r14": "Wh-what?! That's me!",
     "TT3A/g2/r30": (
-        "One note fragment.{CTRL:0}In blue ink:{CTRL:0}"
-        '"...4 km southwest..."{CTRL:0}"...Rebecca."'
+        "A fragment of the note.{CTRL:0}Blue ink:{CTRL:0}"
+        "'... 4 km southwest...'{CTRL:0}'... Rebecca'"
     ),
     "TT6A/g0/r13": (
-        "Joseph: Mary is pregnant{CTRL:0}before we are even wed.{CTRL:2}"
-        "I swear before God,{CTRL:0}I never held her hand!{CTRL:4}{CTRL:3}"
-        "She swears she knows not{CTRL:4}how. Can that be true?{CTRL:3}"
+        "Joseph: My betrothed,{CTRL:0}Mary, may be with child.{CTRL:2}"
+        "I swear before God,{CTRL:0}I never even held her{CTRL:4}hand!{CTRL:3}"
+        "Mary has no idea how.{CTRL:4}Can that be true?{CTRL:3}"
         "Me: Hee-haw...{CTRL:3}Joseph: I trust nothing!{CTRL:4}"
         "Our betrothal is over!"
     ),
@@ -1765,7 +1767,7 @@ GLOSSARY_SEEDS = (
         "Slang",
         "ぼいん",
         "ボイン",
-        "quite a pair / big breasts",
+        "busty / large breasts",
         "",
         "Dated, objectifying slang; tone is intentionally crude.",
     ),
@@ -2563,14 +2565,13 @@ def problem_categories(
             categories.append("Accurate")
     elif not categories:
         categories.append("Accurate")
-    manual_categories = {
-        "TT1B/g0/r31": ("Lost joke", "Lost characterization"),
-        "TT1B/g1/r14": ("Lost characterization", "Wrong register"),
-        "TT6A/g0/r13": ("Omitted information",),
+    resolved_playable_ids = {
+        "TT1B/g0/r31",
+        "TT1B/g1/r14",
+        "TT6A/g0/r13",
     }
-    for category in manual_categories.get(source_row["text_id"], ()):
-        if category not in categories:
-            categories.append(category)
+    if source_row["text_id"] in resolved_playable_ids:
+        return ("Accurate",)
     return tuple(dict.fromkeys(categories))
 
 
@@ -2598,18 +2599,17 @@ def current_problems(
     qa = review["qa"]
     manual = {
         "TT1B/g0/r31": (
-            "The draft turns いわゆるひとつの into a plain “Yes,” losing the "
-            "comic Nagashima-associated verbal mannerism; it also removes the "
-            "protagonist's stammer and weakens the Devil's patient-boasting tone."
+            "Resolved in the playable text: the unfinished recognition, the "
+            "Devil's roundabout comic reply, and the delayed payoff in his "
+            "telepathy boast are all retained."
         ),
         "TT1B/g1/r14": (
-            "“Quite a bust” is understandable, but it does not fully convey the "
-            "dated, leering ボイン joke, and “Oh!” weakens the girl's embarrassed "
-            "protest."
+            "Resolved in the playable text: 'busty' directly preserves the dated, "
+            "leering ボイン joke, while the girl's embarrassed protest remains."
         ),
         "TT6A/g0/r13": (
-            "The draft is broadly accurate but its broken “Mary says she knows not” "
-            "loses the complete claim that Mary has no idea how she became pregnant."
+            "Resolved in the playable text: Joseph identifies Mary as his "
+            "betrothed and explicitly says she has no idea how she became pregnant."
         ),
     }
     if source_row["text_id"] in manual:
@@ -3476,11 +3476,13 @@ def write_progress(
     progress.extend(
         [
             "",
-            "## Native compression validation for revised banks",
+            "## Native compression validation",
             "",
             "Every patch-safe scenario line passed the ROM character encoder and "
-            "24-column display validator. The four materially revised banks also "
-            "passed native dictionary recompression:",
+            "24-column display validator. All 13 complete public scenario maps "
+            "also passed exact optimized dictionary recompression against their "
+            "recorded fixed-tail capacities. A private ROM-backed candidate build "
+            "and playtest remain separate gates:",
             "",
         ]
     )

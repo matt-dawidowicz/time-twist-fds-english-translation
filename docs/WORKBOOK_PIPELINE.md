@@ -31,7 +31,8 @@ literal readings, and natural English are editorial layers.
 | --- | --- |
 | `work/translated_scripts/BANK.json` | Decoded scenario records and stable IDs |
 | `work/translations/BANK.json` | Authoritative playable scenario English |
-| `work/time_twist/ui.py` | Authoritative fixed-address and graphics text |
+| `work/time_twist/ui_fixed_tables.py` | Authoritative full-word scenario menu labels |
+| `work/time_twist/ui.py` | Fixed-interface/graphics text and menu relocation logic |
 | `outputs/Time Twist Japanese-English script comparison.json` | Ordered comparison corpus |
 | `work/translation_workbook_banks/BANK.json` | Per-bank workbook checkpoints |
 | `outputs/Time_Twist_complete_translation_workbook.*` | Aggregate review output |
@@ -61,15 +62,17 @@ It then derives patch-safe text under this policy:
 
 - scenario rows come directly from `work/translations/*.json`;
 - fixed-address and graphics rows retain the exact installed English from the
-  patch definitions;
+  full-word menu definitions or fixed-interface patch definitions;
 - natural-translation alternatives stay editorial and cannot silently enter a
   ROM build.
 
 ## Preserving the full translation
 
-The workbook is also the preservation layer for English that is accurate but
-cannot yet be installed within the original FDS constraints. Two fields must
-remain distinct:
+The workbook is also the preservation layer for scenario English that is
+accurate but cannot yet be installed within renderer or control-layout
+constraints. The fixed-menu expansion solved the former menu-slot
+abbreviations, but it does not add line/page controls to dialogue. Two fields
+must remain distinct:
 
 | Field | Meaning |
 | --- | --- |
@@ -86,15 +89,15 @@ For example, record `TT1B/g0/r1` preserves:
 ```text
 Japanese:     さいごにあおぞらをみたのは いつだっけ
 Full English: When was the last time I saw a blue sky?
-ROM-safe:     A blue sky... how long?
+ROM-safe:     Blue sky--how long gone?
 ```
 
-The full English is 40 visible characters, but the current message segment is
-limited to 24 columns. In the current TT1B build, substituting that text also
-exceeds the compressed bank footprint by 9 bytes. Inserting a new line or page
-control is not merely punctuation: this source record has no such control, so
-the change must be verified against the object's rendering, clearing, and
-repeat-inspection behavior.
+The optimized compact wording is now `Blue sky--how long gone?`. The full
+English is 40 visible characters, but this source record has no line or page
+control and the renderer limits its single segment to 24 columns. Compression
+headroom cannot solve that display-layout constraint by itself. Inserting a new
+control is not merely punctuation, so that larger change would require testing
+the object's rendering, clearing, and repeat-inspection behavior.
 
 ### Using a full translation in a future build
 

@@ -79,13 +79,19 @@ kind and total encoded width:
 | Prefix | Total bits | Kind | Value range |
 | --- | ---: | --- | --- |
 | `0xxxxx` or `10xxxx` | 6 | Common glyph | `0..47` |
-| `110xxxxxx` | 9 | Extended glyph | `0..63` |
+| `110xxxxxx` | 9 | Extended glyph / patched dictionary escape | `0..63` |
 | `1110xxxxx` | 9 | Dictionary reference | `1..31` in valid text |
 | `1111xxx` | 7 | Control | `0..7` |
 
 Control value `5` is reserved as the record separator. After it is decoded,
 the engine discards the rest of that byte and starts the next record at a byte
 boundary. `pack_records()` and `split_records()` reproduce that behavior.
+
+Unmodified Japanese code interprets every `110xxxxxx` value as an extended
+glyph. The English NOV2 patch keeps values `37..63` as glyphs and maps the
+otherwise-unused English values `0..36` to dictionary references `32..68`.
+Native source parsing remains in 31-entry mode unless the caller explicitly
+enables the patched English interpretation.
 
 `PackedSymbol.start_bit` and `end_bit` record the original bit positions during
 decoding. Newly encoded symbols use zeroes for those fields because positions
@@ -102,8 +108,15 @@ The English compressor deliberately creates a **flat** dictionary:
 - entries contain only common or extended literal glyphs;
 - controls and existing references form candidate boundaries;
 - required bank-specific entries are reserved first;
-- a maximum of 31 entries is enforced;
+- the native decoder permits 31 entries;
+- the guarded English release decoder permits 68 entries;
 - a candidate is accepted only if the complete packed size decreases.
+
+Legacy scenario-only builds compare greedy selection with bounded beam search
+and optional-entry reordering inside the native 31-entry limit. The release
+builder jointly compresses dialogue and full-word menus with up to 68 entries.
+Every alternative retains a flat dictionary and is accepted only after exact
+packed-size and round-trip checks.
 
 Some fixed-address tables depend on required dictionary words such as command,
 object, or speaker labels. Changing those words may change both the scenario
@@ -146,7 +159,7 @@ numeric sequence identical.
 Many menus, command names, objects, quiz answers, and disk messages are packed
 records outside the normal scenario group area.
 
-Two constraints appear:
+Two layouts appear:
 
 1. **table-size fixed**: the whole table must have the original byte size;
 2. **record-boundary fixed**: every individual record must retain its byte
@@ -156,6 +169,17 @@ The UI patcher verifies a SHA-256 hash or exact source bytes before changing a
 table. It decodes the original record boundaries, chooses a dictionary-aware
 encoding, and appends invisible common-space symbols until each record consumes
 its exact original slot.
+
+The 11 scenario menu banks use a third, recovered layout in the canonical
+release. Code addresses record zero through header pointer `$A214` and records
+32, 64, and 96 through a page-pointer table whose address is stored at `$A21A`.
+It does not contain one hard-coded address per label. The release builder can
+therefore pack the complete labels at variable lengths, regenerate those page
+pointers, move the two intervening secondary tables while updating their
+`$A210`/`$A212` base pointers, and shift scenario group zero by the same
+amount. The scenario dictionary and groups then use the bytes recovered from
+shorter menu records. The overlay size and fixed suffix still remain exactly
+unchanged.
 
 ## Font and title assets
 
@@ -193,11 +217,11 @@ nametables followed by one `$FF`.
 
 ### Native title authority
 
-The production title image is a 256x240 indexed PNG with values 0-3. Only
-rows 0-95 may contain pixels. No production crop, scale, or palette search is
-performed: those indices become exact 2bpp tile pixels. The first twelve rows
-of the second nametable are generated from all 32 columns of those same final
-pixels, making completed-slide geometry identical to the final title.
+Production uses two 256x240 indexed PNG authorities. The final image uses
+values 0-3 and may own rows 0-96. The completed swipe uses values 0-1 and may
+own rows 0-95. No production crop, scale, or palette search is performed:
+those indices become exact 2bpp tile pixels. The two phases deliberately keep
+their distinct GIF geometry.
 
 ### Title split and animated clock
 
@@ -209,7 +233,9 @@ hand tiles, frame layouts, or animation timing.
 
 Background IDs `$00-$EB` belong to the title; `$EC-$FF` remain the original
 hand source. Nintendo temporarily owns `$B0-$D5`, which are restored from base
-CHR immediately before the swipe.
+CHR immediately before the swipe. Sixty IDs below `$EC` are then replaced by
+a contiguous 880-byte CHR upload at the final transition, converting the exact
+slide table into the exact final table without lossy pattern merging.
 
 ## Source guards
 

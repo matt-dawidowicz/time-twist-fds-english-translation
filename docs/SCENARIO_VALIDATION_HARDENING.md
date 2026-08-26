@@ -36,10 +36,12 @@ file therefore cannot redirect otherwise valid text into the wrong record, and
 an overwide line cannot bypass `scenario-merge` by invoking insertion directly.
 
 The lower-level `rebuild_scenario_bank()` API now independently enforces the
-source bank's per-group record counts and the native 31-entry dictionary limit.
-Callers outside the CLI therefore cannot accidentally serialize a structurally
-shifted record layout or an impossible dictionary merely because the outer
-group count still matches.
+source bank's per-group record counts and an explicit decoder-specific
+dictionary limit. Native callers default to 31; the guarded English release
+path explicitly requests 68. Callers outside the CLI therefore cannot
+accidentally serialize a structurally shifted record layout or a dictionary
+unsupported by their decoder merely because the outer group count still
+matches.
 
 ## Dictionary reservation boundary
 
@@ -54,13 +56,21 @@ references transitively. `dictionary_end_offset` therefore covers entries
 proven reachable from either dialogue or the source fixed UI, without assuming
 that every bank has 31 source entries.
 
-Translated fixed-address UI tables are a separate case: their patcher indexes a
-complete 31-slot English dictionary. `required_dictionary_entries()` marks
-those banks as full-dictionary consumers. The compressor therefore accepts a
-fast result only when it contains all 31 entries, retries with candidate pruning
-disabled when necessary, and fails closed if the exhaustive positive-saving
-search still cannot produce a complete dictionary. This applies equally to the
-manual `scenario-insert`/`ui-patch` workflow and the canonical release builder.
+The standalone `scenario-insert`/`ui-patch` workflow is a separate legacy
+case: its exact-slot patcher indexes a complete 31-slot English dictionary.
+`required_dictionary_entries()` marks those banks as full-dictionary consumers.
+The compressor therefore accepts a fast result only when it contains all 31
+entries, retries with candidate pruning disabled when necessary, and fails
+closed if the exhaustive positive-saving search still cannot produce a
+complete dictionary.
+
+The canonical release uses the fully recovered menu layout instead. It packs
+each bank's complete menu strings as another compression group, permits 68
+English dictionary entries through the source-verified NOV2 decoder patch,
+regenerates record-page pointers 32/64/96, and moves only the two intervening
+tables whose base pointers are present in the header. The fixed scenario suffix
+and total overlay size do not move. This is the path that removes menu
+abbreviations.
 
 A fully translated fixed-UI bank also rejects `scenario-insert --no-compress`.
 That diagnostic mode deliberately preserves the Japanese dictionary, so it
@@ -85,10 +95,19 @@ all 31 dictionary slots are populated. A result with fewer than 31 entries is
 rejected for those banks rather than allowing the later fixed-table encoder to
 scan beyond the generated dictionary.
 
-This remains a bounded robustness fallback, not a claim of globally optimal
-compression. Successful fast-path builds are unchanged, and the extra search
-cost is paid only when the native reservation or full-dictionary contract would
-otherwise be missed.
+Complete scenario insertion and footprint reporting add a second deterministic
+optimization stage. They compare the valid greedy result with a bounded beam
+search and a hill climb over optional dictionary-entry order. Required legacy
+fixed-UI entries remain an immutable prefix, and tight banks receive a wider
+beam. The smallest exact result wins, so optimization cannot make a bank larger
+than the established greedy output. The release's joint 68-entry menu/dialogue
+path uses exact greedy accounting because it already fits every bank and avoids
+the much larger bounded-search cost at that dictionary width.
+
+This remains bounded search, not a claim of globally optimal compression.
+Direct compressor and property-test callers retain the fast greedy default;
+the extra search cost is explicit in the complete build paths where recovered
+bytes can improve the release candidate.
 
 ## Regression coverage
 
@@ -104,9 +123,13 @@ private ROM bytes. It verifies:
 - fully translated fixed-UI insertion rejects `--no-compress` without writing
   an unsafe intermediate bank;
 - direct scenario rebuilding rejects changed per-group record counts;
-- direct scenario rebuilding rejects dictionaries larger than 31 entries;
+- direct scenario rebuilding rejects dictionaries larger than the selected
+  decoder limit;
 - the personality-question wrapping exception remains intact;
 - a capacity miss triggers an unpruned compressor retry;
+- beam search can beat a locally optimal greedy dictionary;
+- dictionary reordering can reduce overlapping optional entries;
+- optimized results expand exactly and preserve fixed-UI dictionary indices;
 - raw and headered zero-side FDS images are rejected;
 - negative packed-record decode limits are rejected; and
 - the release dependency metadata keeps Pillow pinned to the approved version.
