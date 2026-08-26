@@ -1,0 +1,87 @@
+name: fix-nov2-dictionary-target
+
+on:
+  push:
+    branches:
+      - full-natural-dialogue
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Correct extended dictionary resume target
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              Path("work/time_twist/ui.py"): [
+                  (
+                      'replacement=bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82"),',
+                      'replacement=bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),',
+                  ),
+                  (
+                      "# replacement exactly occupies NOV2's original Japanese extended-glyph branch.\n",
+                      "# replacement exactly occupies NOV2's original Japanese extended-glyph branch.\n"
+                      "# The extended payload has already been read into $3A, so the dictionary path\n"
+                      "# must resume at $82C5.  $82BE-$82C4 is the native five-bit index reader;\n"
+                      "# entering there would consume five bits from the following packed token.\n",
+                  ),
+              ],
+              Path("work/tests/test_ui_unit.py"): [
+                  (
+                      'bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82"),',
+                      'bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),',
+                  ),
+                  (
+                      "        )\n\n\nclass FixedPromptTests",
+                      "        )\n"
+                      "        # $82BE-$82C4 is the native five-bit dictionary-index reader.\n"
+                      "        # Extended references have already consumed their six-bit payload, so\n"
+                      "        # they must resume at $82C5 or the packed stream is desynchronized.\n"
+                      "        self.assertEqual(patch.replacement[-3:], bytes.fromhex(\"4C C5 82\"))\n\n\n"
+                      "class FixedPromptTests",
+                  ),
+              ],
+              Path("docs/FULL_WORD_MENU_IMPLEMENTATION.md"): [
+                  (
+                      "A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82",
+                      "A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82",
+                  ),
+                  (
+                      "enter the existing dictionary expander at `$82BE`.",
+                      "enter the existing dictionary expander at `$82C5`, after the native five-bit dictionary-index reader.",
+                  ),
+              ],
+              Path("docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md"): [
+                  (
+                      "A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82",
+                      "A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82",
+                  ),
+                  (
+                      "`$82BE` after adding 32; values `$25` and above branch to the existing glyph",
+                      "`$82C5` after adding 32, skipping the native five-bit index reader at `$82BE-$82C4`; values `$25` and above branch to the existing glyph",
+                  ),
+              ],
+          }
+
+          for path, pairs in replacements.items():
+              text = path.read_text(encoding="utf-8")
+              for old, new in pairs:
+                  if old not in text:
+                      raise SystemExit(f"expected text missing from {path}: {old!r}")
+                  text = text.replace(old, new, 1)
+              path.write_text(text, encoding="utf-8")
+          PY
+          rm .github/workflows/fix-nov2-dictionary-target.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add work/time_twist/ui.py work/tests/test_ui_unit.py docs/FULL_WORD_MENU_IMPLEMENTATION.md docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md .github/workflows/fix-nov2-dictionary-target.yml
+          git commit -m "Fix extended dictionary decoder resume target"
+          git push
