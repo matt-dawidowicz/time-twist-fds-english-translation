@@ -41,9 +41,14 @@ class FullNaturalDialogueTests(unittest.TestCase):
 
     def test_natural_overlay_preserves_controls_and_safe_wraps(self) -> None:
         """Prove every expanded line retains controls and wrap boundaries."""
-        for record_id, (compact, natural) in FULL_NATURAL_DIALOGUE_OVERRIDES.items():
+        for record_id, (
+            compact,
+            natural,
+        ) in FULL_NATURAL_DIALOGUE_OVERRIDES.items():
             with self.subTest(record=record_id):
-                self.assertEqual(control_values(natural), control_values(compact))
+                self.assertEqual(
+                    control_values(natural), control_values(compact)
+                )
                 self.assertIn(record_id, WRAPPED_SCENARIO_IDS)
                 validate_display_width(natural, allow_wrap=True)
                 encoded = encode_validated_english(record_id, compact, compact)

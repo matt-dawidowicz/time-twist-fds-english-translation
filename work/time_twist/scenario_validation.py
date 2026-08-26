@@ -57,7 +57,7 @@ FULL_NATURAL_DIALOGUE_OVERRIDES: dict[str, tuple[str, str]] = {
         "A fragment of the note.{CTRL:0}Blue ink:{CTRL:0}"
         "'... 4 km southwest...'{CTRL:0}'... Rebecca'",
         "One fragment of the     note.{CTRL:0}In blue ink:{CTRL:0}"
-        "\"...4 km southwest...\"{CTRL:0}\"...Rebecca.\"",
+        '"...4 km southwest..."{CTRL:0}"...Rebecca."',
     ),
     "TT6A/g0/r13": (
         "Joseph: My betrothed,{CTRL:0}Mary, may be with child.{CTRL:2}"
