@@ -72,11 +72,11 @@ The symbol set will be demand-driven by the revised script. Likely useful candid
 
 | Bank | Scenario records | Semantic/voice re-review | Proposed edits | Width checked | Recompressed | Runtime checked |
 | --- | ---: | --- | --- | --- | --- | --- |
-| TT1A | 33 | in progress | pending | pending | pending | pending |
+| TT1A | 35 | in progress | pending | pending | pending | pending |
 | TT1B | 137 | pending | pending | pending | pending | pending |
 | TT2 | 169 | pending | pending | pending | pending | pending |
 | T22 | 58 | pending | pending | pending | pending | pending |
-| TT3A | 155 | pending | pending | pending | pending | pending |
+| TT3A | 152 | pending | pending | pending | pending | pending |
 | TT3B | 58 | pending | pending | pending | pending | pending |
 | TT4 | 183 | pending | pending | pending | pending | pending |
 | TT5 | 123 | pending | pending | pending | pending | pending |
@@ -84,9 +84,9 @@ The symbol set will be demand-driven by the revised script. Likely useful candid
 | TT6A | 100 | pending | pending | pending | pending | pending |
 | TT6B | 94 | pending | pending | pending | pending | pending |
 | TT6C | 106 | pending | pending | pending | pending | pending |
-| TT6D | 7 | pending | pending | pending | pending | pending |
+| TT6D | 8 | pending | pending | pending | pending | pending |
 
-The scenario counts above are tracked separately from fixed-address menu records. Menu semantic corrections are handled in the parallel menu audit rather than being silently mixed into dialogue changes.
+The scenario counts above sum to **1,299** and are tracked separately from fixed-address menu records. Menu semantic corrections are handled in the parallel menu audit rather than being silently mixed into dialogue changes.
 
 ## Confirmed early findings
 
