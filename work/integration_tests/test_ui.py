@@ -335,7 +335,9 @@ class StaticUiTests(unittest.TestCase):
         )
         self.assertEqual(original[0x22C5:0x22C8], bytes.fromhex("A9 FF 85"))
         self.assertEqual(
-            patched[patch.file_offset : patch.file_offset + len(patch.replacement)],
+            patched[
+                patch.file_offset : patch.file_offset + len(patch.replacement)
+            ],
             patch.replacement,
         )
         self.assertEqual(patch.replacement[-3:], bytes.fromhex("4C C5 82"))
