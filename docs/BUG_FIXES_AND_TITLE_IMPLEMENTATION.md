@@ -108,6 +108,14 @@ glyph branch. Values below `$25` reach the existing dictionary expander at
 path at `$8226`. `CMP #$25` clears carry for the add path, so the compact
 sequence does not require a separate `CLC`.
 
+A playtest exposed why the resume address matters. An earlier experimental
+version jumped to `$82BE`; that entry point clears `$3A` and calls the native
+five-bit dictionary-index reader before continuing at `$82C5`. Extended
+references have already consumed their six-bit payload, so the extra read
+desynchronized the packed stream. The first visible symptom was TT1B/g0/r0
+rendering `I've wanted to visan` instead of `I've wanted to visit.` before the
+game crashed. The corrected patch jumps directly to `$82C5`.
+
 ## NOV2 one-choice B-button engine fix
 
 ### Symptom

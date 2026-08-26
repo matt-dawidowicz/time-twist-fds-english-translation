@@ -24,6 +24,7 @@ from time_twist.ui import (
     KOUHEN_BOOT_GUARD_TILEMAP_OFFSET,
     NOV2_BLANK_TILE,
     NOV2_DIALOGUE_ROW_COPY,
+    NOV2_EXTENDED_DICTIONARY_PATCH,
     NOV2_OPAQUE_CLEAR_PATCHES,
     NOV2_SINGLE_CHOICE_B_PATCHES,
     NOV4_START_PROMPT_OFFSET,
@@ -316,6 +317,28 @@ class StaticUiTests(unittest.TestCase):
         offset, source = NOV2_DIALOGUE_ROW_COPY
         self.assertEqual(original[offset : offset + len(source)], source)
         self.assertEqual(patched[offset : offset + len(source)], source)
+
+    def test_zenpen_nov2_extended_dictionary_skips_native_index_reader(
+        self,
+    ) -> None:
+        """Resume extended refs after the native five-bit index reader."""
+        path = WORK_DIR / "extracted_zenpen/side0_06_NOV2_6000.bin"
+        if not path.exists():
+            self.fail("workspace fixture is not available")
+        original = path.read_bytes()
+        patched = patched_nov2_ui(original)
+        patch = NOV2_EXTENDED_DICTIONARY_PATCH
+
+        self.assertEqual(
+            original[0x22BE:0x22C5],
+            bytes.fromhex("A9 00 85 3A 20 0D 81"),
+        )
+        self.assertEqual(original[0x22C5:0x22C8], bytes.fromhex("A9 FF 85"))
+        self.assertEqual(
+            patched[patch.file_offset : patch.file_offset + len(patch.replacement)],
+            patch.replacement,
+        )
+        self.assertEqual(patch.replacement[-3:], bytes.fromhex("4C C5 82"))
 
     def test_zenpen_nov2_wait_prompt_patch_is_size_neutral(self) -> None:
         """Verify the current contract described by this regression test."""
