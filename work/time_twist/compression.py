@@ -703,8 +703,7 @@ def compress_english_groups(
     )
     primary_size = packed_size(*primary)
     primary_complete = (
-        not requires_full_dictionary
-        or len(primary[1]) == maximum_entries
+        not requires_full_dictionary or len(primary[1]) == maximum_entries
     )
     if (max_bytes is None or primary_size <= max_bytes) and primary_complete:
         return primary

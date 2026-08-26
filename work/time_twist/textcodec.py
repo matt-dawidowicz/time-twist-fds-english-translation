@@ -264,7 +264,10 @@ def decode_symbol(
         third = reader.read_bit()
         if third == 0:
             value = reader.read_bits(6)
-            if extended_dictionary and value <= EXTENDED_DICTIONARY_LITERAL_LIMIT:
+            if (
+                extended_dictionary
+                and value <= EXTENDED_DICTIONARY_LITERAL_LIMIT
+            ):
                 kind = SymbolKind.DICTIONARY
                 value += 32
             else:

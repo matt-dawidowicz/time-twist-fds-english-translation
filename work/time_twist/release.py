@@ -286,12 +286,14 @@ def build_scenario_bank(
             )
         compressed = compressed_combined[:-1]
         compressed_menu = compressed_combined[-1]
-        relocated_data, relocated_group_zero = relocated_fixed_record_table_bank(
-            source,
-            bank_name=bank_name,
-            load_address=bank.load_address,
-            group_zero_offset=text_start,
-            records=compressed_menu,
+        relocated_data, relocated_group_zero = (
+            relocated_fixed_record_table_bank(
+                source,
+                bank_name=bank_name,
+                load_address=bank.load_address,
+                group_zero_offset=text_start,
+                records=compressed_menu,
+            )
         )
         delta = relocated_group_zero - text_start
         relocated_bank = replace(

@@ -1240,31 +1240,39 @@ class FixedRecordTableSpec:
     records: tuple[str, ...]
 
 
-FIXED_RECORD_TABLE_SPECS: Mapping[str, FixedRecordTableSpec] = MappingProxyType(
-    {
-        bank_name: FixedRecordTableSpec(
-            start=getattr(_fixed_tables, f"{bank_name}_FIXED_TEXT_START_OFFSET"),
-            end=getattr(_fixed_tables, f"{bank_name}_FIXED_TEXT_END_OFFSET"),
-            source_sha256=getattr(
-                _fixed_tables,
-                f"{bank_name}_FIXED_TEXT_SOURCE_SHA256",
-            ),
-            records=getattr(_fixed_tables, f"{bank_name}_FIXED_TEXT_RECORDS"),
-        )
-        for bank_name in (
-            "TT1B",
-            "TT2",
-            "T22",
-            "TT3A",
-            "TT3B",
-            "TT4",
-            "TT5",
-            "T25",
-            "TT6A",
-            "TT6B",
-            "TT6C",
-        )
-    }
+FIXED_RECORD_TABLE_SPECS: Mapping[str, FixedRecordTableSpec] = (
+    MappingProxyType(
+        {
+            bank_name: FixedRecordTableSpec(
+                start=getattr(
+                    _fixed_tables, f"{bank_name}_FIXED_TEXT_START_OFFSET"
+                ),
+                end=getattr(
+                    _fixed_tables, f"{bank_name}_FIXED_TEXT_END_OFFSET"
+                ),
+                source_sha256=getattr(
+                    _fixed_tables,
+                    f"{bank_name}_FIXED_TEXT_SOURCE_SHA256",
+                ),
+                records=getattr(
+                    _fixed_tables, f"{bank_name}_FIXED_TEXT_RECORDS"
+                ),
+            )
+            for bank_name in (
+                "TT1B",
+                "TT2",
+                "T22",
+                "TT3A",
+                "TT3B",
+                "TT4",
+                "TT5",
+                "T25",
+                "TT6A",
+                "TT6B",
+                "TT6C",
+            )
+        }
+    )
 )
 
 FIXED_RECORD_TABLE_POINTER_OFFSET = 0x14
@@ -1291,8 +1299,10 @@ def fixed_record_table_combined_capacity(
     spec = FIXED_RECORD_TABLE_SPECS[bank_name]
     following_address = int.from_bytes(
         data[
-            FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[0] :
-            FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[0] + 2
+            FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[
+                0
+            ] : FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[0]
+            + 2
         ],
         "little",
     )
@@ -1331,7 +1341,9 @@ def relocated_fixed_record_table_bank(
         )
     source = data[spec.start : spec.end]
     if len(source) != spec.end - spec.start:
-        raise UiPatchError(f"{bank_name} is too short for its fixed text table")
+        raise UiPatchError(
+            f"{bank_name} is too short for its fixed text table"
+        )
     if hashlib.sha256(source).hexdigest().upper() != spec.source_sha256:
         raise UiPatchError(
             f"{bank_name} fixed text table does not match the known source"
@@ -1372,9 +1384,11 @@ def relocated_fixed_record_table_bank(
             2,
             "little",
         )
-        for index in range(FIXED_RECORDS_PER_PAGE, len(records), FIXED_RECORDS_PER_PAGE)
+        for index in range(
+            FIXED_RECORDS_PER_PAGE, len(records), FIXED_RECORDS_PER_PAGE
+        )
     )
-    actual_source_pages = data[spec.end:old_following_offset]
+    actual_source_pages = data[spec.end : old_following_offset]
     if actual_source_pages != expected_source_pages:
         raise UiPatchError(f"{bank_name} fixed-table page index changed")
 
@@ -1398,7 +1412,9 @@ def relocated_fixed_record_table_bank(
             2,
             "little",
         )
-        for index in range(FIXED_RECORDS_PER_PAGE, len(records), FIXED_RECORDS_PER_PAGE)
+        for index in range(
+            FIXED_RECORDS_PER_PAGE, len(records), FIXED_RECORDS_PER_PAGE
+        )
     )
     if len(new_pages) != page_pointer_bytes:
         raise UiPatchError(f"{bank_name} rebuilt page index changed size")
@@ -1413,7 +1429,9 @@ def relocated_fixed_record_table_bank(
     prefix.extend(new_pages)
     prefix.extend(data[old_following_offset:group_zero_offset])
     if len(prefix) != new_group_zero_offset:
-        raise UiPatchError(f"{bank_name} relocated prefix size is inconsistent")
+        raise UiPatchError(
+            f"{bank_name} relocated prefix size is inconsistent"
+        )
     prefix[
         FIXED_RECORD_PAGE_POINTER_OFFSET : FIXED_RECORD_PAGE_POINTER_OFFSET + 2
     ] = (load_address + new_page_offset).to_bytes(2, "little")
