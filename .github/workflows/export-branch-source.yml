@@ -1,0 +1,21 @@
+name: export-branch-source
+
+on:
+  push:
+    branches: [full-natural-dialogue]
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pack source tree
+        run: tar --exclude=.git -czf /tmp/time-twist-source.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: time-twist-source-tree
+          path: /tmp/time-twist-source.tar.gz
+          if-no-files-found: error
