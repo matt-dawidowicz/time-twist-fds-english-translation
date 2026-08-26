@@ -1,0 +1,26 @@
+name: format-full-natural
+
+on:
+  push:
+    branches:
+      - full-natural-dialogue
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt
+      - run: python -m black work/time_twist/scenario_validation.py work/integration_tests/test_full_natural_dialogue.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: black-formatted-full-natural
+          path: |
+            work/time_twist/scenario_validation.py
+            work/integration_tests/test_full_natural_dialogue.py
