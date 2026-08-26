@@ -124,7 +124,7 @@ TT1B_FIXED_TEXT_RECORDS = (
     "North",
     "House",
     "Plate",
-    "Call",
+    "Intercom",
     "News",
     "Lens",
     "Picture",
