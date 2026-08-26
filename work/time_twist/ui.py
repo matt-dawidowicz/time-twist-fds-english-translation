@@ -445,6 +445,20 @@ NOV2_SINGLE_CHOICE_B_PATCHES = (
     ),
 )
 
+# English scenario banks use extended glyph values 37-62 for punctuation,
+# digits, and the seven uncommon uppercase letters. Values 0-36 are therefore
+# unreachable in translated text. Redirect that unused nine-bit range to
+# dictionary entries 32-68 without changing the native 1-31 encoding. The
+# replacement exactly occupies NOV2's original Japanese extended-glyph branch.
+NOV2_EXTENDED_DICTIONARY_PATCH = SourceVerifiedPatch(
+    component="NOV2",
+    file_offset=0x21D3,
+    cpu_address=0x81D3,
+    expected=bytes.fromhex("A5 3A C9 04 90 07 C9 20 B0 09 4C ED 81"),
+    replacement=bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82"),
+    label="extended English dictionary decoder",
+)
+
 
 def _encode_kouhen_guard_rle(values: bytes) -> bytes:
     """Encode a SON-KOUH startup nametable fragment.
@@ -862,6 +876,13 @@ def _patched_single_choice_b_guard(data: bytes) -> bytes:
     return bytes(result)
 
 
+def _patched_extended_dictionary_decoder(data: bytes) -> bytes:
+    """Enable dictionary references 32-68 in unused English glyph codes."""
+    result = bytearray(data)
+    NOV2_EXTENDED_DICTIONARY_PATCH.apply_to(result)
+    return bytes(result)
+
+
 def patched_nov2_ui(data: bytes) -> bytes:
     """Apply the complete, ordered NOV2 interface patch set.
 
@@ -894,7 +915,10 @@ def patched_nov2_ui(data: bytes) -> bytes:
     with_save_prompt = _patched_save_prompt(with_start_prompt)
     with_load_prompt = _patched_load_prompt(with_save_prompt)
     with_opaque_clears = _patched_opaque_text_clears(with_load_prompt)
-    return _patched_single_choice_b_guard(with_opaque_clears)
+    with_extended_dictionary = _patched_extended_dictionary_decoder(
+        with_opaque_clears
+    )
+    return _patched_single_choice_b_guard(with_extended_dictionary)
 
 
 def patched_nov4_ui(data: bytes) -> bytes:
@@ -1123,13 +1147,11 @@ def _parse_fixed_label_fallbacks(
     )
 
 
-# The full-word tuples are the translation target.  A fixed UI bank can expose
-# at most 31 dictionary entries, however, so not every independently-addressed
-# label can be represented in an original two-to-six-byte record at once.
-# These are the prior, source-verified readable labels for records that still
-# require a later table-relocation/runtime-renderer project.  They are never
-# selected silently: the fixed-label audit classifies every such record as an
-# explicit technical blocker in the generated candidate report.
+# The full-word tuples are the canonical release target. These compact labels
+# remain only for the standalone, size-neutral ``ui-patch`` compatibility path,
+# whose old two-to-six-byte record slots and native 31-entry dictionary cannot
+# represent every full label at once. The canonical release repacks the
+# recovered page-indexed tables and does not select these fallbacks.
 FIXED_TEXT_BLOCKED_FALLBACKS: Mapping[str, Mapping[int, str]] = (
     MappingProxyType(
         {
@@ -1206,6 +1228,228 @@ FIXED_TEXT_BLOCKED_FALLBACKS: Mapping[str, Mapping[int, str]] = (
         }
     )
 )
+
+
+@dataclass(frozen=True)
+class FixedRecordTableSpec:
+    """Describe one source-locked scenario menu table for full repacking."""
+
+    start: int
+    end: int
+    source_sha256: str
+    records: tuple[str, ...]
+
+
+FIXED_RECORD_TABLE_SPECS: Mapping[str, FixedRecordTableSpec] = (
+    MappingProxyType(
+        {
+            bank_name: FixedRecordTableSpec(
+                start=getattr(
+                    _fixed_tables, f"{bank_name}_FIXED_TEXT_START_OFFSET"
+                ),
+                end=getattr(
+                    _fixed_tables, f"{bank_name}_FIXED_TEXT_END_OFFSET"
+                ),
+                source_sha256=getattr(
+                    _fixed_tables,
+                    f"{bank_name}_FIXED_TEXT_SOURCE_SHA256",
+                ),
+                records=getattr(
+                    _fixed_tables, f"{bank_name}_FIXED_TEXT_RECORDS"
+                ),
+            )
+            for bank_name in (
+                "TT1B",
+                "TT2",
+                "T22",
+                "TT3A",
+                "TT3B",
+                "TT4",
+                "TT5",
+                "T25",
+                "TT6A",
+                "TT6B",
+                "TT6C",
+            )
+        }
+    )
+)
+
+FIXED_RECORD_TABLE_POINTER_OFFSET = 0x14
+FIXED_RECORD_PAGE_POINTER_OFFSET = 0x1A
+FIXED_RECORD_FOLLOWING_POINTER_OFFSETS = (0x10, 0x12)
+FIXED_RECORDS_PER_PAGE = 32
+
+
+def fixed_record_table_page_pointer_bytes(bank_name: str) -> int:
+    """Return the native page-index byte count following one menu table."""
+    spec = FIXED_RECORD_TABLE_SPECS[bank_name]
+    return 2 * ((len(spec.records) - 1) // FIXED_RECORDS_PER_PAGE)
+
+
+def fixed_record_table_combined_capacity(
+    data: bytes,
+    *,
+    bank_name: str,
+    load_address: int,
+    group_zero_offset: int,
+    dictionary_end_offset: int,
+) -> int:
+    """Measure bytes jointly available to the menu and scenario compressor."""
+    spec = FIXED_RECORD_TABLE_SPECS[bank_name]
+    following_address = int.from_bytes(
+        data[
+            FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[
+                0
+            ] : FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[0]
+            + 2
+        ],
+        "little",
+    )
+    following_offset = following_address - load_address
+    if not spec.end <= following_offset <= group_zero_offset:
+        raise UiPatchError(
+            f"{bank_name} following table pointer is outside the recovered prefix"
+        )
+    return (following_offset - spec.start) + (
+        dictionary_end_offset - group_zero_offset
+    )
+
+
+def relocated_fixed_record_table_bank(
+    data: bytes,
+    *,
+    bank_name: str,
+    load_address: int,
+    group_zero_offset: int,
+    records: tuple[tuple[PackedSymbol, ...], ...],
+) -> tuple[bytes, int]:
+    """Repack a complete full-word menu table and shift its following data.
+
+    The renderer addresses record zero through header word ``$A214`` and uses
+    the page-pointer table at ``$A21A`` for records 32, 64, and 96. The two
+    data tables between that page index and scenario group zero are movable
+    and have their only recovered base pointers at ``$A210`` and ``$A212``.
+    Repacking therefore changes four header words while leaving the fixed tail
+    and complete overlay size untouched.
+    """
+    spec = FIXED_RECORD_TABLE_SPECS[bank_name]
+    if len(records) != len(spec.records):
+        raise UiPatchError(
+            f"{bank_name} expected {len(spec.records)} fixed records, "
+            f"got {len(records)}"
+        )
+    source = data[spec.start : spec.end]
+    if len(source) != spec.end - spec.start:
+        raise UiPatchError(
+            f"{bank_name} is too short for its fixed text table"
+        )
+    if hashlib.sha256(source).hexdigest().upper() != spec.source_sha256:
+        raise UiPatchError(
+            f"{bank_name} fixed text table does not match the known source"
+        )
+
+    def header_offset(pointer_offset: int) -> int:
+        """Convert one recovered header word to a file-relative offset."""
+        address = int.from_bytes(
+            data[pointer_offset : pointer_offset + 2],
+            "little",
+        )
+        return address - load_address
+
+    if header_offset(FIXED_RECORD_TABLE_POINTER_OFFSET) != spec.start:
+        raise UiPatchError(f"{bank_name} fixed-table base pointer changed")
+    if header_offset(FIXED_RECORD_PAGE_POINTER_OFFSET) != spec.end:
+        raise UiPatchError(f"{bank_name} fixed-table page pointer changed")
+
+    page_pointer_bytes = fixed_record_table_page_pointer_bytes(bank_name)
+    old_following_offset = header_offset(
+        FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[0]
+    )
+    if old_following_offset != spec.end + page_pointer_bytes:
+        raise UiPatchError(
+            f"{bank_name} fixed-table page index has an unexpected size"
+        )
+    second_following_offset = header_offset(
+        FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[1]
+    )
+    if not old_following_offset <= second_following_offset < group_zero_offset:
+        raise UiPatchError(
+            f"{bank_name} secondary table pointer is outside its recovered block"
+        )
+
+    original_starts = _record_starts(source, len(spec.records))
+    expected_source_pages = b"".join(
+        (load_address + spec.start + original_starts[index]).to_bytes(
+            2,
+            "little",
+        )
+        for index in range(
+            FIXED_RECORDS_PER_PAGE, len(records), FIXED_RECORDS_PER_PAGE
+        )
+    )
+    actual_source_pages = data[spec.end : old_following_offset]
+    if actual_source_pages != expected_source_pages:
+        raise UiPatchError(f"{bank_name} fixed-table page index changed")
+
+    secondary_low = load_address + old_following_offset
+    secondary_high = load_address + group_zero_offset
+    if any(
+        secondary_low
+        <= int.from_bytes(data[offset : offset + 2], "little")
+        < secondary_high
+        for offset in range(old_following_offset, group_zero_offset - 1)
+    ):
+        raise UiPatchError(
+            f"{bank_name} secondary prefix contains an unrelocated internal pointer"
+        )
+
+    packed_records = pack_records(records)
+    record_starts = _record_starts(packed_records, len(records))
+    new_page_offset = spec.start + len(packed_records)
+    new_pages = b"".join(
+        (load_address + spec.start + record_starts[index]).to_bytes(
+            2,
+            "little",
+        )
+        for index in range(
+            FIXED_RECORDS_PER_PAGE, len(records), FIXED_RECORDS_PER_PAGE
+        )
+    )
+    if len(new_pages) != page_pointer_bytes:
+        raise UiPatchError(f"{bank_name} rebuilt page index changed size")
+    new_following_offset = new_page_offset + len(new_pages)
+    delta = new_following_offset - old_following_offset
+    new_group_zero_offset = group_zero_offset + delta
+    if new_group_zero_offset <= new_following_offset:
+        raise UiPatchError(f"{bank_name} relocated prefix is malformed")
+
+    prefix = bytearray(data[: spec.start])
+    prefix.extend(packed_records)
+    prefix.extend(new_pages)
+    prefix.extend(data[old_following_offset:group_zero_offset])
+    if len(prefix) != new_group_zero_offset:
+        raise UiPatchError(
+            f"{bank_name} relocated prefix size is inconsistent"
+        )
+    prefix[
+        FIXED_RECORD_PAGE_POINTER_OFFSET : FIXED_RECORD_PAGE_POINTER_OFFSET + 2
+    ] = (load_address + new_page_offset).to_bytes(2, "little")
+    for pointer_offset in FIXED_RECORD_FOLLOWING_POINTER_OFFSETS:
+        old_address = int.from_bytes(
+            data[pointer_offset : pointer_offset + 2],
+            "little",
+        )
+        prefix[pointer_offset : pointer_offset + 2] = (
+            old_address + delta
+        ).to_bytes(2, "little")
+
+    if len(prefix) > len(data):
+        raise UiPatchError(f"{bank_name} relocated prefix exceeds the bank")
+    relocated = bytes(prefix) + data[len(prefix) :]
+    if len(relocated) != len(data):
+        raise UiPatchError(f"{bank_name} relocation changed the bank size")
+    return relocated, new_group_zero_offset
 
 
 def _patched_fixed_record_table(

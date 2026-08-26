@@ -215,7 +215,16 @@ class BitWriter:
         return bytes(self._bytes)
 
 
-def decode_symbol(reader: BitReader) -> PackedSymbol:
+NATIVE_DICTIONARY_ENTRY_COUNT = 31
+EXTENDED_DICTIONARY_ENTRY_COUNT = 68
+EXTENDED_DICTIONARY_LITERAL_LIMIT = 36
+
+
+def decode_symbol(
+    reader: BitReader,
+    *,
+    extended_dictionary: bool = False,
+) -> PackedSymbol:
     """Decode one symbol exactly as the NOV2 prefix tree does.
 
     Prefix layout::
@@ -227,6 +236,9 @@ def decode_symbol(reader: BitReader) -> PackedSymbol:
 
     Args:
         reader: Bit reader positioned at the first prefix bit.
+        extended_dictionary: Interpret otherwise-unused extended glyph values
+            0-36 as English dictionary references 32-68. This matches the
+            guarded NOV2 decoder patch used by rebuilt English scenario banks.
 
     Returns:
         A symbol containing the decoded kind, payload, and exact source bit
@@ -251,8 +263,15 @@ def decode_symbol(reader: BitReader) -> PackedSymbol:
     else:
         third = reader.read_bit()
         if third == 0:
-            kind = SymbolKind.EXTENDED
             value = reader.read_bits(6)
+            if (
+                extended_dictionary
+                and value <= EXTENDED_DICTIONARY_LITERAL_LIMIT
+            ):
+                kind = SymbolKind.DICTIONARY
+                value += 32
+            else:
+                kind = SymbolKind.EXTENDED
         else:
             fourth = reader.read_bit()
             if fourth == 0:
@@ -267,7 +286,7 @@ def decode_symbol(reader: BitReader) -> PackedSymbol:
 
 
 def encode_symbol(writer: BitWriter, symbol: PackedSymbol) -> None:
-    """Append one symbol using NOV2's native prefix tree.
+    """Append one symbol using NOV2's native or patched English prefix tree.
 
     Args:
         writer: Destination bitstream.
@@ -297,12 +316,18 @@ def encode_symbol(writer: BitWriter, symbol: PackedSymbol) -> None:
         writer.write_bits(0b110, 3)
         writer.write_bits(symbol.value, 6)
     elif symbol.kind is SymbolKind.DICTIONARY:
-        if not 1 <= symbol.value <= 31:
+        if not 1 <= symbol.value <= EXTENDED_DICTIONARY_ENTRY_COUNT:
             raise PackedTextError(
                 f"dictionary value {symbol.value} is out of one-based range"
             )
-        writer.write_bits(0b1110, 4)
-        writer.write_bits(symbol.value, 5)
+        if symbol.value <= NATIVE_DICTIONARY_ENTRY_COUNT:
+            writer.write_bits(0b1110, 4)
+            writer.write_bits(symbol.value, 5)
+        else:
+            # The English NOV2 patch maps unused extended-glyph values 0-36
+            # onto dictionary entries 32-68. Both forms remain nine bits.
+            writer.write_bits(0b110, 3)
+            writer.write_bits(symbol.value - 32, 6)
     elif symbol.kind in (SymbolKind.CONTROL, SymbolKind.SEPARATOR):
         value = 5 if symbol.kind is SymbolKind.SEPARATOR else symbol.value
         if not 0 <= value <= 7:
@@ -358,6 +383,7 @@ def split_records(
     *,
     offset: int = 0,
     limit: int = 32,
+    extended_dictionary: bool = False,
 ) -> tuple[list[list[PackedSymbol]], int]:
     """Split byte-aligned packed records at control-code 5 separators.
 
@@ -365,6 +391,8 @@ def split_records(
         data: Complete packed byte stream.
         offset: Byte offset of the first record.
         limit: Exact nonnegative number of records to decode.
+        extended_dictionary: Decode the English extended dictionary escape
+            range used by patched scenario banks.
 
     Returns:
         A pair containing mutable symbol lists and the byte offset immediately
@@ -386,7 +414,10 @@ def split_records(
     records: list[list[PackedSymbol]] = []
     current: list[PackedSymbol] = []
     while len(records) < limit:
-        symbol = decode_symbol(reader)
+        symbol = decode_symbol(
+            reader,
+            extended_dictionary=extended_dictionary,
+        )
         if symbol.kind is SymbolKind.SEPARATOR:
             records.append(current)
             current = []

@@ -45,6 +45,9 @@ def make_synthetic_project(root: Path) -> Path:
     (title_assets / "Time Twist approved native title.png").write_bytes(
         b"title"
     )
+    (title_assets / "Time Twist approved native slide.png").write_bytes(
+        b"slide"
+    )
     (baseline / "time_twist_zenpen_japan.fds").write_bytes(b"zenpen")
     (baseline / "time_twist_kouhen_japan.fds").write_bytes(b"kouhen")
     return root

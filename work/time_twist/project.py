@@ -63,11 +63,21 @@ KNOWN_SCENARIO_BANKS = (
 )
 
 BANK_REQUIRED_DICTIONARY_TEXT = {
-    "TT3A": ("Back",),
+    # These labels occupy undersized fixed slots.  Keep them in the immutable
+    # dictionary prefix so every compression strategy can encode the complete
+    # visible text instead of depending on an optimizer-specific entry choice.
+    "TT3A": (
+        "Back",
+        "Frankie",
+    ),
     "TT3B": (
         "Cougar",
         "Look",
         "Take",
+        # The complete label must occupy a four-byte fixed record.  Reserving
+        # its suffix lets the UI encode ``F`` + dictionary("ight") while a
+        # whole-word entry would push this already-tight bank four bytes over.
+        "ight",
     ),
     "TT1B": (
         "Look",

@@ -11,7 +11,7 @@
 
 ## Source fingerprints
 
-- `Time Twist Japanese-English script comparison.json` — SHA-256 `5228F9845A12D19D8C25C234AAD848EC3A1A487E53634052170C60A26EF28826`
+- `Time Twist Japanese-English script comparison.json` — SHA-256 `387E0DFCE752E2491FE9821778CC72C1727CA7B93F8E6281C7569F86C9BFC5C2`
 - Diagnostic review: not supplied (neutral diagnostics used)
 
 ## Bank coverage
@@ -34,22 +34,22 @@
 - TITLE: 2 records complete
 - SON-KOUH: 1 records complete
 
-## Native compression validation for revised banks
+## Native compression validation
 
-Every patch-safe scenario line passed the ROM character encoder and 24-column display validator. The four materially revised banks also passed native dictionary recompression:
+Every patch-safe scenario line passed the ROM character encoder and 24-column display validator. All 13 complete public scenario maps also passed exact optimized dictionary recompression against their recorded fixed-tail capacities. A private ROM-backed candidate build and playtest remain separate gates:
 
-- TT1A: 1660/1669 bytes used; 9 bytes remain.
-- TT1B: 4024/4026 bytes used; 2 bytes remain.
-- TT2: 3819/3847 bytes used; 28 bytes remain.
-- T22: 1797/1812 bytes used; 15 bytes remain.
-- TT3A: 3724/3741 bytes used; 17 bytes remain.
-- TT3B: 1830/1840 bytes used; 10 bytes remain.
+- TT1A: 1656/1669 bytes used; 13 bytes remain.
+- TT1B: 4022/4026 bytes used; 4 bytes remain.
+- TT2: 3834/3847 bytes used; 13 bytes remain.
+- T22: 1801/1812 bytes used; 11 bytes remain.
+- TT3A: 3733/3741 bytes used; 8 bytes remain.
+- TT3B: 1837/1840 bytes used; 3 bytes remain.
 - TT4: 4738/4741 bytes used; 3 bytes remain.
-- TT5: 3700/3702 bytes used; 2 bytes remain.
-- T25: 2287/2374 bytes used; 87 bytes remain.
-- TT6A: 2691/2833 bytes used; 142 bytes remain.
-- TT6B: 2304/2336 bytes used; 32 bytes remain.
-- TT6C: 3518/3536 bytes used; 18 bytes remain.
+- TT5: 3693/3702 bytes used; 9 bytes remain.
+- T25: 2363/2374 bytes used; 11 bytes remain.
+- TT6A: 2823/2833 bytes used; 10 bytes remain.
+- TT6B: 2298/2336 bytes used; 38 bytes remain.
+- TT6C: 3520/3536 bytes used; 16 bytes remain.
 - TT6D: 323/332 bytes used; 9 bytes remain.
 
 ## Records requiring gameplay screenshots or visual verification

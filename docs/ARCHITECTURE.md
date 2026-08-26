@@ -79,12 +79,14 @@ followed by data or code that must remain at its original CPU address.
 ### Rebuild
 
 1. `encode_english()` converts visible text and control tags to packed symbols.
-2. `compress_english_groups()` greedily selects useful repeated literal
-   sequences for at most 31 dictionary slots.
-3. `rebuild_scenario_bank()` repacks groups, writes new pointers, and preserves
+2. `compress_english_groups()` selects useful repeated literal sequences for
+   31 native slots or 68 slots in a patched English release bank.
+3. For the 11 menu-bearing banks, the release compressor treats the full-word
+   menu table as an additional group and shares its byte budget with dialogue.
+4. `rebuild_scenario_bank()` repacks groups, writes new pointers, and preserves
    the original fixed tail address.
-4. A bank-specific UI patch updates packed labels that are outside the normal
-   scenario groups.
+5. The release layer regenerates the fixed-menu page index and shifts only the
+   recovered pointer-addressed prefix data.
 5. `replace-file` writes the rebuilt overlay back into an FDS image.
 
 ## Patch layers
@@ -100,10 +102,15 @@ The region must not extend past `dictionary_end_offset` when
 
 ### Fixed-record table patch
 
-6502 code often points directly to individual command or object labels. The
-table and every record boundary remain fixed. `_encode_at_exact_record_size()`
-uses dictionary references and invisible trailing common-space tiles to fill
-the original slot exactly.
+Legacy standalone UI patching retains every source record boundary.
+`_encode_at_exact_record_size()` uses dictionary references and invisible
+trailing common-space tiles to fill each original slot exactly.
+
+The canonical release uses the more precise recovered menu addressing model:
+one base pointer plus page pointers for records 32, 64, and 96. It repacks
+those records at variable lengths, regenerates the page index, updates the
+verified secondary-table pointers, and shares the recovered bytes with the
+scenario region. No fixed suffix or overlay size moves.
 
 ### Byte-exact program/UI patch
 
@@ -131,12 +138,15 @@ The following are architectural requirements, not optional style preferences:
 - An unmodified FDS image must round-trip byte-identically.
 - Packed record separator control `5` is structural and cannot appear as an
   ordinary translated control code.
-- Dictionary references are one-based and limited to 31 entries.
+- Dictionary references are one-based and limited to 31 in native data or 68
+  in guarded English release data.
 - Control-code order must match the Japanese record.
 - All visible English glyphs must exist in the installed font.
 - Ordinary dialogue segments must fit the 24-column renderer unless a
   specifically tested record uses safe wrapping.
-- Fixed-address tables must preserve every record boundary.
+- Fixed-address tables must preserve every record boundary unless their
+  complete runtime addressing model is recovered and every affected pointer
+  is regenerated.
 - Fixed scenario tails must remain at their original loaded addresses.
 - A patch must reject an unknown source rather than applying by coincidence.
 - Title clock animation bytes must remain untouched.

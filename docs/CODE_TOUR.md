@@ -44,7 +44,7 @@ component and update the transform that regenerates it.
 ## From source text to a playtest candidate
 
 ```text
-Reviewed translation map / fixed UI table / title asset
+Reviewed translation map / fixed UI table / title assets
                     |
                     v
   source-byte, control-order, glyph, width, and capacity validation
@@ -76,7 +76,7 @@ saves, or scene progression. Those require the routes in
 | `charmap.py` | Defines the available English symbol values and visible widths. | Unsupported characters fail before any packed data is written. |
 | `english.py` | Encodes English, validates controls, line widths, and word breaks. | Translation wording is not allowed to rearrange recovered control codes. |
 | `textcodec.py` | Reads/writes the native bitstream records, dictionary symbols, controls, and alignment. | It is the only layer that should reason directly about packed symbol bits. |
-| `compression.py` | Chooses a legal 31-entry dictionary and compresses scenario groups. | Compression must decompress to the exact intended symbol stream. |
+| `compression.py` | Chooses a legal 31-entry native or 68-entry patched-English dictionary and compresses scenario/menu groups. | Compression must decompress to the exact intended symbol stream. |
 | `scenario.py` | Parses recovered scenario-bank layout and rebuilds a bank. | Fixed record addresses and tails are preserved unless a recovered layout says otherwise. |
 | `scenario_validation.py` | Shares the policy used by tools and release building. | A text change is rejected if it breaks ID, glyph, control, or display rules. |
 | `project.py` | Stores named bank facts, component locations, and approved dictionary reservations. | Project constants express recovered Time Twist facts, not configurable defaults. |
@@ -92,8 +92,8 @@ records the complete editorial intent for future renderer work.
 | --- | --- | --- |
 | `fds.py` | Parses, validates, edits, and combines FDS images. | Preserves sides, file records, sizes, and padding; it never translates text. |
 | `font.py` | Generates and installs deterministic English 8x8 glyph rows. | Font data is owned by NOV4; do not repurpose tiles used by title graphics. |
-| `ui_fixed_tables.py` | Holds declarative fixed-menu labels and blocker facts. | Values are data only; each must fit its recovered slot. |
-| `ui.py` | Applies fixed text, disk prompts, direct-boot copy, and guarded input patches. | Every binary patch checks the source bytes and stays size-neutral unless proven relocation exists. |
+| `ui_fixed_tables.py` | Holds declarative fixed-menu labels and source-table facts. | Values are data only; release packing must fit the recovered shared bank footprint. |
+| `ui.py` | Applies fixed text, repacks page-indexed menus, and installs guarded program patches. | Every binary patch checks its source and every relocation updates all recovered pointers. |
 | `title_layout.py` | Names recovered NOV4 regions, addresses, and title memory budgets. | These constants protect the resident NOV3 boundary and PPU-sensitive regions. |
 | `title_assets.py` | Converts approved indexed title art to native CHR/nametable-friendly assets. | Inputs are validated against known palette, size, and geometry rules. |
 | `title_patch.py` | Installs title assets and small 6502 helpers in verified space. | Rendering is blanked during sensitive transitions so mixed old/new frames cannot flash. |

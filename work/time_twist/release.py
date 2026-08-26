@@ -13,10 +13,11 @@ import shutil
 import subprocess  # noqa: F401 - retained as a public test/embedding patch seam
 import tempfile
 from collections.abc import Mapping
+from dataclasses import replace
 from pathlib import Path
 
 from .compression import compress_english_groups, packed_size
-from .english import EnglishTextError
+from .english import EnglishTextError, encode_english
 from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
 from .project import (
@@ -31,6 +32,7 @@ from .release_metadata import (
     DEFAULT_KOUHEN_BASELINE,
     DEFAULT_PROJECT_ROOT,
     DEFAULT_RELEASE_TARGET,
+    DEFAULT_SLIDE_TITLE_ASSET,
     DEFAULT_SOURCE_LOCK,
     DEFAULT_TITLE_ASSET,
     DEFAULT_ZENPEN_BASELINE,
@@ -76,6 +78,7 @@ from .release_metadata import (
 )
 from .scenario import (
     ScenarioBank,
+    ScenarioError,
     parse_scenario_bank,
     rebuild_scenario_bank,
     render_symbols,
@@ -84,12 +87,21 @@ from .scenario_validation import (
     encode_validated_english,
     scenario_record_id,
 )
-from .textcodec import PackedSymbol
+from .textcodec import (
+    EXTENDED_DICTIONARY_ENTRY_COUNT,
+    PackedSymbol,
+    PackedTextError,
+)
 from .title import DEFAULT_SUBTITLE, patched_nov4_title
 from .ui import (
+    FIXED_RECORD_TABLE_SPECS,
+    UiPatchError,
+    fixed_record_table_combined_capacity,
+    fixed_record_table_page_pointer_bytes,
     patched_kouhen_boot_guard,
     patched_nov2_ui,
     patched_nov4_ui,
+    relocated_fixed_record_table_bank,
 )
 
 
@@ -243,12 +255,101 @@ def build_scenario_bank(
         _load_translation_map(bank_name, translations_directory),
     )
     text_start = bank.group_addresses[0] - bank.load_address
-    capacity = bank.dictionary_end_offset - text_start
+    scenario_capacity = bank.dictionary_end_offset - text_start
     pointer_bytes = 2 * (len(groups) - 1)
+    patcher = SCENARIO_UI_PATCHERS.get(bank_name)
+
+    if bank_name in FIXED_RECORD_TABLE_SPECS:
+        spec = FIXED_RECORD_TABLE_SPECS[bank_name]
+        menu_records = tuple(encode_english(text) for text in spec.records)
+        combined_groups = (*groups, menu_records)
+        capacity = fixed_record_table_combined_capacity(
+            source,
+            bank_name=bank_name,
+            load_address=bank.load_address,
+            group_zero_offset=text_start,
+            dictionary_end_offset=bank.dictionary_end_offset,
+        )
+        page_pointer_bytes = fixed_record_table_page_pointer_bytes(bank_name)
+        structural_bytes = pointer_bytes + page_pointer_bytes
+        compressed_combined, dictionary = compress_english_groups(
+            combined_groups,
+            max_bytes=capacity - structural_bytes,
+            optimize=False,
+            maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+        )
+        used = packed_size(compressed_combined, dictionary) + structural_bytes
+        if used > capacity:
+            raise ReleaseBuildError(
+                f"{bank_name} full-word menu and scenario exceed their shared "
+                f"RAM footprint by {used - capacity} bytes"
+            )
+        compressed = compressed_combined[:-1]
+        compressed_menu = compressed_combined[-1]
+        relocated_data, relocated_group_zero = (
+            relocated_fixed_record_table_bank(
+                source,
+                bank_name=bank_name,
+                load_address=bank.load_address,
+                group_zero_offset=text_start,
+                records=compressed_menu,
+            )
+        )
+        delta = relocated_group_zero - text_start
+        relocated_bank = replace(
+            bank,
+            data=relocated_data,
+            group_addresses=tuple(
+                address + delta for address in bank.group_addresses
+            ),
+        )
+        rebuilt = rebuild_scenario_bank(
+            relocated_bank,
+            compressed,
+            dictionary=dictionary,
+            preserve_memory_footprint=True,
+            maximum_dictionary_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+        )
+        return ScenarioBuildResult(
+            data=rebuilt,
+            records=len(bank.records),
+            dictionary_entries=len(dictionary),
+            packed_bytes=used,
+            capacity_bytes=capacity,
+        )
+
+    capacity = scenario_capacity
+
+    def fixed_ui_candidate_is_valid(
+        candidate_groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
+        candidate_dictionary: tuple[tuple[PackedSymbol, ...], ...],
+    ) -> bool:
+        """Accept only dictionaries that can rebuild and patch the fixed UI."""
+        if patcher is None:
+            return True
+        try:
+            candidate_data = rebuild_scenario_bank(
+                bank,
+                candidate_groups,
+                dictionary=candidate_dictionary,
+                preserve_memory_footprint=True,
+            )
+            patcher(candidate_data)
+        except (
+            EnglishTextError,
+            PackedTextError,
+            ScenarioError,
+            UiPatchError,
+        ):
+            return False
+        return True
+
     compressed, dictionary = compress_english_groups(
         groups,
         required_entries=required_dictionary_entries(bank_name),
         max_bytes=capacity - pointer_bytes,
+        optimize=True,
+        candidate_validator=fixed_ui_candidate_is_valid,
     )
     if bank_name in SCENARIO_UI_PATCHERS and len(dictionary) != 31:
         raise ReleaseBuildError(
@@ -261,7 +362,6 @@ def build_scenario_bank(
         dictionary=dictionary,
         preserve_memory_footprint=True,
     )
-    patcher = SCENARIO_UI_PATCHERS.get(bank_name)
     if patcher is not None:
         rebuilt = patcher(rebuilt)
 
@@ -509,7 +609,12 @@ def build_release(
     nov4_source = zenpen.sides[0].find_file("NOV4").data
     nov4 = patched_nov4_ui(nov4_source)
     nov4 = patched_nov4_font(nov4)
-    nov4 = patched_nov4_title(nov4, paths.title_asset, subtitle=subtitle)
+    nov4 = patched_nov4_title(
+        nov4,
+        paths.title_asset,
+        slide_target=paths.slide_title_asset,
+        subtitle=subtitle,
+    )
     _replace(zenpen, 0, "NOV4", nov4)
 
     son_kouh_source = kouhen.sides[0].find_file("SON-KOUH").data
@@ -732,6 +837,7 @@ __all__ = (
     "DEFAULT_KOUHEN_BASELINE",
     "DEFAULT_PROJECT_ROOT",
     "DEFAULT_RELEASE_TARGET",
+    "DEFAULT_SLIDE_TITLE_ASSET",
     "DEFAULT_SOURCE_LOCK",
     "DEFAULT_TITLE_ASSET",
     "DEFAULT_ZENPEN_BASELINE",

@@ -258,7 +258,7 @@ class ScenarioTests(unittest.TestCase):
             self.fail("TT1B translation fixture is not available")
         translations = json.loads(path.read_text(encoding="utf-8"))
         line = translations["TT1B/g0/r1"]
-        self.assertEqual(line, "A blue sky... how long?")
+        self.assertEqual(line, "Blue sky--how long gone?")
         validate_display_width(line)
 
     def test_tt1a_fortune_prediction_has_terminal_punctuation(self) -> None:
@@ -295,10 +295,14 @@ class ScenarioTests(unittest.TestCase):
         tt1b = translations("TT1B")
         self.assertEqual(
             tt1b["TT1B/g0/r28"],
-            "Me: Um...{CTRL:1}Girl: Seen all exhibits?{CTRL:0}Me: No...",
+            "Me: Um...{CTRL:1}Girl: Seen everything?{CTRL:0}Me: No...",
         )
         self.assertIn("G-g-g-gah!", tt1b["TT1B/g0/r31"])
         self.assertIn("My telepathy", tt1b["TT1B/g0/r31"])
+        self.assertIn("You might say so.", tt1b["TT1B/g0/r31"])
+        self.assertIn("finally paid off.", tt1b["TT1B/g0/r31"])
+        self.assertIn("You're busty.", tt1b["TT1B/g1/r14"])
+        self.assertIn("I'm no land shark.", tt1b["TT1B/g2/r5"])
 
         t22 = translations("T22")
         self.assertIn("You are my god{CTRL:6}of justice.", t22["T22/g0/r10"])
@@ -312,6 +316,7 @@ class ScenarioTests(unittest.TestCase):
             "last night.",
         )
         self.assertIn("the Gestapo!", tt3a["TT3A/g4/r21"])
+        self.assertIn("A fragment of the note.", tt3a["TT3A/g2/r30"])
 
         tt4 = translations("TT4")
         self.assertFalse(any("Yomi" in line for line in tt4.values()))
@@ -326,7 +331,8 @@ class ScenarioTests(unittest.TestCase):
         self.assertNotIn("Dixie", tt5["TT5/g0/r18"])
 
         tt6a = translations("TT6A")
-        self.assertIn("Mary denies knowing how.", tt6a["TT6A/g0/r13"])
+        self.assertIn("My betrothed", tt6a["TT6A/g0/r13"])
+        self.assertIn("Mary has no idea how.", tt6a["TT6A/g0/r13"])
         self.assertIn("The fiend descended...", tt6a["TT6A/g0/r18"])
 
         tt6c = translations("TT6C")

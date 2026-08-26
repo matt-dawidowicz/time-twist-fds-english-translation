@@ -15,6 +15,8 @@ from pathlib import Path
 
 from .charmap import decode_common, decode_extended
 from .textcodec import (
+    EXTENDED_DICTIONARY_ENTRY_COUNT,
+    NATIVE_DICTIONARY_ENTRY_COUNT,
     BitReader,
     PackedSymbol,
     SymbolKind,
@@ -26,7 +28,7 @@ LOAD_ADDRESS = 0xA200
 DICTIONARY_POINTER_OFFSET = 0x16
 GROUP_TABLE_POINTER_OFFSET = 0x24
 GROUP_ZERO_POINTER_OFFSET = 0x26
-MAX_DICTIONARY_ENTRY_COUNT = 31
+MAX_DICTIONARY_ENTRY_COUNT = NATIVE_DICTIONARY_ENTRY_COUNT
 
 
 @dataclass(frozen=True)
@@ -129,6 +131,8 @@ def _decode_records_to_end(
     data: bytes,
     start_offset: int,
     end_offset: int,
+    *,
+    extended_dictionary: bool = False,
 ) -> tuple[tuple[PackedSymbol, ...], ...]:
     """Decode byte-aligned records up to an exact stream boundary.
 
@@ -152,7 +156,10 @@ def _decode_records_to_end(
     while reader.byte_position < end_offset:
         record: list[PackedSymbol] = []
         while True:
-            symbol = decode_symbol(reader)
+            symbol = decode_symbol(
+                reader,
+                extended_dictionary=extended_dictionary,
+            )
             if symbol.kind is SymbolKind.SEPARATOR:
                 reader.align_to_next_byte()
                 records.append(tuple(record))
@@ -173,6 +180,8 @@ def _decode_fixed_records(
     data: bytes,
     start_offset: int,
     count: int,
+    *,
+    extended_dictionary: bool = False,
 ) -> tuple[tuple[tuple[PackedSymbol, ...], ...], int]:
     """Decode a known number of aligned records from one byte offset.
 
@@ -193,7 +202,10 @@ def _decode_fixed_records(
     for _ in range(count):
         record: list[PackedSymbol] = []
         while True:
-            symbol = decode_symbol(reader)
+            symbol = decode_symbol(
+                reader,
+                extended_dictionary=extended_dictionary,
+            )
             if symbol.kind is SymbolKind.SEPARATOR:
                 reader.align_to_next_byte()
                 records.append(tuple(record))
@@ -230,6 +242,8 @@ def _decode_referenced_dictionary(
     text_records: Iterable[Iterable[PackedSymbol]],
     *,
     minimum_entry_count: int = 0,
+    maximum_entry_count: int = MAX_DICTIONARY_ENTRY_COUNT,
+    extended_dictionary: bool = False,
 ) -> tuple[tuple[tuple[PackedSymbol, ...], ...], int]:
     """Decode the transitive closure of dictionary references.
 
@@ -244,14 +258,14 @@ def _decode_referenced_dictionary(
         Reachable dictionary entries and the byte offset after the final entry.
 
     Raises:
-        ScenarioError: If a direct or nested reference exceeds the native
-            31-entry limit.
+        ScenarioError: If a direct or nested reference exceeds
+            ``maximum_entry_count``.
         PackedTextError: If the required dictionary stream is truncated.
 
     The dictionary is reparsed when a decoded entry references a later entry.
     This avoids assuming that source dictionaries are flat.
     """
-    if not 0 <= minimum_entry_count <= MAX_DICTIONARY_ENTRY_COUNT:
+    if not 0 <= minimum_entry_count <= maximum_entry_count:
         raise ScenarioError(
             f"dictionary minimum {minimum_entry_count} is out of range"
         )
@@ -259,7 +273,7 @@ def _decode_referenced_dictionary(
         minimum_entry_count,
         _maximum_dictionary_reference(text_records),
     )
-    if required_count > MAX_DICTIONARY_ENTRY_COUNT:
+    if required_count > maximum_entry_count:
         raise ScenarioError(
             f"dictionary reference {required_count} is out of range"
         )
@@ -267,10 +281,13 @@ def _decode_referenced_dictionary(
     end_offset = start_offset
     while len(dictionary) < required_count:
         dictionary, end_offset = _decode_fixed_records(
-            data, start_offset, required_count
+            data,
+            start_offset,
+            required_count,
+            extended_dictionary=extended_dictionary,
         )
         nested_count = _maximum_dictionary_reference(dictionary)
-        if nested_count > MAX_DICTIONARY_ENTRY_COUNT:
+        if nested_count > maximum_entry_count:
             raise ScenarioError(
                 f"dictionary reference {nested_count} is out of range"
             )
@@ -283,6 +300,7 @@ def parse_scenario_bank(
     *,
     load_address: int = LOAD_ADDRESS,
     minimum_dictionary_entries: int = 0,
+    extended_dictionary: bool = False,
 ) -> ScenarioBank:
     """Parse group pointers, byte-aligned records, and referenced dictionary.
 
@@ -292,6 +310,8 @@ def parse_scenario_bank(
         minimum_dictionary_entries: Minimum number of source dictionary
             entries to decode, including entries required by fixed-address
             consumers outside ordinary scenario records.
+        extended_dictionary: Decode the patched English escape range as
+            dictionary references 32-68 instead of Japanese extended glyphs.
 
     Returns:
         Parsed layout, source bytes, records, and reachable dictionary.
@@ -346,7 +366,12 @@ def parse_scenario_bank(
     for group_index, (start, end) in enumerate(
         zip(group_offsets, group_end_offsets, strict=True)
     ):
-        group_records = _decode_records_to_end(data, start, end)
+        group_records = _decode_records_to_end(
+            data,
+            start,
+            end,
+            extended_dictionary=extended_dictionary,
+        )
         records.extend(
             ScenarioRecord(group_index, record_index, symbols)
             for record_index, symbols in enumerate(group_records)
@@ -357,6 +382,12 @@ def parse_scenario_bank(
         dictionary_offset,
         (record.symbols for record in records),
         minimum_entry_count=minimum_dictionary_entries,
+        maximum_entry_count=(
+            EXTENDED_DICTIONARY_ENTRY_COUNT
+            if extended_dictionary
+            else MAX_DICTIONARY_ENTRY_COUNT
+        ),
+        extended_dictionary=extended_dictionary,
     )
     return ScenarioBank(
         path=path,
@@ -377,6 +408,7 @@ def rebuild_scenario_bank(
     *,
     dictionary: tuple[tuple[PackedSymbol, ...], ...] = (),
     preserve_memory_footprint: bool = False,
+    maximum_dictionary_entries: int = MAX_DICTIONARY_ENTRY_COUNT,
 ) -> bytes:
     """Rebuild text and pointers while preserving non-text source bytes.
 
@@ -386,15 +418,17 @@ def rebuild_scenario_bank(
         dictionary: Replacement one-based dictionary entries.
         preserve_memory_footprint: Keep the original fixed tail at its loaded
             address and reject any text-region overrun.
+        maximum_dictionary_entries: Decoder-specific dictionary limit. Native
+            source banks use 31; patched English release banks may use 68.
 
     Returns:
         Rebuilt bank bytes with updated group/dictionary pointers.
 
     Raises:
-        ScenarioError: If the group count or any per-group record count changes,
-            the replacement dictionary exceeds 31 entries, a loaded pointer
-            exceeds 16 bits, total scenario data exceeds address space, or a
-            preserved footprint is too small.
+        ScenarioError: If the group count or any per-group record count
+            changes, the replacement dictionary exceeds the requested limit,
+            a loaded pointer exceeds 16 bits, total scenario data exceeds
+            address space, or a preserved footprint is too small.
         PackedTextError: If any replacement token cannot be packed.
 
     ``groups`` must match the original group and per-group record counts. When
@@ -421,10 +455,10 @@ def rebuild_scenario_bank(
                 f"group {group_index} expected {expected_count} records, "
                 f"got {len(records)}"
             )
-    if len(dictionary) > MAX_DICTIONARY_ENTRY_COUNT:
+    if len(dictionary) > maximum_dictionary_entries:
         raise ScenarioError(
             f"dictionary has {len(dictionary)} entries; maximum is "
-            f"{MAX_DICTIONARY_ENTRY_COUNT}"
+            f"{maximum_dictionary_entries}"
         )
 
     old_group_zero_offset = bank.group_addresses[0] - bank.load_address

@@ -16,8 +16,9 @@ Each record has two useful English fields:
 - `patch_safe_english_translation` is the exact text used by the current
   playable build.
 - `final_natural_english_translation` preserves a fuller editorial reading
-  when the current renderer, fixed slot, or compression budget cannot display
-  it safely.
+  when the current renderer, control layout, or bank budget cannot display it
+  safely. The canonical release already installs the configured full-word menu
+  labels; this distinction still matters for constrained scenario prose.
 
 Read [the translation workflow](docs/TRANSLATION_WORKFLOW.md) before changing
 a record. It explains the record IDs, control codes, width limits, and bank

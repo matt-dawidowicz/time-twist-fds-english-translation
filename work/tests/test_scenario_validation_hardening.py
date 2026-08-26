@@ -10,7 +10,14 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from time_twist.cli import command_scenario_extract, command_scenario_insert
-from time_twist.compression import compress_english_groups, packed_size
+from time_twist.compression import (
+    _compress_english_groups_beam,
+    _compress_english_groups_greedy,
+    _improve_dictionary_order,
+    compress_english_groups,
+    expand_dictionary_symbols,
+    packed_size,
+)
 from time_twist.english import EnglishTextError, encode_english
 from time_twist.fds import FdsFormatError, FdsImage
 from time_twist.project import required_dictionary_entries
@@ -60,6 +67,135 @@ def _synthetic_bank(
 
 class ScenarioValidationHardeningTests(unittest.TestCase):
     """Group current regression tests by project contract."""
+
+    def test_beam_search_can_beat_a_greedy_dictionary(self) -> None:
+        """Keep a corpus where overlapping choices punish greedy selection."""
+        texts = (
+            "ABACCABDCABDCABD",
+            "BCDACABC",
+            "BCDAABAC",
+            "DABAABCDABAC",
+            "CABDBABCBCAB",
+            "ABCDCABCDABABCAB",
+            "BCDAAABABABC",
+        )
+        groups = (tuple(encode_english(text) for text in texts),)
+
+        greedy = _compress_english_groups_greedy(groups)
+        beam = _compress_english_groups_beam(groups)
+
+        self.assertLess(packed_size(*beam), packed_size(*greedy))
+        self.assertEqual(beam, _compress_english_groups_beam(groups))
+        expanded = tuple(
+            tuple(
+                expand_dictionary_symbols(record, beam[1]) for record in group
+            )
+            for group in beam[0]
+        )
+        self.assertEqual(expanded, groups)
+
+    def test_beam_search_preserves_required_dictionary_prefix(self) -> None:
+        """Keep fixed-UI dictionary indices stable during alternative search."""
+        groups = (
+            (
+                encode_english("ABABAB CABCABC"),
+                encode_english("ABABAB DABDAB"),
+            ),
+        )
+        required = (encode_english("AB"),)
+
+        _, dictionary = _compress_english_groups_beam(
+            groups, required_entries=required
+        )
+
+        self.assertEqual(dictionary[: len(required)], required)
+
+    def test_dictionary_order_search_can_improve_overlapping_entries(
+        self,
+    ) -> None:
+        """Prove that optional-entry order can reduce the exact packed size."""
+        texts = (
+            "ABCDBCABDABAABABCABD",
+            "CABDAABA",
+            "BCDACABDCABCCABDBABC",
+            "ABACDABA",
+            "BCDABCABABCDABABBCDA",
+            "BCABABAB",
+            "BCDAABACAABA",
+            "BCABBABCCABDABABABAC",
+            "BCDACABCBCDADABA",
+            "BABCCABDABCD",
+        )
+        groups = (tuple(encode_english(text) for text in texts),)
+        greedy = _compress_english_groups_greedy(groups)
+
+        reordered = _improve_dictionary_order(groups, greedy[1])
+
+        self.assertLess(packed_size(*reordered), packed_size(*greedy))
+        expanded = tuple(
+            tuple(
+                expand_dictionary_symbols(record, reordered[1])
+                for record in group
+            )
+            for group in reordered[0]
+        )
+        self.assertEqual(expanded, groups)
+
+    def test_optimize_selects_the_smallest_valid_result(self) -> None:
+        """Wire alternative search into the opt-in production entry point."""
+        texts = (
+            "ABACCABDCABDCABD",
+            "BCDACABC",
+            "BCDAABAC",
+            "DABAABCDABAC",
+            "CABDBABCBCAB",
+            "ABCDCABCDABABCAB",
+            "BCDAAABABABC",
+        )
+        groups = (tuple(encode_english(text) for text in texts),)
+        greedy = compress_english_groups(groups)
+
+        optimized = compress_english_groups(
+            groups,
+            max_bytes=packed_size(*greedy),
+            optimize=True,
+        )
+
+        self.assertLess(packed_size(*optimized), packed_size(*greedy))
+        expanded = tuple(
+            tuple(
+                expand_dictionary_symbols(record, optimized[1])
+                for record in group
+            )
+            for group in optimized[0]
+        )
+        self.assertEqual(expanded, groups)
+
+    def test_optimize_excludes_release_invalid_candidates(self) -> None:
+        """Choose the smallest candidate that satisfies a bank constraint."""
+        texts = (
+            "ABACCABDCABDCABD",
+            "BCDACABC",
+            "BCDAABAC",
+            "DABAABCDABAC",
+            "CABDBABCBCAB",
+            "ABCDCABCDABABCAB",
+            "BCDAAABABABC",
+        )
+        groups = (tuple(encode_english(text) for text in texts),)
+        greedy = compress_english_groups(groups)
+        greedy_size = packed_size(*greedy)
+
+        constrained = compress_english_groups(
+            groups,
+            max_bytes=greedy_size,
+            optimize=True,
+            candidate_validator=lambda candidate_groups, dictionary: (
+                packed_size(candidate_groups, dictionary) >= greedy_size
+            ),
+        )
+
+        self.assertEqual(packed_size(*constrained), greedy_size)
 
     def test_extract_preserves_english_only_for_matching_stable_id(
         self,
@@ -169,6 +305,20 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
         self.assertTrue(getattr(required, "requires_full_dictionary", False))
         with self.assertRaisesRegex(ValueError, "exactly 31"):
             compress_english_groups(groups, required_entries=required)
+
+    def test_undersized_fixed_slot_labels_are_reserved(self) -> None:
+        """Keep complete labels encodable after alternative dictionary search."""
+        expected = {
+            "TT3A": ("Back", "Frankie"),
+            "TT3B": ("Cougar", "ight"),
+        }
+
+        for bank_name, labels in expected.items():
+            required = required_dictionary_entries(bank_name)
+            with self.subTest(bank=bank_name):
+                self.assertTrue(
+                    set(map(encode_english, labels)).issubset(required)
+                )
 
     def test_fixed_ui_insert_rejects_no_compress(self) -> None:
         """Verify the current contract described by this regression test."""

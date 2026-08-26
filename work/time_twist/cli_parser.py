@@ -298,9 +298,17 @@ def build_parser() -> argparse.ArgumentParser:
     title_patch.add_argument(
         "target",
         type=Path,
-        help="approved 256x240 indexed title image",
+        help="approved 256x240 indexed final-title image",
     )
     title_patch.add_argument("output", type=Path, help="expanded NOV4 .bin")
+    title_patch.add_argument(
+        "--slide-target",
+        type=Path,
+        help=(
+            "approved 256x240 indexed monochrome swipe image; defaults to "
+            "the named sibling beside target"
+        ),
+    )
     title_patch.add_argument(
         "--subtitle",
         default=DEFAULT_SUBTITLE,

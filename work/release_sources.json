@@ -15,8 +15,13 @@
     },
     "work/title_assets/Time Twist approved native title.png": {
       "normalization": "raw",
-      "sha256": "281FD547A893A27A8C744C3FDE8ADC6C98F4E2E97F5A32BCCCE2FFA270D5DA42",
-      "bytes": 2450
+      "sha256": "B1F262770FB490E2A933B956D5857432C101EE378A0F765CCCFACD8EE5FBF9A8",
+      "bytes": 2145
+    },
+    "work/title_assets/Time Twist approved native slide.png": {
+      "normalization": "raw",
+      "sha256": "5B77F1E1080BC6A34AAB8B66420C2D53F025121285095ED142B481AD3C0C873C",
+      "bytes": 1527
     },
     "work/translations/TT1A.json": {
       "normalization": "lf",
@@ -25,8 +30,8 @@
     },
     "work/translations/TT1B.json": {
       "normalization": "lf",
-      "sha256": "1E7B41D108FEED9695C2F9E0639B7CA4EE036385579B0C017406B471BADCEA38",
-      "bytes": 9642
+      "sha256": "85FAB81266E4C9532E861B1D1E0AC10AACCD5E4AD40D6767A2BD02281FB34B3E",
+      "bytes": 9658
     },
     "work/translations/TT2.json": {
       "normalization": "lf",
@@ -40,8 +45,8 @@
     },
     "work/translations/TT3A.json": {
       "normalization": "lf",
-      "sha256": "DF6867B3F1A897F86CEC25E8FCD8DA197290CF242BCD9CDA7039F8A0A0116C07",
-      "bytes": 9614
+      "sha256": "DCC46D0FE23A60EE918CA93A9A9EDF708F14503B4E7D981228D48BD00D2AD7BD",
+      "bytes": 9622
     },
     "work/translations/TT3B.json": {
       "normalization": "lf",
@@ -65,8 +70,8 @@
     },
     "work/translations/TT6A.json": {
       "normalization": "lf",
-      "sha256": "DED60090F87FDEDE51FBDDD94E464DF1A04C124881430FB892EB75C06E23098E",
-      "bytes": 6915
+      "sha256": "C56917888B716DD5DCCB67DEC946021EBBE53B6C103FA1BC53CB7F691559E73C",
+      "bytes": 6909
     },
     "work/translations/TT6B.json": {
       "normalization": "lf",

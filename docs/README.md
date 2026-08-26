@@ -65,12 +65,15 @@ proof that it fits the current ROM.
 
 Read:
 
-1. [Fixed-address text](FORMATS.md#fixed-address-packed-text)
-2. [Patch layers](ARCHITECTURE.md#patch-layers)
-3. [Adding a binary patch](DEVELOPMENT.md#adding-or-changing-a-binary-patch)
+1. [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md)
+2. [Fixed-address text](FORMATS.md#fixed-address-packed-text)
+3. [Patch layers](ARCHITECTURE.md#patch-layers)
+4. [Adding a binary patch](DEVELOPMENT.md#adding-or-changing-a-binary-patch)
 
-These records are often referenced directly by 6502 code, so individual packed
-slot boundaries must remain fixed.
+The 11 scenario menu tables use a recovered base-plus-page-pointer model and
+are repacked by the canonical release. Other fixed records may still require
+their individual packed boundaries to remain unchanged. Do not infer one
+layout from the other.
 
 ## Understand the binary format
 
@@ -137,7 +140,8 @@ promotion approves the exact reviewed hashes; a strict build reproduces them.
 | --- | --- |
 | `work/translations/*.json` | Playable scenario source |
 | `work/time_twist/ui.py` | Playable fixed/interface source |
-| `work/title_assets/Time Twist approved native title.png` | Native ROM-bound title geometry |
+| `work/title_assets/Time Twist approved native title.png` | Native ROM-bound final title geometry |
+| `work/title_assets/Time Twist approved native slide.png` | Native ROM-bound monochrome swipe geometry |
 | `work/release_sources.json` | Approved non-code input hashes |
 | `work/release_target.json` | Absent until a reviewed candidate is promoted |
 | `work/translated_scripts/*.json` | Decoded/review scenario records |

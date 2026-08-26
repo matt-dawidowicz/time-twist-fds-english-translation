@@ -121,16 +121,20 @@ time-twist title-patch `
   work/NOV4_font_ui.bin `
   "work/title_assets/Time Twist approved native title.png" `
   work/NOV4_english_title.bin `
+  --slide-target "work/title_assets/Time Twist approved native slide.png" `
   --subtitle "On the Outskirts of History..."
 ```
 
-The title step deliberately relocates data and should be last. Its input image
-is already the approved 256x240 indexed NES authority; the production path
-does not resize or requantize a display screenshot. Do not reapply a patch to
+The title step deliberately relocates data and should be last. Its two input
+images are already approved 256x240 indexed NES authorities; the production
+path does not resize or requantize the display GIF. Do not reapply a patch to
 its own output; source guards expect the known pre-patch bytes.
 
 These low-level commands are useful for diagnosis. The authoritative complete
-composition path is `release-build`.
+composition path is `release-build`. For the 11 page-indexed scenario menu
+banks, only `release-build` performs the joint 68-entry menu/dialogue packing
+that installs every full label; the standalone commands retain the legacy
+31-entry, exact-slot behavior.
 
 ## 7. Regenerate review artifacts
 
@@ -159,6 +163,17 @@ same logical paths and must match. Git commit and dirty-state metadata are
 included when Git is available; the normalized code-tree SHA-256 is the
 authoritative fallback. Candidate mode is not approval. Inspect the diff and
 playtest the exact files in `build/candidate`.
+
+Audit the installed fixed-menu text directly from that candidate:
+
+```powershell
+python work/tools/audit_fixed_menu_labels.py `
+  --candidate-fds "build/candidate/Time Twist - reproducible English four-side playtest.fds" `
+  --output-csv build/candidate/fixed_menu_label_audit.csv
+```
+
+The current inventory must report 721 full-word labels, no blocked fallbacks,
+and no failures before runtime review begins.
 
 Maintainers with the private fixture overlay should also run:
 

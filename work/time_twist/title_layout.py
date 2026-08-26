@@ -42,34 +42,33 @@ CLOCK_METASPRITE_START = 0x047A
 CLOCK_METASPRITE_END = 0x059A
 CLOCK_HAND_ORIGINS_OFFSET = 0x03CA
 CLOCK_HAND_ORIGINS_SOURCE = bytes.fromhex("78 00 37 04 80 00 3F")
-CLOCK_HAND_ORIGINS_PATCH = bytes.fromhex("68 00 2F 04 70 00 37")
+CLOCK_HAND_ORIGINS_PATCH = bytes.fromhex("6A 00 3A 04 72 00 42")
 NOV3_LOAD_ADDRESS = 0xD7B5
 SPLIT_TILE_ROW = 16
-# Every background slot below the clock-owned $EC-$FF tail is now used.  The
-# approved native artwork is deliberately tile-harmonized to this exact limit.
+# Background slots below the clock-owned $EC-$FF tail are shared across two
+# non-overlapping title phases. Patterns common to neither phase may reuse one
+# ID because the final transition replaces their contiguous CHR delta.
 TOP_TILE_COUNT = CLOCK_SOURCE_TILE
+FINAL_DELTA_TILE_COUNT = 0x37
+FINAL_DELTA_CHR_SIZE = FINAL_DELTA_TILE_COUNT * 16
 BOTTOM_TILE_COUNT = 0x37
 BOTTOM_CHR_SIZE = BOTTOM_TILE_COUNT * 16
 BACKGROUND_TAIL_SIZE = 0
 NINTENDO_FIRST_TILE = 0xB0
 NINTENDO_TILE_COUNT = 0x26
 NINTENDO_CHR_SIZE = NINTENDO_TILE_COUNT * 16
-# The slide nametable contains the complete native wordmark.  Its temporary
-# Nintendo tile IDs are restored once, immediately before the original swipe.
+# The slide nametable contains its own reviewed monochrome wordmark. Its
+# temporary Nintendo tile IDs are restored once, immediately before the swipe.
 SLIDE_TITLE_TILE_COLUMNS = 32
 INITIAL_CHR_LOADER_SIZE = 12
-# The pre-slide helper must restore the scroll origin before rendering is
-# visible again.  Its sixteen helper bytes are paid for by removing a duplicate
-# 608-byte restore copy: both title states now DMA the authoritative, already
-# patched base CHR at $B6D2.  It clears and later restores the $1C PPUMASK
-# mirror but deliberately leaves $2001 blank.  The next NMI applies the new
+# The pre-slide helper restores the Nintendo-overlaid base-CHR range and the
+# scroll origin, then queues the slide palette after the FDS BIOS upload so its
+# staging state survives. It clears and later restores the $1C PPUMASK mirror
+# but deliberately leaves $2001 blank. The next NMI applies the new palette and
 # scroll/nametable state before copying $1C back to $2001; otherwise one frame
-# can show the old Nintendo nametable with the restored English-title CHR.
-# Keep the aggregate NOV4 payload at 12,214 bytes; a prior payload growth trial
-# caused FDS Disk Error 24.
+# can show the old Nintendo nametable through title CHR.
 SLIDE_PREP_ORIGIN_AND_MASK_SIZE = 16
 SLIDE_PREP_SIZE = 43 + SLIDE_PREP_ORIGIN_AND_MASK_SIZE
-RESTORE_WORKSPACE_SIZE = NINTENDO_CHR_SIZE - SLIDE_PREP_ORIGIN_AND_MASK_SIZE
 TITLE_TRANSITION_SIZE = 97
 # Keep the screen blank while the title-only lower CHR table and raster split
 # are dismantled.  Without the two PPUMASK stores below, the lower time-machine
@@ -130,6 +129,7 @@ CLOCK_METASPRITE_SHA256 = (
 # ---------------------------------------------------------------------------
 
 DEFAULT_SUBTITLE = "On the Outskirts of History..."
+DEFAULT_SLIDE_ASSET_NAME = "Time Twist approved native slide.png"
 TITLE_PALETTE = (
     (0, 0, 0),
     (255, 254, 255),
@@ -181,7 +181,11 @@ class TitleAssets:
 
     Attributes:
         chr_data: Complete replacement for NOV4's original title CHR region.
-        background_chr: Exact upper pattern table used after initialization.
+        background_chr: Exact upper pattern table used by the final screen.
+        slide_chr: Initial upper pattern table used by the monochrome swipe.
+        final_delta_chr: Contiguous patterns uploaded to turn ``slide_chr``
+            into ``background_chr`` during the final-title transition.
+        final_delta_first_tile: First upper-table tile replaced by that delta.
         bottom_chr: Independent lower patterns loaded for the raster split.
         nintendo_chr: Temporary Nintendo-phase patterns for reserved tile IDs.
         restore_chr: Upper-title patterns restored over those temporary IDs.
@@ -202,6 +206,9 @@ class TitleAssets:
 
     chr_data: bytes
     background_chr: bytes
+    slide_chr: bytes
+    final_delta_chr: bytes
+    final_delta_first_tile: int
     bottom_chr: bytes
     nintendo_chr: bytes
     restore_chr: bytes

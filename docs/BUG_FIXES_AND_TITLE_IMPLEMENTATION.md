@@ -88,6 +88,26 @@ established for NOV2 at `$6000`. Unknown mappings are rejected instead of being
 hidden behind a guessed generic rule. It refuses an address inconsistency,
 size change, or source mismatch before writing anything.
 
+## NOV2 extended English dictionary decoder
+
+The native nine-bit dictionary form can name entries 1-31. English does not
+use extended-glyph values 0-36: its remaining uppercase letters, digits,
+punctuation, and `é` occupy values 37-62. The release reinterprets that unused
+range as dictionary entries 32-68. Both forms remain nine bits, and native
+Japanese source parsing remains unchanged.
+
+The complete decoder change is one exact-size, source-verified replacement:
+
+| File | CPU | Expected bytes | Replacement bytes | Purpose |
+| ---: | ---: | --- | --- | --- |
+| `$21D3` | `$81D3` | `A5 3A C9 04 90 07 C9 20 B0 09 4C ED 81` | `A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82` | Route values 0-36 to dictionary entries 32-68; retain values 37-63 as extended glyphs |
+
+The replacement is 13 bytes, exactly the size of NOV2's original extended
+glyph branch. Values below `$25` reach the existing dictionary expander at
+`$82BE` after adding 32; values `$25` and above branch to the existing glyph
+path at `$8226`. `CMP #$25` clears carry for the add path, so the compact
+sequence does not require a separate `CLC`.
+
 ## NOV2 one-choice B-button engine fix
 
 ### Symptom
@@ -341,9 +361,15 @@ to another game revision or to an already modified, incompatible NOV4.
 
 ### The production artwork contract
 
-The ROM-bound art authority is
-`work/title_assets/Time Twist approved native title.png`. It must be exactly
-256x240, indexed (`L` or `P`), and use only indices 0-3:
+The approved opening GIF is retained as regeneration provenance. Production
+consumes two exact 256x240 indexed (`L` or `P`) authorities:
+
+- `Time Twist approved native title.png` uses indices 0-3 and may own rows
+  0-96;
+- `Time Twist approved native slide.png` uses indices 0-1 and may own rows
+  0-95.
+
+The final palette indices mean:
 
 | Index | Meaning |
 | ---: | --- |
@@ -352,54 +378,40 @@ The ROM-bound art authority is
 | 2 | Pink fill |
 | 3 | Purple bevel/shadow |
 
-Only rows 0-95 may contain nonzero pixels. Production does not crop, resize,
-resample, quantize, or infer geometry from an emulator screenshot. The lower
-screen, time machine, copyright line, PUSH START, and live hand sprites remain
-derived from native game assets.
+Production does not crop, resize, resample, or quantize either PNG. The
+regeneration tool validates the GIF hash, dimensions, loop flag, frame count,
+and delays; inverts its display cells by majority vote; selects the completed
+white swipe; and uses temporal consensus to remove only the moving blue hand
+sprites from the colored phase. It then applies the reviewed native-pixel
+cleanup to the lower T bevel, reference-traced clock rim, W/I/S outlines, and
+balanced TM. The first T's upper cap remains exact to the GIF authority.
+The lower screen, time machine, copyright line, PUSH START, and live hand
+sprites remain derived from native game assets.
 
-The approved image was prepared once by `rebuild_native_title_asset.py`. That
-review process converted the reference into native coordinates, removed the
-frozen reference hand, kept the native `TM`, and made ten fill/bevel-only pixel
-edits. Those edits preserve the black silhouette and white outline while
-reducing the upper wordmark from 244 to exactly 236 unique patterns.
-
-The resulting native asset has zero approximation error in the production
-builder and already uses every safe upper-title pattern `$00-$EB`. Further
-"polish" is therefore an artwork revision, not a renderer fix: it must start
-from a separately reviewed indexed authority and recover an equal number of
-pattern-sharing opportunities without touching the clock-owned `$EC-$FF`
-tail. The START-transition repair below deliberately leaves this approved
-geometry, palette, and complete sliding sequence byte-for-byte unchanged.
-
-The subtitle is not baked into the authority PNG. `build_title_assets()`
-clears rows 92-105 and redraws `On the Outskirts of History...` at y=96 with
-the deterministic pixel font. This keeps subtitle wording and glyph rendering
-reviewable in code.
+The subtitle is not baked into either authority PNG. `build_title_assets()`
+clears rows 97-111 and redraws `On the Outskirts of History...` at `(42,102)`
+with the deterministic pixel font. This keeps subtitle wording and glyph
+rendering reviewable in code.
 
 ### Fitting exact artwork into the NES pattern budget
 
-The complete screen requires 291 distinct patterns, more than a single NES
-background pattern table can hold. NOV4 already has a mid-screen CHR split, so
-the patch preserves and reuses it:
+Each upper phase fits individually in the 236 IDs `$00-$EB`, but their union
+needs 291 patterns. The allocator reuses 55 contiguous IDs across time. They
+hold exact swipe patterns in the base CHR and exact final patterns after a
+880-byte transition upload. All remaining phase patterns have fixed IDs. No
+tile is clustered, merged, approximated, or substituted.
 
-- rows 0-15 use pattern table 1 and exactly 236 tile patterns (`$00-$EB`);
-- rows 16-29 use pattern table 0 and exactly 55 patterns (`$00-$36`);
-- the split occurs in the blank band below PUSH START and above the time
-  machine;
-- upper IDs `$EC-$FF` remain reserved for original clock-hand source tiles.
+Rows 16-29 still use the independent exact 55-pattern lower table through the
+native split at row 16. IDs `$EC-$FF` remain reserved for original clock-hand
+source tiles. All assignments are deterministic, and applying the stored
+delta to the base slide table must reproduce the final table byte-for-byte.
 
-The generator requires the exact counts rather than merely accepting anything
-under the limit. That makes the approved art, tile assignment, and regression
-hashes stable. Upper patterns are ordered by descending use count with a
-lexicographic byte tie-breaker. Lower patterns are lexicographically ordered.
-The result is deterministic on every platform.
+### Building the final and sliding nametables from two exact phases
 
-### Building the final and sliding nametables from one geometry
-
-The final nametable begins as the original decoded map. Its upper 96 pixels are
-replaced by the approved English geometry; the original lower composition is
-retained. Tile IDs are then assigned from the exact upper or lower pattern set
-according to the split row.
+The final nametable begins as the original decoded map. Rows 0-96 are replaced
+by the approved colored authority; the exact subtitle is drawn below it; and
+the original composition resumes at row 112. Tile IDs are assigned from the
+final upper or exact lower pattern set according to the split row.
 
 The defective earlier slide treated the Japanese title's tile occupancy as a
 mask for an English wordmark. Because the letter shapes differ, it assembled
@@ -407,10 +419,9 @@ unrelated fragments, omitted the final columns, and jumped to another geometry
 when the colored title appeared.
 
 The corrected second nametable copies all 32 columns of the first twelve tile
-rows mechanically from the same `final_target` pixels. The completed slide and
-the final colored wordmark therefore cannot drift apart. The original
-nametable attribute bytes remain responsible for deciding which pieces are
-visible during the swipe.
+rows from the separate monochrome authority. The original nametable attribute
+bytes remain responsible for deciding which pieces are visible during the
+swipe. Pixel and file hashes lock both authorities against drift.
 
 ### Preserving the original dramatic swipe
 
@@ -457,13 +468,12 @@ The patch uses temporal ownership:
    leaves `$2001` blank so the next NMI can apply the new scroll/nametable
    registers before rendering becomes visible again.
 
-The original timing and 12-pixel movement remain native. The helper remains
-size-neutral at the NOV4 level: it reuses the authoritative patched base CHR
-for both restoration points instead of serializing a second 608-byte copy, shrinks
-the unused workspace by the same six bytes the helper gained, and uses the
-released 12,214-byte payload footprint.
+The original timing and 12-pixel movement remain native. The helper reads the
+authoritative base slide CHR directly, so no duplicate restore payload is
+serialized. The space that previously served as a zero/restore workspace now
+stores the 880-byte final-phase delta.
 
-### Making the monochrome completion match the colored logo
+### Rendering the completed monochrome phase faithfully
 
 The original state-3 palette hid some nonzero 2bpp indices. On the English
 art, that made the settled white logo lose parts of its outline even though
@@ -478,9 +488,9 @@ $0F, $30, $30, $30
 
 Every nontransparent pattern index is now white. The attribute mask still
 makes unrevealed regions black, so the dramatic assembly is preserved. At
-origin `$0100`, the monochrome frame has the exact same 9,348 nontransparent
-pixels as the approved colored logo. The following phase changes color and
-title state rather than swapping to visibly different geometry.
+origin `$0100`, the viewport reproduces the separate approved monochrome
+authority. The following phase safely replaces 60 CHR patterns before the
+colored final nametable becomes visible.
 
 ### Preserving and aligning the animated clock hands
 
@@ -490,11 +500,11 @@ Japanese wordmark, so only the two metasprite origins change:
 
 ```text
 source: 78 00 37 04 80 00 3F
-patch:  68 00 2F 04 70 00 37
+patch:  6A 00 3A 04 72 00 42
 ```
 
-This moves both origins 16 pixels left and 8 pixels up, placing their shared
-elbow near native coordinate `(125, 67)`. Post-build checks separately compare
+This moves both origins 14 pixels left and 3 pixels down, placing their shared
+elbow near native coordinate `(127, 78)`. Post-build checks separately compare
 the clock-source CHR and full metasprite table against the input NOV4.
 
 ## Appended NOV4 layout and helper code
@@ -506,22 +516,21 @@ overwriting unknown code. With the approved title, the layout is:
 | --- | --- | --- | ---: |
 | Exact lower CHR | `$2375-$26E4` | `$C575-$C8E4` | `$0370` |
 | Nintendo temporary CHR | `$26E5-$2944` | `$C8E5-$CB44` | `$0260` |
-| Size-neutral helper workspace | `$2945-$2B94` | `$CB45-$CD94` | `$0250` |
-| Initial Nintendo loader | `$2B95-$2BA0` | `$CD95-$CDA0` | 12 bytes |
-| Pre-slide restore helper | `$2BA1-$2BDB` | `$CDA1-$CDDB` | 59 bytes |
-| Final-title transition helper | `$2BDC-$2C3C` | `$CDDC-$CE3C` | 97 bytes |
-| Title exit helper | `$2C3D-$2C5C` | `$CE3D-$CE5C` | 32 bytes |
-| Relocated nametable stream | `$2C5D-$2FB5` | `$CE5D-$D1B5` | `$0359` |
+| Final-phase CHR delta | `$2945-$2D04` | `$CB45-$CF04` | `$03C0` |
+| Initial Nintendo loader | `$2D05-$2D10` | `$CF05-$CF10` | 12 bytes |
+| Pre-slide restore helper | `$2D11-$2D4B` | `$CF11-$CF4B` | 59 bytes |
+| Final-title transition helper | `$2D4C-$2DAC` | `$CF4C-$CFAC` | 97 bytes |
+| Title exit helper | `$2DAD-$2DCC` | `$CFAD-$CFCC` | 32 bytes |
+| Relocated nametable stream | starts `$2DCD` | starts `$CFCD` | Data-dependent RLE |
 
-The patched payload is 12,214 bytes (`$2FB6`) and ends at CPU `$D1B6`.
-Resident NOV3 starts at `$D7B5`, leaving `$05FF` bytes (1,535 decimal) of
-verified headroom.
+The builder calculates the final RLE size and rejects the patch unless the
+expanded payload ends below resident NOV3 at CPU `$D7B5`.
 
 ### Patch sites that enter the appended regions
 
 | File | CPU | Change |
 | ---: | ---: | --- |
-| `$01BC` | `$A3BC` | Point the native title decoder at relocated stream `$CE5D` |
+| `$01BC` | `$A3BC` | Point the native title decoder at relocated stream `$CFCD` |
 | `$0296` | `$A496` | Call the appended 12-byte Nintendo loader and NOP the remainder of the old upload sequence |
 | `$02E4` | `$A4E4` | Replace `JSR $AB74` with `JSR` to the 59-byte pre-slide restore helper |
 | `$038E` | `$A58E` | Call the final-title transition helper and NOP the unused source bytes |
@@ -539,23 +548,26 @@ NOPs so instruction boundaries remain explicit.
 
 ### Pre-slide helper
 
-The 59-byte helper first executes the original `JSR $AB74` palette behavior.
-It then saves the PPUMASK mirror, clears `$1C`, blanks `$2001`, disables NMI,
-restores the 38 English title patterns, sets the original first swipe origin
-(`$58:$57 = $01F0` and `$4D = $F0`), restores the saved PPU control state,
-restores only the `$1C` mirror, and returns with `$2001` still blank. The
-unchanged code immediately repeats those origin writes. The following NMI then
-copies `$57/$58` into the real PPU scroll/nametable state before copying `$1C`
-back to `$2001`. Save-state analysis showed why this matters: restoring
-`$2001` inside the helper can reveal one frame of the old Nintendo nametable
-with the restored English-title CHR.
+The 59-byte helper saves the PPUMASK mirror, clears `$1C`, blanks `$2001`,
+disables NMI, restores the 38 English title patterns, and sets the original
+first swipe origin (`$58:$57 = $01F0` and `$4D = $F0`). Only then does it
+execute the original `JSR $AB74` palette behavior. The ordering is required
+because the FDS BIOS CHR upload can overwrite the palette staging buffer and
+update flag; queuing the palette first made normally masked regions appear as
+white and blue garbage during the swipe. The helper then restores the saved
+PPU control state, restores only the `$1C` mirror, and returns with `$2001`
+still blank. The unchanged code immediately repeats those origin writes. The
+following NMI copies the palette and `$57/$58` into the real PPU state before
+copying `$1C` back to `$2001`. Restoring `$2001` inside the helper can reveal
+one frame of the old Nintendo nametable with the restored English-title CHR.
 
 ### Final-title transition helper
 
-The 97-byte helper preserves the original state transition, restores the
-English upper patterns, uploads the independent 55-tile lower set, and enables
-NOV4's existing raster split at tile row 16. It resets the recovered scroll,
-split, and timer variables to explicit known values before rendering resumes.
+The 97-byte helper preserves the original state transition, uploads the exact
+55-tile final-phase delta, uploads the independent 55-tile lower set, and
+enables NOV4's existing raster split at tile row 16. It resets the recovered
+scroll, split, and timer variables to explicit known values before rendering
+resumes.
 
 ### Exit helper, post-START crash fix, and clean visual teardown
 
@@ -608,8 +620,8 @@ checks that:
 - both relocated streams decode to the generated nametables;
 - the combined stream ends exactly at the end of NOV4;
 - one `$FF` terminator follows the two 1,024-byte maps;
-- lower CHR, Nintendo CHR, and the fixed size-neutral workspace occupy their
-  computed ranges;
+- lower CHR, Nintendo CHR, and the final-phase CHR delta occupy their computed
+  ranges;
 - the palette byte and clock origins contain their replacements;
 - clock-source tiles and metasprite animation bytes still equal the input;
 - the expanded address stays strictly below NOV3 at `$D7B5`.
@@ -649,7 +661,8 @@ time-twist ui-patch NOV2.bin NOV2-ui.bin --component NOV2
 time-twist ui-patch NOV4.bin NOV4-ui.bin --component NOV4
 time-twist font-patch NOV4-ui.bin NOV4-font.bin
 time-twist title-patch NOV4-font.bin `
-  "work/title_assets/Time Twist approved native title.png" NOV4-title.bin
+  "work/title_assets/Time Twist approved native title.png" NOV4-title.bin `
+  --slide-target "work/title_assets/Time Twist approved native slide.png"
 ```
 
 Do not use individually patched banks as release authority. The release command
@@ -670,9 +683,9 @@ fails before generation if they differ.
 | Apostrophe uses the corrected closing shape | `work/tests/test_font.py` |
 | Source NOV4 layout and hashes are exact | `test_recovered_title_boundaries_and_source_hashes` |
 | Approved native title regenerates exactly | `test_native_authority_regenerates_exactly_and_has_locked_geometry` |
-| Tile budgets and completed slide/final geometry match | `test_exact_tile_budgets_full_slide_identity_and_completed_origin` |
+| Tile budgets and exact phase delta reconstruct | `test_exact_tile_budgets_phase_delta_and_completed_origin` |
 | Nintendo patterns are restored before the swipe | `test_nintendo_overlay_and_pre_slide_restore_have_no_stale_logo_pixels` |
-| All 21 origins and representative frame hashes are stable | `test_native_slide_origins_wrap_and_representative_frames_are_locked` |
+| All 21 origins match an independent viewport model | `test_native_slide_origins_wrap_and_representative_frames_are_locked` |
 | Attribute-mask and palette behavior are native | `test_attribute_tables_and_runtime_palette_are_locked` |
 | RLE framing is legal and exact | `test_rle_fragments_are_legal_exact_and_singly_terminated` |
 | Appended helpers fit and are deterministic | `test_patch_layout_helpers_scope_memory_and_determinism` |
@@ -688,27 +701,24 @@ frames, a contact sheet, and the final title with captured clock sprites:
 python work/render_title_preview.py
 ```
 
-Static evidence is necessary but not sufficient. The documented title
-candidate was cold-booted twice in a compatible FDS emulator for 1,150 frames. Both runs
-produced 1,153 byte-identical comparison artifacts: movement at frames
-896-915, settled monochrome through 979, palette refinement at 980-983, final
-fade-in at 1020-1027, and clock-hand animation from 1029. A complete Zenpen and
-Kouhen playthrough is still required for release certification.
+Static evidence is necessary but not sufficient. This two-authority title
+revision requires a fresh compatible FDS-emulator capture before promotion,
+followed by a complete Zenpen and Kouhen playthrough for release certification.
 
 ### Auditing an expanded NOV4 correctly
 
-The source NOV4 is 9,077 bytes; the patched title component is 12,214 bytes.
-An allowed-difference audit must therefore compare the source against exactly
-the same-length prefix of the patched component. Strictly zipping the two full
-byte strings is itself an error because the appended helper/data region has no
-source counterpart.
+The source NOV4 is 9,077 bytes; the patched title component is larger and its
+exact size depends on the two new RLE streams. An allowed-difference audit must
+therefore compare the source against exactly the same-length prefix of the
+patched component. Strictly zipping the two full byte strings is itself an
+error because the appended helper/data region has no source counterpart.
 
-The integration test now audits `patched[:len(source)]` against the documented
-mutable ranges. The appended 3,132 bytes are not exempt from verification:
-separate assertions lock the helper layout, title pointer, two decoded
-1,024-byte nametables, exact stream termination, final `$D1B6` address, and
-the `$05FF` gap before resident NOV3 at `$D7B5`. This division makes the test
-match the binary layout rather than weakening it.
+The integration test audits `patched[:len(source)]` against the documented
+mutable ranges. The append is not exempt from verification: separate
+assertions lock the helper layout, title pointer, exact 880-byte delta, two
+decoded 1,024-byte nametables, exact stream termination, and the positive gap
+before resident NOV3 at `$D7B5`. This division makes the test match the binary
+layout rather than weakening it.
 
 ## Build-publication access fix
 

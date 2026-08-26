@@ -25,7 +25,9 @@ from .title_layout import (
     CLOCK_SOURCE_OFFSET,
     CLOCK_SOURCE_SHA256,
     CLOCK_SOURCE_TILE,
+    DEFAULT_SLIDE_ASSET_NAME,
     DEFAULT_SUBTITLE,
+    FINAL_DELTA_TILE_COUNT,
     FINAL_NAMETABLE_END,
     FINAL_NAMETABLE_SOURCE_SHA256,
     FINAL_NAMETABLE_START,
@@ -44,7 +46,6 @@ from .title_layout import (
     SLIDE_PALETTE_COLOR1_SOURCE,
     SLIDE_PREP_CALL_OFFSET,
     SLIDE_PREP_CALL_SOURCE,
-    SLIDE_TITLE_TILE_COLUMNS,
     SPLIT_TILE_ROW,
     TITLE_CHR_OFFSET,
     TITLE_CHR_SIZE,
@@ -264,11 +265,16 @@ def _render_split_nametable(
     return top
 
 
-def _target_to_indices(path: Path) -> Image.Image:
+def _target_to_indices(
+    path: Path,
+    *,
+    last_owned_row: int = 96,
+) -> Image.Image:
     """Load the approved native NES title authority without resampling it.
 
     Args:
         path: Exact 256-by-240 indexed title asset.
+        last_owned_row: Final inclusive row the authority may occupy.
 
     Returns:
         A 256-by-240 indexed image using the title/gray palette conventions.
@@ -301,8 +307,14 @@ def _target_to_indices(path: Path) -> Image.Image:
     values = set(result.get_flattened_data())
     if not values <= {0, 1, 2, 3}:
         raise TitlePatchError("title authority uses indices outside 0-3")
-    if any(result.crop((0, 96, 256, 240)).get_flattened_data()):
-        raise TitlePatchError("native title authority must own only rows 0-95")
+    if not 0 <= last_owned_row < 240:
+        raise TitlePatchError("native title authority row limit is invalid")
+    if any(
+        result.crop((0, last_owned_row + 1, 256, 240)).get_flattened_data()
+    ):
+        raise TitlePatchError(
+            "native title authority owns pixels below its approved rows"
+        )
     return result
 
 
@@ -786,6 +798,7 @@ def build_title_assets(
     data: bytes,
     target: Path,
     *,
+    slide_target: Path | None = None,
     subtitle: str = DEFAULT_SUBTITLE,
 ) -> TitleAssets:
     """Build exact English title assets without modifying the source bytes.
@@ -793,13 +806,15 @@ def build_title_assets(
     Args:
         data: Original, revision-checked NOV4 overlay.
         target: Approved native 256-by-240 indexed title image.
+        slide_target: Approved native monochrome swipe image. By default this
+            is the named sibling asset beside ``target``.
         subtitle: Localized subtitle redrawn with the deterministic pixel font.
 
     Returns:
         Exact CHR, nametable, RLE, Nintendo-phase, and restore assets.
 
     Raises:
-        OSError: If ``target`` cannot be read.
+        OSError: If either native title authority cannot be read.
         TitlePatchError: If NOV4 is unknown, the subtitle is unsupported or
             wider than the screen, exact pattern counts differ, temporary tile
             IDs are exhausted, or clock-source preservation fails.
@@ -823,17 +838,25 @@ def build_title_assets(
     original_final = _render_indexed_nametable(final_nametable, source_chr)
     original_second = _render_indexed_nametable(second_nametable, source_chr)
     recovered = _target_to_indices(target)
+    if slide_target is None:
+        slide_target = target.with_name(DEFAULT_SLIDE_ASSET_NAME)
+    recovered_slide = _target_to_indices(slide_target, last_owned_row=95)
+    if not set(recovered_slide.get_flattened_data()) <= {0, 1}:
+        raise TitlePatchError(
+            "native slide authority must be strictly monochrome"
+        )
 
     final_target = original_final.copy()
     final_pixels = _pixel_access(final_target)
     recovered_pixels = _pixel_access(recovered)
-    for y in range(96):
+    for y in range(97):
         for x in range(256):
             final_pixels[x, y] = recovered_pixels[x, y]
 
-    # The native asset ends at row 91.  Keep the established four-pixel gap and
+    # The recovered colored wordmark ends on row 96. Keep a five-pixel gap and
     # redraw the retained wording from code so it cannot drift with the logo.
-    for y in range(92, 106):
+    # PUSH START begins on row 112 in the original final nametable.
+    for y in range(97, 112):
         for x in range(256):
             final_pixels[x, y] = 0
     subtitle_width = (
@@ -845,28 +868,14 @@ def build_title_assets(
         final_target,
         subtitle,
         x=(256 - subtitle_width) // 2,
-        y=96,
+        y=102,
         color=2,
     )
 
-    # The second nametable shares a horizontal scroll with the final one.
-    # Its Japanese title tile occupancy cannot be reused as an English mask:
-    # the two wordmarks have different letter geometry, which turns a scroll
-    # frame into unrelated fragments.  Instead, copy a tile-aligned leading
-    # segment of the actual English logo.  The native swipe reveals the
-    # remaining columns from the neighboring final nametable.
-    #
-    # All 32 columns are copied.  State 3 restores the 38 Nintendo-temporary
-    # CHR IDs before the first swipe frame, so the slide may use every safe
-    # background ID below the clock-owned $EC-$FF tail.
-    slide_target = Image.new("L", (256, 240), 0)
-    for tile_y in range(12):
-        for tile_x in range(SLIDE_TITLE_TILE_COLUMNS):
-            left = tile_x * 8
-            top = tile_y * 8
-            slide_target.paste(
-                final_target.crop((left, top, left + 8, top + 8)), (left, top)
-            )
+    # The GIF contains a genuinely different completed monochrome swipe, not
+    # merely a white rendering of the colored final logo. Preserve that
+    # reviewed phase as its own pixel authority.
+    slide_target_image = recovered_slide.copy()
 
     # The exact upper title and exact lower machine/text art need 291 distinct
     # patterns together, more than one NES background table can contain.  NOV4
@@ -875,13 +884,13 @@ def build_title_assets(
     # START and the time machine: table 1 supplies rows 0-15 and table 0
     # supplies rows 16-29.  Both sets now fit independently with no clustering,
     # substitutions, or lost border/color pixels.
-    top_frequency: Counter[bytes] = Counter(
+    final_frequency: Counter[bytes] = Counter(
         _tile_bytes(final_target, tile_x, tile_y)
         for tile_y in range(SPLIT_TILE_ROW)
         for tile_x in range(32)
     )
-    top_frequency.update(
-        _tile_bytes(slide_target, tile_x, tile_y)
+    slide_frequency: Counter[bytes] = Counter(
+        _tile_bytes(slide_target_image, tile_x, tile_y)
         for tile_y in range(12)
         for tile_x in range(32)
     )
@@ -890,11 +899,23 @@ def build_title_assets(
         for tile_y in range(SPLIT_TILE_ROW, 30)
         for tile_x in range(32)
     )
-    top_patterns = set(top_frequency)
+    final_patterns = set(final_frequency)
+    slide_patterns = set(slide_frequency)
+    upper_union = final_patterns | slide_patterns
     bottom_patterns = set(bottom_frequency)
-    if len(top_patterns) != TOP_TILE_COUNT:
+    if len(final_patterns) > TOP_TILE_COUNT:
         raise TitlePatchError(
-            f"exact upper title needs {len(top_patterns)} tiles, expected {TOP_TILE_COUNT}"
+            f"exact final upper title needs {len(final_patterns)} tiles, "
+            f"but only {TOP_TILE_COUNT} are available"
+        )
+    if len(slide_patterns) > TOP_TILE_COUNT:
+        raise TitlePatchError(
+            f"exact slide title needs {len(slide_patterns)} tiles, "
+            f"but only {TOP_TILE_COUNT} are available"
+        )
+    if len(upper_union) > TOP_TILE_COUNT * 2:
+        raise TitlePatchError(
+            "exact title phases exceed the two-phase upper CHR capacity"
         )
     if len(bottom_patterns) != BOTTOM_TILE_COUNT:
         raise TitlePatchError(
@@ -912,28 +933,84 @@ def build_title_assets(
     )
     if len(nintendo_patterns) != NINTENDO_TILE_COUNT:
         raise TitlePatchError("Nintendo logo tile count changed")
-    ordered_top_patterns = sorted(
-        top_patterns,
-        key=lambda pattern: (-top_frequency[pattern], pattern),
+    shared_patterns = final_patterns & slide_patterns
+    slide_only = sorted(
+        slide_patterns - shared_patterns,
+        key=lambda pattern: (-slide_frequency[pattern], pattern),
     )
-    center_to_id = dict(
-        zip(ordered_top_patterns, range(TOP_TILE_COUNT), strict=True)
+    final_only = sorted(
+        final_patterns - shared_patterns,
+        key=lambda pattern: (-final_frequency[pattern], pattern),
+    )
+    delta_tile_count = max(0, len(upper_union) - TOP_TILE_COUNT)
+    if delta_tile_count != FINAL_DELTA_TILE_COUNT:
+        raise TitlePatchError(
+            f"exact title phases need a {delta_tile_count}-tile delta, "
+            f"expected {FINAL_DELTA_TILE_COUNT}"
+        )
+    if delta_tile_count > min(len(slide_only), len(final_only)):
+        raise TitlePatchError(
+            "exact title phases cannot share the available upper CHR IDs"
+        )
+    slide_delta_patterns = slide_only[:delta_tile_count]
+    final_delta_patterns = final_only[:delta_tile_count]
+    fixed_patterns = sorted(
+        shared_patterns,
+        key=lambda pattern: (
+            -(final_frequency[pattern] + slide_frequency[pattern]),
+            pattern,
+        ),
+    )
+    fixed_patterns.extend(slide_only[delta_tile_count:])
+    fixed_patterns.extend(final_only[delta_tile_count:])
+    if len(fixed_patterns) > TOP_TILE_COUNT - delta_tile_count:
+        raise TitlePatchError("upper-title fixed CHR assignment overflowed")
+
+    fixed_to_id = {
+        pattern: delta_tile_count + index
+        for index, pattern in enumerate(fixed_patterns)
+    }
+    slide_to_id = {
+        pattern: index for index, pattern in enumerate(slide_delta_patterns)
+    }
+    slide_to_id.update(
+        (pattern, fixed_to_id[pattern])
+        for pattern in slide_patterns
+        if pattern in fixed_to_id
+    )
+    final_to_id = {
+        pattern: index for index, pattern in enumerate(final_delta_patterns)
+    }
+    final_to_id.update(
+        (pattern, fixed_to_id[pattern])
+        for pattern in final_patterns
+        if pattern in fixed_to_id
     )
     if (
-        len(center_to_id) != TOP_TILE_COUNT
-        or len(set(center_to_id.values())) != TOP_TILE_COUNT
+        set(slide_to_id) != slide_patterns
+        or set(final_to_id) != final_patterns
     ):
         raise TitlePatchError("exact upper-title ID assignment is incomplete")
 
     # NOV4 copies the first $EC source tiles into background table 1 before it
     # constructs the hand sprites in table 0 from the untouched $EC-$FF tail.
-    # All 236 exact upper patterns deliberately fill the slots below $EC, so
-    # the original
+    # Exact phase patterns occupy only slots below $EC, so the original
     # animated-hand source remains byte-identical.
-    background_chr = bytearray(source_chr)
-    background_chr[: CLOCK_SOURCE_TILE * 16] = bytes(CLOCK_SOURCE_TILE * 16)
-    for pattern, tile_id in center_to_id.items():
+    slide_chr = bytearray(source_chr)
+    slide_chr[: CLOCK_SOURCE_TILE * 16] = bytes(CLOCK_SOURCE_TILE * 16)
+    for pattern, tile_id in fixed_to_id.items():
+        slide_chr[tile_id * 16 : (tile_id + 1) * 16] = pattern
+    for pattern, tile_id in zip(
+        slide_delta_patterns, range(delta_tile_count), strict=True
+    ):
+        slide_chr[tile_id * 16 : (tile_id + 1) * 16] = pattern
+
+    background_chr = bytearray(slide_chr)
+    for pattern, tile_id in zip(
+        final_delta_patterns, range(delta_tile_count), strict=True
+    ):
         background_chr[tile_id * 16 : (tile_id + 1) * 16] = pattern
+    final_delta_chr = bytes(background_chr[: delta_tile_count * 16])
 
     bottom_to_id = {
         pattern: tile_id
@@ -956,16 +1033,16 @@ def build_title_assets(
     for pattern, tile_id in nintendo_to_id.items():
         block_offset = (tile_id - NINTENDO_FIRST_TILE) * 16
         nintendo_chr[block_offset : block_offset + 16] = pattern
-    restore_chr = background_chr[
+    restore_chr = slide_chr[
         NINTENDO_FIRST_TILE
         * 16 : (NINTENDO_FIRST_TILE + NINTENDO_TILE_COUNT)
         * 16
     ]
 
-    patched_chr = bytearray(background_chr)
+    clock_tail = source_chr[CLOCK_SOURCE_TILE * 16 :]
     if (
-        patched_chr[CLOCK_SOURCE_TILE * 16 :]
-        != source_chr[CLOCK_SOURCE_TILE * 16 :]
+        slide_chr[CLOCK_SOURCE_TILE * 16 :] != clock_tail
+        or background_chr[CLOCK_SOURCE_TILE * 16 :] != clock_tail
     ):
         raise TitlePatchError(
             "title conversion altered the clock source tiles"
@@ -977,14 +1054,14 @@ def build_title_assets(
         for tile_x in range(32):
             pattern = _tile_bytes(final_target, tile_x, tile_y)
             if tile_y < SPLIT_TILE_ROW:
-                tile_id = center_to_id[pattern]
+                tile_id = final_to_id[pattern]
             else:
                 tile_id = bottom_to_id[pattern]
             patched_final[tile_y * 32 + tile_x] = tile_id
     for tile_y in range(12):
         for tile_x in range(32):
-            pattern = _tile_bytes(slide_target, tile_x, tile_y)
-            patched_second[tile_y * 32 + tile_x] = center_to_id[pattern]
+            pattern = _tile_bytes(slide_target_image, tile_x, tile_y)
+            patched_second[tile_y * 32 + tile_x] = slide_to_id[pattern]
     for tile_y in range(12, 30):
         for tile_x in range(32):
             pattern = _tile_bytes(original_second, tile_x, tile_y)
@@ -993,8 +1070,11 @@ def build_title_assets(
     encoded_final = encode_title_rle(bytes(patched_final))
     encoded_second = encode_title_rle(bytes(patched_second))
     return TitleAssets(
-        chr_data=bytes(patched_chr),
+        chr_data=bytes(slide_chr),
         background_chr=bytes(background_chr),
+        slide_chr=bytes(slide_chr),
+        final_delta_chr=final_delta_chr,
+        final_delta_first_tile=0,
         bottom_chr=bottom_chr,
         nintendo_chr=bytes(nintendo_chr),
         restore_chr=bytes(restore_chr),

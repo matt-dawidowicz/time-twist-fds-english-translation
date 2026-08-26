@@ -97,6 +97,41 @@ class PackedTextTests(unittest.TestCase):
             [(entry.kind, entry.value) for entry in symbols],
         )
 
+    def test_extended_english_dictionary_round_trip(self) -> None:
+        """Decode entries 32-68 only when the patched mode is explicit."""
+        records = (
+            (
+                PackedSymbol(SymbolKind.DICTIONARY, 31, 0, 0),
+                PackedSymbol(SymbolKind.DICTIONARY, 32, 0, 0),
+                PackedSymbol(SymbolKind.DICTIONARY, 68, 0, 0),
+            ),
+        )
+        packed = pack_records(records)
+
+        native, _ = split_records(packed, limit=1)
+        self.assertEqual(
+            [(symbol.kind, symbol.value) for symbol in native[0]],
+            [
+                (SymbolKind.DICTIONARY, 31),
+                (SymbolKind.EXTENDED, 0),
+                (SymbolKind.EXTENDED, 36),
+            ],
+        )
+        patched, end = split_records(
+            packed,
+            limit=1,
+            extended_dictionary=True,
+        )
+        self.assertEqual(end, len(packed))
+        self.assertEqual(
+            [(symbol.kind, symbol.value) for symbol in patched[0]],
+            [
+                (SymbolKind.DICTIONARY, 31),
+                (SymbolKind.DICTIONARY, 32),
+                (SymbolKind.DICTIONARY, 68),
+            ],
+        )
+
     def test_encoder_rejects_zero_dictionary_reference(self) -> None:
         """Verify the current contract described by this regression test."""
         writer = BitWriter()

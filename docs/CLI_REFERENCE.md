@@ -67,9 +67,11 @@ Complete translations receive a new English dictionary; partial work keeps the
 Japanese dictionary. `--bank-name` is available when the input filename does
 not safely identify its bank. Capacity-constrained complete builds retry the
 deterministic compressor without candidate pruning if the normal fast search
-misses the native reservation. Fixed-UI banks also retry when the fast search
-stops before all 31 required English dictionary slots are populated, and fail
-if the exhaustive search still cannot produce a complete dictionary.
+misses the native reservation. They then compare that valid result with bounded
+beam search and fixed-prefix-safe dictionary reordering and keep the smallest
+exact output. Fixed-UI banks also retry when the fast search stops before all
+31 required English dictionary slots are populated, and fail if no search can
+produce a complete dictionary.
 
 `--no-compress` is diagnostic only. A fully translated bank whose fixed UI
 requires the 31-entry English dictionary rejects that option before writing an
@@ -83,10 +85,12 @@ for the later `ui-patch` step.
 Installs the translated dialogue font after validating the supported NOV4
 source revision.
 
-### `title-patch NOV4 TARGET OUTPUT [--subtitle TEXT]`
+### `title-patch NOV4 TARGET OUTPUT [--slide-target PNG] [--subtitle TEXT]`
 
-Builds and installs the English title assets from an exact 256x240 indexed
-native image while preserving the clock and recovered raster-split behavior.
+Builds and installs the English title assets from exact 256x240 indexed final
+and monochrome-swipe images while preserving the clock and recovered
+raster-split behavior. `--slide-target` defaults to `Time Twist approved
+native slide.png` beside `TARGET`.
 
 ### `ui-patch SOURCE OUTPUT [--component NAME]`
 
@@ -104,7 +108,7 @@ All release commands accept `--project-root PATH`.
 ### `release-lock [--lock PATH] [--update]`
 
 Without `--update`, verifies the Japanese baselines, all 13 playable scenario
-maps, and the title asset against the source lock. The default is
+maps, and both title assets against the source lock. The default is
 `PROJECT/work/release_sources.json`.
 
 Source-lock schema v2 hashes translation JSON after CRLF/bare-CR to LF
@@ -122,6 +126,13 @@ Python file, project metadata, or the release target. The canonical
 
 Rebuilds all 13 scenario banks, applies fixed UI/font/title patches, produces
 Zenpen and Kouhen, combines four sides, and writes `release_manifest.json`.
+
+For the 11 banks with scenario menu tables, this canonical path packs the
+unabbreviated labels together with dialogue, uses the guarded 68-entry English
+dictionary decoder, regenerates the menu page pointers, and preserves the
+overlay's original fixed suffix. The standalone `scenario-insert` and
+`ui-patch` commands retain the older 31-entry, fixed-slot diagnostic workflow;
+use `release-build` for the full-word playable result.
 
 Release manifest schema v4 is a complete audit record. It includes source-lock
 and release-code provenance, Python/Pillow environment versions, all

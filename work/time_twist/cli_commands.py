@@ -368,6 +368,7 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
             packed_groups,
             required_entries=required_entries,
             max_bytes=capacity - pointer_bytes,
+            optimize=True,
         )
         compressed_size = packed_size(packed_groups, dictionary)
         print(
@@ -580,6 +581,7 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
         groups,
         required_entries=required_dictionary_entries(bank_name),
         max_bytes=capacity - pointer_bytes,
+        optimize=True,
     )
     used = packed_size(compressed_groups, dictionary) + pointer_bytes
     print(
@@ -617,8 +619,8 @@ def command_title_patch(args: argparse.Namespace) -> None:
     """Run the English title-asset conversion and NOV4 relocation.
 
     Args:
-        args: Namespace with source ``nov4``, reference ``target``, destination
-            ``output``, and subtitle string.
+        args: Namespace with source ``nov4``, final reference ``target``,
+            optional ``slide_target``, destination ``output``, and subtitle.
 
     Raises:
         OSError: If source/reference/output files cannot be accessed.
@@ -632,6 +634,7 @@ def command_title_patch(args: argparse.Namespace) -> None:
     patched = patched_nov4_title(
         args.nov4.read_bytes(),
         args.target,
+        slide_target=getattr(args, "slide_target", None),
         subtitle=args.subtitle,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)

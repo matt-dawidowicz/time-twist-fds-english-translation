@@ -20,7 +20,7 @@ from time_twist.english import render_english, validate_display_width
 from time_twist.fds import FdsImage
 from time_twist.release import SCENARIO_LOCATIONS
 from time_twist.scenario import parse_scenario_bank
-from time_twist.textcodec import split_records
+from time_twist.textcodec import SymbolKind, split_records
 from time_twist.ui import _record_starts
 
 AUDIT_FIELDNAMES = (
@@ -88,21 +88,44 @@ def audit(
                     bank_name
                 )
                 bank_sha256 = hashlib.sha256(entry.data).hexdigest().upper()
-                bank_path = Path(temporary) / f"{bank_name}.bin"
-                bank_path.write_bytes(entry.data)
-                bank = parse_scenario_bank(
-                    bank_path, minimum_dictionary_entries=31
+                start = (
+                    int.from_bytes(entry.data[0x14:0x16], "little")
+                    - entry.load_address
                 )
-                start = getattr(ui, f"{bank_name}_FIXED_TEXT_START_OFFSET")
-                end = getattr(ui, f"{bank_name}_FIXED_TEXT_END_OFFSET")
+                end = (
+                    int.from_bytes(entry.data[0x1A:0x1C], "little")
+                    - entry.load_address
+                )
                 table = entry.data[start:end]
                 starts = _record_starts(table, len(records))
+                packed_records = []
                 for record_index, start_offset in enumerate(starts):
                     symbols, next_offset = split_records(
-                        table, offset=start_offset, limit=1
+                        table,
+                        offset=start_offset,
+                        limit=1,
+                        extended_dictionary=True,
                     )
                     slots[record_index] = next_offset - start_offset
                     record_symbols = symbols[0]
+                    packed_records.append(record_symbols)
+                menu_dictionary_floor = max(
+                    (
+                        symbol.value
+                        for record in packed_records
+                        for symbol in record
+                        if symbol.kind is SymbolKind.DICTIONARY
+                    ),
+                    default=0,
+                )
+                bank_path = Path(temporary) / f"{bank_name}.bin"
+                bank_path.write_bytes(entry.data)
+                bank = parse_scenario_bank(
+                    bank_path,
+                    minimum_dictionary_entries=menu_dictionary_floor,
+                    extended_dictionary=True,
+                )
+                for record_index, record_symbols in enumerate(packed_records):
                     decoded[record_index] = render_english(
                         expand_dictionary_symbols(
                             record_symbols, bank.dictionary
@@ -111,7 +134,7 @@ def audit(
                     representation[record_index] = (
                         "dictionary"
                         if any(
-                            symbol.kind.name == "DICTIONARY"
+                            symbol.kind is SymbolKind.DICTIONARY
                             for symbol in record_symbols
                         )
                         else "literal"
