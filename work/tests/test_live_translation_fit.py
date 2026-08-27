@@ -8,6 +8,10 @@ import unittest
 from pathlib import Path
 
 from generate_translation_workbook import PATCH_FOOTPRINT_RESULTS
+from time_twist.capacity import (
+    RELOCATED_FIXED_TABLE_PREFIX_BYTES,
+    playable_capacity,
+)
 from time_twist.compression import compress_english_groups, packed_size
 from time_twist.english import encode_english
 from time_twist.project import (
@@ -71,7 +75,8 @@ def _load_groups(
 def measure_translation_footprint(bank_name: str) -> int:
     """Mirror the release compressor using only public translation/UI sources."""
     groups = _load_groups(bank_name)
-    capacity = PATCH_FOOTPRINT_RESULTS[bank_name]["capacity"]
+    scenario_capacity = PATCH_FOOTPRINT_RESULTS[bank_name]["capacity"]
+    capacity = playable_capacity(bank_name, scenario_capacity)
     pointer_bytes = 2 * (len(groups) - 1)
 
     if bank_name in FIXED_RECORD_TABLE_SPECS:
@@ -102,15 +107,21 @@ def measure_translation_footprint(bank_name: str) -> int:
 class LiveTranslationFitTests(unittest.TestCase):
     """Prove current playable text still fits every recovered bank capacity."""
 
+    def test_relocated_capacity_facts_cover_exactly_the_repacked_banks(self) -> None:
+        """Keep ROM-free capacity evidence aligned with the release architecture."""
+        self.assertEqual(
+            set(RELOCATED_FIXED_TABLE_PREFIX_BYTES),
+            set(FIXED_RECORD_TABLE_SPECS),
+        )
+
     def test_current_translation_maps_fit(self) -> None:
         """Recompress every bank and fail only when current text exceeds capacity.
 
-        ``PATCH_FOOTPRINT_RESULTS[*][\"used\"]`` is generated/reporting evidence
-        from an earlier reviewed candidate. It can legitimately become stale
-        when dialogue changes or when a bank moves to a different compression
-        architecture (for example, relocated full-word fixed tables). Capacity
-        is the hard binary invariant; current usage is recomputed here and any
-        evidence mismatch is printed so reports can be regenerated separately.
+        ``PATCH_FOOTPRINT_RESULTS[*][\"used\"]`` and its ``capacity`` field are
+        historical scenario-region evidence. Relocated full-word menu banks add
+        a source-verified movable prefix to that scenario reservation; current
+        usage is recomputed from scenario plus menu with the same 68-entry
+        compressor as the canonical release builder.
         """
         self.assertEqual(
             set(PATCH_FOOTPRINT_RESULTS), set(KNOWN_SCENARIO_BANKS)
@@ -118,7 +129,8 @@ class LiveTranslationFitTests(unittest.TestCase):
         for bank_name in KNOWN_SCENARIO_BANKS:
             recorded = PATCH_FOOTPRINT_RESULTS[bank_name]
             used = measure_translation_footprint(bank_name)
-            capacity = recorded["capacity"]
+            scenario_capacity = recorded["capacity"]
+            capacity = playable_capacity(bank_name, scenario_capacity)
             delta = used - recorded["used"]
             evidence = (
                 "current" if delta == 0 else f"recorded delta {delta:+d}"
@@ -130,7 +142,7 @@ class LiveTranslationFitTests(unittest.TestCase):
             self.assertLessEqual(
                 used,
                 capacity,
-                f"{bank_name} exceeds its public footprint by "
+                f"{bank_name} exceeds its canonical English footprint by "
                 f"{used - capacity} bytes",
             )
 
