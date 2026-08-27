@@ -93,7 +93,9 @@ def _fixed_rows(start_sequence: int) -> list[comparison.ComparisonRow]:
     if set(tables) != expected_banks:
         missing = sorted(expected_banks - set(tables))
         extra = sorted(set(tables) - expected_banks)
-        raise ValueError(f"fixed-source-table bank mismatch: missing={missing}, extra={extra}")
+        raise ValueError(
+            f"fixed-source-table bank mismatch: missing={missing}, extra={extra}"
+        )
 
     for bank, start, end, english_records in comparison.FIXED_SPECS:
         tracked = tables[bank]
@@ -105,7 +107,9 @@ def _fixed_rows(start_sequence: int) -> list[comparison.ComparisonRow]:
 
         decoded = _decoded_source_records(bank, start, end, len(english_records))
         if decoded is not None and decoded != tracked:
-            raise ValueError(f"{bank} tracked fixed-table evidence differs from retail source")
+            raise ValueError(
+                f"{bank} tracked fixed-table evidence differs from retail source"
+            )
 
         record_start = 0
         for index, ((japanese, packed_bytes), english) in enumerate(
