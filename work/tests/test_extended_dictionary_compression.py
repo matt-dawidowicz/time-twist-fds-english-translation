@@ -10,13 +10,12 @@ from time_twist.compression import (
     _improve_dictionary_order,
     expand_dictionary_symbols,
 )
-from time_twist.english import encode_english
+from time_twist.english import encode_english, render_english
 from time_twist.scenario import (
     ScenarioBank,
     ScenarioRecord,
     parse_scenario_bank,
     rebuild_scenario_bank,
-    render_symbols,
 )
 from time_twist.textcodec import (
     EXTENDED_DICTIONARY_ENTRY_COUNT,
@@ -110,10 +109,11 @@ class ExtendedDictionaryCompressionTests(unittest.TestCase):
             parsed.records[0].symbols[0].kind, SymbolKind.DICTIONARY
         )
         self.assertEqual(parsed.records[0].symbols[0].value, 33)
-        self.assertEqual(
-            render_symbols(parsed.records[0].symbols, parsed.dictionary),
-            "A",
+        expanded = expand_dictionary_symbols(
+            parsed.records[0].symbols,
+            parsed.dictionary,
         )
+        self.assertEqual(render_english(expanded), "A")
 
 
 if __name__ == "__main__":
