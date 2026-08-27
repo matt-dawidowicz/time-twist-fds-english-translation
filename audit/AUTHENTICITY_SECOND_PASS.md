@@ -40,12 +40,19 @@ The target is the closest American-English **effect**, not a one-to-one substitu
 
 The dialogue renderer still has a 24-tile row. A more complete translation may therefore need a compact natural equivalent or a verified control/layout change; "more room" does not mean unlimited line width.
 
-Current public optimized scenario footprints are extremely tight and must be recalculated after each bank is edited:
+The old public footprint report predates the extended-dictionary TT1A release path and the relocated full-word TT1B architecture. It must not be treated as the current used-byte authority. The physical capacities remain hard invariants; current use is recomputed from the playable translation and current compressor.
 
-| Bank | Used | Capacity | Previous headroom |
+Latest independently reproduced measurements before enabling the final 68-entry optimizer pass are:
+
+| Bank / architecture | Used | Capacity | Headroom | Status |
+| --- | ---: | ---: | ---: | --- |
+| TT1A, fuller authenticity wording + extended dictionary | about 1660 | 1669 | about 9 | Fits; compressor selected 36 useful entries in the independent fit pass |
+| TT1B, authenticity rewrite + relocated full-word menus | 3930 | 4026 | 96 | Fits; this predates enabling dictionary-order optimization for 68-entry relocated banks, so the final optimized size may be smaller |
+
+For the remaining banks, the last published optimized figures are still useful as conservative review baselines until each bank is re-reviewed and recompressed:
+
+| Bank | Published used | Capacity | Published headroom |
 | --- | ---: | ---: | ---: |
-| TT1A | 1656 | 1669 | 13 |
-| TT1B | 4022 | 4026 | 4 |
 | TT2 | 3834 | 3847 | 13 |
 | T22 | 1801 | 1812 | 11 |
 | TT3A | 3733 | 3741 | 8 |
@@ -57,6 +64,8 @@ Current public optimized scenario footprints are extremely tight and must be rec
 | TT6B | 2298 | 2336 | 38 |
 | TT6C | 3520 | 3536 | 16 |
 | TT6D | 323 | 332 | 9 |
+
+The live-fit test now recompresses every bank and enforces **capacity**, rather than requiring equality with stale historical used-byte evidence. TT1A may use the patched English dictionary range through entry 68. Relocated full-word banks likewise use the 68-entry-capable compressor and now opt into the same stronger optimization passes instead of deliberately using greedy-only compression.
 
 A proposed rewrite is not promoted to playable authority until it passes both display-width validation and optimized bank recompression.
 
@@ -72,9 +81,9 @@ The symbol set will be demand-driven by the revised script. Likely useful candid
 
 | Bank | Scenario records | Semantic/voice re-review | Proposed edits | Width checked | Recompressed | Runtime checked |
 | --- | ---: | --- | --- | --- | --- | --- |
-| TT1A | 35 | in progress | pending | pending | pending | pending |
-| TT1B | 137 | pending | pending | pending | pending | pending |
-| TT2 | 169 | pending | pending | pending | pending | pending |
+| TT1A | 35 | **35/35 complete** | **staged** | **checked for changed records** | **fits with extended dictionary** | pending fresh candidate |
+| TT1B | 137 | **137/137 complete** | **29 dialogue edits staged** | **checked for changed records** | **fits with relocated full-word architecture** | pending fresh candidate |
+| TT2 | 169 | **in progress (~85/169 directly rechecked)** | pending completion | pending | pending | pending |
 | T22 | 58 | pending | pending | pending | pending | pending |
 | TT3A | 152 | pending | pending | pending | pending | pending |
 | TT3B | 58 | pending | pending | pending | pending | pending |
@@ -90,14 +99,22 @@ The scenario counts above sum to **1,299** and are tracked separately from fixed
 
 ## Confirmed early findings
 
-- `TT1A/g0/r7`: `50 meetoru ijou` includes **"50 meters or more / at least 50 meters"**. Current `Can you swim 50 meters?` loses `ijou`. A compact candidate is `Swim 50 meters or more?` (23 visible columns).
+- `TT1A/g0/r7`: `50 meetoru ijou` includes **"50 meters or more / at least 50 meters"**. Current `Can you swim 50 meters?` loses `ijou`. The playable audit branch now uses `Swim 50 meters or more?`.
+- `TT1A/g0/r14`: the source asks whether work cutting into leisure/free time is unwelcome. The earlier storage-tight `Won't trade leisure for work?` was retired once extended-dictionary compression removed the need for that compromise.
+- `TT1A/g0/r24-r26`: the fuller personality profiles restore source traits that storage-tight wording had flattened, including principled/hardworking/stubborn characterization, loss of motivation when uninterested, sharp insight, weakness with money, and romantic temperament.
 - Several TT1A personality-test records contain spaces chosen to make automatic 24-column wrapping safe. Those spaces must not simply be stripped until an equivalent safe layout is proved.
-- `TT1B`: museum exhibit prose, the Elder / Dr. Simon material, church dialogue, and the sermon contain several places where concrete detail or register was compressed away.
+- `TT1B`: museum exhibit prose, the Elder / Dr. Simon material, church dialogue, and the sermon contain several places where concrete detail or register was compressed away; the current branch stages the reviewed authenticity rewrite.
 - `TT2/T22`: Pierre, Chino, Gordo, Lugot, Jeanne, the Bishop, and formal proclamations need a stronger voice/register pass even where the first workbook marked basic meaning as accurate.
 - `TT3A/TT3B`: resistance and military dialogue often reads like telegram prose; the source supports more natural speech while retaining terse military characterization where appropriate.
 - `TT4`: formal and ceremonial speech must not be flattened into casual English (for example, a respectful `sensei` should not become `Doc!`).
 - `TT5/T25`: emancipation and plantation dialogue needs restored emotional/politeness detail while preserving rural/working-class characterization with dignity.
 - `TT6B`: the camel's marked rural Japanese voice was flattened to neutral textbook English and needs a consistent light-country localization.
 - `TT6C`: the Magi / Devil confrontation lost some explicit time-travel and ceremonial detail.
+
+## Extended-dictionary safety
+
+The English codec maps dictionary references 32-68 onto the otherwise-unused extended-glyph range without changing token width. The release path and optimizer now carry the selected maximum dictionary size through compression and rebuild.
+
+Regression coverage includes both dictionary-order optimization above 31 entries and a synthetic TT1A-style rebuild that deliberately references dictionary entry 33. That test preserves the original fixed-tail offset, reparses the rebuilt bank in extended-dictionary mode, and verifies the high dictionary reference expands correctly. This protects against the two failures that matter most here: silently falling back to a 31-entry assumption or gaining text space by overwriting/moving fixed-address data.
 
 This document is an audit ledger, not itself the playable script. `work/translations/*.json` remains the playable scenario authority.
