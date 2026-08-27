@@ -17,6 +17,12 @@ jobs:
         python-version: ["3.11", "3.12"]
     steps:
       - uses: actions/checkout@v4
+      - if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr18-source-snapshot
+          path: .
+          retention-days: 1
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
@@ -34,12 +40,6 @@ jobs:
           path: |
             outputs/
             work/translation_workbook_banks/
-      - if: matrix.python-version == '3.12'
-        uses: actions/upload-artifact@v4
-        with:
-          name: pr18-source-snapshot
-          path: .
-          retention-days: 1
       - run: python -m black --check work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
