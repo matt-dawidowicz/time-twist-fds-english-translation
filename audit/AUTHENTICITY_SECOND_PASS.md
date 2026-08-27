@@ -147,6 +147,71 @@ Total: **1,299/1,299 scenario records reviewed; 129 scenario records changed.** 
 - Restores his startled reaction during the incantation and the fact that her fortune was heard **that morning**; the final wording is `Girl: Morning fortune:` followed by `"A fine man awaits you."` so both control-delimited segments remain natural and width-safe.
 - The final ominous growl remains deliberately unexplained.
 
+## Manual evidence / canonical terminology
+
+The original Zenpen instruction manual is treated here as **secondary canonical evidence**. The ROM-derived Japanese scenario and fixed-address text remain the translation authority; manual prose is not inserted into playable dialogue unless it resolves an actual contradiction in the ROM text. The manual is nevertheless valuable for authorial framing, historical terminology, and terse FDS-system wording.
+
+### Reconstructed booklet order
+
+The supplied scans are printer-imposed spreads rather than reading-order page pairs. The numbered manual reads normally from printed page 1 through 12. The scanned spreads reconstruct as:
+
+| Supplied scan | Left printed page | Right printed page |
+| --- | ---: | ---: |
+| Manual Page 12 | 12 | 1 |
+| Manual Page 2 | 2 | 11 |
+| Manual Page 10 | 10 | 3 |
+| Manual Page 4 | 4 | 9 |
+| Manual Page 8 | 8 | 5 |
+| Manual Page 6 | 6 | 7 |
+
+The cover/back-cover and greeting/contents spread sit outside that numbered sequence.
+
+### Opening premise and protagonist
+
+Printed page 2 states that on **September 25, 1995**, the protagonist is a `shounen` (**boy / young male**) casually watching television when `aru jaaku na terepashii` (**a certain evil telepathy**) changes his ordinary life and draws him into an extraordinary space-time distortion.
+
+This is useful story framing but is not silently injected into TT1A dialogue. It supports the audit's youthful, contemporary treatment of the protagonist's voice and records that the manual explicitly presents a **malevolent psychic influence** as part of the inciting event.
+
+### Alexander / Alexandria
+
+Printed page 8's historical-primer entry `Arekisandoria (Arekusandoria)` explains that **Alexander (Alexandros) the Great** gave his name to cities he founded or conquered, producing the name Alexandria. This independently corroborates the TT4 correction that Athena's `ano ko` refers to the **boy Alexander**, not an unidentified girl.
+
+### Magi / astrologers
+
+The same page labels the Nativity tradition `San'ou raichou (Sanhakase no sanpai / Magi no reihai)` and explicitly glosses the Three Kings as `sannin no senseijutsushi` — **three astrologers** guided by a star from the East.
+
+This strongly supports keeping **`astrologers`** in the Magi's playable self-introduction while using **Magi** or **Wise Men** where broader English documentation needs a collective traditional label. `Astrologers` is not an accidental over-literalism; it is terminology Nintendo itself foregrounds in the manual.
+
+### Historical-primer framing
+
+Printed page 9 supplies short player-facing explanations for several subjects that recur in the script:
+
+- **Witch hunts / witch trials:** Church persecution of people regarded as heretics, with social disorder and disease attributed to devils or witches and accused people subjected to irrational interrogation and execution.
+- **American Civil War:** a conflict with multiple causes in which the slavery issue had a major influence; the manual describes the anti-slavery North as victorious.
+- **Gestapo:** the common name for Nazi Germany's state secret police, described as repeatedly using brutal repression against Jews and political opponents.
+
+These entries do not add scenario dialogue, but they support the audit policy of translating the game's historically harsh material directly rather than softening it merely because the wording is severe.
+
+### Intended tone
+
+Printed page 1 describes the game as `choppiri karakuchi no geemu`, roughly a **slightly sharp / biting game**. Combined with the manual's blunt historical primer, this is useful evidence that the game's insults, black humor, racism, witch-persecution material, Nazi material, and demonic threats are not automatically localization artifacts to be toned down.
+
+The same introductory text also states that the game has **no Game Over**, encouraging the player to act boldly without fear of failure. This is useful playtest context for puzzle and wrong-answer behavior.
+
+### FDS system prompts
+
+The manual also provides external confirmation for several terse fixed-address interface translations:
+
+- Printed page 5 tells the player to choose `saisho kara` to begin from the start, supporting the functional fixed-slot localization **`Start`**.
+- Printed page 7 explains that after saving with `seebu`, play is resumed from the title screen by choosing `seebu kara` (**from the save**), supporting the title-menu localization **`Load`**.
+- Printed page 12 gives the FDS wrong-disk sentence `chigatta disuku ga setto sareteimasu` — **the wrong disk is inserted/set**. NOV2 stores the same sentence across the separate records `chigatta disuku ga` and `setto sareteimasu`, independently confirming the existing **`WRONG DISK!`** interpretation.
+
+The manual's disk-error table also distinguishes wrong side/order/version conditions. Those descriptions are useful semantic evidence for NOV2 recovery paths, but the exact English fixed-slot wording remains governed by ROM layout and runtime readability.
+
+### Translation consequence
+
+The manual review produced **no reason to revert any of the 129 scenario-record changes**. Its strongest effects are corroborative: it reinforces the Alexander correction, the Magi-as-astrologers wording, the direct treatment of historical violence/oppression, and the meanings of several terse system prompts. The only materially new story framing is the manual's explicit **evil-telepathy** description of the opening, which is documented here rather than inserted into dialogue that does not say it.
+
 ## Extended-dictionary safety
 
 The patched English decoder's 32-68 references are global. The release and live-fit paths now use the 68-entry limit for **all 13 banks**, with a dedicated TT6D regression proving a non-relocated bank may exceed 31 entries. Additional regressions protect high dictionary references and the fixed-address tail. Native Japanese source parsing intentionally retains the native 31-entry fact.
