@@ -11,7 +11,11 @@ from generate_translation_workbook import PATCH_FOOTPRINT_RESULTS
 from time_twist.compression import compress_english_groups, packed_size
 from time_twist.english import encode_english
 from time_twist.project import KNOWN_SCENARIO_BANKS, required_dictionary_entries
-from time_twist.textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT, PackedSymbol
+from time_twist.textcodec import (
+    EXTENDED_DICTIONARY_ENTRY_COUNT,
+    NATIVE_DICTIONARY_ENTRY_COUNT,
+    PackedSymbol,
+)
 from time_twist.ui import (
     FIXED_RECORD_TABLE_SPECS,
     fixed_record_table_page_pointer_bytes,
@@ -83,11 +87,17 @@ def measure_translation_footprint(bank_name: str) -> int:
         )
         return packed_size(compressed, dictionary) + structural_bytes
 
+    maximum_entries = (
+        EXTENDED_DICTIONARY_ENTRY_COUNT
+        if bank_name == "TT1A"
+        else NATIVE_DICTIONARY_ENTRY_COUNT
+    )
     compressed, dictionary = compress_english_groups(
         groups,
         required_entries=required_dictionary_entries(bank_name),
         max_bytes=capacity - pointer_bytes,
         optimize=True,
+        maximum_entries=maximum_entries,
     )
     return packed_size(compressed, dictionary) + pointer_bytes
 
