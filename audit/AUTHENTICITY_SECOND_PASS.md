@@ -144,7 +144,7 @@ Total: **1,299/1,299 scenario records reviewed; 129 scenario records changed.** 
 
 - Corrects a workbook-level pronoun error: the girl thought **she herself had died**, not that the protagonist was dead.
 - `okashina hito` describes him as a funny/strange guy.
-- Restores his startled reaction during the incantation and the fact that her fortune was heard **that morning**.
+- Restores his startled reaction during the incantation and the fact that her fortune was heard **that morning**; the final wording is `Girl: Morning fortune:` followed by `"A fine man awaits you."` so both control-delimited segments remain natural and width-safe.
 - The final ominous growl remains deliberately unexplained.
 
 ## Extended-dictionary safety
@@ -161,7 +161,7 @@ The patched English decoder's 32-68 references are global. The release and live-
 - TT6A initial pass: `a5fe53c65e7a5674ebfc564181407fc46feb0636`
 - TT6B: `41d37772ee97dc401ee4cd438d10613bd3b0a43e`
 - TT6C pass: `563c1f61c856d22cc6ff6ac0f59129b0374cc5ec`; width correction: `a6606c3701c7e2294562de90502dec10cc7efe63`
-- TT6D: `06dce720aa93f2f2985ff2ae2eee369b27170b89`
+- TT6D semantic pass: `06dce720aa93f2f2985ff2ae2eee369b27170b89`; final morning-fortune wording polish: `5d2f9b8338ae7017f4bdab0ccecd901ccd8a0b59`
 - TT6A pregnancy clarification: `cd28b36a4ff0795592729c27f402eacc934ce68c`
 
 Earlier completed France revisions remain TT2 `f3f4879d1dccbded7c141e364e94f2b36c6e3e54` and T22 `68a6c18a074fa687bbee6b4bea296ab2a2aefc80`.
