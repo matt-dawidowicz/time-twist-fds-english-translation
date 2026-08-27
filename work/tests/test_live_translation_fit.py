@@ -85,7 +85,7 @@ def measure_translation_footprint(bank_name: str) -> int:
         compressed, dictionary = compress_english_groups(
             combined_groups,
             max_bytes=capacity - structural_bytes,
-            optimize=False,
+            optimize=True,
             maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
         )
         return packed_size(compressed, dictionary) + structural_bytes
