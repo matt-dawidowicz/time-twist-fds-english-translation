@@ -1,14 +1,14 @@
 """Build compact dictionaries that the original scenario engine can decode.
 
-The game offers 31 one-based dictionary references.  Each reference costs
-nine bits, so a repeated literal sequence is useful only when the references
-save more space than the packed dictionary entry consumes.  The fast path uses
-deterministic greedy selection.  Release builds additionally compare bounded
-beam search and fixed-prefix-safe dictionary reordering, keeping the smallest
-exact result.  Every path creates flat entries containing only literal
-common/extended symbols.
+The native game offers 31 one-based dictionary references; the guarded English
+NOV2 decoder extends that space to 68. Each reference costs nine bits, so a
+repeated literal sequence is useful only when the references save more space
+than the packed dictionary entry consumes. The fast path uses deterministic
+greedy selection. Release builds additionally compare bounded beam search and
+fixed-prefix-safe dictionary reordering, keeping the smallest exact result.
+Every path creates flat entries containing only literal common/extended symbols.
 
-The result is not a general-purpose optimal compressor.  It is designed around
+The result is not a general-purpose optimal compressor. It is designed around
 the game's fixed RAM reservation, native prefix tree, byte-aligned record
 separators, and fixed tables that may require particular entries.
 """
@@ -226,7 +226,7 @@ def _validate_required_entries(
     *,
     maximum_entries: int = MAX_DICTIONARY_ENTRIES,
 ) -> None:
-    """Reject required dictionary entries that the native format cannot use."""
+    """Reject required dictionary entries that the target decoder cannot use."""
     if len(required_entries) > maximum_entries:
         raise ValueError("too many required dictionary entries")
     if len(set(required_entries)) != len(required_entries):
@@ -328,10 +328,10 @@ def _compress_english_groups_beam(
 
     Greedy compression commits permanently to the best immediate candidate.
     That can miss a smaller final dictionary when two individually attractive
-    substrings overlap.  This bounded beam keeps several exact-size successors
+    substrings overlap. This bounded beam keeps several exact-size successors
     at every dictionary depth while retaining the native flat-entry contract.
 
-    The search is deterministic.  ``beam_width`` bounds the number of states
+    The search is deterministic. ``beam_width`` bounds the number of states
     retained at each depth, ``branch_factor`` bounds successors per state, and
     ``candidate_limit`` bounds the estimated candidate shortlist evaluated
     with the exact byte-aligned size model.
@@ -450,22 +450,28 @@ def _improve_dictionary_order(
     *,
     required_entry_count: int = 0,
     max_passes: int = 5,
+    maximum_entries: int = MAX_DICTIONARY_ENTRIES,
 ) -> tuple[
     tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
     tuple[tuple[PackedSymbol, ...], ...],
 ]:
     """Hill-climb optional entry order without changing fixed-UI indices.
 
-    Flat dictionary entries can overlap.  Reordering two optional entries can
+    Flat dictionary entries can overlap. Reordering two optional entries can
     therefore change which literal occurrences are replaced even though the
-    dictionary contains the same text.  Required entries remain an immutable
+    dictionary contains the same text. Required entries remain an immutable
     prefix because fixed-address UI records reference their exact indices.
+    ``maximum_entries`` follows the target decoder so the same optimizer works
+    for both native 31-entry and extended 68-entry English dictionaries.
     """
     if required_entry_count < 0 or required_entry_count > len(dictionary):
         raise ValueError("required_entry_count is outside the dictionary")
     if max_passes < 1:
         raise ValueError("max_passes must be positive")
-    _validate_required_entries(dictionary)
+    _validate_required_entries(
+        dictionary,
+        maximum_entries=maximum_entries,
+    )
 
     order = list(dictionary)
     best = _reapply_dictionary(groups, tuple(order))
@@ -520,12 +526,12 @@ def _compress_english_groups_greedy(
             or duplicated, or contain non-literal tokens.
 
     ``required_entries`` lets a bank reserve dictionary slots for packed text
-    outside its normal scenario groups.  Those entries are installed first,
+    outside its normal scenario groups. Those entries are installed first,
     then the remaining slots are selected greedily from the scenario corpus.
 
-    Candidate ranking starts with an inexpensive bit-saving estimate.  The
+    Candidate ranking starts with an inexpensive bit-saving estimate. The
     best 200 candidates are then measured by repacking the complete groups and
-    dictionary, which accounts for separator alignment.  Selection stops when
+    dictionary, which accounts for separator alignment. Selection stops when
     no candidate reduces the final byte count or all requested slots are
     occupied.
 
@@ -627,12 +633,10 @@ def compress_english_groups(
     The normal pass evaluates only the top estimated candidates for each greedy
     step. If that result exceeds ``max_bytes`` or a fixed-UI caller requires
     every requested entry but the fast pass stops early, a deterministic
-    fallback reruns
-    greedy selection while evaluating every positive-saving candidate. For a
-    full-dictionary request the exhaustive result must contain every requested
-    entry;
-    otherwise the build fails closed instead of letting a later UI patch read
-    following code/data as dictionary records.
+    fallback reruns greedy selection while evaluating every positive-saving
+    candidate. For a full-dictionary request the exhaustive result must contain
+    every requested entry; otherwise the build fails closed instead of letting
+    a later UI patch read following code/data as dictionary records.
 
     With ``optimize=True``, the valid greedy result is also compared against a
     bounded beam and dictionary-order hill climb. Tight reservations receive a
@@ -665,6 +669,7 @@ def compress_english_groups(
                 groups,
                 baseline[1],
                 required_entry_count=len(required_entries),
+                maximum_entries=maximum_entries,
             ),
         ]
         baseline_size = packed_size(*baseline)
@@ -739,8 +744,8 @@ def expand_dictionary_symbols(
     Args:
         symbols: Record or dictionary-entry symbols to expand.
         dictionary: Ordered one-based dictionary entries.
-        _stack: Internal recursion path used for cycle detection. Callers
-            should leave this at its default.
+        _stack: Internal recursion path used by the decoder. Callers should
+            leave this at its default.
 
     Returns:
         A flat symbol tuple with every dictionary reference expanded.
