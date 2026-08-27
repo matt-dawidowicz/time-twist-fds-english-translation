@@ -85,7 +85,7 @@ These are deliberately conservative rather than claimed final optimizer outputs.
 
 For non-relocated banks, the historical scenario capacity remains the hard capacity. TT1A's fuller authenticity wording independently fit inside 1669 bytes with the extended dictionary. TT6D now receives the same 68-entry English maximum as every other playable bank.
 
-The final full-game script has **not yet been promoted on fit evidence**. GitHub Actions run #281 for the semantic-review head was queued when this ledger was first completed; later documentation-only commits may have newer runs. CI remains the authoritative repository-level control/width/encoding/recompression check, and a fresh emulator candidate remains a separate runtime gate.
+The final full-game script has **not yet been promoted on fit evidence**. GitHub Actions remained queued through the semantic-review/documentation commits when this ledger was completed. CI remains the authoritative repository-level control/width/encoding/recompression check, and a fresh emulator candidate remains a separate runtime gate.
 
 ## Font / symbol audit
 
