@@ -19,7 +19,9 @@ from time_twist.ui import (
 
 WORK = Path(__file__).resolve().parents[1]
 TRANSLATIONS = WORK / "translations"
-RECORD_ID_RE = re.compile(r"^(?P<bank>[A-Z0-9]+?)/g(?P<group>\d+)/r(?P<record>\d+)$")
+RECORD_ID_RE = re.compile(
+    r"^(?P<bank>[A-Z0-9]+?)/g(?P<group>\d+)/r(?P<record>\d+)$"
+)
 
 
 def _load_groups(
@@ -97,9 +99,9 @@ class LiveTranslationFitTests(unittest.TestCase):
         """Recompress every bank and fail only when current text exceeds capacity.
 
         ``PATCH_FOOTPRINT_RESULTS[*][\"used\"]`` is generated/reporting evidence
-        from an earlier reviewed candidate.  It can legitimately become stale
+        from an earlier reviewed candidate. It can legitimately become stale
         when dialogue changes or when a bank moves to a different compression
-        architecture (for example, relocated full-word fixed tables).  Capacity
+        architecture (for example, relocated full-word fixed tables). Capacity
         is the hard binary invariant; current usage is recomputed here and any
         evidence mismatch is printed so reports can be regenerated separately.
         """
@@ -117,7 +119,8 @@ class LiveTranslationFitTests(unittest.TestCase):
             self.assertLessEqual(
                 used,
                 capacity,
-                f"{bank_name} exceeds its public footprint by {used - capacity} bytes",
+                f"{bank_name} exceeds its public footprint by "
+                f"{used - capacity} bytes",
             )
 
 
