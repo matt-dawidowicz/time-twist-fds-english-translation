@@ -16,7 +16,6 @@ from time_twist.project import (
 )
 from time_twist.textcodec import (
     EXTENDED_DICTIONARY_ENTRY_COUNT,
-    NATIVE_DICTIONARY_ENTRY_COUNT,
     PackedSymbol,
 )
 from time_twist.ui import (
@@ -90,17 +89,12 @@ def measure_translation_footprint(bank_name: str) -> int:
         )
         return packed_size(compressed, dictionary) + structural_bytes
 
-    maximum_entries = (
-        EXTENDED_DICTIONARY_ENTRY_COUNT
-        if bank_name == "TT1A"
-        else NATIVE_DICTIONARY_ENTRY_COUNT
-    )
     compressed, dictionary = compress_english_groups(
         groups,
         required_entries=required_dictionary_entries(bank_name),
         max_bytes=capacity - pointer_bytes,
         optimize=True,
-        maximum_entries=maximum_entries,
+        maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
     )
     return packed_size(compressed, dictionary) + pointer_bytes
 
