@@ -36,7 +36,8 @@ class ExtendedDictionaryCompressionTests(unittest.TestCase):
         self.assertEqual(len(reordered), 33)
         expanded = tuple(
             tuple(
-                expand_dictionary_symbols(record, reordered) for record in group
+                expand_dictionary_symbols(record, reordered)
+                for record in group
             )
             for group in compressed
         )
