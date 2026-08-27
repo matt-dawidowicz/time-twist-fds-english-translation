@@ -79,7 +79,9 @@ def _decoded_source_records(
     ends = ui._record_ends(starts, len(packed))
     return [
         (render_symbols(record.symbols, dictionary), row_end - row_start)
-        for record, row_start, row_end in zip(records, starts, ends, strict=True)
+        for record, row_start, row_end in zip(
+            records, starts, ends, strict=True
+        )
     ]
 
 
@@ -105,7 +107,9 @@ def _fixed_rows(start_sequence: int) -> list[comparison.ComparisonRow]:
                 f"{len(english_records)}"
             )
 
-        decoded = _decoded_source_records(bank, start, end, len(english_records))
+        decoded = _decoded_source_records(
+            bank, start, end, len(english_records)
+        )
         if decoded is not None and decoded != tracked:
             raise ValueError(
                 f"{bank} tracked fixed-table evidence differs from retail source"
@@ -119,12 +123,12 @@ def _fixed_rows(start_sequence: int) -> list[comparison.ComparisonRow]:
                 comparison._make_row(
                     sequence=sequence,
                     bank=bank,
-                    text_id=f"{bank}/fixed/r{index:03d}",
+                    text_id=f"{bank}/fixed/r{index}",
                     kind="fixed-address",
                     source_location=f"${0xA200 + start + record_start:04X}",
                     packed_bytes=str(packed_bytes),
                     japanese=japanese,
-                    english=english,
+                    english=english.rstrip(),
                 )
             )
             sequence += 1

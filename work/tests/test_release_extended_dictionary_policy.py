@@ -34,10 +34,20 @@ class ReleaseExtendedDictionaryPolicyTests(unittest.TestCase):
                     "time_twist.release.source_dictionary_reference_floor",
                     return_value=0,
                 ),
-                patch("time_twist.release.parse_scenario_bank", return_value=fake_bank),
-                patch("time_twist.release._load_translation_map", return_value={}),
-                patch("time_twist.release._encoded_groups", return_value=groups),
-                patch("time_twist.release.required_dictionary_entries", return_value=()),
+                patch(
+                    "time_twist.release.parse_scenario_bank",
+                    return_value=fake_bank,
+                ),
+                patch(
+                    "time_twist.release._load_translation_map", return_value={}
+                ),
+                patch(
+                    "time_twist.release._encoded_groups", return_value=groups
+                ),
+                patch(
+                    "time_twist.release.required_dictionary_entries",
+                    return_value=(),
+                ),
                 patch(
                     "time_twist.release.compress_english_groups",
                     return_value=(compressed, dictionary),

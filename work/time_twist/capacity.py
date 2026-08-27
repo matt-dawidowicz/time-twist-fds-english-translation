@@ -18,7 +18,6 @@ from __future__ import annotations
 
 from types import MappingProxyType
 
-
 RELOCATED_FIXED_TABLE_PREFIX_BYTES = MappingProxyType(
     {
         "TT1B": 208,

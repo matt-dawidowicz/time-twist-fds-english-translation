@@ -56,7 +56,9 @@ class ExtendedDictionaryCompressionTests(unittest.TestCase):
         )
         self.assertEqual(expanded, groups)
 
-    def test_extended_rebuild_round_trips_and_preserves_fixed_tail(self) -> None:
+    def test_extended_rebuild_round_trips_and_preserves_fixed_tail(
+        self,
+    ) -> None:
         """Keep dictionary slots above 31 decodable without moving fixed data."""
         load_address = 0xA200
         group_zero_offset = 0x40
@@ -104,7 +106,9 @@ class ExtendedDictionaryCompressionTests(unittest.TestCase):
             )
 
         self.assertEqual(len(parsed.dictionary), 33)
-        self.assertEqual(parsed.records[0].symbols[0].kind, SymbolKind.DICTIONARY)
+        self.assertEqual(
+            parsed.records[0].symbols[0].kind, SymbolKind.DICTIONARY
+        )
         self.assertEqual(parsed.records[0].symbols[0].value, 33)
         self.assertEqual(
             render_symbols(parsed.records[0].symbols, parsed.dictionary),

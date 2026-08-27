@@ -73,7 +73,14 @@ def _load_groups(
 
 
 def measure_translation_footprint(bank_name: str) -> int:
-    """Mirror the release compressor using only public translation/UI sources."""
+    """Compute a conservative release-fit upper bound from public sources.
+
+    The release builder enables additional deterministic beam/order optimization.
+    Its optimized result is selected against this same greedy baseline and can
+    therefore only be the same size or smaller.  Using the baseline here keeps
+    the required ROM-free fit gate fast while proving the stronger condition
+    that every current bank fits even before optional release optimization.
+    """
     groups = _load_groups(bank_name)
     scenario_capacity = PATCH_FOOTPRINT_RESULTS[bank_name]["capacity"]
     capacity = playable_capacity(bank_name, scenario_capacity)
@@ -89,7 +96,7 @@ def measure_translation_footprint(bank_name: str) -> int:
         compressed, dictionary = compress_english_groups(
             combined_groups,
             max_bytes=capacity - structural_bytes,
-            optimize=True,
+            optimize=False,
             maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
         )
         return packed_size(compressed, dictionary) + structural_bytes
@@ -98,7 +105,7 @@ def measure_translation_footprint(bank_name: str) -> int:
         groups,
         required_entries=required_dictionary_entries(bank_name),
         max_bytes=capacity - pointer_bytes,
-        optimize=True,
+        optimize=False,
         maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
     )
     return packed_size(compressed, dictionary) + pointer_bytes
@@ -107,7 +114,9 @@ def measure_translation_footprint(bank_name: str) -> int:
 class LiveTranslationFitTests(unittest.TestCase):
     """Prove current playable text still fits every recovered bank capacity."""
 
-    def test_relocated_capacity_facts_cover_exactly_the_repacked_banks(self) -> None:
+    def test_relocated_capacity_facts_cover_exactly_the_repacked_banks(
+        self,
+    ) -> None:
         """Keep ROM-free capacity evidence aligned with the release architecture."""
         self.assertEqual(
             set(RELOCATED_FIXED_TABLE_PREFIX_BYTES),
@@ -121,7 +130,9 @@ class LiveTranslationFitTests(unittest.TestCase):
         historical scenario-region evidence. Relocated full-word menu banks add
         a source-verified movable prefix to that scenario reservation; current
         usage is recomputed from scenario plus menu with the same 68-entry
-        compressor as the canonical release builder.
+        greedy baseline used by the canonical release builder. The release
+        builder additionally compares deterministic optimized candidates, so a
+        baseline that fits proves every selected optimized result fits as well.
         """
         self.assertEqual(
             set(PATCH_FOOTPRINT_RESULTS), set(KNOWN_SCENARIO_BANKS)
