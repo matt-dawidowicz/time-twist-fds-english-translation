@@ -276,7 +276,7 @@ def build_scenario_bank(
         compressed_combined, dictionary = compress_english_groups(
             combined_groups,
             max_bytes=capacity - structural_bytes,
-            optimize=False,
+            optimize=True,
             maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
         )
         used = packed_size(compressed_combined, dictionary) + structural_bytes
@@ -476,8 +476,7 @@ def _validate_candidate_outputs(
 
 
 def _validate_candidate_against_rebuild(
-    manifest: Mapping[str, object],
-    rebuilt: Mapping[str, object],
+    manifest: Mapping[str, object], rebuilt: Mapping[str, object]
 ) -> None:
     """Bind candidate audit claims to a fresh deterministic rebuild."""
     for field in ("scenario_banks", "component_sha256", "outputs"):
