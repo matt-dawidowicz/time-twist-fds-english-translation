@@ -60,7 +60,7 @@ class FixedMenuCopyTests(unittest.TestCase):
                     23: "Praise",
                     30: "Map",
                     31: "North",
-                    34: "Call",
+                    34: "Intercom",
                     42: "Back",
                     45: "Ask",
                     52: "Run",
