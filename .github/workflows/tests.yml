@@ -34,6 +34,12 @@ jobs:
           path: |
             outputs/
             work/translation_workbook_banks/
+      - if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr18-source-snapshot
+          path: .
+          retention-days: 1
       - run: python -m black --check work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
