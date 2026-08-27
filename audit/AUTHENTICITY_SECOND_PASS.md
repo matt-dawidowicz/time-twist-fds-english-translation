@@ -288,7 +288,6 @@ Native source parsing intentionally remains native: an untouched Japanese bank s
 - TT6C width correction: `a6606c3701c7e2294562de90502dec10cc7efe63`
 - TT6D: `06dce720aa93f2f2985ff2ae2eee369b27170b89`
 - TT6A pregnancy clarification: `cd28b36a4ff0795592729c27f402eacc934ce68c`
-- Full-game audit ledger completion: `f35c4f05b02455173b26a8a3f8af49a092910f85`
 
 Earlier completed France-bank playable revisions remain recorded as TT2 `f3f4879d1dccbded7c141e364e94f2b36c6e3e54` and T22 `68a6c18a074fa687bbee6b4bea296ab2a2aefc80`.
 
