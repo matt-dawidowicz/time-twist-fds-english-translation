@@ -89,7 +89,6 @@ from .scenario_validation import (
 )
 from .textcodec import (
     EXTENDED_DICTIONARY_ENTRY_COUNT,
-    NATIVE_DICTIONARY_ENTRY_COUNT,
     PackedSymbol,
     PackedTextError,
 )
@@ -320,11 +319,7 @@ def build_scenario_bank(
         )
 
     capacity = scenario_capacity
-    maximum_dictionary_entries = (
-        EXTENDED_DICTIONARY_ENTRY_COUNT
-        if bank_name == "TT1A"
-        else NATIVE_DICTIONARY_ENTRY_COUNT
-    )
+    maximum_dictionary_entries = EXTENDED_DICTIONARY_ENTRY_COUNT
 
     def fixed_ui_candidate_is_valid(
         candidate_groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
@@ -359,16 +354,6 @@ def build_scenario_bank(
         maximum_entries=maximum_dictionary_entries,
         candidate_validator=fixed_ui_candidate_is_valid,
     )
-    if (
-        bank_name in SCENARIO_UI_PATCHERS
-        and bank_name != "TT1A"
-        and len(dictionary) != NATIVE_DICTIONARY_ENTRY_COUNT
-    ):
-        raise ReleaseBuildError(
-            f"{bank_name} fixed UI requires exactly "
-            f"{NATIVE_DICTIONARY_ENTRY_COUNT} dictionary entries; "
-            f"compressor produced {len(dictionary)}"
-        )
     rebuilt = rebuild_scenario_bank(
         bank,
         compressed,
