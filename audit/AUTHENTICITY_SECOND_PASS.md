@@ -65,7 +65,7 @@ For the remaining banks, the last published optimized figures are still useful a
 | TT6C | 3520 | 3536 | 16 |
 | TT6D | 323 | 332 | 9 |
 
-The live-fit test now recompresses every bank and enforces **capacity**, rather than requiring equality with stale historical used-byte evidence. TT1A may use the patched English dictionary range through entry 68. Relocated full-word banks, including TT2, likewise jointly compress scenario text and the full-word menu table with the 68-entry-capable compressor and the stronger optimization passes. The native 31-entry restriction that remains in the standalone fixed-UI compatibility path is therefore not the canonical release constraint for TT2.
+The live-fit test now recompresses every bank and enforces **capacity**, rather than requiring equality with stale historical used-byte evidence. TT1A may use the patched English dictionary range through entry 68. Relocated full-word banks, including TT2 and T22, likewise jointly compress scenario text and the full-word menu table with the 68-entry-capable compressor and the stronger optimization passes. The native 31-entry restriction that remains in the standalone fixed-UI compatibility path is therefore not the canonical release constraint for those banks.
 
 A proposed rewrite is not promoted to playable authority until it passes both display-width validation and optimized bank recompression.
 
@@ -84,7 +84,7 @@ The symbol set will be demand-driven by the revised script. Likely useful candid
 | TT1A | 35 | **35/35 complete** | **staged** | **checked for changed records** | **fits with extended dictionary** | pending fresh candidate |
 | TT1B | 137 | **137/137 complete** | **29 dialogue edits staged** | **checked for changed records** | **fits with relocated full-word architecture** | pending fresh candidate |
 | TT2 | 169 | **169/169 complete** | **25 dialogue edits staged** | **checked for all changed records** | **pending current CI/live-fit result** | pending fresh candidate |
-| T22 | 58 | pending | pending | pending | pending | pending |
+| T22 | 58 | **58/58 complete** | **8 dialogue edits staged** | **checked for all changed records** | **pending current CI/live-fit result** | pending fresh candidate |
 | TT3A | 152 | pending | pending | pending | pending | pending |
 | TT3B | 58 | pending | pending | pending | pending | pending |
 | TT4 | 183 | pending | pending | pending | pending | pending |
@@ -115,13 +115,21 @@ The scenario counts above sum to **1,299** and are tracked separately from fixed
 - `TT2/g4/r27`: Jeanne is suspended by a **thick rope**; the adjective was omitted previously.
 - `TT2/g5/r2`: Jeanne says to **flee/escape**, not merely "go."
 - `TT2/g5/r3`: the Bishop says the order came from **someone he reveres**, explains that Jeanne would become troublesome if left alive, and says he continued the witch hunts expecting eventually to encounter her; the earlier compressed English reduced this to generic "my lord" and "I hunted witches to find you."
+- `T22/g0/r3`: the Baron looks at his wife **affectionately/fondly**, not merely neutrally.
+- `T22/g0/r14`: the jailer's source explicitly says the prisoner is **not to be let outside** on the Bishop's orders.
+- `T22/g1/r7`: the formal accusation says Jeanne received the **Devil's baptism** and became captive to vile desire before the Church condemns her; the earlier English flattened this into the awkward `Devil's slave to desire`.
+- `T22/g1/r14`: `じわじわと` adds the idea of **slow, drawn-out torment**, which the earlier generic `They will torture her` omitted.
+- `T22/g1/r15`: as in TT2, `目を真っ赤に泣き腫らしている` describes eyes red/swollen from crying, not merely red.
+- `T22/g1/r18`: the Bishop's panicked **stutter** and command to **let go of him** were omitted from the first English pass.
+- `T22/g1/r20`: Jeanne explicitly says that while on the cross she heard **God's message/revelation**; the prior `upon that cross, I heard` left the object unstated.
+- `T22/g1/r21`: the closing reflection calls Jeanne a **beautiful maiden** as well as France's savior; the branch restores that praise compactly as `France's fair savior...`.
 - `TT3A/TT3B`: resistance and military dialogue often reads like telegram prose; the source supports more natural speech while retaining terse military characterization where appropriate.
 - `TT4`: formal and ceremonial speech must not be flattened into casual English (for example, a respectful `sensei` should not become `Doc!`).
 - `TT5/T25`: emancipation and plantation dialogue needs restored emotional/politeness detail while preserving rural/working-class characterization with dignity.
 - `TT6B`: the camel's marked rural Japanese voice was flattened to neutral textbook English and needs a consistent light-country localization.
 - `TT6C`: the Magi / Devil confrontation lost some explicit time-travel and ceremonial detail.
 
-The TT2 playable-script revisions above were committed as `f3f4879d1dccbded7c141e364e94f2b36c6e3e54`. Every changed TT2 record preserves the source control-code sequence/order and has been checked so each control-delimited visible segment is no wider than 24 columns. GitHub Actions run #241 for that revision was still queued when this ledger was updated; no current TT2 compressed footprint is claimed until that run actually executes.
+The TT2 playable-script revisions were committed as `f3f4879d1dccbded7c141e364e94f2b36c6e3e54`; the T22 revisions were committed as `68a6c18a074fa687bbee6b4bea296ab2a2aefc80`. Every changed record in both banks preserves the source control-code sequence/order and has been checked so each control-delimited visible segment is no wider than 24 columns. No current optimized footprint is claimed for either edited bank until GitHub Actions executes the live-fit test on the current branch head.
 
 ## Extended-dictionary safety
 
