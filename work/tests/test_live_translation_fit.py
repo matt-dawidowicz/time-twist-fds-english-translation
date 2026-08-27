@@ -10,7 +10,10 @@ from pathlib import Path
 from generate_translation_workbook import PATCH_FOOTPRINT_RESULTS
 from time_twist.compression import compress_english_groups, packed_size
 from time_twist.english import encode_english
-from time_twist.project import KNOWN_SCENARIO_BANKS, required_dictionary_entries
+from time_twist.project import (
+    KNOWN_SCENARIO_BANKS,
+    required_dictionary_entries,
+)
 from time_twist.textcodec import (
     EXTENDED_DICTIONARY_ENTRY_COUNT,
     NATIVE_DICTIONARY_ENTRY_COUNT,
@@ -115,13 +118,17 @@ class LiveTranslationFitTests(unittest.TestCase):
         is the hard binary invariant; current usage is recomputed here and any
         evidence mismatch is printed so reports can be regenerated separately.
         """
-        self.assertEqual(set(PATCH_FOOTPRINT_RESULTS), set(KNOWN_SCENARIO_BANKS))
+        self.assertEqual(
+            set(PATCH_FOOTPRINT_RESULTS), set(KNOWN_SCENARIO_BANKS)
+        )
         for bank_name in KNOWN_SCENARIO_BANKS:
             recorded = PATCH_FOOTPRINT_RESULTS[bank_name]
             used = measure_translation_footprint(bank_name)
             capacity = recorded["capacity"]
             delta = used - recorded["used"]
-            evidence = "current" if delta == 0 else f"recorded delta {delta:+d}"
+            evidence = (
+                "current" if delta == 0 else f"recorded delta {delta:+d}"
+            )
             print(
                 f"FIT {bank_name}: {used}/{capacity} "
                 f"({capacity - used} bytes free; {evidence})"
