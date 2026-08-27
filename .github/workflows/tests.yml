@@ -51,7 +51,13 @@ jobs:
             work/tests/test_live_translation_fit.py
             work/tests/test_release_extended_dictionary_policy.py
           retention-days: 1
-      - run: python -m ruff check work
+      - run: python -m ruff check work --fix
+      - if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruff-fixed-work
+          path: work/time_twist/capacity.py
+          retention-days: 1
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
       - run: python work/run_tests.py unit
