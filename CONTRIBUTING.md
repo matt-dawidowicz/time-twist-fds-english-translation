@@ -64,14 +64,15 @@ python work/run_tests.py unit
 python -m build
 ```
 
-Maintainers with the private fixture overlay must also run:
+Maintainers with the approved private inputs must also run:
 
 ```powershell
 python work/run_tests.py integration
 ```
 
-Supported suites reject skipped tests. Missing private fixtures must be
-reported as unavailable, not converted into test skips.
+Supported suites reject skipped tests. Missing private inputs must be reported
+as unavailable, not converted into test skips or replaced by generated output
+fixtures.
 
 ## Release-affecting changes
 
