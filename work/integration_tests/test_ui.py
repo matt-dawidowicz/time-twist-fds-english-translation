@@ -272,7 +272,9 @@ class StaticUiTests(unittest.TestCase):
         ):
             records, end = split_records(patched, offset=offset, limit=1)
             self.assertEqual(end, offset + len(source))
-            self.assertEqual(render_english(records[0]).rstrip(), english)
+            self.assertEqual(
+                render_english(records[0]).rstrip(), english.rstrip()
+            )
             permitted.update(range(offset, offset + len(source)))
         self.assertLessEqual(_changed_indices(original, patched), permitted)
 

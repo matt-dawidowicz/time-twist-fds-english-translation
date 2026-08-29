@@ -14,9 +14,6 @@ import json
 from pathlib import Path
 
 import generate_bilingual_comparison as comparison
-from time_twist import ui
-from time_twist.scenario import render_symbols
-from time_twist.textcodec import split_records
 
 FIXED_SOURCE_TABLES = Path(__file__).with_name("fixed_source_tables.json")
 
@@ -55,34 +52,16 @@ def _decoded_source_records(
     end: int,
     record_count: int,
 ) -> list[tuple[str, int]] | None:
-    """Decode fixed records from retail source when those bytes are available."""
-    document = comparison._read_source_document(bank)
+    """Decode retail evidence when available; remain ROM-free in public CI."""
     try:
-        source_path = comparison._source_path(document)
+        return comparison._decoded_fixed_source_records(
+            bank,
+            start,
+            end,
+            record_count,
+        )
     except FileNotFoundError:
         return None
-
-    data = source_path.read_bytes()
-    dictionary = ui._tt2_dictionary(data)
-    packed = data[start:end]
-    records, parsed_end = split_records(
-        packed,
-        0,
-        record_count=record_count,
-        extended_dictionary=False,
-    )
-    if parsed_end != len(packed):
-        raise ValueError(
-            f"{bank} fixed table parsed {parsed_end} bytes, expected {len(packed)}"
-        )
-    starts = ui._record_starts(0, records)
-    ends = ui._record_ends(starts, len(packed))
-    return [
-        (render_symbols(record.symbols, dictionary), row_end - row_start)
-        for record, row_start, row_end in zip(
-            records, starts, ends, strict=True
-        )
-    ]
 
 
 def _fixed_rows(start_sequence: int) -> list[comparison.ComparisonRow]:

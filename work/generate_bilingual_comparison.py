@@ -17,8 +17,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from time_twist import ui
-from time_twist.scenario import render_symbols
-from time_twist.textcodec import split_records
+from time_twist.scenario import parse_scenario_bank, render_symbols
+from time_twist.textcodec import NATIVE_DICTIONARY_ENTRY_COUNT, split_records
 
 ROOT = Path(__file__).resolve().parent.parent
 WORK = ROOT / "work"
@@ -844,56 +844,82 @@ FIXED_SPECS = tuple(
 )
 
 
+def _decoded_fixed_source_records(
+    bank: str,
+    start: int,
+    end: int,
+    record_count: int,
+) -> list[tuple[str, int]]:
+    """Decode one native fixed table through the canonical scenario parser."""
+    source_document = _read_source_document(bank)
+    source_bank = parse_scenario_bank(
+        _source_path(source_document),
+        minimum_dictionary_entries=NATIVE_DICTIONARY_ENTRY_COUNT,
+    )
+    packed = source_bank.data[start:end]
+
+    rows: list[tuple[str, int]] = []
+    offset = 0
+    for _ in range(record_count):
+        records, next_offset = split_records(
+            packed,
+            offset=offset,
+            limit=1,
+        )
+        rows.append(
+            (
+                render_symbols(records[0], source_bank.dictionary),
+                next_offset - offset,
+            )
+        )
+        offset = next_offset
+
+    if offset != len(packed):
+        raise ValueError(
+            f"{bank} fixed table parsed {offset} bytes, "
+            f"expected {len(packed)}"
+        )
+    return rows
+
+
 def _fixed_rows(start_sequence: int) -> list[ComparisonRow]:
-    """Decode and annotate every fixed-address packed table.
-
-    Args:
-        start_sequence: One-based number assigned to the first row.
-
-    Returns:
-        Rows preserving bank, table, and record order.
-
-    Raises:
-        OSError: If a referenced bank cannot be read.
-        FileNotFoundError: If a relocated source bank is ambiguous.
-        ValueError: If table decoding does not consume its exact source range.
-        PackedTextError: If a packed record is malformed.
-
-    Individual packed byte sizes are derived from original record boundaries,
-    not estimated from visible text.
-    """
+    """Decode and annotate every fixed-address packed table."""
     rows: list[ComparisonRow] = []
     sequence = start_sequence
+
     for bank, start, end, english_records in FIXED_SPECS:
-        source_document = _read_source_document(bank)
-        data = _source_path(source_document).read_bytes()
-        dictionary = ui._tt2_dictionary(data)
-        packed = data[start:end]
-        records, parsed_end = split_records(packed, limit=len(english_records))
-        if parsed_end != len(packed):
-            raise ValueError(
-                f"{bank} fixed table did not consume its source range"
-            )
-        starts = ui._record_starts(packed, len(records))
-        ends = (*starts[1:], len(packed))
-        for index, (record, english, record_start, record_end) in enumerate(
-            zip(records, english_records, starts, ends, strict=True)
+        source_rows = _decoded_fixed_source_records(
+            bank,
+            start,
+            end,
+            len(english_records),
+        )
+
+        record_start = 0
+        for index, ((japanese, size), english) in enumerate(
+            zip(source_rows, english_records, strict=True)
         ):
-            japanese = render_symbols(record, dictionary)
-            size = record_end - record_start
             rows.append(
                 _make_row(
                     sequence=sequence,
                     bank=bank,
                     text_id=f"{bank}/fixed/r{index}",
                     kind="fixed-address",
-                    source_location=f"${0xA200 + start + record_start:04X}",
+                    source_location=(f"${0xA200 + start + record_start:04X}"),
                     packed_bytes=str(size),
                     japanese=japanese,
                     english=english.rstrip(),
                 )
             )
             sequence += 1
+            record_start += size
+
+        if record_start != end - start:
+            raise ValueError(
+                f"{bank} fixed table covers {record_start} bytes, "
+                f"expected {end - start}"
+            )
+
     return rows
 
 
