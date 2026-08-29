@@ -54,8 +54,8 @@ jobs:
 
   modernize-pr20:
     if: >-
-      github.event_name == 'push' &&
-      github.ref_name == 'runtime-playtest-validation-20260829' &&
+      github.event_name == 'pull_request' &&
+      github.head_ref == 'runtime-playtest-validation-20260829' &&
       github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
     permissions:
