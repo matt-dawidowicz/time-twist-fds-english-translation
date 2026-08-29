@@ -81,7 +81,7 @@ def main() -> None:
             x = (index % columns) * 8 * scale
             y = y_base + 20 + (index // columns) * 8 * scale
             output.paste(glyph, (x, y))
-    path = Path("work/runtime_capture/rendered/english_font_candidates.png")
+    path = Path("build/previews/english_font_candidates.png")
     path.parent.mkdir(parents=True, exist_ok=True)
     output.save(path)
     print(path)
