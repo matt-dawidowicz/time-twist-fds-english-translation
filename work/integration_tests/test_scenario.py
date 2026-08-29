@@ -169,9 +169,7 @@ class ScenarioTests(unittest.TestCase):
     def test_personality_questions_are_complete_and_width_safe(self) -> None:
         """Keep the 15-question block complete without freezing old wording."""
         translations = _translations("TT1A")
-        expected_ids = tuple(
-            f"TT1A/g0/r{record}" for record in range(6, 21)
-        )
+        expected_ids = tuple(f"TT1A/g0/r{record}" for record in range(6, 21))
         self.assertEqual(set(PERSONALITY_QUESTION_IDS), set(expected_ids))
         for record_id in expected_ids:
             question = translations[record_id]

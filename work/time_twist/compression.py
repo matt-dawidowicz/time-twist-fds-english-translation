@@ -661,12 +661,10 @@ def compress_english_groups(
         )
         baseline_size = packed_size(*baseline)
         baseline_complete = (
-            not requires_full_dictionary
-            or len(baseline[1]) == maximum_entries
+            not requires_full_dictionary or len(baseline[1]) == maximum_entries
         )
-        baseline_valid = (
-            candidate_validator is None
-            or candidate_validator(*baseline)
+        baseline_valid = candidate_validator is None or candidate_validator(
+            *baseline
         )
         if (
             max_bytes is not None

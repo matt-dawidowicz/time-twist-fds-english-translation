@@ -94,9 +94,11 @@ class StaticUiTests(unittest.TestCase):
             column = (32 - len(text)) // 2
             start = row * 32 + column - nametable_start
             expected = bytes(
-                ui.KOUHEN_BOOT_GUARD_BLANK_TILE
-                if character == " "
-                else tile_by_character[character]
+                (
+                    ui.KOUHEN_BOOT_GUARD_BLANK_TILE
+                    if character == " "
+                    else tile_by_character[character]
+                )
                 for character in text
             )
             self.assertEqual(tilemap[start : start + len(text)], expected)
@@ -121,7 +123,9 @@ class StaticUiTests(unittest.TestCase):
         for offset, source, english in ui.DISK_PROMPT_PATCHES:
             replacement = pack_records((encode_english(english),))
             self.assertEqual(len(replacement), len(source))
-            self.assertEqual(patched[offset : offset + len(source)], replacement)
+            self.assertEqual(
+                patched[offset : offset + len(source)], replacement
+            )
             own(offset, len(source))
 
         disk_set = pack_records((encode_english(ui.DISK_SET_ERROR_ENGLISH),))
@@ -219,9 +223,7 @@ class StaticUiTests(unittest.TestCase):
 
         dialogue_offset, dialogue_source = ui.NOV2_DIALOGUE_ROW_COPY
         self.assertEqual(
-            patched[
-                dialogue_offset : dialogue_offset + len(dialogue_source)
-            ],
+            patched[dialogue_offset : dialogue_offset + len(dialogue_source)],
             dialogue_source,
         )
         self.assertLessEqual(_changed_indices(original, patched), permitted)
@@ -239,15 +241,15 @@ class StaticUiTests(unittest.TestCase):
         self.assertEqual(len(patched), len(original))
 
         start_end = ui.NOV4_START_PROMPT_OFFSET + len(ui.ORIGINAL_START_PROMPT)
-        load_end = (
-            ui.NOV4_LOAD_PROMPT_OFFSET + len(ui.ORIGINAL_NOV4_LOAD_PROMPT)
+        load_end = ui.NOV4_LOAD_PROMPT_OFFSET + len(
+            ui.ORIGINAL_NOV4_LOAD_PROMPT
         )
         self.assertEqual(
-            patched[ui.NOV4_START_PROMPT_OFFSET:start_end],
+            patched[ui.NOV4_START_PROMPT_OFFSET : start_end],
             ui.ENGLISH_START_PROMPT,
         )
         self.assertEqual(
-            patched[ui.NOV4_LOAD_PROMPT_OFFSET:load_end],
+            patched[ui.NOV4_LOAD_PROMPT_OFFSET : load_end],
             ui.ENGLISH_NOV4_LOAD_PROMPT,
         )
         permitted = set(range(ui.NOV4_START_PROMPT_OFFSET, start_end))
@@ -273,9 +275,13 @@ class StaticUiTests(unittest.TestCase):
             permitted.update(range(offset, offset + len(source)))
         self.assertLessEqual(_changed_indices(original, patched), permitted)
 
-    def test_relocated_menu_sources_match_the_locked_native_tables(self) -> None:
+    def test_relocated_menu_sources_match_the_locked_native_tables(
+        self,
+    ) -> None:
         """Protect source hashes and page-table boundaries for relocated menus."""
-        self.assertEqual(set(SCENARIO_SOURCES), set(ui.FIXED_RECORD_TABLE_SPECS))
+        self.assertEqual(
+            set(SCENARIO_SOURCES), set(ui.FIXED_RECORD_TABLE_SPECS)
+        )
         for bank_name, path in SCENARIO_SOURCES.items():
             with self.subTest(bank=bank_name):
                 data = path.read_bytes()
