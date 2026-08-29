@@ -1,3 +1,4 @@
+# Trigger after registration.
 name: temporary apply modern interface
 
 on:
