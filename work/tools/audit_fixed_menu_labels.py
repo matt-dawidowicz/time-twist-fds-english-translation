@@ -1,7 +1,7 @@
 """Audit fixed-address menu labels against source constants and an optional FDS.
 
-This helper is intentionally conservative: it does not patch anything.  It can
-be run in source-only mode to list the labels declared by ``time_twist.ui`` or
+This helper is intentionally conservative: it does not patch anything. It can
+be run in source-only mode to list labels declared by ``time_twist.ui`` or
 against a built candidate to prove the packed records decode back to the same
 English labels.
 """
@@ -20,8 +20,7 @@ from time_twist.english import render_english, validate_display_width
 from time_twist.fds import FdsImage
 from time_twist.release import SCENARIO_LOCATIONS
 from time_twist.scenario import parse_scenario_bank
-from time_twist.textcodec import SymbolKind, split_records
-from time_twist.ui import _record_starts
+from time_twist.textcodec import PackedSymbol, SymbolKind, split_records
 
 AUDIT_FIELDNAMES = (
     "bank",
@@ -60,6 +59,31 @@ def _load_targets(path: Path | None) -> dict[tuple[str, int], str]:
     return targets
 
 
+def _decode_table_records(
+    table: bytes,
+    record_count: int,
+) -> tuple[list[tuple[PackedSymbol, ...]], list[int]]:
+    """Decode one relocated menu table sequentially and record slot sizes."""
+    packed_records: list[tuple[PackedSymbol, ...]] = []
+    slot_sizes: list[int] = []
+    offset = 0
+    for _ in range(record_count):
+        records, next_offset = split_records(
+            table,
+            offset=offset,
+            limit=1,
+            extended_dictionary=True,
+        )
+        packed_records.append(tuple(records[0]))
+        slot_sizes.append(next_offset - offset)
+        offset = next_offset
+    if offset != len(table):
+        raise ValueError(
+            f"fixed menu table parsed {offset} bytes, expected {len(table)}"
+        )
+    return packed_records, slot_sizes
+
+
 def audit(
     candidate_fds: Path | None, targets_csv: Path | None
 ) -> list[dict[str, object]]:
@@ -96,19 +120,10 @@ def audit(
                     int.from_bytes(entry.data[0x1A:0x1C], "little")
                     - entry.load_address
                 )
-                table = entry.data[start:end]
-                starts = _record_starts(table, len(records))
-                packed_records = []
-                for record_index, start_offset in enumerate(starts):
-                    symbols, next_offset = split_records(
-                        table,
-                        offset=start_offset,
-                        limit=1,
-                        extended_dictionary=True,
-                    )
-                    slots[record_index] = next_offset - start_offset
-                    record_symbols = symbols[0]
-                    packed_records.append(record_symbols)
+                packed_records, slot_sizes = _decode_table_records(
+                    entry.data[start:end], len(records)
+                )
+                slots = [*slot_sizes]
                 menu_dictionary_floor = max(
                     (
                         symbol.value
@@ -142,17 +157,11 @@ def audit(
             for index, label in enumerate(records):
                 proposed = targets.get((bank_name, index), "")
                 decoded_label = decoded[index]
-                fallback = ui.FIXED_TEXT_BLOCKED_FALLBACKS.get(
-                    bank_name, {}
-                ).get(index)
                 status = "source-only"
                 if decoded_label is not None:
-                    if decoded_label == label:
-                        status = "full-word"
-                    elif fallback is not None and decoded_label == fallback:
-                        status = "blocked"
-                    else:
-                        status = "mismatch"
+                    status = (
+                        "full-word" if decoded_label == label else "mismatch"
+                    )
                 width_ok = True
                 width_error = ""
                 try:
@@ -171,7 +180,7 @@ def audit(
                         "slot_bytes": slots[index] or "",
                         "representation": representation[index],
                         "proposed_full_label": proposed,
-                        "fallback_label": fallback or "",
+                        "fallback_label": "",
                         "status": status,
                         "width_ok": width_ok,
                         "width_error": width_error,
@@ -201,10 +210,9 @@ def main() -> int:
         if row["status"] == "mismatch" or not row["width_ok"]
     ]
     full_words = sum(row["status"] == "full-word" for row in rows)
-    blocked = sum(row["status"] == "blocked" for row in rows)
     print(
         f"audited {len(rows)} fixed labels; full-word={full_words}; "
-        f"blocked={blocked}; failures={len(failures)}"
+        f"failures={len(failures)}"
     )
     return 1 if failures else 0
 
