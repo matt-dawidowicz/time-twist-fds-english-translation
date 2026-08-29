@@ -125,18 +125,20 @@ CI runs source/style/type/unit checks on both Python 3.11 and 3.12. Python 3.12
 also builds and force-installs the wheel, proves the smoke test imports the
 installed package rather than the checkout, and exercises the CLI.
 
-Maintainers with legally obtained local ROM-derived fixtures can overlay the
-private fixture bundle at the repository root and run:
+Maintainers with legally obtained local ROM-derived inputs can overlay the
+private input bundle at the repository root and run:
 
 ```powershell
 python work/run_tests.py integration
 python work/run_tests.py all
 ```
 
-The integration suite contains **75 tests** and also permits no skips. The
-runner validates every fixture against `work/integration_fixtures.json` before
-test discovery, so missing fixtures produce an explicit setup failure rather
-than a misleading green run with skipped tests. See
+The integration suite also permits no skips. Before test discovery, the runner
+validates the six irreducible private inputs against
+`work/integration_fixtures.json`, regenerates extracted FDS payloads from the
+two approved baselines, and removes obsolete generated-oracle directories.
+Missing or wrong-revision private inputs therefore produce an explicit setup
+failure rather than a misleading green run with skipped tests. See
 [`docs/PRIVATE_FIXTURES.md`](docs/PRIVATE_FIXTURES.md).
 
 Private-suite results are recorded separately from public CI evidence. A result
