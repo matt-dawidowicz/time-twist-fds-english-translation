@@ -75,6 +75,8 @@ jobs:
       - name: Format and validate refactor
         run: |
           python -m black work
+          python -m ruff check --fix work
+          python -m black work
           python -m black --check work
           python -m ruff check work
           python -m pydocstyle --convention=pep257 work
