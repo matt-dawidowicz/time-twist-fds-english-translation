@@ -34,11 +34,6 @@ replacements = (
         "legacy insert test name",
     ),
     (
-        '"""Verify the current contract described by this regression test."""\n        with tempfile.TemporaryDirectory() as directory:',
-        '"""Reject relocated-menu insertion before obsolete compression options matter."""\n        with tempfile.TemporaryDirectory() as directory:',
-        "legacy insert test docstring",
-    ),
-    (
         'self.assertRaisesRegex(SystemExit, "--no-compress")',
         'self.assertRaisesRegex(SystemExit, "release-build")',
         "legacy insert error assertion",
