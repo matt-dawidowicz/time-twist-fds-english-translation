@@ -10,6 +10,8 @@ from pathlib import Path
 import time_twist.title as title
 from PIL import Image
 from rebuild_native_title_asset import build_native_titles
+from time_twist.font import patched_nov4_font
+from time_twist.ui import patched_nov4_ui
 
 WORK_DIR = Path(__file__).resolve().parents[1]
 
@@ -52,11 +54,8 @@ class TitlePatchTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        """Prepare shared fixtures for the current contract tests."""
-        source = WORK_DIR / "build/NOV4_accented_font_ui.bin"
-        if not source.exists():
-            source = WORK_DIR / "extracted_zenpen/side0_08_NOV4_A200.bin"
-        cls.source_path = source
+        """Prepare shared fixtures through the current release patch pipeline."""
+        cls.source_path = WORK_DIR / "extracted_zenpen/side0_08_NOV4_A200.bin"
         cls.native_path = (
             WORK_DIR / "title_assets/Time Twist approved native title.png"
         )
@@ -75,7 +74,8 @@ class TitlePatchTests(unittest.TestCase):
         missing = [str(path) for path in required if not path.exists()]
         if missing:
             raise AssertionError(f"title fixtures are unavailable: {missing}")
-        cls.source = cls.source_path.read_bytes()
+        raw_source = cls.source_path.read_bytes()
+        cls.source = patched_nov4_font(patched_nov4_ui(raw_source))
         cls.native = title._target_to_indices(cls.native_path)
         cls.slide = title._target_to_indices(cls.slide_path, last_owned_row=95)
         cls.assets = title.build_title_assets(
@@ -460,9 +460,6 @@ class TitlePatchTests(unittest.TestCase):
         world.paste(slide_physical, (256, 0))
         for index, origin in enumerate(expected_origins):
             with self.subTest(index=index, origin=f"{origin:03X}"):
-                # Mask each physical nametable before sampling the 512-pixel
-                # world. This retains the NT1-to-NT0 wrap and the per-map
-                # attribute state that reveals the oscillating logo strips.
                 expected_raw = Image.new("L", (256, 96), 0)
                 first_width = min(256, 512 - origin)
                 expected_raw.paste(
@@ -479,9 +476,6 @@ class TitlePatchTests(unittest.TestCase):
                 self.assertEqual(raw.size, (256, 96))
                 self.assertEqual(raw.tobytes(), expected_raw.tobytes())
 
-                # Only palette 1 maps native nonzero pattern indices to white.
-                # The returned raw values preserve 1/2/3 so this projection
-                # detects both lost outline pixels and hidden-part leakage.
                 expected_monochrome = Image.new(
                     "RGB", (256, 240), title.TITLE_PALETTE[0]
                 )
@@ -830,9 +824,6 @@ class TitlePatchTests(unittest.TestCase):
             bytes.fromhex("6A 00 3A 04 72 00 42"),
         )
 
-        # Both metasprite origins move exactly -14 X and +3 Y. Their animation
-        # records remain native while the shared elbow lands on the reviewed
-        # clock center (approximately 127,78).
         old = title.CLOCK_HAND_ORIGINS_SOURCE
         new = title.CLOCK_HAND_ORIGINS_PATCH
         self.assertEqual((new[0] - old[0], new[2] - old[2]), (-14, 3))
