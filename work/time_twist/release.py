@@ -164,7 +164,7 @@ def _load_translation_map(
     """Load one bank's stable-ID English map for a release rebuild.
 
     Release construction never invents or infers translations from packed ROM
-    bytes.  This boundary accepts only the reviewed ``ID -> English`` mapping
+    bytes. This boundary accepts only the reviewed ``ID -> English`` mapping
     from the private source overlay; later validation proves that its IDs match
     the recovered scenario records exactly.
     """
@@ -275,7 +275,7 @@ def build_scenario_bank(
         compressed_combined, dictionary = compress_english_groups(
             combined_groups,
             max_bytes=capacity - structural_bytes,
-            optimize=False,
+            optimize=True,
             maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
         )
         used = packed_size(compressed_combined, dictionary) + structural_bytes
@@ -319,6 +319,7 @@ def build_scenario_bank(
         )
 
     capacity = scenario_capacity
+    maximum_dictionary_entries = EXTENDED_DICTIONARY_ENTRY_COUNT
 
     def fixed_ui_candidate_is_valid(
         candidate_groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
@@ -333,6 +334,7 @@ def build_scenario_bank(
                 candidate_groups,
                 dictionary=candidate_dictionary,
                 preserve_memory_footprint=True,
+                maximum_dictionary_entries=maximum_dictionary_entries,
             )
             patcher(candidate_data)
         except (
@@ -349,18 +351,15 @@ def build_scenario_bank(
         required_entries=required_dictionary_entries(bank_name),
         max_bytes=capacity - pointer_bytes,
         optimize=True,
+        maximum_entries=maximum_dictionary_entries,
         candidate_validator=fixed_ui_candidate_is_valid,
     )
-    if bank_name in SCENARIO_UI_PATCHERS and len(dictionary) != 31:
-        raise ReleaseBuildError(
-            f"{bank_name} fixed UI requires exactly 31 dictionary entries; "
-            f"compressor produced {len(dictionary)}"
-        )
     rebuilt = rebuild_scenario_bank(
         bank,
         compressed,
         dictionary=dictionary,
         preserve_memory_footprint=True,
+        maximum_dictionary_entries=maximum_dictionary_entries,
     )
     if patcher is not None:
         rebuilt = patcher(rebuilt)
@@ -379,7 +378,7 @@ def _replace(image: FdsImage, side: int, name: str, data: bytes) -> None:
     """Replace one named overlay without changing its FDS side or identity.
 
     The side index and file name are recovered game layout, not build-time
-    choices.  Keeping this write in one small helper makes each release-layer
+    choices. Keeping this write in one small helper makes each release-layer
     replacement auditable against the four-side source image.
     """
     image.sides[side].find_file(name).data = data
@@ -411,7 +410,7 @@ def _target_mismatches(
     """Return only byte-size or hash differences from a promoted target.
 
     Strict release mode compares the newly built candidate with the reviewed
-    target instead of trusting filenames or a prior manifest.  The structured
+    target instead of trusting filenames or a prior manifest. The structured
     result gives a maintainer a precise explanation while keeping publication
     blocked whenever any image differs.
     """
@@ -462,8 +461,7 @@ def _validate_candidate_outputs(
 
 
 def _validate_candidate_against_rebuild(
-    manifest: Mapping[str, object],
-    rebuilt: Mapping[str, object],
+    manifest: Mapping[str, object], rebuilt: Mapping[str, object]
 ) -> None:
     """Bind candidate audit claims to a fresh deterministic rebuild."""
     for field in ("scenario_banks", "component_sha256", "outputs"):
