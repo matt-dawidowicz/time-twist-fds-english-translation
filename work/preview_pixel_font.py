@@ -24,7 +24,8 @@ def main() -> None:
         emulator state is required.
 
     Outputs:
-        Saves ``work/build/mixed_case_font_preview.png`` and prints its path.
+        Saves ``build/previews/mixed_case_font_preview.png`` and prints its
+        path.
 
     Raises:
         time_twist.font.FontPatchError: If a sample character is unsupported.
@@ -60,7 +61,7 @@ def main() -> None:
                                     (cell_y + y) * scale + dy,
                                 ] = ink
 
-    output = Path("work/build/mixed_case_font_preview.png")
+    output = Path("build/previews/mixed_case_font_preview.png")
     output.parent.mkdir(parents=True, exist_ok=True)
     image.save(output)
     print(output)
