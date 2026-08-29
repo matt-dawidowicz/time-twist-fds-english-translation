@@ -92,11 +92,14 @@ jobs:
                   work/time_twist/compression.py \
                   work/time_twist/ui.py \
                   work/time_twist/ui_fixed_tables.py \
+                  work/generate_bilingual_comparison.py \
+                  work/tools/audit_full_word_menu_targets.py \
                   work/tests/test_project.py \
                   work/tests/test_ui_fixed_tables.py \
                   work/tests/test_scenario_validation_hardening.py \
                   work/tests/test_live_translation_fit.py \
-                  work/tests/test_release_extended_dictionary_policy.py
+                  work/tests/test_release_extended_dictionary_policy.py \
+                  work/tests/test_modern_module_layout.py
           git commit -m "refactor: remove superseded fixed-slot architecture"
           git push origin HEAD:runtime-playtest-validation-20260829
 
