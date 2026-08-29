@@ -1,9 +1,9 @@
-"""Audit fixed-address menu labels against source constants and an optional FDS.
+"""Audit canonical relocated menu labels against an optional candidate FDS.
 
 This helper is intentionally conservative: it does not patch anything. It can
-be run in source-only mode to list labels declared by ``time_twist.ui`` or
-against a built candidate to prove the packed records decode back to the same
-English labels.
+run in source-only mode to list the labels declared by the modern
+``FIXED_RECORD_TABLE_SPECS`` mapping or against a built candidate to prove the
+packed records decode back to those same full-word English labels.
 """
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -87,7 +88,7 @@ def _decode_table_records(
 def audit(
     candidate_fds: Path | None, targets_csv: Path | None
 ) -> list[dict[str, object]]:
-    """Return one audit row per fixed menu/choice label."""
+    """Return one audit row per canonical relocated menu/choice label."""
     image = FdsImage.read(candidate_fds) if candidate_fds is not None else None
     candidate_sha256 = (
         hashlib.sha256(candidate_fds.read_bytes()).hexdigest().upper()
@@ -98,10 +99,10 @@ def audit(
     rows: list[dict[str, object]] = []
     with TemporaryDirectory(prefix="time_twist_menu_audit_") as temporary:
         for bank_name, location in SCENARIO_LOCATIONS.items():
-            records_name = f"{bank_name}_FIXED_TEXT_RECORDS"
-            if not hasattr(ui, records_name):
+            spec = ui.FIXED_RECORD_TABLE_SPECS.get(bank_name)
+            if spec is None:
                 continue
-            records = getattr(ui, records_name)
+            records = spec.records
             decoded: list[str | None] = [None] * len(records)
             slots: list[int | None] = [None] * len(records)
             representation: list[str] = ["source-only"] * len(records)
@@ -166,9 +167,7 @@ def audit(
                 width_error = ""
                 try:
                     validate_display_width(decoded_label or label)
-                except (
-                    Exception
-                ) as error:  # pragma: no cover - diagnostic text
+                except Exception as error:  # pragma: no cover - diagnostic text
                     width_ok = False
                     width_error = str(error)
                 rows.append(
@@ -192,13 +191,19 @@ def audit(
 
 
 def main() -> int:
-    """Run the fixed-label audit command."""
+    """Run the fixed-label audit command and fail closed on empty evidence."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--candidate-fds", type=Path)
     parser.add_argument("--targets-csv", type=Path)
     parser.add_argument("--output-csv", type=Path, required=True)
     args = parser.parse_args()
     rows = audit(args.candidate_fds, args.targets_csv)
+    if not rows:
+        print(
+            "menu audit failed: canonical fixed-record specs produced no rows",
+            file=sys.stderr,
+        )
+        return 1
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
     with args.output_csv.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=AUDIT_FIELDNAMES)
