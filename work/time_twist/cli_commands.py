@@ -41,24 +41,23 @@ from .scenario_validation import encode_validated_english, scenario_record_id
 from .textcodec import PackedSymbol, pack_records
 from .title import patched_nov4_title
 from .ui import (
+    FIXED_RECORD_TABLE_SPECS,
     patched_kouhen_boot_guard,
     patched_nov2_ui,
     patched_nov4_ui,
-    patched_t22_ui,
-    patched_t25_ui,
     patched_tt1a_ui,
-    patched_tt1b_ui,
-    patched_tt2_ui,
-    patched_tt3a_ui,
-    patched_tt3b_ui,
-    patched_tt4_ui,
-    patched_tt5_ui,
-    patched_tt6a_ui,
-    patched_tt6b_ui,
-    patched_tt6c_ui,
 )
 
 PERSONALITY_QUESTION_IDS = _PERSONALITY_QUESTION_IDS
+
+
+def _require_standalone_scenario_bank(bank_name: str, operation: str) -> None:
+    """Reject banks whose current English layout requires joint menu repacking."""
+    if bank_name in FIXED_RECORD_TABLE_SPECS:
+        raise SystemExit(
+            f"{operation} does not support {bank_name}'s relocated full-word "
+            "menu layout; use release-build for the current playable architecture"
+        )
 
 
 def safe_filename(name: str) -> str:
@@ -266,6 +265,7 @@ def command_scenario_extract(args: argparse.Namespace) -> None:
 def command_scenario_insert(args: argparse.Namespace) -> None:
     """Insert merged JSON only after structural and display validation."""
     bank_name, bank = _parse_source_bank(args)
+    _require_standalone_scenario_bank(bank_name, "scenario-insert")
     document = json.loads(args.translation.read_text(encoding="utf-8"))
     if not isinstance(document, dict):
         raise SystemExit("translation document must contain a JSON object")
@@ -353,15 +353,6 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
     capacity = bank.dictionary_end_offset - text_start
     pointer_bytes = 2 * (len(packed_groups) - 1)
     required_entries = required_dictionary_entries(bank_name)
-    if (
-        translated_count == total_count
-        and args.no_compress
-        and getattr(required_entries, "requires_full_dictionary", False)
-    ):
-        raise SystemExit(
-            f"{bank_name} fixed UI requires a complete 31-entry English "
-            "dictionary; --no-compress cannot produce a safe ui-patch input"
-        )
     if translated_count == total_count and not args.no_compress:
         original_size = packed_size(packed_groups, ())
         packed_groups, dictionary = compress_english_groups(
@@ -519,6 +510,7 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
 
     if args.translations is None:
         return
+    _require_standalone_scenario_bank(bank_name, "scenario-footprint")
     translations = json.loads(args.translations.read_text(encoding="utf-8"))
     if not isinstance(translations, dict):
         raise SystemExit(
@@ -664,17 +656,6 @@ def command_ui_patch(args: argparse.Namespace) -> None:
         "NOV2": patched_nov2_ui,
         "NOV4": patched_nov4_ui,
         "TT1A": patched_tt1a_ui,
-        "TT1B": patched_tt1b_ui,
-        "TT2": patched_tt2_ui,
-        "T22": patched_t22_ui,
-        "TT3A": patched_tt3a_ui,
-        "TT3B": patched_tt3b_ui,
-        "TT4": patched_tt4_ui,
-        "TT5": patched_tt5_ui,
-        "T25": patched_t25_ui,
-        "TT6A": patched_tt6a_ui,
-        "TT6B": patched_tt6b_ui,
-        "TT6C": patched_tt6c_ui,
     }[args.component]
     patched = patcher(args.source.read_bytes())
     args.output.parent.mkdir(parents=True, exist_ok=True)

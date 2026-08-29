@@ -52,12 +52,11 @@ required. It validates controls, glyph support, and display width.
 
 ### `scenario-footprint BANK [--translations PATH]`
 
-Reports the fixed text reservation and, with a complete translation map,
-compressed use and remaining bytes. For banks with fixed-address UI text, the
-source reservation includes dictionary entries referenced by those verified
-source tables as well as ordinary scenario dialogue. Banks whose translated
-fixed UI consumes the English dictionary must also produce all 31 dictionary
-entries or the footprint check fails closed.
+Reports the source scenario reservation and, for standalone-layout banks with a
+complete translation map, compressed use and remaining bytes. Source-only
+inspection remains available for every bank. The 11 banks whose current English
+menus are jointly repacked and relocated must use `release-build` for translated
+capacity because their playable footprint spans both menu and scenario regions.
 
 ### `scenario-insert BANK TRANSLATION OUTPUT [--no-compress] [--bank-name NAME]`
 
@@ -65,18 +64,13 @@ Rebuilds scenario groups and pointers only after validating group indices,
 record indices, stable IDs, control order, display width, and glyph support.
 Complete translations receive a new English dictionary; partial work keeps the
 Japanese dictionary. `--bank-name` is available when the input filename does
-not safely identify its bank. Capacity-constrained complete builds retry the
-deterministic compressor without candidate pruning if the normal fast search
-misses the native reservation. They then compare that valid result with bounded
-beam search and fixed-prefix-safe dictionary reordering and keep the smallest
-exact output. Fixed-UI banks also retry when the fast search stops before all
-31 required English dictionary slots are populated, and fail if no search can
-produce a complete dictionary.
+not safely identify its bank. The command is intentionally limited to banks
+whose current English layout is self-contained in the scenario reservation
+(currently TT1A and TT6D). The 11 relocated-menu banks fail closed and direct
+maintainers to `release-build`, which owns their combined menu/scenario layout.
 
-`--no-compress` is diagnostic only. A fully translated bank whose fixed UI
-requires the 31-entry English dictionary rejects that option before writing an
-output, because preserving the Japanese dictionary cannot produce a safe input
-for the later `ui-patch` step.
+`--no-compress` remains a diagnostic option for supported standalone banks; it
+preserves the original dictionary on a complete bank.
 
 ## Asset and UI commands
 
@@ -94,12 +88,12 @@ native slide.png` beside `TARGET`.
 
 ### `ui-patch SOURCE OUTPUT [--component NAME]`
 
-Applies one source-verified fixed UI/text-table patch. Supported components are
-`SON-KOUH`, `NOV2`, `NOV4`, `TT1A`, `TT1B`, `TT2`, `T22`, `TT3A`, `TT3B`,
-`TT4`, `TT5`, `T25`, `TT6A`, `TT6B`, and `TT6C`.
+Applies one source-verified standalone UI/program patch. Supported components
+are `SON-KOUH`, `NOV2`, `NOV4`, and `TT1A`. The 11 scenario banks with
+relocated full-word menu tables are not standalone patch targets; `release-build`
+repacks those tables together with dialogue and regenerates their page pointers.
 
-The command rejects source-byte, record-count, table-hash, dictionary, and
-exact-slot mismatches.
+The command rejects source-byte and fixed-layout mismatches.
 
 ## Release commands
 
@@ -130,9 +124,9 @@ Zenpen and Kouhen, combines four sides, and writes `release_manifest.json`.
 For the 11 banks with scenario menu tables, this canonical path packs the
 unabbreviated labels together with dialogue, uses the guarded 68-entry English
 dictionary decoder, regenerates the menu page pointers, and preserves the
-overlay's original fixed suffix. The standalone `scenario-insert` and
-`ui-patch` commands retain the older 31-entry, fixed-slot diagnostic workflow;
-use `release-build` for the full-word playable result.
+overlay's original fixed suffix. It is the only supported translated build path
+for those banks; standalone scenario/UI commands fail closed rather than
+reproducing the superseded 31-entry fixed-slot architecture.
 
 Release manifest schema v4 is a complete audit record. It includes source-lock
 and release-code provenance, Python/Pillow environment versions, all

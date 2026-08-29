@@ -23,20 +23,7 @@ from .project import (
 )
 from .textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT
 from .title import DEFAULT_SUBTITLE
-from .ui import (
-    patched_t22_ui,
-    patched_t25_ui,
-    patched_tt1a_ui,
-    patched_tt1b_ui,
-    patched_tt2_ui,
-    patched_tt3a_ui,
-    patched_tt3b_ui,
-    patched_tt4_ui,
-    patched_tt5_ui,
-    patched_tt6a_ui,
-    patched_tt6b_ui,
-    patched_tt6c_ui,
-)
+from .ui import patched_tt1a_ui
 
 SOURCE_CHECKOUT_ROOT = Path(__file__).resolve().parents[2]
 EXECUTING_PACKAGE_ROOT = Path(__file__).resolve().parent
@@ -118,17 +105,6 @@ SCENARIO_LOCATIONS: dict[str, tuple[str, int]] = {
 
 SCENARIO_UI_PATCHERS: dict[str, Callable[[bytes], bytes]] = {
     "TT1A": patched_tt1a_ui,
-    "TT1B": patched_tt1b_ui,
-    "TT2": patched_tt2_ui,
-    "T22": patched_t22_ui,
-    "TT3A": patched_tt3a_ui,
-    "TT3B": patched_tt3b_ui,
-    "TT4": patched_tt4_ui,
-    "TT5": patched_tt5_ui,
-    "T25": patched_t25_ui,
-    "TT6A": patched_tt6a_ui,
-    "TT6B": patched_tt6b_ui,
-    "TT6C": patched_tt6c_ui,
 }
 
 

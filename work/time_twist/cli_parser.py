@@ -162,7 +162,8 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Rebuild scenario groups and pointers while retaining code/data "
             "outside the original text reservation. Fully translated banks "
-            "receive a compact English dictionary."
+            "receive a compact English dictionary. Banks with relocated "
+            "full-word menus must be built through release-build."
         ),
     )
     scenario_insert.add_argument(
@@ -197,8 +198,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-compress",
         action="store_true",
         help=(
-            "diagnostic: preserve the original dictionary on a complete bank; "
-            "unavailable for banks whose fixed UI requires 31 English entries"
+            "diagnostic: preserve the original dictionary on a supported "
+            "standalone complete bank"
         ),
     )
     scenario_insert.set_defaults(function=command_scenario_insert)
@@ -239,7 +240,8 @@ def build_parser() -> argparse.ArgumentParser:
         description=(
             "Show the scenario reservation and fixed tail. With a complete "
             "translation map, build the English dictionary and report "
-            "remaining bytes or a hard overrun."
+            "remaining bytes or a hard overrun. Translated relocated-menu "
+            "banks must use release-build."
         ),
     )
     scenario_footprint.add_argument(
@@ -320,31 +322,16 @@ def build_parser() -> argparse.ArgumentParser:
         "ui-patch",
         help="apply a verified fixed UI/text-table patch",
         description=(
-            "Patch one extracted component's fixed prompts, menu labels, "
-            "commands, objects, quiz answers, or small input/program behavior."
+            "Patch one standalone component's source-verified prompts, "
+            "choices, title menu, or small input/program behavior. Relocated "
+            "scenario menus are owned by release-build."
         ),
     )
     ui_patch.add_argument("source", type=Path, help="source component .bin")
     ui_patch.add_argument("output", type=Path, help="patched component .bin")
     ui_patch.add_argument(
         "--component",
-        choices=(
-            "SON-KOUH",
-            "NOV2",
-            "NOV4",
-            "TT1A",
-            "TT1B",
-            "TT2",
-            "T22",
-            "TT3A",
-            "TT3B",
-            "TT4",
-            "TT5",
-            "T25",
-            "TT6A",
-            "TT6B",
-            "TT6C",
-        ),
+        choices=("SON-KOUH", "NOV2", "NOV4", "TT1A"),
         default="NOV2",
         help="owning FDS component (default: NOV2)",
     )
