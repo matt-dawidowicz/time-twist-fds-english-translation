@@ -72,10 +72,9 @@ jobs:
         run: |
           git show f21dc8897e9bcf51274564739adbcc2915f8689c:.github/scripts/modernize_pr20.py > /tmp/modernize_pr20.py
           python /tmp/modernize_pr20.py
-      - name: Normalize and validate transformed tree
+          python .github/scripts/normalize_modern_cli_boundary.py
+      - name: Validate transformed tree
         run: |
-          python -m black work
-          python -m ruff check --fix --unsafe-fixes work/tests/test_modern_cli_boundaries.py
           python -m black work
           python -m black --check work
           python -m ruff check work
