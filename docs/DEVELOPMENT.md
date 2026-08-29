@@ -53,10 +53,13 @@ logic. Skips are treated as failures.
 python work/run_tests.py integration
 ```
 
-This suite currently contains 75 exact-ROM tests. Before discovery, the runner
-validates the private local overlay against `work/integration_fixtures.json`.
-Missing or changed fixtures stop the run as a setup error; integration tests do
-not quietly disappear behind `skipTest()`.
+This suite also permits no skips. Before discovery, the runner validates the
+six irreducible private inputs listed by `work/integration_fixtures.json`:
+the two approved baseline FDS images and four emulator captures. It then
+regenerates extracted FDS payloads from the validated baselines and removes
+obsolete generated-oracle directories before loading the integration tests.
+Missing or changed private inputs stop the run as a setup error; integration
+tests do not quietly disappear behind `skipTest()`.
 
 Run both suites with:
 
@@ -109,7 +112,7 @@ baselines; those data are intentionally not embedded in the wheel.
 6. **Verify the output.** Re-decode data or assert the exact changed range.
 7. **Add rejection coverage.** A deliberately modified source must raise the
    patch's domain error.
-8. **Add scope coverage.** With private fixtures, prove that only the intended
+8. **Add scope coverage.** With private inputs, prove that only the intended
    FDS file changed.
 9. **Run both supported suites and playtest.**
 
@@ -121,7 +124,8 @@ explicit supported revision with evidence instead.
 Use the highest-level playable source:
 
 - story dialogue: `work/translations/BANK.json`;
-- fixed UI labels: the named record definition in `work/time_twist/ui.py`;
+- fixed UI labels: the named record definition in `work/time_twist/ui.py` or
+  `work/time_twist/ui_fixed_tables.py`;
 - font glyphs: `PIXEL_FONT_5X7` and mapping tables;
 - title art: the title reference image and conversion code.
 
@@ -131,7 +135,7 @@ editorial alternative.
 
 After changing text:
 
-1. run `scenario-merge` and `scenario-footprint` for the bank;
+1. use the public validation commands appropriate to the source being edited;
 2. regenerate the workbook;
 3. run the public and private tests available to you;
 4. refresh the approved source lock intentionally;
@@ -139,20 +143,28 @@ After changing text:
 6. inspect and playtest the affected scenes;
 7. promote the exact reviewed candidate.
 
+For the 11 banks whose full-word menu tables are relocated and jointly packed
+with scenario text, `release-build` is the authoritative translated build path.
+Standalone `scenario-insert` and `ui-patch` deliberately fail closed for those
+banks because they cannot reproduce the recovered page-pointer relocation in
+isolation.
+
 ## Dictionary debugging
 
 When a bank no longer fits:
 
-- compare literal and compressed sizes from `scenario-footprint`;
+- inspect the literal and compressed usage reported by the release/fit checks;
 - inspect repeated complete words and speaker prefixes;
-- check bank-specific required dictionary entries;
 - remember that a dictionary reference costs 9 bits;
-- remember that the encoded dictionary entry consumes bytes;
+- remember that each encoded dictionary entry also consumes bytes;
 - avoid nested English entries, which the compressor forbids;
-- verify that fixed tables still have the words they require.
+- for relocated-menu banks, treat full-word menu records and scenario text as
+  one shared compression/capacity corpus rather than separate fixed-slot
+  budgets.
 
-A dictionary change can save scenario space while making a tiny fixed record
-impossible to encode. Treat scenario and fixed-table use as one budget.
+A dictionary change can save scenario space while changing how menu text packs.
+Judge the complete relocated bank, including regenerated page pointers and the
+fixed suffix, rather than optimizing dialogue or menus in isolation.
 
 ## Display debugging
 
@@ -256,7 +268,7 @@ External source-lock paths are supported. Manifests record a project-relative
 path when possible and an absolute path otherwise.
 
 The private release integration test can build two candidates and require their
-manifests and images to be byte-identical when the legal fixture overlay is
+manifests and images to be byte-identical when the legal private inputs are
 available. A separate test requires the unpromoted checkout to reject strict
 publication because its target is absent. Candidate reproducibility evidence is
 not promotion; promotion repeats the reproducibility proof independently.
@@ -270,13 +282,13 @@ playtest obligations.
 Keep these local:
 
 - original/patched `.fds` images;
-- extracted and rebuilt `.bin` banks;
+- regenerated extracted/rebuilt `.bin` banks;
 - emulator `.dmp` captures;
 - emulator archives/settings;
 - build/dist directories and Python caches.
 
 Commit code, fixture-free tests, integration-test source, translation JSON,
-source/target manifests, documentation, review workbooks, and permissible
+source/target release metadata, documentation, review workbooks, and permissible
 reference/preview images.
 
 ## Review checklist
@@ -288,7 +300,7 @@ reference/preview images.
 - [ ] Fixed record/table/bank sizes and tail addresses are preserved.
 - [ ] Black, Ruff, pydocstyle, and mypy checks pass.
 - [ ] Public tests pass with zero skips on supported Python versions.
-- [ ] Private integration tests pass with zero skips when fixtures are available.
+- [ ] Private integration tests pass with zero skips when private inputs are available.
 - [ ] Wheel build/install smoke test passes.
 - [ ] Candidate manifest and outputs were reviewed before promotion.
 - [ ] Promotion's fresh rebuild matches the reviewed candidate exactly.
