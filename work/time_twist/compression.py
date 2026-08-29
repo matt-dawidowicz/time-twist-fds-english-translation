@@ -172,10 +172,13 @@ def _candidate_counts(
                 ):
                     segment.append(symbol)
                     continue
-                for start in range(len(segment)):
-                    maximum = min(MAX_CANDIDATE_TOKENS, len(segment) - start)
+                literal_segment = tuple(segment)
+                for start in range(len(literal_segment)):
+                    maximum = min(
+                        MAX_CANDIDATE_TOKENS, len(literal_segment) - start
+                    )
                     for length in range(2, maximum + 1):
-                        counts[tuple(segment[start : start + length])] += 1
+                        counts[literal_segment[start : start + length]] += 1
                 segment = []
     return counts
 
@@ -207,10 +210,7 @@ def _replace_candidate(
             rebuilt: list[PackedSymbol] = []
             position = 0
             while position < len(record):
-                if (
-                    tuple(record[position : position + candidate_length])
-                    == candidate
-                ):
+                if record[position : position + candidate_length] == candidate:
                     rebuilt.append(reference)
                     position += candidate_length
                 else:
@@ -277,7 +277,7 @@ def _rank_candidates(
         if count < 2:
             continue
         literal_bits = sum(symbol_bit_length(symbol) for symbol in candidate)
-        entry_bits = len(pack_records((candidate,))) * 8
+        entry_bits = _record_packed_size(candidate) * 8
         estimated_saving = count * (literal_bits - 9) - entry_bits
         if estimated_saving > 0:
             ranked.append((estimated_saving, candidate))
@@ -604,53 +604,18 @@ def compress_english_groups(
     tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
     tuple[tuple[PackedSymbol, ...], ...],
 ]:
-    """Compress groups, widening search on capacity or dictionary-count failure.
+    """Compress groups and widen deterministic search only when needed.
 
-    Args:
-        groups: Fully encoded English scenario groups with no separators.
-        required_entries: Literal entries reserved for fixed-address text. A
-            project-supplied tuple may additionally require all 31 slots so a
-            fixed-address UI patch never decodes beyond the generated dictionary.
-        max_bytes: Optional packed groups-plus-dictionary byte reservation.
-        optimize: Permit deterministic beam search and fixed-prefix-safe
-            dictionary-order hill climbing when a capacity-constrained greedy
-            result cannot satisfy the release constraints. If ``max_bytes`` is
-            omitted, compare all optimization strategies as before.
-        maximum_entries: Maximum dictionary entries accepted by the target
-            decoder. The native format supports 31; the guarded English NOV2
-            extension supports up to 68.
-        candidate_validator: Optional release-level compatibility check for
-            optimized candidates. Results that return false are excluded
-            before the exact-size minimum is selected.
-
-    Returns:
-        Compressed groups and ordered flat dictionary.
-
-    Raises:
-        ValueError: If ``max_bytes`` is negative, required entries are invalid,
-            or a full-dictionary caller cannot populate ``maximum_entries``.
-
-    The normal pass evaluates only the top estimated candidates for each greedy
-    step. If that result exceeds ``max_bytes`` or a fixed-UI caller requires
-    every requested entry but the fast pass stops early, a deterministic
-    fallback reruns greedy selection while evaluating every positive-saving
-    candidate. For a full-dictionary request the exhaustive result must contain
-    every requested entry; otherwise the build fails closed instead of letting
-    a later UI patch read following code/data as dictionary records.
-
-    With ``optimize=True`` and a byte reservation, a complete, compatible greedy
-    result is returned immediately once it fits. Expensive beam search and
-    dictionary-order hill climbing are reserved for a result that actually needs
-    more compression or fails a release compatibility check. Callers that omit
-    ``max_bytes`` retain the full minimum-size comparison behavior.
+    Required entries remain an immutable dictionary prefix. Capacity-constrained
+    optimized callers return the compatible greedy result immediately when it
+    already fits; otherwise bounded beam/order search is compared. Unconstrained
+    optimized callers retain the full minimum-size comparison behavior.
     """
     if max_bytes is not None and max_bytes < 0:
         raise ValueError("max_bytes must be nonnegative")
     if not 1 <= maximum_entries <= EXTENDED_DICTIONARY_ENTRY_COUNT:
         raise ValueError("maximum dictionary entries is out of range")
-    requires_full_dictionary = bool(
-        getattr(required_entries, "requires_full_dictionary", False)
-    )
+
     if optimize:
         baseline = compress_english_groups(
             groups,
@@ -660,23 +625,17 @@ def compress_english_groups(
             maximum_entries=maximum_entries,
         )
         baseline_size = packed_size(*baseline)
-        baseline_complete = (
-            not requires_full_dictionary or len(baseline[1]) == maximum_entries
-        )
         baseline_valid = candidate_validator is None or candidate_validator(
             *baseline
         )
         if (
             max_bytes is not None
             and baseline_size <= max_bytes
-            and baseline_complete
             and baseline_valid
         ):
             return baseline
 
-        candidates = []
-        if baseline_complete and baseline_valid:
-            candidates.append(baseline)
+        candidates = [baseline] if baseline_valid else []
         candidates.extend(
             [
                 _compress_english_groups_beam(
@@ -703,12 +662,6 @@ def compress_english_groups(
                     maximum_entries=maximum_entries,
                 )
             )
-        if requires_full_dictionary:
-            candidates = [
-                result
-                for result in candidates
-                if len(result[1]) == maximum_entries
-            ]
         if candidate_validator is not None:
             candidates = [
                 result for result in candidates if candidate_validator(*result)
@@ -726,10 +679,7 @@ def compress_english_groups(
         maximum_entries=maximum_entries,
     )
     primary_size = packed_size(*primary)
-    primary_complete = (
-        not requires_full_dictionary or len(primary[1]) == maximum_entries
-    )
-    if (max_bytes is None or primary_size <= max_bytes) and primary_complete:
+    if max_bytes is None or primary_size <= max_bytes:
         return primary
 
     fallback = _compress_english_groups_greedy(
@@ -738,16 +688,7 @@ def compress_english_groups(
         candidate_limit=None,
         maximum_entries=maximum_entries,
     )
-    fallback_size = packed_size(*fallback)
-    if requires_full_dictionary:
-        if len(fallback[1]) != maximum_entries:
-            raise ValueError(
-                f"fixed-address UI requires exactly {maximum_entries} "
-                "dictionary entries; "
-                f"compressor produced {len(fallback[1])}"
-            )
-        return fallback
-    if fallback_size < primary_size:
+    if packed_size(*fallback) < primary_size:
         return fallback
     return primary
 

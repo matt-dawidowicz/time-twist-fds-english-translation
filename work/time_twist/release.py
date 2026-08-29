@@ -20,10 +20,7 @@ from .compression import compress_english_groups, packed_size
 from .english import EnglishTextError, encode_english
 from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
-from .project import (
-    required_dictionary_entries,
-    source_dictionary_reference_floor,
-)
+from .project import source_dictionary_reference_floor
 from .release_metadata import (
     BUILD_ENVIRONMENT_SCHEMA,
     CODE_LOGICAL_ROOT,
@@ -78,7 +75,6 @@ from .release_metadata import (
 )
 from .scenario import (
     ScenarioBank,
-    ScenarioError,
     parse_scenario_bank,
     rebuild_scenario_bank,
     render_symbols,
@@ -90,12 +86,10 @@ from .scenario_validation import (
 from .textcodec import (
     EXTENDED_DICTIONARY_ENTRY_COUNT,
     PackedSymbol,
-    PackedTextError,
 )
 from .title import DEFAULT_SUBTITLE, patched_nov4_title
 from .ui import (
     FIXED_RECORD_TABLE_SPECS,
-    UiPatchError,
     fixed_record_table_combined_capacity,
     fixed_record_table_page_pointer_bytes,
     patched_kouhen_boot_guard,
@@ -319,47 +313,18 @@ def build_scenario_bank(
         )
 
     capacity = scenario_capacity
-    maximum_dictionary_entries = EXTENDED_DICTIONARY_ENTRY_COUNT
-
-    def fixed_ui_candidate_is_valid(
-        candidate_groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
-        candidate_dictionary: tuple[tuple[PackedSymbol, ...], ...],
-    ) -> bool:
-        """Accept only dictionaries that can rebuild and patch the fixed UI."""
-        if patcher is None:
-            return True
-        try:
-            candidate_data = rebuild_scenario_bank(
-                bank,
-                candidate_groups,
-                dictionary=candidate_dictionary,
-                preserve_memory_footprint=True,
-                maximum_dictionary_entries=maximum_dictionary_entries,
-            )
-            patcher(candidate_data)
-        except (
-            EnglishTextError,
-            PackedTextError,
-            ScenarioError,
-            UiPatchError,
-        ):
-            return False
-        return True
-
     compressed, dictionary = compress_english_groups(
         groups,
-        required_entries=required_dictionary_entries(bank_name),
         max_bytes=capacity - pointer_bytes,
         optimize=True,
-        maximum_entries=maximum_dictionary_entries,
-        candidate_validator=fixed_ui_candidate_is_valid,
+        maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
     )
     rebuilt = rebuild_scenario_bank(
         bank,
         compressed,
         dictionary=dictionary,
         preserve_memory_footprint=True,
-        maximum_dictionary_entries=maximum_dictionary_entries,
+        maximum_dictionary_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
     )
     if patcher is not None:
         rebuilt = patcher(rebuilt)

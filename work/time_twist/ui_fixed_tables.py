@@ -1,7 +1,8 @@
-"""Fixed-address menu and choice table declarations.
+"""Recovered menu/choice table declarations for canonical repacking.
 
-The patching algorithms remain in :mod:`time_twist.ui`; this module holds
-the reviewed per-bank data they consume.
+TT1A retains source-locked fixed-size choices. The remaining tables provide
+source boundaries, hashes, and reviewed full-word labels used by the release
+builder's relocated menu/scenario layout.
 """
 
 from __future__ import annotations
@@ -9,12 +10,6 @@ from __future__ import annotations
 # ---------------------------------------------------------------------------
 # Bank-specific fixed-address record tables
 # ---------------------------------------------------------------------------
-
-# Experimental all-full-word target note:
-# The fixed-table tuples below intentionally name the desired full English
-# menu/choice labels. Some labels may not fit the current byte-for-byte fixed
-# slots until a follow-up compression/repacking pass reserves dictionary
-# entries, changes packing strategy, or otherwise proves a safe fit.
 
 # TT1A keeps the blood-type choices in a fixed-address record table before
 # its normal scenario groups.  NOV2 directly references the fourth record at
@@ -63,31 +58,6 @@ TT1B_FIXED_TEXT_START_OFFSET = 0x09F7
 TT1B_FIXED_TEXT_END_OFFSET = 0x0AC5
 TT1B_FIXED_TEXT_SOURCE_SHA256 = (
     "AF6969B469081B6992DF4893FCE6308ABB51896B5D2DAAD49AF0B23500E5FD4F"
-)
-TT1B_REQUIRED_DICTIONARY_TEXT = (
-    "Look",
-    "Museum",
-    "Body",
-    "Eyes",
-    "Picture",
-    "Simon",
-    "Ask",
-    "Member",
-    "Devil",
-    "Nose",
-    "Ears",
-    "Sky",
-    "Sign",
-    "Chest",
-    "House",
-    "Church",
-    "Priest",
-    "Back",
-    "West",
-    "Pot",
-    "Praise",
-    "Map",
-    "North",
 )
 TT1B_FIXED_TEXT_RECORDS = (
     "Look",
@@ -154,10 +124,6 @@ TT2_FIXED_TEXT_END_OFFSET = 0x0CD8
 TT2_FIXED_TEXT_SOURCE_SHA256 = (
     "FD956CF1D33EDA350549FC3079729458A1B8D20EFAF2D6883361E5FD8C3F0B9E"
 )
-TT2_DICTIONARY_POINTER_OFFSET = 0x0016
-TT2_LOAD_ADDRESS = 0xA200
-FIXED_UI_DICTIONARY_ENTRY_COUNT = 31
-TT2_DICTIONARY_ENTRIES = FIXED_UI_DICTIONARY_ENTRY_COUNT
 TT2_FIXED_TEXT_RECORDS = (
     "Look",
     "Talk",
@@ -240,16 +206,6 @@ T22_FIXED_TEXT_START_OFFSET = 0x0729
 T22_FIXED_TEXT_END_OFFSET = 0x07A6
 T22_FIXED_TEXT_SOURCE_SHA256 = (
     "AF59D34E1084B43CC754BB24582D85FE7B085C0C478E65A2DD21F0ACA1D7D44F"
-)
-T22_REQUIRED_DICTIONARY_TEXT = (
-    "Baron",
-    "Bishop",
-    "Jailer",
-    "Lugot",
-    "Jeanne",
-    "Chino",
-    "Look",
-    "Crowd",
 )
 T22_FIXED_TEXT_RECORDS = (
     "Look",

@@ -66,20 +66,29 @@ class ModernModuleLayoutTests(unittest.TestCase):
         self.assertIs(title.patched_nov4_title, title_patch.patched_nov4_title)
         self.assertEqual(title.SLIDE_PREP_SIZE, title_layout.SLIDE_PREP_SIZE)
 
-    def test_ui_facade_exports_the_fixed_table_data(self) -> None:
-        """Keep fixed-table callers independent of the declarative-data split."""
-        self.assertIs(
-            ui.TT1B_FIXED_TEXT_RECORDS,
-            ui_fixed_tables.TT1B_FIXED_TEXT_RECORDS,
-        )
-        self.assertIs(
-            ui.T22_FIXED_TEXT_RECORDS,
-            ui_fixed_tables.T22_FIXED_TEXT_RECORDS,
-        )
-        self.assertIs(
-            ui.TT6C_FIXED_TEXT_RECORDS,
-            ui_fixed_tables.TT6C_FIXED_TEXT_RECORDS,
-        )
+    def test_ui_facade_exports_the_canonical_fixed_table_specs(self) -> None:
+        """Keep callers on one declarative relocated-menu mapping."""
+        for bank_name in ("TT1B", "T22", "TT6C"):
+            with self.subTest(bank=bank_name):
+                spec = ui.FIXED_RECORD_TABLE_SPECS[bank_name]
+                self.assertIs(
+                    spec.records,
+                    getattr(
+                        ui_fixed_tables, f"{bank_name}_FIXED_TEXT_RECORDS"
+                    ),
+                )
+                self.assertEqual(
+                    spec.start,
+                    getattr(
+                        ui_fixed_tables, f"{bank_name}_FIXED_TEXT_START_OFFSET"
+                    ),
+                )
+                self.assertEqual(
+                    spec.end,
+                    getattr(
+                        ui_fixed_tables, f"{bank_name}_FIXED_TEXT_END_OFFSET"
+                    ),
+                )
 
     def test_private_capture_fixture_paths_are_emulator_neutral(self) -> None:
         """Keep private runtime evidence separate from any emulator brand."""

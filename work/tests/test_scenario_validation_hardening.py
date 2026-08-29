@@ -20,7 +20,6 @@ from time_twist.compression import (
 )
 from time_twist.english import EnglishTextError, encode_english
 from time_twist.fds import FdsFormatError, FdsImage
-from time_twist.project import required_dictionary_entries
 from time_twist.scenario import (
     ScenarioError,
     parse_scenario_bank,
@@ -297,29 +296,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
                 reachable.dictionary_end_offset,
             )
 
-    def test_fixed_ui_dictionary_requirement_fails_closed(self) -> None:
-        """Verify the current contract described by this regression test."""
-        groups = ((encode_english("AB"),),)
-        required = required_dictionary_entries("TT2")
-        self.assertTrue(getattr(required, "requires_full_dictionary", False))
-        with self.assertRaisesRegex(ValueError, "exactly 31"):
-            compress_english_groups(groups, required_entries=required)
-
-    def test_undersized_fixed_slot_labels_are_reserved(self) -> None:
-        """Keep complete labels encodable after alternative dictionary search."""
-        expected = {
-            "TT3A": ("Back", "Frankie"),
-            "TT3B": ("Cougar", "ight"),
-        }
-
-        for bank_name, labels in expected.items():
-            required = required_dictionary_entries(bank_name)
-            with self.subTest(bank=bank_name):
-                self.assertTrue(
-                    set(map(encode_english, labels)).issubset(required)
-                )
-
-    def test_fixed_ui_insert_rejects_no_compress(self) -> None:
+    def test_relocated_ui_insert_redirects_to_release_build(self) -> None:
         """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -358,7 +335,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
                     "time_twist.cli._parse_source_bank",
                     return_value=("TT2", bank),
                 ),
-                self.assertRaisesRegex(SystemExit, "--no-compress"),
+                self.assertRaisesRegex(SystemExit, "release-build"),
             ):
                 command_scenario_insert(args)
             self.assertFalse(output.exists())

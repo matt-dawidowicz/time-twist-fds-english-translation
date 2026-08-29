@@ -838,73 +838,9 @@ def _scenario_rows(start_sequence: int) -> list[ComparisonRow]:
     return rows
 
 
-FIXED_SPECS = (
-    (
-        "TT1B",
-        ui.TT1B_FIXED_TEXT_START_OFFSET,
-        ui.TT1B_FIXED_TEXT_END_OFFSET,
-        ui.TT1B_FIXED_TEXT_RECORDS,
-    ),
-    (
-        "TT2",
-        ui.TT2_FIXED_TEXT_START_OFFSET,
-        ui.TT2_FIXED_TEXT_END_OFFSET,
-        ui.TT2_FIXED_TEXT_RECORDS,
-    ),
-    (
-        "T22",
-        ui.T22_FIXED_TEXT_START_OFFSET,
-        ui.T22_FIXED_TEXT_END_OFFSET,
-        ui.T22_FIXED_TEXT_RECORDS,
-    ),
-    (
-        "TT3A",
-        ui.TT3A_FIXED_TEXT_START_OFFSET,
-        ui.TT3A_FIXED_TEXT_END_OFFSET,
-        ui.TT3A_FIXED_TEXT_RECORDS,
-    ),
-    (
-        "TT3B",
-        ui.TT3B_FIXED_TEXT_START_OFFSET,
-        ui.TT3B_FIXED_TEXT_END_OFFSET,
-        ui.TT3B_FIXED_TEXT_RECORDS,
-    ),
-    (
-        "TT4",
-        ui.TT4_FIXED_TEXT_START_OFFSET,
-        ui.TT4_FIXED_TEXT_END_OFFSET,
-        ui.TT4_FIXED_TEXT_RECORDS,
-    ),
-    (
-        "TT5",
-        ui.TT5_FIXED_TEXT_START_OFFSET,
-        ui.TT5_FIXED_TEXT_END_OFFSET,
-        ui.TT5_FIXED_TEXT_RECORDS,
-    ),
-    (
-        "T25",
-        ui.T25_FIXED_TEXT_START_OFFSET,
-        ui.T25_FIXED_TEXT_END_OFFSET,
-        ui.T25_FIXED_TEXT_RECORDS,
-    ),
-    (
-        "TT6A",
-        ui.TT6A_FIXED_TEXT_START_OFFSET,
-        ui.TT6A_FIXED_TEXT_END_OFFSET,
-        ui.TT6A_FIXED_TEXT_RECORDS,
-    ),
-    (
-        "TT6B",
-        ui.TT6B_FIXED_TEXT_START_OFFSET,
-        ui.TT6B_FIXED_TEXT_END_OFFSET,
-        ui.TT6B_FIXED_TEXT_RECORDS,
-    ),
-    (
-        "TT6C",
-        ui.TT6C_FIXED_TEXT_START_OFFSET,
-        ui.TT6C_FIXED_TEXT_END_OFFSET,
-        ui.TT6C_FIXED_TEXT_RECORDS,
-    ),
+FIXED_SPECS = tuple(
+    (bank_name, spec.start, spec.end, spec.records)
+    for bank_name, spec in ui.FIXED_RECORD_TABLE_SPECS.items()
 )
 
 

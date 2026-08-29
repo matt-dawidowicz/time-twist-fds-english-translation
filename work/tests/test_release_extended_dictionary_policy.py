@@ -45,10 +45,6 @@ class ReleaseExtendedDictionaryPolicyTests(unittest.TestCase):
                     "time_twist.release._encoded_groups", return_value=groups
                 ),
                 patch(
-                    "time_twist.release.required_dictionary_entries",
-                    return_value=(),
-                ),
-                patch(
                     "time_twist.release.compress_english_groups",
                     return_value=(compressed, dictionary),
                 ) as compress,

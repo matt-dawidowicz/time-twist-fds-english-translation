@@ -14,12 +14,10 @@ from time_twist.textcodec import pack_records
 def rows() -> list[dict[str, object]]:
     """Return one source-level row per fixed menu/choice target."""
     output: list[dict[str, object]] = []
-    for bank_name in SCENARIO_LOCATIONS:
-        records_name = f"{bank_name}_FIXED_TEXT_RECORDS"
-        if not hasattr(ui, records_name):
-            continue
-        records = getattr(ui, records_name)
-        for index, label in enumerate(records):
+    for bank_name, spec in ui.FIXED_RECORD_TABLE_SPECS.items():
+        if bank_name not in SCENARIO_LOCATIONS:
+            raise ValueError(f"unknown relocated menu bank: {bank_name}")
+        for index, label in enumerate(spec.records):
             encode_ok = True
             encode_error = ""
             width_ok = True

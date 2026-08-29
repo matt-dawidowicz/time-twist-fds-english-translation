@@ -20,11 +20,7 @@ from .font import patched_nov4_font
 from .project import (
     PERSONALITY_QUESTION_IDS as _PERSONALITY_QUESTION_IDS,
 )
-from .project import (
-    infer_bank_name,
-    required_dictionary_entries,
-    source_dictionary_reference_floor,
-)
+from .project import infer_bank_name, source_dictionary_reference_floor
 from .release import (
     build_release,
     discover_project_root,
@@ -352,12 +348,10 @@ def command_scenario_insert(args: argparse.Namespace) -> None:
     text_start = bank.group_addresses[0] - bank.load_address
     capacity = bank.dictionary_end_offset - text_start
     pointer_bytes = 2 * (len(packed_groups) - 1)
-    required_entries = required_dictionary_entries(bank_name)
     if translated_count == total_count and not args.no_compress:
         original_size = packed_size(packed_groups, ())
         packed_groups, dictionary = compress_english_groups(
             packed_groups,
-            required_entries=required_entries,
             max_bytes=capacity - pointer_bytes,
             optimize=True,
         )
@@ -571,7 +565,6 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
     pointer_bytes = 2 * (len(groups) - 1)
     compressed_groups, dictionary = compress_english_groups(
         groups,
-        required_entries=required_dictionary_entries(bank_name),
         max_bytes=capacity - pointer_bytes,
         optimize=True,
     )
