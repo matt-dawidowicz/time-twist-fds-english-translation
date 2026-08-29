@@ -118,6 +118,7 @@ class StaticUiTests(unittest.TestCase):
         permitted: set[int] = set()
 
         def own(offset: int, size: int) -> None:
+            """Mark one verified NOV2 byte range as patch-owned."""
             permitted.update(range(offset, offset + size))
 
         for offset, source, english in ui.DISK_PROMPT_PATCHES:

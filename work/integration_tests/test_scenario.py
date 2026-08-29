@@ -32,7 +32,6 @@ from time_twist.scenario import (
     ScenarioError,
     parse_scenario_bank,
     rebuild_scenario_bank,
-    render_symbols,
 )
 from time_twist.textcodec import PackedSymbol, SymbolKind
 

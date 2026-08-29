@@ -157,7 +157,6 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
 
         optimized = compress_english_groups(
             groups,
-            max_bytes=packed_size(*greedy),
             optimize=True,
         )
 
