@@ -1,0 +1,67 @@
+name: temporary apply modern interface
+
+on:
+  push:
+    branches:
+      - runtime-playtest-validation-20260829
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: runtime-playtest-validation-20260829
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install development environment
+        run: python -m pip install -r requirements.txt
+      - name: Recover and apply guarded refactor
+        run: |
+          git show f21dc8897e9bcf51274564739adbcc2915f8689c:.github/scripts/modernize_pr20.py > /tmp/modernize_pr20.py
+          python /tmp/modernize_pr20.py
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("work/tests/test_modern_cli_boundaries.py")
+          text = path.read_text(encoding="utf-8")
+          old = '''            with self.subTest(bank=bank_name):
+                with self.assertRaisesRegex(SystemExit, "release-build"):
+                    _require_standalone_scenario_bank(
+                        bank_name, "scenario-insert"
+                    )
+'''
+          new = '''            with self.subTest(bank=bank_name), self.assertRaisesRegex(
+                SystemExit, "release-build"
+            ):
+                _require_standalone_scenario_bank(bank_name, "scenario-insert")
+'''
+          if text.count(old) != 1:
+              raise SystemExit("generated boundary test did not match once")
+          path.write_text(text.replace(old, new), encoding="utf-8")
+          PY
+      - name: Validate transformed tree
+        run: |
+          python -m black work
+          python -m ruff check work
+          python -m pydocstyle --convention=pep257 work
+          python -m mypy
+          python work/run_tests.py unit
+          git diff --check
+      - name: Commit validated production refactor
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add work/time_twist/release_metadata.py \
+                  work/time_twist/cli_commands.py \
+                  work/time_twist/cli_parser.py \
+                  docs/CLI_REFERENCE.md \
+                  work/tests/test_modern_cli_boundaries.py
+          git commit -m "refactor: retire superseded fixed-slot CLI paths"
+          git push origin HEAD:runtime-playtest-validation-20260829
