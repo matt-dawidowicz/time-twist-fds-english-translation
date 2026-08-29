@@ -18,6 +18,17 @@ from tools import (
 class FixedMenuAuditToolTests(unittest.TestCase):
     """Keep the source target audit compatible with the candidate audit."""
 
+    def test_source_only_audit_covers_every_canonical_menu_record(self) -> None:
+        """Prevent modern spec discovery from silently producing zero rows."""
+        rows = audit_fixed_menu_labels.audit(None, None)
+        expected = sum(
+            len(spec.records)
+            for spec in audit_fixed_menu_labels.ui.FIXED_RECORD_TABLE_SPECS.values()
+        )
+        self.assertGreater(expected, 0)
+        self.assertEqual(len(rows), expected)
+        self.assertTrue(all(row["status"] == "source-only" for row in rows))
+
     def test_target_loader_accepts_the_canonical_label_column(self) -> None:
         """Load the current full-word-target CSV format."""
         with tempfile.TemporaryDirectory() as temporary:
