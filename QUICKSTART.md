@@ -67,12 +67,13 @@ not update it casually. Follow the [maintainer release process](docs/MAINTAINER_
 so the source change, candidate manifest, tests, and playtest evidence stay
 connected.
 
-## If private fixtures are unavailable
+## If private inputs are unavailable
 
 That is normal for public contributors. Run the public unit suite, do not
-create substitute fixtures, and state in your pull request that private
-ROM-derived integration tests were not available. A maintainer can run them
-later against their legal local overlay.
+create substitute ROM-derived inputs, and state in your pull request that the
+private integration suite was not available. A maintainer can run it later
+against the approved private input set described in
+[docs/PRIVATE_FIXTURES.md](docs/PRIVATE_FIXTURES.md).
 
 ## Where next?
 
