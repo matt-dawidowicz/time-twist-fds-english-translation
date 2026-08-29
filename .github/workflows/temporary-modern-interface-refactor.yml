@@ -1,3 +1,4 @@
+# Triggered after workflow registration so this branch-only refactor runs once.
 name: temporary modern interface refactor
 
 on:
@@ -44,24 +45,24 @@ jobs:
               count=1,
           )
           old = '''SCENARIO_UI_PATCHERS: dict[str, Callable[[bytes], bytes]] = {
-              "TT1A": patched_tt1a_ui,
-              "TT1B": patched_tt1b_ui,
-              "TT2": patched_tt2_ui,
-              "T22": patched_t22_ui,
-              "TT3A": patched_tt3a_ui,
-              "TT3B": patched_tt3b_ui,
-              "TT4": patched_tt4_ui,
-              "TT5": patched_tt5_ui,
-              "T25": patched_t25_ui,
-              "TT6A": patched_tt6a_ui,
-              "TT6B": patched_tt6b_ui,
-              "TT6C": patched_tt6c_ui,
-          }
-          '''.replace("          ", "")
+    "TT1A": patched_tt1a_ui,
+    "TT1B": patched_tt1b_ui,
+    "TT2": patched_tt2_ui,
+    "T22": patched_t22_ui,
+    "TT3A": patched_tt3a_ui,
+    "TT3B": patched_tt3b_ui,
+    "TT4": patched_tt4_ui,
+    "TT5": patched_tt5_ui,
+    "T25": patched_t25_ui,
+    "TT6A": patched_tt6a_ui,
+    "TT6B": patched_tt6b_ui,
+    "TT6C": patched_tt6c_ui,
+}
+'''
           new = '''SCENARIO_UI_PATCHERS: dict[str, Callable[[bytes], bytes]] = {
-              "TT1A": patched_tt1a_ui,
-          }
-          '''.replace("          ", "")
+    "TT1A": patched_tt1a_ui,
+}
+'''
           text = replace_once(text, old, new, "release scenario patcher map")
           path.write_text(text, encoding="utf-8")
 
@@ -70,31 +71,31 @@ jobs:
           path = Path("work/time_twist/cli_commands.py")
           text = path.read_text(encoding="utf-8")
           old = '''from .ui import (
-              patched_kouhen_boot_guard,
-              patched_nov2_ui,
-              patched_nov4_ui,
-              patched_t22_ui,
-              patched_t25_ui,
-              patched_tt1a_ui,
-              patched_tt1b_ui,
-              patched_tt2_ui,
-              patched_tt3a_ui,
-              patched_tt3b_ui,
-              patched_tt4_ui,
-              patched_tt5_ui,
-              patched_tt6a_ui,
-              patched_tt6b_ui,
-              patched_tt6c_ui,
-          )
-          '''.replace("          ", "")
+    patched_kouhen_boot_guard,
+    patched_nov2_ui,
+    patched_nov4_ui,
+    patched_t22_ui,
+    patched_t25_ui,
+    patched_tt1a_ui,
+    patched_tt1b_ui,
+    patched_tt2_ui,
+    patched_tt3a_ui,
+    patched_tt3b_ui,
+    patched_tt4_ui,
+    patched_tt5_ui,
+    patched_tt6a_ui,
+    patched_tt6b_ui,
+    patched_tt6c_ui,
+)
+'''
           new = '''from .ui import (
-              FIXED_RECORD_TABLE_SPECS,
-              patched_kouhen_boot_guard,
-              patched_nov2_ui,
-              patched_nov4_ui,
-              patched_tt1a_ui,
-          )
-          '''.replace("          ", "")
+    FIXED_RECORD_TABLE_SPECS,
+    patched_kouhen_boot_guard,
+    patched_nov2_ui,
+    patched_nov4_ui,
+    patched_tt1a_ui,
+)
+'''
           text = replace_once(text, old, new, "CLI UI imports")
 
           marker = "PERSONALITY_QUESTION_IDS = _PERSONALITY_QUESTION_IDS\n\n\n"
@@ -114,28 +115,28 @@ def _require_standalone_scenario_bank(bank_name: str, operation: str) -> None:
           text = replace_once(text, marker, helper, "standalone-bank helper insertion")
 
           old = '''def command_scenario_insert(args: argparse.Namespace) -> None:
-              """Insert merged JSON only after structural and display validation."""
-              bank_name, bank = _parse_source_bank(args)
-              document = json.loads(args.translation.read_text(encoding="utf-8"))
-          '''.replace("          ", "")
+    """Insert merged JSON only after structural and display validation."""
+    bank_name, bank = _parse_source_bank(args)
+    document = json.loads(args.translation.read_text(encoding="utf-8"))
+'''
           new = '''def command_scenario_insert(args: argparse.Namespace) -> None:
-              """Insert merged JSON only after structural and display validation."""
-              bank_name, bank = _parse_source_bank(args)
-              _require_standalone_scenario_bank(bank_name, "scenario-insert")
-              document = json.loads(args.translation.read_text(encoding="utf-8"))
-          '''.replace("          ", "")
+    """Insert merged JSON only after structural and display validation."""
+    bank_name, bank = _parse_source_bank(args)
+    _require_standalone_scenario_bank(bank_name, "scenario-insert")
+    document = json.loads(args.translation.read_text(encoding="utf-8"))
+'''
           text = replace_once(text, old, new, "scenario-insert guard")
 
           obsolete_full_dictionary_guard = '''    if (
-              translated_count == total_count
-              and args.no_compress
-              and getattr(required_entries, "requires_full_dictionary", False)
-          ):
-              raise SystemExit(
-                  f"{bank_name} fixed UI requires a complete 31-entry English "
-                  "dictionary; --no-compress cannot produce a safe ui-patch input"
-              )
-          '''.replace("          ", "")
+        translated_count == total_count
+        and args.no_compress
+        and getattr(required_entries, "requires_full_dictionary", False)
+    ):
+        raise SystemExit(
+            f"{bank_name} fixed UI requires a complete 31-entry English "
+            "dictionary; --no-compress cannot produce a safe ui-patch input"
+        )
+'''
           text = replace_once(
               text,
               obsolete_full_dictionary_guard,
@@ -144,41 +145,41 @@ def _require_standalone_scenario_bank(bank_name: str, operation: str) -> None:
           )
 
           old = '''    if args.translations is None:
-              return
-              translations = json.loads(args.translations.read_text(encoding="utf-8"))
-          '''.replace("          ", "")
+        return
+    translations = json.loads(args.translations.read_text(encoding="utf-8"))
+'''
           new = '''    if args.translations is None:
-              return
-              _require_standalone_scenario_bank(bank_name, "scenario-footprint")
-              translations = json.loads(args.translations.read_text(encoding="utf-8"))
-          '''.replace("          ", "")
+        return
+    _require_standalone_scenario_bank(bank_name, "scenario-footprint")
+    translations = json.loads(args.translations.read_text(encoding="utf-8"))
+'''
           text = replace_once(text, old, new, "scenario-footprint guard")
 
           old = '''    patcher = {
-              "SON-KOUH": patched_kouhen_boot_guard,
-              "NOV2": patched_nov2_ui,
-              "NOV4": patched_nov4_ui,
-              "TT1A": patched_tt1a_ui,
-              "TT1B": patched_tt1b_ui,
-              "TT2": patched_tt2_ui,
-              "T22": patched_t22_ui,
-              "TT3A": patched_tt3a_ui,
-              "TT3B": patched_tt3b_ui,
-              "TT4": patched_tt4_ui,
-              "TT5": patched_tt5_ui,
-              "T25": patched_t25_ui,
-              "TT6A": patched_tt6a_ui,
-              "TT6B": patched_tt6b_ui,
-              "TT6C": patched_tt6c_ui,
-          }[args.component]
-          '''.replace("          ", "")
+        "SON-KOUH": patched_kouhen_boot_guard,
+        "NOV2": patched_nov2_ui,
+        "NOV4": patched_nov4_ui,
+        "TT1A": patched_tt1a_ui,
+        "TT1B": patched_tt1b_ui,
+        "TT2": patched_tt2_ui,
+        "T22": patched_t22_ui,
+        "TT3A": patched_tt3a_ui,
+        "TT3B": patched_tt3b_ui,
+        "TT4": patched_tt4_ui,
+        "TT5": patched_tt5_ui,
+        "T25": patched_t25_ui,
+        "TT6A": patched_tt6a_ui,
+        "TT6B": patched_tt6b_ui,
+        "TT6C": patched_tt6c_ui,
+    }[args.component]
+'''
           new = '''    patcher = {
-              "SON-KOUH": patched_kouhen_boot_guard,
-              "NOV2": patched_nov2_ui,
-              "NOV4": patched_nov4_ui,
-              "TT1A": patched_tt1a_ui,
-          }[args.component]
-          '''.replace("          ", "")
+        "SON-KOUH": patched_kouhen_boot_guard,
+        "NOV2": patched_nov2_ui,
+        "NOV4": patched_nov4_ui,
+        "TT1A": patched_tt1a_ui,
+    }[args.component]
+'''
           text = replace_once(text, old, new, "modern ui-patch map")
           path.write_text(text, encoding="utf-8")
 
@@ -194,15 +195,15 @@ def _require_standalone_scenario_bank(bank_name: str, operation: str) -> None:
           text = replace_once(
               text,
               '''        help=(
-              "diagnostic: preserve the original dictionary on a complete bank; "
-              "unavailable for banks whose fixed UI requires 31 English entries"
-          ),
-          '''.replace("          ", ""),
+            "diagnostic: preserve the original dictionary on a complete bank; "
+            "unavailable for banks whose fixed UI requires 31 English entries"
+        ),
+''',
               '''        help=(
-              "diagnostic: preserve the original dictionary on a supported "
-              "standalone complete bank"
-          ),
-          '''.replace("          ", ""),
+            "diagnostic: preserve the original dictionary on a supported "
+            "standalone complete bank"
+        ),
+''',
               "scenario-insert no-compress help",
           )
           text = replace_once(
@@ -212,25 +213,25 @@ def _require_standalone_scenario_bank(bank_name: str, operation: str) -> None:
               "scenario-footprint description",
           )
           old_choices = '''        choices=(
-              "SON-KOUH",
-              "NOV2",
-              "NOV4",
-              "TT1A",
-              "TT1B",
-              "TT2",
-              "T22",
-              "TT3A",
-              "TT3B",
-              "TT4",
-              "TT5",
-              "T25",
-              "TT6A",
-              "TT6B",
-              "TT6C",
-          ),
-          '''.replace("          ", "")
+            "SON-KOUH",
+            "NOV2",
+            "NOV4",
+            "TT1A",
+            "TT1B",
+            "TT2",
+            "T22",
+            "TT3A",
+            "TT3B",
+            "TT4",
+            "TT5",
+            "T25",
+            "TT6A",
+            "TT6B",
+            "TT6C",
+        ),
+'''
           new_choices = '''        choices=("SON-KOUH", "NOV2", "NOV4", "TT1A"),
-          '''.replace("          ", "")
+'''
           text = replace_once(text, old_choices, new_choices, "ui-patch parser choices")
           text = replace_once(
               text,
@@ -244,81 +245,81 @@ def _require_standalone_scenario_bank(bank_name: str, operation: str) -> None:
           path = Path("docs/CLI_REFERENCE.md")
           text = path.read_text(encoding="utf-8")
           old = '''Reports the fixed text reservation and, with a complete translation map,
-          compressed use and remaining bytes. For banks with fixed-address UI text, the
-          source reservation includes dictionary entries referenced by those verified
-          source tables as well as ordinary scenario dialogue. Banks whose translated
-          fixed UI consumes the English dictionary must also produce all 31 dictionary
-          entries or the footprint check fails closed.
-          '''.replace("          ", "")
+compressed use and remaining bytes. For banks with fixed-address UI text, the
+source reservation includes dictionary entries referenced by those verified
+source tables as well as ordinary scenario dialogue. Banks whose translated
+fixed UI consumes the English dictionary must also produce all 31 dictionary
+entries or the footprint check fails closed.
+'''
           new = '''Reports the source scenario reservation and, for standalone-layout banks with a
-          complete translation map, compressed use and remaining bytes. Source-only
-          inspection remains available for every bank. The 11 banks whose current English
-          menus are jointly repacked and relocated must use `release-build` for translated
-          capacity because their playable footprint spans both menu and scenario regions.
-          '''.replace("          ", "")
+complete translation map, compressed use and remaining bytes. Source-only
+inspection remains available for every bank. The 11 banks whose current English
+menus are jointly repacked and relocated must use `release-build` for translated
+capacity because their playable footprint spans both menu and scenario regions.
+'''
           text = replace_once(text, old, new, "CLI footprint docs")
 
           old = '''Rebuilds scenario groups and pointers only after validating group indices,
-          record indices, stable IDs, control order, display width, and glyph support.
-          Complete translations receive a new English dictionary; partial work keeps the
-          Japanese dictionary. `--bank-name` is available when the input filename does
-          not safely identify its bank. Capacity-constrained complete builds retry the
-          deterministic compressor without candidate pruning if the normal fast search
-          misses the native reservation. They then compare that valid result with bounded
-          beam search and fixed-prefix-safe dictionary reordering and keep the smallest
-          exact output. Fixed-UI banks also retry when the fast search stops before all
-          31 required English dictionary slots are populated, and fail if no search can
-          produce a complete dictionary.
+record indices, stable IDs, control order, display width, and glyph support.
+Complete translations receive a new English dictionary; partial work keeps the
+Japanese dictionary. `--bank-name` is available when the input filename does
+not safely identify its bank. Capacity-constrained complete builds retry the
+deterministic compressor without candidate pruning if the normal fast search
+misses the native reservation. They then compare that valid result with bounded
+beam search and fixed-prefix-safe dictionary reordering and keep the smallest
+exact output. Fixed-UI banks also retry when the fast search stops before all
+31 required English dictionary slots are populated, and fail if no search can
+produce a complete dictionary.
 
-          `--no-compress` is diagnostic only. A fully translated bank whose fixed UI
-          requires the 31-entry English dictionary rejects that option before writing an
-          output, because preserving the Japanese dictionary cannot produce a safe input
-          for the later `ui-patch` step.
-          '''.replace("          ", "")
+`--no-compress` is diagnostic only. A fully translated bank whose fixed UI
+requires the 31-entry English dictionary rejects that option before writing an
+output, because preserving the Japanese dictionary cannot produce a safe input
+for the later `ui-patch` step.
+'''
           new = '''Rebuilds scenario groups and pointers only after validating group indices,
-          record indices, stable IDs, control order, display width, and glyph support.
-          Complete translations receive a new English dictionary; partial work keeps the
-          Japanese dictionary. `--bank-name` is available when the input filename does
-          not safely identify its bank. The command is intentionally limited to banks
-          whose current English layout is self-contained in the scenario reservation
-          (currently TT1A and TT6D). The 11 relocated-menu banks fail closed and direct
-          maintainers to `release-build`, which owns their combined menu/scenario layout.
+record indices, stable IDs, control order, display width, and glyph support.
+Complete translations receive a new English dictionary; partial work keeps the
+Japanese dictionary. `--bank-name` is available when the input filename does
+not safely identify its bank. The command is intentionally limited to banks
+whose current English layout is self-contained in the scenario reservation
+(currently TT1A and TT6D). The 11 relocated-menu banks fail closed and direct
+maintainers to `release-build`, which owns their combined menu/scenario layout.
 
-          `--no-compress` remains a diagnostic option for supported standalone banks; it
-          preserves the original dictionary on a complete bank.
-          '''.replace("          ", "")
+`--no-compress` remains a diagnostic option for supported standalone banks; it
+preserves the original dictionary on a complete bank.
+'''
           text = replace_once(text, old, new, "CLI insert docs")
 
           old = '''Applies one source-verified fixed UI/text-table patch. Supported components are
-          `SON-KOUH`, `NOV2`, `NOV4`, `TT1A`, `TT1B`, `TT2`, `T22`, `TT3A`, `TT3B`,
-          `TT4`, `TT5`, `T25`, `TT6A`, `TT6B`, and `TT6C`.
+`SON-KOUH`, `NOV2`, `NOV4`, `TT1A`, `TT1B`, `TT2`, `T22`, `TT3A`, `TT3B`,
+`TT4`, `TT5`, `T25`, `TT6A`, `TT6B`, and `TT6C`.
 
-          The command rejects source-byte, record-count, table-hash, dictionary, and
-          exact-slot mismatches.
-          '''.replace("          ", "")
+The command rejects source-byte, record-count, table-hash, dictionary, and
+exact-slot mismatches.
+'''
           new = '''Applies one source-verified standalone UI/program patch. Supported components
-          are `SON-KOUH`, `NOV2`, `NOV4`, and `TT1A`. The 11 scenario banks with
-          relocated full-word menu tables are not standalone patch targets; `release-build`
-          repacks those tables together with dialogue and regenerates their page pointers.
+are `SON-KOUH`, `NOV2`, `NOV4`, and `TT1A`. The 11 scenario banks with
+relocated full-word menu tables are not standalone patch targets; `release-build`
+repacks those tables together with dialogue and regenerates their page pointers.
 
-          The command rejects source-byte and fixed-layout mismatches.
-          '''.replace("          ", "")
+The command rejects source-byte and fixed-layout mismatches.
+'''
           text = replace_once(text, old, new, "CLI ui-patch docs")
 
           old = '''For the 11 banks with scenario menu tables, this canonical path packs the
-          unabbreviated labels together with dialogue, uses the guarded 68-entry English
-          dictionary decoder, regenerates the menu page pointers, and preserves the
-          overlay's original fixed suffix. The standalone `scenario-insert` and
-          `ui-patch` commands retain the older 31-entry, fixed-slot diagnostic workflow;
-          use `release-build` for the full-word playable result.
-          '''.replace("          ", "")
+unabbreviated labels together with dialogue, uses the guarded 68-entry English
+dictionary decoder, regenerates the menu page pointers, and preserves the
+overlay's original fixed suffix. The standalone `scenario-insert` and
+`ui-patch` commands retain the older 31-entry, fixed-slot diagnostic workflow;
+use `release-build` for the full-word playable result.
+'''
           new = '''For the 11 banks with scenario menu tables, this canonical path packs the
-          unabbreviated labels together with dialogue, uses the guarded 68-entry English
-          dictionary decoder, regenerates the menu page pointers, and preserves the
-          overlay's original fixed suffix. It is the only supported translated build path
-          for those banks; standalone scenario/UI commands fail closed rather than
-          reproducing the superseded 31-entry fixed-slot architecture.
-          '''.replace("          ", "")
+unabbreviated labels together with dialogue, uses the guarded 68-entry English
+dictionary decoder, regenerates the menu page pointers, and preserves the
+overlay's original fixed suffix. It is the only supported translated build path
+for those banks; standalone scenario/UI commands fail closed rather than
+reproducing the superseded 31-entry fixed-slot architecture.
+'''
           text = replace_once(text, old, new, "CLI release docs")
           path.write_text(text, encoding="utf-8")
 
@@ -326,50 +327,50 @@ def _require_standalone_scenario_bank(bank_name: str, operation: str) -> None:
           test = Path("work/tests/test_modern_cli_boundaries.py")
           test.write_text('''"""Regression tests for the modern release/standalone command boundary."""
 
-          from __future__ import annotations
+from __future__ import annotations
 
-          import unittest
+import unittest
 
-          from time_twist.cli_commands import _require_standalone_scenario_bank
-          from time_twist.cli_parser import build_parser
-          from time_twist.release import SCENARIO_UI_PATCHERS
-          from time_twist.ui import FIXED_RECORD_TABLE_SPECS
-
-
-          class ModernCliBoundaryTests(unittest.TestCase):
-              """Keep relocated menu banks on the canonical release path."""
-
-              def test_release_uses_only_the_tt1a_same_size_scenario_patcher(self) -> None:
-                  """Relocated menu banks must bypass the legacy patcher map."""
-                  self.assertEqual(set(SCENARIO_UI_PATCHERS), {"TT1A"})
-
-              def test_relocated_banks_reject_standalone_translated_operations(self) -> None:
-                  """Direct maintainers to release-build for every relocated-menu bank."""
-                  for bank_name in FIXED_RECORD_TABLE_SPECS:
-                      with self.subTest(bank=bank_name):
-                          with self.assertRaisesRegex(SystemExit, "release-build"):
-                              _require_standalone_scenario_bank(
-                                  bank_name, "scenario-insert"
-                              )
-                  _require_standalone_scenario_bank("TT1A", "scenario-insert")
-                  _require_standalone_scenario_bank("TT6D", "scenario-insert")
-
-              def test_ui_patch_parser_exposes_only_standalone_components(self) -> None:
-                  """Do not advertise the superseded scenario fixed-slot patchers."""
-                  parser = build_parser()
-                  namespace = parser.parse_args(
-                      ["ui-patch", "source.bin", "output.bin", "--component", "TT1A"]
-                  )
-                  self.assertEqual(namespace.component, "TT1A")
-                  with self.assertRaises(SystemExit):
-                      parser.parse_args(
-                          ["ui-patch", "source.bin", "output.bin", "--component", "TT2"]
-                      )
+from time_twist.cli_commands import _require_standalone_scenario_bank
+from time_twist.cli_parser import build_parser
+from time_twist.release import SCENARIO_UI_PATCHERS
+from time_twist.ui import FIXED_RECORD_TABLE_SPECS
 
 
-          if __name__ == "__main__":
-              unittest.main()
-          '''.replace("          ", ""), encoding="utf-8")
+class ModernCliBoundaryTests(unittest.TestCase):
+    """Keep relocated menu banks on the canonical release path."""
+
+    def test_release_uses_only_the_tt1a_same_size_scenario_patcher(self) -> None:
+        """Relocated menu banks must bypass the legacy patcher map."""
+        self.assertEqual(set(SCENARIO_UI_PATCHERS), {"TT1A"})
+
+    def test_relocated_banks_reject_standalone_translated_operations(self) -> None:
+        """Direct maintainers to release-build for every relocated-menu bank."""
+        for bank_name in FIXED_RECORD_TABLE_SPECS:
+            with self.subTest(bank=bank_name):
+                with self.assertRaisesRegex(SystemExit, "release-build"):
+                    _require_standalone_scenario_bank(
+                        bank_name, "scenario-insert"
+                    )
+        _require_standalone_scenario_bank("TT1A", "scenario-insert")
+        _require_standalone_scenario_bank("TT6D", "scenario-insert")
+
+    def test_ui_patch_parser_exposes_only_standalone_components(self) -> None:
+        """Do not advertise the superseded scenario fixed-slot patchers."""
+        parser = build_parser()
+        namespace = parser.parse_args(
+            ["ui-patch", "source.bin", "output.bin", "--component", "TT1A"]
+        )
+        self.assertEqual(namespace.component, "TT1A")
+        with self.assertRaises(SystemExit):
+            parser.parse_args(
+                ["ui-patch", "source.bin", "output.bin", "--component", "TT2"]
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()
+''', encoding="utf-8")
           PY
       - name: Format and validate
         run: |
