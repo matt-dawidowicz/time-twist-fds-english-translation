@@ -1,9 +1,10 @@
 """Run fixture-free unit tests or the private ROM integration suite.
 
-Public CI runs ``unit``. Maintainers can overlay the separately distributed
-private fixture bundle and run ``integration`` or ``all``. The runner verifies
-fixture hashes before discovery so missing local ROM data is an explicit setup
-error, never a misleading skipped test.
+Public CI runs ``unit``. Maintainers can overlay the small private input bundle
+and run ``integration`` or ``all``. Integration preflight validates the two
+baseline FDS images plus emulator captures, then regenerates all extracted ROM
+payloads from those baselines. Generated translation/build/output binaries are
+never permanent test fixtures.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import shutil
 import sys
 import tempfile
 import unittest
@@ -23,10 +25,27 @@ PROJECT_ROOT = WORK_ROOT.parent
 FIXTURE_MANIFEST = WORK_ROOT / "integration_fixtures.json"
 sys.path.insert(0, str(WORK_ROOT))
 
+from time_twist.fds import FdsImage  # noqa: E402
+
 UNIT_TEST_REQUIREMENTS = {
     "PIL": "Pillow==12.3.0",
     "hypothesis": "hypothesis>=6.100,<7",
 }
+PRIVATE_FIXTURE_SCHEMA = "Time Twist private integration fixtures v2"
+BASELINE_EXTRACTIONS = (
+    (
+        WORK_ROOT / "baseline" / "time_twist_zenpen_japan.fds",
+        WORK_ROOT / "extracted_zenpen",
+    ),
+    (
+        WORK_ROOT / "baseline" / "time_twist_kouhen_japan.fds",
+        WORK_ROOT / "extracted_kouhen",
+    ),
+)
+OBSOLETE_GENERATED_DIRECTORIES = (
+    WORK_ROOT / "build",
+    WORK_ROOT / "translated_banks",
+)
 
 
 def validate_unit_dependencies() -> None:
@@ -50,14 +69,40 @@ def validate_unit_dependencies() -> None:
 
 
 def sha256(path: Path) -> str:
-    """Return an uppercase SHA-256 digest for one local fixture."""
-    return hashlib.sha256(path.read_bytes()).hexdigest().upper()
+    """Return an uppercase SHA-256 digest without loading the whole file."""
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest().upper()
+
+
+def _safe_filename(name: str) -> str:
+    """Mirror the public extractor's portable FDS filename transformation."""
+    return "".join(
+        char if char.isalnum() or char in "-_" else "_" for char in name
+    )
+
+
+def _extract_baseline(image_path: Path, output_directory: Path) -> None:
+    """Regenerate one deterministic extracted-bank directory from a baseline."""
+    if output_directory.exists():
+        shutil.rmtree(output_directory)
+    output_directory.mkdir(parents=True)
+    image = FdsImage.read(image_path)
+    for side in image.sides:
+        for entry in side.files:
+            filename = (
+                f"side{side.index}_{entry.index:02d}_"
+                f"{_safe_filename(entry.name)}_{entry.load_address:04X}.bin"
+            )
+            (output_directory / filename).write_bytes(entry.data)
 
 
 def validate_integration_fixtures() -> None:
-    """Fail before test discovery unless the complete private overlay is present."""
+    """Validate irreducible private inputs before generating derived fixtures."""
     payload = json.loads(FIXTURE_MANIFEST.read_text(encoding="utf-8"))
-    if payload.get("schema") != "Time Twist private integration fixtures v1":
+    if payload.get("schema") != PRIVATE_FIXTURE_SCHEMA:
         raise SystemExit("unsupported integration fixture manifest schema")
     files = payload.get("files")
     if not isinstance(files, dict):
@@ -69,6 +114,9 @@ def validate_integration_fixtures() -> None:
         if not path.is_file():
             failures.append(f"missing {relative}")
             continue
+        if not isinstance(record, dict):
+            failures.append(f"invalid manifest record {relative}")
+            continue
         if path.stat().st_size != record.get("bytes"):
             failures.append(f"wrong size {relative}")
             continue
@@ -79,10 +127,19 @@ def validate_integration_fixtures() -> None:
         extra = len(failures) - 12
         suffix = f"\n  - ... and {extra} more" if extra > 0 else ""
         raise SystemExit(
-            "private integration fixtures are incomplete or changed. "
-            "Overlay the private fixture bundle at the project root:\n"
+            "private integration inputs are incomplete or changed. Overlay "
+            "the private input bundle at the project root:\n"
             f"{shown}{suffix}"
         )
+
+
+def prepare_integration_workspace() -> None:
+    """Rebuild derived source extracts and remove obsolete generated oracles."""
+    for directory in OBSOLETE_GENERATED_DIRECTORIES:
+        if directory.exists():
+            shutil.rmtree(directory)
+    for image_path, output_directory in BASELINE_EXTRACTIONS:
+        _extract_baseline(image_path, output_directory)
 
 
 def discover(directory: str) -> unittest.TestSuite:
@@ -106,15 +163,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-q", "--quiet", action="store_true")
     args = parser.parse_args(argv)
 
-    # Tests and legacy helper scripts may open project-relative resources.
-    # Normalize execution so invoking this runner from any directory uses
-    # the checkout that contains the runner itself.
+    # Tests and helper scripts may open project-relative resources. Normalize
+    # execution so invoking this runner from any directory uses this checkout.
     os.chdir(PROJECT_ROOT)
 
     # Hypothesis otherwise stores a database under ``.hypothesis`` in the
-    # checkout. Its generated examples are useful only for this invocation and
-    # violate the public-source-tree policy, so keep them in system temporary
-    # storage for the lifetime of the test run.
+    # checkout. Generated examples are useful only for this invocation.
     previous_storage = os.environ.get("HYPOTHESIS_STORAGE_DIRECTORY")
     with tempfile.TemporaryDirectory(
         prefix="time-twist-hypothesis-"
@@ -126,6 +180,7 @@ def main(argv: list[str] | None = None) -> int:
             suite.addTests(discover("tests"))
         if args.suite in {"integration", "all"}:
             validate_integration_fixtures()
+            prepare_integration_workspace()
             suite.addTests(discover("integration_tests"))
 
         result = unittest.TextTestRunner(verbosity=1 if args.quiet else 2).run(
