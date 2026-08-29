@@ -1,7 +1,7 @@
 # Contributing code
 
 This guide is for Python tooling, validation, and test changes. It does not
-authorize changes to ROM-derived fixtures or release metadata.
+authorize changes to private ROM-derived inputs or release metadata.
 
 If you want to report game behavior rather than change source, start with the
 [playtesting guide](PLAYTESTING.md). For prose-only work, use the
@@ -48,11 +48,14 @@ mechanical corrections, then review the diff.
 
 `python work/run_tests.py unit` is fixture-free and runs without game data.
 `python work/run_tests.py integration` checks exact ROM-derived transforms and
-requires a separately maintained private fixture overlay. Missing fixtures are
-an expected setup limitation, not a reason to add skips or weaken checks.
+requires the separately maintained private inputs described in
+`work/integration_fixtures.json`. The runner validates those irreducible inputs
+and regenerates extracted payloads from the approved baselines before test
+discovery. Missing private inputs are an expected setup limitation, not a
+reason to add skips or weaken checks.
 
-Most code contributors only need the public suite. Maintainers with legal
-fixtures must also run:
+Most code contributors only need the public suite. Maintainers with the legal
+private inputs must also run:
 
 ```powershell
 python work/run_tests.py integration
@@ -60,7 +63,7 @@ python work/run_tests.py integration
 
 See [Maintainer release process](docs/MAINTAINER_RELEASE_PROCESS.md#private-fixtures-and-integration-tests)
 for the boundary and [Private integration fixtures](docs/PRIVATE_FIXTURES.md)
-for the overlay layout.
+for the private-input layout and regeneration rules.
 
 ## Module map
 
@@ -128,7 +131,7 @@ another revision only with evidence that it is the same intended target.
 Include the problem being solved, affected modules, safety invariant, tests
 run, unavailable private checks, and any required manual-playtest evidence.
 Avoid committing ROMs, extracted banks, emulator dumps, build directories, or
-private fixture files.
+private ROM-derived input files.
 
 ## Deeper references
 
