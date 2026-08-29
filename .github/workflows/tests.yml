@@ -68,7 +68,9 @@ jobs:
       - name: Install development environment
         run: python -m pip install -r requirements.txt
       - name: Apply guarded deep cleanup
-        run: python .github/scripts/deep_cleanup_pr20.py
+        run: |
+          python .github/scripts/deep_cleanup_pr20.py
+          python .github/scripts/deep_cleanup_followup.py
       - name: Normalize and validate cleaned tree
         run: |
           python -m black work
