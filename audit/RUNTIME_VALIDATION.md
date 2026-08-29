@@ -14,19 +14,36 @@ Do not mark this pass complete merely because the game boots or because automate
 
 ## Candidate preparation
 
-- [ ] Confirm this branch is based on `ad5ebe9fced6807c6398691db1b36c58e9b1d095` or a documented descendant containing only validation fixes.
-- [ ] Re-lock the approved non-code release sources for the post-PR-18 translation authority.
-- [ ] Build a fresh candidate from the legally obtained Zenpen and Kouhen baseline images.
-- [ ] Record candidate SHA-256 hashes here before runtime testing begins.
+- [x] Confirm this branch is based on `ad5ebe9fced6807c6398691db1b36c58e9b1d095` or a documented descendant containing only validation fixes.
+- [x] Re-lock the approved non-code release sources for the post-PR-18 translation authority.
+- [x] Build a fresh candidate from the legally obtained Zenpen and Kouhen baseline images.
+- [x] Record candidate SHA-256 hashes here before runtime testing begins.
 - [ ] Run the private ROM-derived integration suite against the exact candidate revision.
 - [ ] Confirm all 13 scenario banks still fit and all fixed/menu audits pass.
 
 ### Candidate identity
 
-- Zenpen SHA-256: **pending**
-- Kouhen SHA-256: **pending**
-- Source commit: **pending final candidate commit**
+- Zenpen SHA-256: `3E82BCD2FDF1E4AFF67FF90D97A03554CCF06A794A8F854C482DD86470F52E89`
+- Kouhen SHA-256: `CB66E4FD8C64CF4E1E9C68E34A4D4DDBEB263F8414A9D86D2E77325A82E266C5`
+- Four-side SHA-256: `2133AA8B96F8654D449E2552DD9546B4F5F343D5586EB99BA663C1053A1EB172`
+- Source commit: `aef91c6bc13fe9b0b3aeb6ba77e5d6fcd59aad70`
+- Build Python: `CPython 3.12.7`
 - Emulator/version: **pending**
+
+### Build-performance validation
+
+The first post-lock candidate attempt exposed an operator-performance regression: the release path always ran bounded beam search and dictionary-order hill climbing even when the deterministic greedy result already fit the exact bank reservation and passed compatibility checks. The Python worker remained healthy but consumed more than 12 minutes of continuous single-core CPU before that attempt was stopped.
+
+PR #20 now keeps the advanced optimizer as a fallback but returns a complete, compatible greedy result immediately when it already satisfies a capacity-constrained release build. Regression tests guard both the fast constrained path and the retained unconstrained full-search behavior.
+
+Local Windows benchmark for the exact candidate above after the fast-path change:
+
+- command: `time-twist release-build --candidate --output-dir build/candidate`
+- exit code: `0`
+- elapsed wall time: `16.91 seconds`
+- dedicated fast-path regression tests: `2 passed` in `0.036 seconds`
+
+This timing is operator evidence from one machine rather than a cross-platform performance guarantee; candidate hashes and release reproducibility remain the release authority.
 
 ## Runtime checklist
 
