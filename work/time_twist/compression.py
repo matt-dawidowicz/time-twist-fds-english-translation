@@ -612,10 +612,10 @@ def compress_english_groups(
             project-supplied tuple may additionally require all 31 slots so a
             fixed-address UI patch never decodes beyond the generated dictionary.
         max_bytes: Optional packed groups-plus-dictionary byte reservation.
-        optimize: Compare the established greedy result with deterministic
-            beam search and fixed-prefix-safe dictionary-order hill climbing.
-            Release and complete-scenario build paths enable this explicitly;
-            generic and property-test callers retain the fast greedy default.
+        optimize: Permit deterministic beam search and fixed-prefix-safe
+            dictionary-order hill climbing when a capacity-constrained greedy
+            result cannot satisfy the release constraints. If ``max_bytes`` is
+            omitted, compare all optimization strategies as before.
         maximum_entries: Maximum dictionary entries accepted by the target
             decoder. The native format supports 31; the guarded English NOV2
             extension supports up to 68.
@@ -638,10 +638,11 @@ def compress_english_groups(
     every requested entry; otherwise the build fails closed instead of letting
     a later UI patch read following code/data as dictionary records.
 
-    With ``optimize=True``, the valid greedy result is also compared against a
-    bounded beam and dictionary-order hill climb. Tight reservations receive a
-    wider beam. The smallest exact result wins; an alternative path can never
-    make a release bank larger than the established greedy result.
+    With ``optimize=True`` and a byte reservation, a complete, compatible greedy
+    result is returned immediately once it fits. Expensive beam search and
+    dictionary-order hill climbing are reserved for a result that actually needs
+    more compression or fails a release compatibility check. Callers that omit
+    ``max_bytes`` retain the full minimum-size comparison behavior.
     """
     if max_bytes is not None and max_bytes < 0:
         raise ValueError("max_bytes must be nonnegative")
@@ -658,21 +659,41 @@ def compress_english_groups(
             optimize=False,
             maximum_entries=maximum_entries,
         )
-        candidates = [
-            baseline,
-            _compress_english_groups_beam(
-                groups,
-                required_entries=required_entries,
-                maximum_entries=maximum_entries,
-            ),
-            _improve_dictionary_order(
-                groups,
-                baseline[1],
-                required_entry_count=len(required_entries),
-                maximum_entries=maximum_entries,
-            ),
-        ]
         baseline_size = packed_size(*baseline)
+        baseline_complete = (
+            not requires_full_dictionary
+            or len(baseline[1]) == maximum_entries
+        )
+        baseline_valid = (
+            candidate_validator is None
+            or candidate_validator(*baseline)
+        )
+        if (
+            max_bytes is not None
+            and baseline_size <= max_bytes
+            and baseline_complete
+            and baseline_valid
+        ):
+            return baseline
+
+        candidates = []
+        if baseline_complete and baseline_valid:
+            candidates.append(baseline)
+        candidates.extend(
+            [
+                _compress_english_groups_beam(
+                    groups,
+                    required_entries=required_entries,
+                    maximum_entries=maximum_entries,
+                ),
+                _improve_dictionary_order(
+                    groups,
+                    baseline[1],
+                    required_entry_count=len(required_entries),
+                    maximum_entries=maximum_entries,
+                ),
+            ]
+        )
         headroom = None if max_bytes is None else max_bytes - baseline_size
         if headroom is not None and headroom <= EXTENDED_BEAM_HEADROOM_BYTES:
             candidates.append(
