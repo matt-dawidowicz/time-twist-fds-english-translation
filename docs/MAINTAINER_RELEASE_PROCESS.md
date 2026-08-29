@@ -24,17 +24,20 @@ python work/tools/check_public_tree.py
 python work/run_tests.py unit
 ```
 
-Maintainers who have the private fixture overlay must then run:
+Maintainers who have the approved private input set must then run:
 
 ```powershell
 python work/run_tests.py integration
 python work/run_tests.py all
 ```
 
-The integration runner verifies the overlay against
-`work/integration_fixtures.json` before it runs tests. A missing overlay is an
-expected setup limitation; do not add test skips or substitute public fixtures.
-See [private integration fixtures](PRIVATE_FIXTURES.md) for its local layout.
+Before test discovery, the integration runner verifies the six irreducible
+private inputs in `work/integration_fixtures.json`, removes obsolete generated
+oracle directories, and regenerates extracted FDS payloads from the two
+validated baselines. Missing private inputs are an expected setup limitation;
+do not add test skips or create substitute generated fixtures. See
+[private integration fixtures](PRIVATE_FIXTURES.md) for the exact local layout
+and regeneration boundary.
 
 ## Build an unpromoted candidate
 
@@ -100,7 +103,7 @@ time-twist release-build
 Promotion performs a fresh rebuild and rejects a manifest whose source,
 components, or output hashes do not reproduce. Commit only the intended source
 and release metadata changes; explicitly inspect the staged file list before
-committing. Never stage the candidate images or any private fixture.
+committing. Never stage candidate images or private ROM-derived inputs.
 
 ## If anything fails
 
