@@ -28,7 +28,8 @@ class Nov2SaveSystemTests(unittest.TestCase):
         for offset, original, replacement in ui.NOV2_SAVE_SYSTEM_PATCHES:
             with self.subTest(offset=offset, replacement=replacement):
                 self.assertEqual(
-                    len(pack_records([encode_english(replacement)])), len(original)
+                    len(pack_records([encode_english(replacement)])),
+                    len(original),
                 )
 
     def test_patcher_replaces_only_verified_source_slots(self) -> None:
