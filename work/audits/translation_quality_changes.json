@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "policy": "Every revision is independently grounded in Japanese; external wording is never copied.",
+  "changes": [
+    {
+      "id": "TT3A/g0/r14",
+      "japanese": "とき……1944ねん 7がつ{CTRL:0}ばしょ……どいつなんぶ ほりょしゅうようじょ{CTRL:0}なまえ……くーがー{CTRL:0}しょくぎょう……あめりか くうぐんちゅうい",
+      "previous_english": "DATE: JUL 1944{CTRL:0}PLACE: S. GERMANY{CTRL:0}NAME: COUGAR{CTRL:0}U.S. AIR LT.",
+      "new_english": "TIME: JULY 1944{CTRL:0}S. GERMANY POW CAMP{CTRL:0}NAME: COUGAR{CTRL:0}U.S. AIR FORCE 1ST LT.",
+      "category": ["omitted_detail", "metadata_precision"],
+      "reason": "Restore the POW-camp location and the explicit U.S. air-force lieutenant rank present in Japanese.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 13,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g1/r21",
+      "japanese": "らるふ「もりへでたらまっすぐ にしへむかえ{CTRL:1} しばらくいくと こうえんがみえてくる{CTRL:0} そこで \"れべっか\" のしじをあおげ」{CTRL:6}おれ「れべっか！」{CTRL:3}らるふ「とうぼうそしきの あんごうめいだ{CTRL:4} あいことばは \"くたばれ ひとらー／\"」",
+      "previous_english": "Ralph: Go west.{CTRL:1}A park lies ahead.{CTRL:0}Obey Rebecca there.{CTRL:6}Me: Rebecca?!{CTRL:3}Ralph: Resistance code.{CTRL:4}Down with Hitler!",
+      "new_english": "Ralph: Head west from{CTRL:1}the woods to a park.{CTRL:0}Ask Rebecca for orders.{CTRL:6}Me: Rebecca?!{CTRL:3}Ralph: Escape code name{CTRL:4}Pass: Drop dead, Hitler!",
+      "category": ["omitted_detail", "instruction_clarity", "terminology"],
+      "reason": "Restore the woods-to-park route, Rebecca's role as the instruction contact/code name, and the distinction between the code name and password.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 19,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    }
+  ]
+}
