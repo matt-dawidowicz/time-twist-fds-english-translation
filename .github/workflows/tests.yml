@@ -22,17 +22,17 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
       - run: >-
-          PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=work python -B -m
+          PYTHONDONTWRITEBYTECODE=1 python -B -m
           tools.maintenance.check_public_tree
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt
-      - run: PYTHONPATH=work python -m tools.generation.generate_bilingual_comparison_ci
-      - run: PYTHONPATH=work python -m tools.generation.generate_translation_workbook
+      - run: python -m tools.generation.generate_bilingual_comparison_ci
+      - run: python -m tools.generation.generate_translation_workbook
       - name: Verify generated translation review artifacts are current
         run: git diff --exit-code -- outputs work/translation_workbook_banks
-      - run: python -m black --check work tools tests
-      - run: python -m ruff check work tools tests
-      - run: python -m pydocstyle --convention=pep257 work tools
+      - run: python -m black --check src tools tests
+      - run: python -m ruff check src tools tests
+      - run: python -m pydocstyle --convention=pep257 src tools
       - run: python -m mypy
       - run: python -m tools.maintenance.run_tests unit
       - if: matrix.python-version == '3.12'
@@ -45,7 +45,7 @@ jobs:
           python -c "from pathlib import Path; import time_twist;
           from time_twist.release import build_code_provenance;
           imported = Path(time_twist.__file__).resolve();
-          checkout = Path('work/time_twist').resolve(); print(imported);
+          checkout = Path('src/time_twist').resolve(); print(imported);
           assert checkout not in imported.parents,
           f'import leaked from checkout: {imported}';
           build_code_provenance(Path.cwd())"
@@ -55,7 +55,7 @@ jobs:
         run: time-twist release-build --help
 
   required-unit-tests:
-    # This stable check name is the branch-protection gate.  It passes only
+    # This stable check name is the branch-protection gate. It passes only
     # after both matrix variants above have completed successfully.
     name: unit-tests
     needs: unit-tests
