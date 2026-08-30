@@ -1,0 +1,405 @@
+name: architecture polish phase 2
+
+on:
+  push:
+    branches: [codebase-architecture-polish]
+    paths: [.github/workflows/architecture_polish_phase2.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codebase-architecture-polish
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+
+      - name: Move tests and runner into conventional locations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p tests/fixtures tests/support
+          git mv work/tests tests/unit
+          git mv work/integration_tests tests/integration
+          git mv work/integration_fixtures.json tests/fixtures/integration_fixtures.json
+          git mv work/run_tests.py tools/maintenance/run_tests.py
+
+          cat > tests/__init__.py <<'PY'
+          """Public test infrastructure for the Time Twist translation tools."""
+          PY
+
+          cat > tests/support/__init__.py <<'PY'
+          """Shared helpers for repository-level tests."""
+          PY
+
+          cat > tests/support/paths.py <<'PY'
+          """Resolve repository paths without coupling tests to directory depth."""
+
+          from __future__ import annotations
+
+          from pathlib import Path
+
+
+          def _find_project_root(start: Path) -> Path:
+              """Find the checkout root from a test or maintenance-tool path."""
+              resolved = start.expanduser().resolve()
+              for candidate in (resolved, *resolved.parents):
+                  if (
+                      (candidate / "pyproject.toml").is_file()
+                      and (candidate / "work" / "time_twist").is_dir()
+                  ):
+                      return candidate
+              raise RuntimeError(f"could not locate project root from {start}")
+
+
+          PROJECT_ROOT = _find_project_root(Path(__file__))
+          WORK_ROOT = PROJECT_ROOT / "work"
+          UNIT_TEST_ROOT = PROJECT_ROOT / "tests" / "unit"
+          INTEGRATION_TEST_ROOT = PROJECT_ROOT / "tests" / "integration"
+          FIXTURE_MANIFEST = (
+              PROJECT_ROOT / "tests" / "fixtures" / "integration_fixtures.json"
+          )
+          PY
+
+          cat > tools/maintenance/run_tests.py <<'PY'
+          """Run fixture-free unit tests or the private ROM integration suite.
+
+          Public CI runs ``unit``. Maintainers can overlay the separately
+          distributed private fixture bundle and run ``integration`` or ``all``.
+          The runner verifies fixture hashes before discovery so missing local ROM
+          data is an explicit setup error, never a misleading skipped test.
+          """
+
+          from __future__ import annotations
+
+          import argparse
+          import hashlib
+          import importlib.util
+          import json
+          import os
+          import sys
+          import tempfile
+          import unittest
+          from pathlib import Path
+
+          from tests.support.paths import (
+              FIXTURE_MANIFEST,
+              INTEGRATION_TEST_ROOT,
+              PROJECT_ROOT,
+              UNIT_TEST_ROOT,
+              WORK_ROOT,
+          )
+
+          sys.path.insert(0, str(PROJECT_ROOT))
+          sys.path.insert(0, str(WORK_ROOT))
+
+          UNIT_TEST_REQUIREMENTS = {
+              "PIL": "Pillow==12.3.0",
+              "hypothesis": "hypothesis>=6.100,<7",
+          }
+
+
+          def validate_unit_dependencies() -> None:
+              """Fail clearly when fixture-free unit-test dependencies are missing."""
+              missing = [
+                  requirement
+                  for module, requirement in UNIT_TEST_REQUIREMENTS.items()
+                  if importlib.util.find_spec(module) is None
+              ]
+              if not missing:
+                  return
+              shown = "\n".join(f"  - {requirement}" for requirement in missing)
+              raise SystemExit(
+                  "unit test dependencies are missing. Install the development "
+                  "dependencies before running the public test suite, for example:\n"
+                  '  python -m pip install -e ".[dev]"\n'
+                  "or, for test-only dependencies:\n"
+                  "  python -m pip install -r requirements.txt\n"
+                  f"Missing:\n{shown}"
+              )
+
+
+          def sha256(path: Path) -> str:
+              """Return an uppercase SHA-256 digest for one local fixture."""
+              return hashlib.sha256(path.read_bytes()).hexdigest().upper()
+
+
+          def validate_integration_fixtures() -> None:
+              """Fail before discovery unless the complete private overlay exists."""
+              payload = json.loads(FIXTURE_MANIFEST.read_text(encoding="utf-8"))
+              if payload.get("schema") != "Time Twist private integration fixtures v1":
+                  raise SystemExit("unsupported integration fixture manifest schema")
+              files = payload.get("files")
+              if not isinstance(files, dict):
+                  raise SystemExit("integration fixture manifest has no file mapping")
+
+              failures: list[str] = []
+              for relative, record in files.items():
+                  path = PROJECT_ROOT / relative
+                  if not path.is_file():
+                      failures.append(f"missing {relative}")
+                      continue
+                  if path.stat().st_size != record.get("bytes"):
+                      failures.append(f"wrong size {relative}")
+                      continue
+                  if sha256(path) != record.get("sha256"):
+                      failures.append(f"wrong hash {relative}")
+              if failures:
+                  shown = "\n".join(f"  - {failure}" for failure in failures[:12])
+                  extra = len(failures) - 12
+                  suffix = f"\n  - ... and {extra} more" if extra > 0 else ""
+                  raise SystemExit(
+                      "private integration fixtures are incomplete or changed. "
+                      "Overlay the private fixture bundle at the project root:\n"
+                      f"{shown}{suffix}"
+                  )
+
+
+          def discover(directory: Path) -> unittest.TestSuite:
+              """Discover an importable suite beneath the top-level test package."""
+              return unittest.defaultTestLoader.discover(
+                  start_dir=str(directory),
+                  pattern="test*.py",
+                  top_level_dir=str(PROJECT_ROOT),
+              )
+
+
+          def main(argv: list[str] | None = None) -> int:
+              """Run the selected suite and reject all skips."""
+              parser = argparse.ArgumentParser(
+                  prog="python -m tools.maintenance.run_tests"
+              )
+              parser.add_argument(
+                  "suite",
+                  nargs="?",
+                  choices=("unit", "integration", "all"),
+                  default="unit",
+              )
+              parser.add_argument("-q", "--quiet", action="store_true")
+              args = parser.parse_args(argv)
+
+              os.chdir(PROJECT_ROOT)
+
+              previous_storage = os.environ.get("HYPOTHESIS_STORAGE_DIRECTORY")
+              with tempfile.TemporaryDirectory(
+                  prefix="time-twist-hypothesis-"
+              ) as temporary_storage:
+                  os.environ["HYPOTHESIS_STORAGE_DIRECTORY"] = temporary_storage
+                  suite = unittest.TestSuite()
+                  if args.suite in {"unit", "all"}:
+                      validate_unit_dependencies()
+                      suite.addTests(discover(UNIT_TEST_ROOT))
+                  if args.suite in {"integration", "all"}:
+                      validate_integration_fixtures()
+                      suite.addTests(discover(INTEGRATION_TEST_ROOT))
+
+                  result = unittest.TextTestRunner(
+                      verbosity=1 if args.quiet else 2
+                  ).run(suite)
+
+              if previous_storage is None:
+                  os.environ.pop("HYPOTHESIS_STORAGE_DIRECTORY", None)
+              else:
+                  os.environ["HYPOTHESIS_STORAGE_DIRECTORY"] = previous_storage
+              if result.skipped:
+                  print(
+                      "skipped tests are not permitted in supported test suites",
+                      file=sys.stderr,
+                  )
+                  return 1
+              return 0 if result.wasSuccessful() else 1
+
+
+          if __name__ == "__main__":
+              raise SystemExit(main())
+          PY
+
+      - name: Decouple tests from their filesystem depth
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          live_fit = Path("tests/unit/test_live_translation_fit.py")
+          text = live_fit.read_text(encoding="utf-8")
+          old = "WORK = Path(__file__).resolve().parents[1]"
+          if old not in text:
+              raise SystemExit("live-fit test no longer has expected legacy WORK path")
+          text = text.replace(old, "WORK = WORK_ROOT")
+          text = text.replace("from pathlib import Path\n", "")
+          marker = "from tools.generation.evidence import PATCH_FOOTPRINT_RESULTS\n"
+          if marker not in text:
+              raise SystemExit("live-fit evidence import not found")
+          text = text.replace(
+              marker,
+              "from tests.support.paths import WORK_ROOT\n" + marker,
+          )
+          live_fit.write_text(text, encoding="utf-8")
+
+          public_tree_test = Path("tests/unit/test_public_tree.py")
+          text = public_tree_test.read_text(encoding="utf-8")
+          old = '''        (root / "work" / "integration_fixtures.json").write_text(\n            "{}\\n", encoding="utf-8"\n        )'''
+          new = '''        (root / "tests" / "fixtures").mkdir(parents=True)\n        (\n            root / "tests" / "fixtures" / "integration_fixtures.json"\n        ).write_text("{}\\n", encoding="utf-8")'''
+          if old not in text:
+              raise SystemExit("public-tree fixture skeleton no longer matches expected form")
+          public_tree_test.write_text(text.replace(old, new), encoding="utf-8")
+          PY
+
+          if grep -R -n -F 'Path(__file__).resolve().parents[' tests --include='*.py' \
+              | grep -v '^tests/support/paths.py:'; then
+            echo "depth-coupled test path resolution remains" >&2
+            exit 1
+          fi
+
+      - name: Update public contracts and documentation paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          public_tree = Path("tools/maintenance/check_public_tree.py")
+          text = public_tree.read_text(encoding="utf-8")
+          old = '    Path("work/integration_fixtures.json"),'
+          new = '    Path("tests/fixtures/integration_fixtures.json"),'
+          if old not in text:
+              raise SystemExit("public-tree fixture marker not found")
+          public_tree.write_text(text.replace(old, new), encoding="utf-8")
+
+          roots = [
+              Path("README.md"),
+              Path("QUICKSTART.md"),
+              Path("PLAYTESTING.md"),
+              Path("CONTRIBUTING.md"),
+              Path("CONTRIBUTING_CODE.md"),
+              Path("CONTRIBUTING_TRANSLATION.md"),
+              Path("docs"),
+              Path("tools/README.md"),
+              Path("tests"),
+          ]
+          replacements = (
+              ("python work/run_tests.py", "python -m tools.maintenance.run_tests"),
+              ("work/integration_tests", "tests/integration"),
+              ("work/integration_fixtures.json", "tests/fixtures/integration_fixtures.json"),
+              ("work/tests", "tests/unit"),
+              ("`work/run_tests.py`", "`tools/maintenance/run_tests.py`"),
+          )
+          candidates: list[Path] = []
+          for root in roots:
+              if root.is_file():
+                  candidates.append(root)
+              elif root.is_dir():
+                  candidates.extend(path for path in root.rglob("*") if path.is_file())
+          for path in candidates:
+              if path.suffix.lower() not in {".md", ".py", ".txt"}:
+                  continue
+              text = path.read_text(encoding="utf-8")
+              updated = text
+              for old, new in replacements:
+                  updated = updated.replace(old, new)
+              if updated != text:
+                  path.write_text(updated, encoding="utf-8")
+          PY
+
+          if grep -R -n -E 'work/(tests|integration_tests|integration_fixtures\.json|run_tests\.py)' \
+              README.md QUICKSTART.md PLAYTESTING.md CONTRIBUTING*.md docs tools tests \
+              --include='*.md' --include='*.py'; then
+            echo "legacy test-layout reference remains" >&2
+            exit 1
+          fi
+
+      - name: Verify moved fixture manifest is byte-identical
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show HEAD:work/integration_fixtures.json > /tmp/integration_fixtures.json
+          cmp /tmp/integration_fixtures.json tests/fixtures/integration_fixtures.json
+
+      - name: Format and validate test infrastructure
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m black work tools tests
+          python -m ruff check --fix work tools tests
+          python -m ruff check work tools tests
+          python -m pydocstyle --convention=pep257 work tools
+          python -m mypy
+
+      - name: Prove generated review artifacts are unchanged
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=work python -m tools.generation.generate_bilingual_comparison_ci
+          PYTHONPATH=work python -m tools.generation.generate_translation_workbook
+          git diff --exit-code -- outputs work/translation_workbook_banks
+
+      - name: Run complete public unit suite
+        run: python -m tools.maintenance.run_tests unit
+
+      - name: Verify runner and private-fixture failure contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m tools.maintenance.run_tests --help >/dev/null
+          if python -m tools.maintenance.run_tests integration >/tmp/integration.out 2>&1; then
+            echo "integration suite unexpectedly succeeded without private fixtures" >&2
+            exit 1
+          fi
+          grep -q 'private integration fixtures are incomplete or changed' /tmp/integration.out
+
+      - name: Build and verify installed wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m build
+          python -m pip install --force-reinstall dist/*.whl
+          python -c "from pathlib import Path; import time_twist; imported = Path(time_twist.__file__).resolve(); checkout = Path('work/time_twist').resolve(); print(imported); assert checkout not in imported.parents"
+          time-twist --help >/dev/null
+          time-twist release-build --help >/dev/null
+
+      - name: Verify production and translation sources are untouched
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --exit-code HEAD -- \
+            work/time_twist \
+            work/translations \
+            work/manifests \
+            work/release_sources.json \
+            work/title_assets
+          test ! -e work/tests
+          test ! -e work/integration_tests
+          test ! -e work/integration_fixtures.json
+          test ! -e work/run_tests.py
+
+      - name: Verify clean public tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build dist *.egg-info work/*.egg-info
+          find . -type d -name __pycache__ -prune -exec rm -rf {} +
+          find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
+          PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=work \
+            python -B -m tools.maintenance.check_public_tree
+
+      - name: Commit phase 2 source refactor
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Workflow files are updated/deleted separately through the GitHub API.
+          git checkout HEAD -- .github/workflows
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Organize test infrastructure by responsibility"
+          git push origin HEAD:codebase-architecture-polish
