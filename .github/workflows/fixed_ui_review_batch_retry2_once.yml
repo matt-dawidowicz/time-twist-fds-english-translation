@@ -1,0 +1,252 @@
+name: reviewed fixed UI batch retry2 once
+
+on:
+  push:
+    branches:
+      - translation-quality-comparison-audit
+    paths:
+      - .github/workflows/fixed_ui_review_batch_retry2_once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+
+      - name: Apply reviewed fixed labels and update regression expectation
+        run: |
+          python - <<'PY'
+          import ast
+          import json
+          from pathlib import Path
+
+          corrections = {
+              "T22_FIXED_TEXT_RECORDS": {
+                  7: ("Woman", "Women", "おんなたち", "Restore the explicit plural women rather than presenting the group as a single woman."),
+                  12: ("Cell", "Cellar", "ちかしつ", "Restore the basement/cellar location and keep it distinct from the separate prison-cell label."),
+                  15: ("Passage", "Push", "おす", "Restore the push action; Passage changes a verb into an unrelated location noun."),
+                  18: ("Well", "Wall", "かべ", "Correct wall; Well is an unrelated object caused by a one-letter English error."),
+                  20: ("Hill", "Hole", "あな", "Correct the selectable hole/opening object; Hill is unrelated to the Japanese."),
+                  21: ("Jail", "Cell", "ろうや", "Restore the individual prison cell and keep it distinct from the broader prison/jail location."),
+                  32: ("Move", "Walk", "あるく", "Restore the specific walk action instead of collapsing it into the separate generic Move command."),
+              },
+              "TT3A_FIXED_TEXT_RECORDS": {
+                  16: ("Pass", "Push", "おす", "Restore the push action; Pass is a different action and can mislead the interaction menu."),
+                  27: ("Rub", "Clothes", "ふく", "Restore the clothes object; Rub incorrectly turns the noun into an unrelated action."),
+                  62: ("Mita", "Saw it", "みた", "Translate the response as Saw it rather than leaving an untranslated-looking romanization."),
+              },
+              "TT3B_FIXED_TEXT_RECORDS": {
+                  17: ("Road", "Read", "よむ", "Correct the read action; Road is an unrelated noun and the chapter requires reading the charm text."),
+              },
+              "TT6A_FIXED_TEXT_RECORDS": {
+                  11: ("Soil", "Sleeve", "そで", "Correct the clothing part Sleeve; Soil is an unrelated noun."),
+              },
+          }
+
+          ui_path = Path("work/time_twist/ui_fixed_tables.py")
+          text = ui_path.read_text(encoding="utf-8")
+          tree = ast.parse(text)
+          assignments = {
+              node.targets[0].id: node.value
+              for node in tree.body
+              if isinstance(node, ast.Assign)
+              and len(node.targets) == 1
+              and isinstance(node.targets[0], ast.Name)
+          }
+          lines = text.splitlines()
+          audit_entries = []
+          for table_name, table_changes in corrections.items():
+              node = assignments[table_name]
+              if not isinstance(node, ast.Tuple):
+                  raise AssertionError(f"{table_name} is not a tuple")
+              bank = table_name.removesuffix("_FIXED_TEXT_RECORDS")
+              for index, (old, new, japanese, reason) in table_changes.items():
+                  actual = ast.literal_eval(node.elts[index])
+                  if actual != old:
+                      raise AssertionError(f"{table_name}[{index}] expected {old!r}, found {actual!r}")
+                  line_index = node.elts[index].lineno - 1
+                  indent = lines[line_index][: len(lines[line_index]) - len(lines[line_index].lstrip())]
+                  lines[line_index] = f'{indent}"{new}",'
+                  audit_entries.append({
+                      "id": f"{bank}/fixed/r{index}",
+                      "japanese": japanese,
+                      "previous_english": old,
+                      "new_english": new,
+                      "category": ["fixed_ui", "meaning_correction"],
+                      "reason": reason,
+                      "external_difference_triggered_review": True,
+                      "external_text_stored": False,
+                      "presentation_controls_changed": False,
+                      "visible_character_delta": len(new) - len(old),
+                      "encoded_byte_delta": None,
+                      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path.",
+                  })
+          ui_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+          test_path = Path("work/tests/test_ui_fixed_tables.py")
+          test_text = test_path.read_text(encoding="utf-8")
+          old_expectation = '{1: "Talk", 2: "Use", 4: "Move", 22: "Open", 32: "Move"},'
+          new_expectation = '{1: "Talk", 2: "Use", 4: "Move", 22: "Open", 32: "Walk"},'
+          if test_text.count(old_expectation) != 1:
+              raise AssertionError("T22 walk expectation anchor changed")
+          test_path.write_text(test_text.replace(old_expectation, new_expectation, 1), encoding="utf-8")
+
+          audit_path = Path("work/audits/translation_quality_changes.json")
+          audit = json.loads(audit_path.read_text(encoding="utf-8"))
+          existing = {entry["id"] for entry in audit["changes"]}
+          duplicates = [entry["id"] for entry in audit_entries if entry["id"] in existing]
+          if duplicates:
+              raise AssertionError(f"duplicate audit IDs: {duplicates}")
+          audit["changes"].extend(audit_entries)
+          audit_path.write_text(json.dumps(audit, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+          baseline_path = Path("work/audits/external_translation_baseline.json")
+          baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+          fixed = baseline["fixed_ui_progress"]
+          fixed.update({
+              "source_records_reviewed": 332,
+              "source_reviewed_banks": ["TT1A", "TT1B", "TT2", "T22", "TT3A", "TT3B", "TT6A"],
+              "tt1a_source_reviewed_records": 19,
+              "tt1a_source_review_revisions": 0,
+              "tt1b_source_reviewed_records": 53,
+              "tt1b_source_review_revisions": 0,
+              "tt2_source_reviewed_records": 70,
+              "tt2_source_review_revisions": 12,
+              "t22_source_reviewed_records": 33,
+              "t22_source_review_revisions": 7,
+              "tt3a_source_reviewed_records": 95,
+              "tt3a_source_review_revisions": 3,
+              "tt3b_source_reviewed_records": 21,
+              "tt3b_source_review_revisions": 1,
+              "tt6a_source_reviewed_records": 41,
+              "tt6a_source_review_revisions": 1,
+          })
+          baseline_path.write_text(json.dumps(baseline, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+          md_path = Path("work/audits/external_translation_baseline.md")
+          md = md_path.read_text(encoding="utf-8")
+          anchor = "Differences remain diagnostic\nonly and must be resolved from Japanese and gameplay context.\n"
+          note = (
+              "\nSource-grounded fixed-UI review is now **332/740 records (44.9%)**. "
+              "TT1A, TT1B, TT2, T22, TT3A, TT3B, and TT6A have been reread against "
+              "Japanese. Confirmed corrections are recorded individually in "
+              "`translation_quality_changes.json`; compact but functionally faithful labels "
+              "are left unchanged.\n"
+          )
+          if note.strip() not in md:
+              if anchor not in md:
+                  raise AssertionError("fixed-UI markdown anchor not found")
+              md = md.replace(anchor, anchor + note, 1)
+          md = md.replace(
+              "- Review the 347 differing aligned fixed labels against Japanese and gameplay\n  context before changing any wording.\n",
+              "- Finish source-grounded review of the remaining 408/740 fixed-UI records,\n  changing only labels that Japanese and gameplay context prove incorrect.\n",
+              1,
+          )
+          md = md.replace(
+              "- Continue the full source-grounded scenario review with TT3B, then proceed bank\n  by bank.\n",
+              "",
+              1,
+          )
+          md_path.write_text(md, encoding="utf-8")
+          PY
+
+      - name: Regenerate review artifacts
+        run: |
+          python work/generate_bilingual_comparison_ci.py
+          python work/generate_translation_workbook.py
+      - name: Run fixed-table tests
+        run: python -m unittest discover -s work/tests -p 'test_ui_fixed_tables.py' -v
+      - name: Measure live bank fit
+        run: python -m unittest discover -s work/tests -p 'test_live_translation_fit.py' -v
+
+      - name: Refresh packed-headroom audit
+        run: |
+          python - <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          sys.path.insert(0, str(Path("work").resolve()))
+          sys.path.insert(0, str(Path("work/tests").resolve()))
+          from generate_translation_workbook import PATCH_FOOTPRINT_RESULTS
+          from test_live_translation_fit import measure_translation_footprint
+          from time_twist.capacity import playable_capacity
+
+          baseline_path = Path("work/audits/external_translation_baseline.json")
+          baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+          rows = baseline["current_live_fit"]["banks"]
+          for row in rows:
+              bank = row["bank"]
+              capacity = playable_capacity(bank, PATCH_FOOTPRINT_RESULTS[bank]["capacity"])
+              used = measure_translation_footprint(bank)
+              row.update({"used": used, "capacity": capacity, "free": capacity - used})
+          baseline["current_live_fit"]["measurement"] = (
+              "canonical test_live_translation_fit.py after 1,299/1,299 scenario review "
+              "and 332/740 fixed-UI source review"
+          )
+          baseline_path.write_text(json.dumps(baseline, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+          md_path = Path("work/audits/external_translation_baseline.md")
+          md = md_path.read_text(encoding="utf-8")
+          start = md.index("## Current packed headroom\n")
+          end = md.index("## Current editorial findings\n")
+          table = [
+              "## Current packed headroom",
+              "",
+              "The canonical `test_live_translation_fit.py` measurement after the complete",
+              "1,299-record scenario review and the first 332 fixed-UI source reviews gives:",
+              "",
+              "| Bank | Used | Capacity | Free |",
+              "| --- | ---: | ---: | ---: |",
+          ]
+          for row in rows:
+              table.append(f"| {row['bank']} | {row['used']} | {row['capacity']} | {row['free']} |")
+          table.extend([
+              "",
+              "These are compressed byte limits used by the build, not visible-character counts.",
+              "Faithful wording is retained unless measured capacity proves a shorter form necessary.",
+              "",
+          ])
+          md = md[:start] + "\n".join(table) + "\n" + md[end:]
+          md_path.write_text(md, encoding="utf-8")
+          PY
+
+      - name: Synchronize generated artifacts after audit updates
+        run: |
+          python work/generate_bilingual_comparison_ci.py
+          python work/generate_translation_workbook.py
+          git add outputs work/translation_workbook_banks
+      - name: Verify generated artifacts are idempotent
+        run: |
+          python work/generate_bilingual_comparison_ci.py
+          python work/generate_translation_workbook.py
+          git diff --exit-code -- outputs work/translation_workbook_banks
+      - name: Verify style
+        run: |
+          python -m black --check work
+          python -m ruff check work
+          python -m pydocstyle --convention=pep257 work
+          python -m mypy
+      - name: Run full unit suite
+        run: python work/run_tests.py unit
+      - name: Remove one-shot workflows and commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          rm .github/workflows/fixed_ui_review_batch_once.yml
+          rm .github/workflows/fixed_ui_review_batch_retry_once.yml
+          rm .github/workflows/fixed_ui_review_batch_retry2_once.yml
+          git add -A
+          git commit -m "Correct reviewed fixed UI labels"
+          git push
