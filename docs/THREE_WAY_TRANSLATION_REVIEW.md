@@ -138,6 +138,31 @@ tight bank casually. The release builder may find an equal or smaller
 deterministic optimized layout, but every accepted map already fits without
 depending on that optional improvement.
 
+### Post-revision candidate evidence
+
+The clean candidate built from source commit `acbcafc` produced these hashes:
+
+- Zenpen: `92786BAA622E99B80910F694D1C2DDDC943FF9B04B491B6C0934C43BCFFDDE94`
+- Kouhen: `254E3339FF9B942EAFEF260184E3125DA3A9058A58D3EEF2385EFC84E95577D1`
+- Four-side: `750F0B5D68E63563BF24AF88F695D1667975336ACBA4E3BF6A15AE2EC6008E46`
+
+The fixed-menu audit decoded all 721 configured labels at full wording with
+zero failures. Regenerating the private comparison from that candidate still
+aligned all 1,299 scenario records, found zero current/Japanese control-order
+mismatches, and reported 644 competitor/Japanese control-order mismatches.
+The wording surface contains 52 exact matches and 1,247 differing rows.
+
+The heuristic labeled 252 differing rows `priority-review` and 995 `compare`
+after the revision, versus 255 and 992 before it. These labels are mechanical
+sorting aids, not review state: many already-reviewed location labels,
+intentional fragments, and faithful concise lines continue to match the
+heuristic. A priority count therefore must not be presented as a count of
+known defects or unreviewed records.
+
+This is static and reproducible-build evidence only. It does not replace a
+clean-boot emulator playtest, disk-change recovery checks, Zenpen-to-Kouhen
+continuity, or ending coverage, and the candidate is not promoted.
+
 ## Review and revision procedure
 
 Review one bank at a time. For each coordinate:
