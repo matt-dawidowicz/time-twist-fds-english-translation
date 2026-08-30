@@ -58,7 +58,15 @@
     "tt3a_conservative_heuristic_candidates_adjudicated": 17,
     "tt3a_full_source_review_complete": true,
     "tt3a_source_records_reviewed": 152,
-    "tt3a_audited_revisions": 9
+    "tt3a_audited_revisions": 9,
+    "tt3b_full_source_review_complete": true,
+    "tt3b_source_records_reviewed": 58,
+    "tt3b_audited_revisions": 2,
+    "scenario_source_records_fully_reviewed": 210,
+    "scenario_banks_fully_reviewed": [
+      "TT3A",
+      "TT3B"
+    ]
   },
   "fixed_ui_progress": {
     "baseline_file": "work/audits/external_fixed_ui_baseline.json",
@@ -182,7 +190,7 @@
     }
   ],
   "current_live_fit": {
-    "measurement": "canonical test_live_translation_fit.py after nine TT3A source-grounded revisions",
+    "measurement": "canonical test_live_translation_fit.py after nine TT3A and two TT3B source-grounded revisions",
     "banks": [
       {
         "bank": "TT1A",
@@ -204,9 +212,9 @@
       },
       {
         "bank": "TT3B",
-        "used": 1909,
+        "used": 1917,
         "capacity": 1927,
-        "free": 18
+        "free": 10
       },
       {
         "bank": "TT4",
@@ -278,7 +286,8 @@
     "tt3a_free_after_seven_revisions": 56,
     "tt3a_final_two_visible_character_delta": 1,
     "tt3a_final_two_edits_packed_cost": 5,
-    "tt3a_free_after_nine_revisions": 51
+    "tt3a_free_after_nine_revisions": 51,
+    "tt3b_free_after_two_revisions": 10
   },
   "validation": {
     "clean_branch_workflow_run": 33289092641,
@@ -298,7 +307,7 @@
   "pending": [
     "complete external NOV2/NOV4 system-text alignment without assuming source offsets",
     "review fixed-label differences against Japanese and gameplay context",
-    "review TT3B source-grounded scenario text next, then continue bank by bank",
+    "review TT1B source-grounded scenario text next, then continue bank by bank",
     "perform final rebuilt-ROM and emulator validation after editorial review"
   ]
 }
