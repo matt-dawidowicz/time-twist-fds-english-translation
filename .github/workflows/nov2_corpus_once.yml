@@ -1,0 +1,124 @@
+name: NOV2 corpus integration once
+
+on:
+  push:
+    branches:
+      - translation-quality-comparison-audit
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: translation-quality-comparison-audit
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Add NOV2 save-system records to the review corpus
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          comparison_path = Path("work/generate_bilingual_comparison.py")
+          text = comparison_path.read_text(encoding="utf-8")
+          marker = '''    ui_specs.extend(
+              ("NOV2", f"NOV2/disk/r{index}", 0x6000 + offset, packed, english)
+              for index, (offset, packed, english) in enumerate(
+                  (*ui.DISK_PROMPT_PATCHES, *ui.WRONG_DISK_PATCHES)
+              )
+          )
+          '''
+          insertion = '''    save_system_ids = (
+              "save_destination",
+              "saving_status",
+              "chapter_start",
+              "disk_trouble",
+              "ram_store",
+              "ram_fetch",
+          )
+          ui_specs.extend(
+              (
+                  "NOV2",
+                  f"NOV2/system/{text_id}",
+                  0x6000 + offset,
+                  packed,
+                  english,
+              )
+              for text_id, (offset, packed, english) in zip(
+                  save_system_ids, ui.NOV2_SAVE_SYSTEM_PATCHES, strict=True
+              )
+          )
+          ''' + marker
+          if marker not in text:
+              raise SystemExit("NOV2 ui_specs insertion marker missing")
+          text = text.replace(marker, insertion, 1)
+          comparison_path.write_text(text, encoding="utf-8")
+
+          workbook_path = Path("work/generate_translation_workbook.py")
+          text = workbook_path.read_text(encoding="utf-8")
+          fixed_marker = '    "せっとされています": "is inserted",\n'
+          fixed_addition = '''    "せっとされています": "is inserted",
+              "えー らむせーぶ{CTRL:0}びー ですくせーぶ{CTRL:0}せる きゃんせる": "A: RAM save / B: disk save / Select: cancel",
+              "でぃすくせーぶ{CTRL:0}しとるからの": "Saving to disk.",
+              "しょうはじめ": "Chapter start",
+              "でぃすく、とらぶる": "Disk error",
+              "おぼえる": "Store in memory",
+              "おもいだす": "Recall from memory",
+          '''
+          if fixed_marker not in text:
+              raise SystemExit("FIXED_NATURAL insertion marker missing")
+          text = text.replace(fixed_marker, fixed_addition, 1)
+          count_changes = text.count("2052") + text.count("2_052")
+          text = text.replace("2052", "2058").replace("2_052", "2_058")
+          print(f"workbook count guards updated: {count_changes}")
+          workbook_path.write_text(text, encoding="utf-8")
+
+          test_workbook = Path("work/tests/test_translation_workbook.py")
+          text = test_workbook.read_text(encoding="utf-8")
+          count_changes = text.count("2052") + text.count("2_052")
+          if count_changes < 4:
+              raise SystemExit(f"unexpected workbook-test count guards: {count_changes}")
+          text = text.replace("2052", "2058").replace("2_052", "2_058")
+          test_workbook.write_text(text, encoding="utf-8")
+
+          test_comparison = Path("work/tests/test_comparison.py")
+          text = test_comparison.read_text(encoding="utf-8")
+          if text.count("2052") != 1 or '"fixed-address": 750' not in text:
+              raise SystemExit("unexpected comparison count contract")
+          text = text.replace("2052", "2058")
+          text = text.replace('"fixed-address": 750', '"fixed-address": 756')
+          test_comparison.write_text(text, encoding="utf-8")
+          PY
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: Format source changes
+        run: |
+          python -m black work/generate_bilingual_comparison.py work/generate_translation_workbook.py work/tests/test_translation_workbook.py work/tests/test_comparison.py
+      - name: Regenerate comparison and workbook artifacts
+        run: |
+          python work/generate_bilingual_comparison_ci.py
+          python work/generate_translation_workbook.py
+      - name: Validate corpus and repository
+        run: |
+          python -m ruff check work
+          python -m pydocstyle --convention=pep257 work
+          python -m mypy
+          python -m unittest work.tests.test_nov2_save_system work.tests.test_comparison work.tests.test_translation_workbook
+          python work/run_tests.py unit
+      - name: Commit corpus integration and remove helper
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/nov2_corpus_once.yml
+          git add -A
+          git commit -m 'Add NOV2 save-system text to review corpus'
+          git pull --rebase origin translation-quality-comparison-audit
+          git push origin HEAD:translation-quality-comparison-audit
