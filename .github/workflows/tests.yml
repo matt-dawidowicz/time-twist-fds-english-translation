@@ -30,11 +30,11 @@ jobs:
       - run: PYTHONPATH=work python -m tools.generation.generate_translation_workbook
       - name: Verify generated translation review artifacts are current
         run: git diff --exit-code -- outputs work/translation_workbook_banks
-      - run: python -m black --check work tools
-      - run: python -m ruff check work tools
+      - run: python -m black --check work tools tests
+      - run: python -m ruff check work tools tests
       - run: python -m pydocstyle --convention=pep257 work tools
       - run: python -m mypy
-      - run: python work/run_tests.py unit
+      - run: python -m tools.maintenance.run_tests unit
       - if: matrix.python-version == '3.12'
         run: python -m build
       - if: matrix.python-version == '3.12'
