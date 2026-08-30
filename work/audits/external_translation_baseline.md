@@ -61,9 +61,16 @@ A deliberately conservative first-pass heuristic marks 406 scenario records for
 human review. That is a triage count, **not** a mistranslation count. Each flagged
 record still has to be read against its Japanese source before any edit.
 
+TT3A contributes 17 candidates to that conservative queue. All 17 have now been
+adjudicated against the original Japanese: genuine omissions or distortions were
+revised, while short-but-faithful lines were explicitly rejected as false
+positives. This does **not** mean the complete 152-record TT3A linguistic review
+is finished; it means the first conservative triage queue for that bank is
+closed.
+
 ## Current packed headroom
 
-The canonical `test_live_translation_fit.py` measurement after the first five
+The canonical `test_live_translation_fit.py` measurement after seven
 source-grounded TT3A revisions gives the following packed usage. These are the
 actual compressed byte limits used by the build, not visible-character counts.
 
@@ -77,16 +84,17 @@ actual compressed byte limits used by the build, not visible-character counts.
 | T22 | 1913 | 1939 | 26 |
 | TT2 | 4092 | 4141 | 49 |
 | TT6B | 2547 | 2601 | 54 |
-| TT3A | 4104 | 4169 | 65 |
+| TT3A | 4113 | 4169 | 56 |
 | TT6C | 3848 | 3947 | 99 |
 | T25 | 2441 | 2561 | 120 |
 | TT6A | 2828 | 3000 | 172 |
 | TT1B | 3930 | 4234 | 304 |
 
 The true pressure points are therefore TT1A, TT6D, TT5, TT3B, and TT4. TT3A
-had 79 bytes free before the latest three revisions and has 65 bytes free after
-them: 43 additional visible characters cost only **14 packed bytes** after the
-canonical dictionary/compression pass. There is no technical reason to shorten
+had 79 bytes free before the previous three revisions and 65 bytes afterward:
+43 additional visible characters cost only **14 packed bytes**. The latest two
+revisions add another 24 visible characters but consume only **9 packed bytes**,
+leaving 56 bytes free. There is no technical reason to pre-emptively shorten
 those restored details.
 
 ## Current editorial findings
@@ -104,14 +112,22 @@ powers and preserves the source's secret-weapon-to-atomic-bomb reveal.
 `TT3A/g3/r4` now states that Simon was confined and forced to develop a secret
 weapon before refusing to help the Nazis kill further.
 
-The same review has rejected several false positives. For example,
-`TT3A/g0/r15` and `TT3A/g1/r25` are materially faithful to the Japanese despite
-wording differences from the external translation. Comparison differences are
+Two further Japanese-only checks exposed subtler losses. `TT3A/g3/r20` now uses
+escape-network terminology for `とうぼうそしき` instead of broadening it to the
+Resistance, and restores the source's reported-information nuance. In
+`TT3A/g0/r28`, Hitler's oath now retains `おきて` (law/code/rule) and the
+pointed-stakes image rather than flattening the ritual phrase to "human fat and
+stakes."
+
+The same review has rejected many false positives. For example,
+`TT3A/g0/r15`, `TT3A/g0/r30`, `TT3A/g0/r31`, `TT3A/g1/r25`, and several short
+sound/action lines are materially faithful to the Japanese despite wording or
+length differences from the external translation. Comparison differences are
 therefore never automatic replacement candidates.
 
 ## Still pending
 
 - Align and count fixed-UI records so the audit covers more than scenario text.
-- Complete the TT3A source-grounded review, then continue bank by bank.
+- Complete the full TT3A source-grounded review, then continue bank by bank.
 - Keep generated review artifacts synchronized after source edits.
-- Obtain a fully green CI run after the latest TT3A edit batch.
+- Obtain a fully green CI run on the cleaned branch after this edit batch.
