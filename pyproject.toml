@@ -28,9 +28,12 @@ dev = [
 time-twist = "time_twist.cli:main"
 
 [tool.setuptools]
-package-dir = {"" = "work"}
-packages = ["time_twist"]
+package-dir = {"" = "src"}
 include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["time_twist*"]
 
 [tool.black]
 line-length = 79
@@ -51,7 +54,7 @@ ignore = [
 
 [tool.mypy]
 python_version = "3.11"
-files = ["work/time_twist"]
+files = ["src/time_twist"]
 check_untyped_defs = true
 no_implicit_optional = true
 warn_redundant_casts = true
