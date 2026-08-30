@@ -28,27 +28,30 @@ jobs:
           comparison_path = Path("work/generate_bilingual_comparison.py")
           text = comparison_path.read_text(encoding="utf-8")
           loop_marker = "    for bank, text_id, address, packed, english in ui_specs:\n"
-          insertion = '''    save_system_ids = (
-              "save_destination",
-              "saving_status",
-              "chapter_start",
-              "disk_trouble",
-              "ram_store",
-              "ram_fetch",
-          )
-          ui_specs.extend(
-              (
-                  "NOV2",
-                  f"NOV2/system/{text_id}",
-                  0x6000 + offset,
-                  packed,
-                  english,
-              )
-              for text_id, (offset, packed, english) in zip(
-                  save_system_ids, ui.NOV2_SAVE_SYSTEM_PATCHES, strict=True
-              )
-          )
-          '''
+          insertion = "\n".join(
+              [
+                  "    save_system_ids = (",
+                  '        "save_destination",',
+                  '        "saving_status",',
+                  '        "chapter_start",',
+                  '        "disk_trouble",',
+                  '        "ram_store",',
+                  '        "ram_fetch",',
+                  "    )",
+                  "    ui_specs.extend(",
+                  "        (",
+                  '            "NOV2",',
+                  '            f"NOV2/system/{text_id}",',
+                  "            0x6000 + offset,",
+                  "            packed,",
+                  "            english,",
+                  "        )",
+                  "        for text_id, (offset, packed, english) in zip(",
+                  "            save_system_ids, ui.NOV2_SAVE_SYSTEM_PATCHES, strict=True",
+                  "        )",
+                  "    )",
+              ]
+          ) + "\n"
           if loop_marker not in text:
               raise SystemExit("NOV2 ui_specs loop marker missing")
           text = text.replace(loop_marker, insertion + loop_marker, 1)
@@ -57,14 +60,17 @@ jobs:
           workbook_path = Path("work/generate_translation_workbook.py")
           text = workbook_path.read_text(encoding="utf-8")
           fixed_marker = '    "せっとされています": "is inserted",\n'
-          fixed_addition = '''    "せっとされています": "is inserted",
-              "えー らむせーぶ{CTRL:0}びー ですくせーぶ{CTRL:0}せる きゃんせる": "A: RAM save / B: disk save / Select: cancel",
-              "でぃすくせーぶ{CTRL:0}しとるからの": "Saving to disk.",
-              "しょうはじめ": "Chapter start",
-              "でぃすく、とらぶる": "Disk error",
-              "おぼえる": "Store in memory",
-              "おもいだす": "Recall from memory",
-          '''
+          fixed_addition = "\n".join(
+              [
+                  '    "せっとされています": "is inserted",',
+                  '    "えー らむせーぶ{CTRL:0}びー ですくせーぶ{CTRL:0}せる きゃんせる": "A: RAM save / B: disk save / Select: cancel",',
+                  '    "でぃすくせーぶ{CTRL:0}しとるからの": "Saving to disk.",',
+                  '    "しょうはじめ": "Chapter start",',
+                  '    "でぃすく、とらぶる": "Disk error",',
+                  '    "おぼえる": "Store in memory",',
+                  '    "おもいだす": "Recall from memory",',
+              ]
+          ) + "\n"
           if fixed_marker not in text:
               raise SystemExit("FIXED_NATURAL insertion marker missing")
           text = text.replace(fixed_marker, fixed_addition, 1)
