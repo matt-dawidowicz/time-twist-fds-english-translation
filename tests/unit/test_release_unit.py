@@ -252,12 +252,8 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             second = Path(directory) / "second"
             for root in (first, second):
                 (root / "src" / "time_twist").mkdir(parents=True)
-            (first / "src" / "time_twist" / "a.py").write_bytes(
-                b"value = 1\n"
-            )
-            (first / "src" / "time_twist" / "b.py").write_bytes(
-                b"other = 2\n"
-            )
+            (first / "src" / "time_twist" / "a.py").write_bytes(b"value = 1\n")
+            (first / "src" / "time_twist" / "b.py").write_bytes(b"other = 2\n")
             (second / "src" / "time_twist" / "b.py").write_bytes(
                 b"other = 2\r\n"
             )

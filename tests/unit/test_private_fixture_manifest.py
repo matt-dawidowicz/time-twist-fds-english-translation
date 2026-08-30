@@ -13,9 +13,9 @@ class PrivateFixtureManifestTests(unittest.TestCase):
 
     def test_capture_paths_are_emulator_neutral(self) -> None:
         """Avoid embedding an emulator brand into the private overlay contract."""
-        fixture_paths = json.loads(FIXTURE_MANIFEST.read_text(encoding="utf-8"))[
-            "files"
-        ]
+        fixture_paths = json.loads(
+            FIXTURE_MANIFEST.read_text(encoding="utf-8")
+        )["files"]
         capture_paths = [
             path
             for path in fixture_paths

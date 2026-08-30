@@ -22,7 +22,9 @@ from time_twist import (
 class PublicApiTests(unittest.TestCase):
     """Keep callers independent of internal implementation-module placement."""
 
-    def test_cli_facade_exports_parser_and_command_implementations(self) -> None:
+    def test_cli_facade_exports_parser_and_command_implementations(
+        self,
+    ) -> None:
         """Keep established command imports valid across the CLI split."""
         self.assertIs(cli.build_parser, cli_parser.build_parser)
         self.assertIs(
