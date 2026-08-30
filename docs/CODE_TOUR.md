@@ -31,12 +31,12 @@ runtime playtest route—in that order.
 
 | Player sees… | Read first | Why |
 | --- | --- | --- |
-| Dialogue or narration problem | `work/translations/<BANK>.json`, then `scenario.py` | Scenario text is dictionary-packed and must retain IDs, controls, and capacity. |
-| Menu, quiz, disk prompt, Save/Load, or B-button problem | `ui.py`, then `ui_fixed_tables.py` | Shared UI records may sit beside 6502 code and have fixed byte footprints. |
-| Missing/wrong glyph or spacing | `font.py`, then `charmap.py` | English characters must map to the game's deterministic 8x8 font tiles. |
-| Title animation or title-menu problem | `title.py`, then `title_layout.py`, `title_assets.py`, and `title_patch.py` | NOV4 combines code, CHR, nametables, palettes, and timing-sensitive transitions. |
-| Disk layout, a missing file, or side-order problem | `fds.py` | The FDS container preserves file headers, side order, padding, and checksums. |
-| Build/reproducibility/hash problem | `release.py`, then `release_metadata.py` | Candidate and promotion code binds outputs to the current source lock and code tree. |
+| Dialogue or narration problem | `work/translations/<BANK>.json`, then `src/time_twist/scenario.py` | Scenario text is dictionary-packed and must retain IDs, controls, and capacity. |
+| Menu, quiz, disk prompt, Save/Load, or B-button problem | `src/time_twist/ui.py`, then `ui_fixed_tables.py` | Shared UI records may sit beside 6502 code and have fixed byte footprints. |
+| Missing/wrong glyph or spacing | `src/time_twist/font.py`, then `charmap.py` | English characters must map to the game's deterministic 8x8 font tiles. |
+| Title animation or title-menu problem | `src/time_twist/title.py`, then `title_layout.py`, `title_assets.py`, and `title_patch.py` | NOV4 combines code, CHR, nametables, palettes, and timing-sensitive transitions. |
+| Disk layout, a missing file, or side-order problem | `src/time_twist/fds.py` | The FDS container preserves file headers, side order, padding, and checksums. |
+| Build/reproducibility/hash problem | `src/time_twist/release.py`, then `release_metadata.py` | Candidate and promotion code binds outputs to the current source lock and code tree. |
 
 Do not start by hex-editing a generated image. Trace the symptom to an owned
 component and update the transform that regenerates it.
@@ -68,6 +68,8 @@ saves, or scene progression. Those require the routes in
 [the runtime playtest matrix](PLAYTEST_MATRIX.md).
 
 ## Production package, module by module
+
+All modules in this section live under `src/time_twist/`.
 
 ### Text and scenario modules
 
@@ -119,28 +121,35 @@ testable build with a manifest; it is not automatically approved. Promotion is
 the maintainer action that binds reviewed files to the active source lock and
 current release-code hash.
 
-## Supporting command-line tools
+## Supporting developer tools
 
-`work/tools/` contains narrow audit and public-tree helpers rather than another
-copy of the release pipeline:
+The top-level `tools/` package contains developer-only analysis, audit,
+generation, maintenance, and preview commands rather than another copy of the
+release pipeline. Repository-relative tools should use `tools.paths` instead of
+assuming a fixed directory depth.
+
+Representative commands:
 
 | Tool | Use it for |
 | --- | --- |
-| `check_public_tree.py` | Rejecting ROMs, FDS candidates, retail extracts, captures, caches, and personal paths before a public commit. |
-| `audit_fixed_menu_labels.py` | Comparing the playable fixed-menu copy with the canonical full-word targets. |
-| `audit_full_word_menu_targets.py` | Reporting whether a label fits its current packed slot and display width. |
-| `report_full_word_menu_candidate.py` | Binding a menu audit to an actual candidate manifest and scenario-bank hashes. |
-| `validate_translation_patch_fragments.py` | Checking the small public patch fragments without requiring private full-bank maps. |
-| `disassemble_6502.py` | Inspecting a recovered code range before declaring a native engine patch safe. |
+| `tools/maintenance/check_public_tree.py` | Rejecting ROMs, FDS candidates, retail extracts, captures, caches, and personal paths before a public commit. |
+| `tools/maintenance/run_tests.py` | Running the fixture-free unit suite, private integration suite, or both with no skipped tests. |
+| `tools/audit/audit_fixed_menu_labels.py` | Comparing the playable fixed-menu copy with the canonical full-word targets. |
+| `tools/audit/audit_full_word_menu_targets.py` | Reporting whether a label fits its current packed slot and display width. |
+| `tools/audit/report_full_word_menu_candidate.py` | Binding a menu audit to an actual candidate manifest and scenario-bank hashes. |
+| `tools/audit/external_translation_compare.py` | Comparing the project translation with an external translation for review, without changing playable authority. |
+| `tools/analysis/disassemble_6502.py` | Inspecting a recovered code range before declaring a native engine patch safe. |
+| `tools/generation/generate_translation_workbook.py` | Rebuilding the deterministic translation-review workbook from canonical project inputs. |
 
-Tools should explain an existing recovered constraint. They must not create new
-binary authority by guessing at an unknown bank, pointer table, or renderer.
+Tools should explain or operate on an existing recovered constraint. They must
+not create new binary authority by guessing at an unknown bank, pointer table,
+or renderer.
 
 ## Tests: what each layer proves
 
 | Test location | What it proves | What it does **not** prove |
 | --- | --- | --- |
-| `tests/unit/` | Public parser, codec, validation, source-tree, documentation, and facade behavior. | That a candidate has run in a game. |
+| `tests/unit/` | Public parser, codec, validation, source-tree, provenance, repository-layout, and facade behavior. | That a candidate has run in a game. |
 | `tests/integration/` | Private-overlay source guards, recovered file layout, title/UI patch locations, and reproducible candidate data. | Full player progression. |
 | `docs/PLAYTEST_MATRIX.md` | The runtime routes that a maintainer and playtesters must verify. | Static source correctness. |
 
@@ -151,8 +160,10 @@ being applied to an unknown revision.
 
 ## Documentation standard
 
-Every maintained Python module, class, and function has a purpose docstring.
-Use comments for decisions that code cannot make obvious, especially:
+Every maintained Python module, class, function, and method has a purpose
+docstring. Pydocstyle is the authoritative documentation-style gate in
+permanent CI. Use comments for decisions that code cannot make obvious,
+especially:
 
 - why a byte count, address, source sequence, or dictionary reservation is
   fixed;
@@ -162,9 +173,7 @@ Use comments for decisions that code cannot make obvious, especially:
 
 Do not comment routine punctuation, imports, assignments, or straightforward
 control flow. That kind of line-by-line noise hides the constraints a future
-ROM hacker actually needs. The public unit suite includes
-`test_documentation_contract.py`, which prevents undocumented definitions from
-being added later.
+ROM hacker actually needs.
 
 ## Safe contribution loop
 
@@ -172,7 +181,7 @@ being added later.
 2. Read the module docstring, the function contract, and its matching test.
 3. Change source data or a guarded transform—not a generated FDS image.
 4. Add/update a focused test and explain the recovered constraint in code.
-5. Run `python tools/maintenance/check_public_tree.py` and
+5. Run `python -m tools.maintenance.check_public_tree` and
    `python -m tools.maintenance.run_tests unit`.
 6. For a binary-visible change, rebuild privately and replay the affected route
    before asking outside playtesters to verify broader behavior.
