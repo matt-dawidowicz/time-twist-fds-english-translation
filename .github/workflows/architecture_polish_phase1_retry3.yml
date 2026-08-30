@@ -74,6 +74,10 @@ jobs:
                   "from generate_bilingual_comparison import build_rows",
                   "from tools.generation.generate_bilingual_comparison import build_rows",
               ),
+              Path("work/integration_tests/test_title.py"): (
+                  "from rebuild_native_title_asset import build_native_titles",
+                  "from tools.preview.rebuild_native_title_asset import build_native_titles",
+              ),
               Path("work/tests/test_public_tree.py"): (
                   "from tools.check_public_tree import check_public_tree",
                   "from tools.maintenance.check_public_tree import check_public_tree",
