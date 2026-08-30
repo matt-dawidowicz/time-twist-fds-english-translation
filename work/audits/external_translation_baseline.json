@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "scope": "scenario records only; fixed UI comparison remains pending",
+  "policy": {
+    "competitor_role": "diagnostic comparison only",
+    "translation_source": "original Japanese",
+    "competitor_script_committed": false,
+    "production_parser_modified": false
+  },
+  "images": [
+    {
+      "role": "japanese_kouhen",
+      "size": 131000,
+      "sha256": "f62a7424fe489cbe479c3ebaabe4ce62d85127601ffd3d08abd4e5a0dc39442a"
+    },
+    {
+      "role": "japanese_zenpen",
+      "size": 131000,
+      "sha256": "b9424dd29ee195a9fa9ac4f844f058c380e30f7aca741218789fa8611f741916"
+    },
+    {
+      "role": "current_english_kouhen",
+      "size": 131000,
+      "sha256": "cb66e4fd8c64cf4e1e9c68e34a4d4ddbeb263f8414a9d86d2e77325a82e266c5"
+    },
+    {
+      "role": "current_english_zenpen",
+      "size": 131000,
+      "sha256": "3e82bcd2fdf1e4aff67ff90d97a03554ccf06a794a8f854c482dd86470f52e89"
+    },
+    {
+      "role": "external_english_kouhen_input",
+      "size": 250706,
+      "sha256": "df9bd6d6c8fc4fb1b12531dd0ce628126215d0091df980a12c183f10b644a9f2"
+    },
+    {
+      "role": "external_english_zenpen_input",
+      "size": 250706,
+      "sha256": "027ca6a4945c0bcb3c934750947f3a95b6b2a3188ca7fce348ba0f4f5e05ce78"
+    }
+  ],
+  "external_patch_structure": {
+    "normal_raw_two_side_size": 131000,
+    "external_extension_size": 119706,
+    "extensions_identical_between_supplied_external_inputs": true,
+    "interpretation": "absolute-offset patch authored for a four-side combined image",
+    "inferred_sparse_hunk_max_unchanged_gap": 5,
+    "production_parser_relaxed": false
+  },
+  "scenario_summary": {
+    "aligned_records": 1299,
+    "exact_english_matches": 50,
+    "different_english_records": 1249,
+    "unresolved_external_token_records": 0,
+    "heuristic_human_review_candidates": 406,
+    "heuristic_note": "triage count only; not a mistranslation count"
+  },
+  "banks": [
+    {"bank": "TT3A", "half": "zenpen", "groups": 5, "records": 152, "exact": 10, "different": 142},
+    {"bank": "TT3B", "half": "zenpen", "groups": 2, "records": 58, "exact": 1, "different": 57},
+    {"bank": "TT1B", "half": "zenpen", "groups": 5, "records": 137, "exact": 1, "different": 136},
+    {"bank": "TT1A", "half": "zenpen", "groups": 2, "records": 35, "exact": 2, "different": 33},
+    {"bank": "TT2", "half": "zenpen", "groups": 6, "records": 169, "exact": 4, "different": 165},
+    {"bank": "T22", "half": "zenpen", "groups": 2, "records": 58, "exact": 6, "different": 52},
+    {"bank": "TT6C", "half": "kouhen", "groups": 4, "records": 106, "exact": 3, "different": 103},
+    {"bank": "TT6B", "half": "kouhen", "groups": 3, "records": 94, "exact": 4, "different": 90},
+    {"bank": "TT6A", "half": "kouhen", "groups": 4, "records": 100, "exact": 5, "different": 95},
+    {"bank": "TT6D", "half": "kouhen", "groups": 1, "records": 8, "exact": 0, "different": 8},
+    {"bank": "TT4", "half": "kouhen", "groups": 6, "records": 183, "exact": 5, "different": 178},
+    {"bank": "TT5", "half": "kouhen", "groups": 4, "records": 123, "exact": 4, "different": 119},
+    {"bank": "T25", "half": "kouhen", "groups": 3, "records": 76, "exact": 5, "different": 71}
+  ],
+  "pending": [
+    "fixed UI aligned comparison and total",
+    "per-bank current-English byte headroom table",
+    "difficult-bank ranking",
+    "full green CI after comparison-tool lint cleanup"
+  ]
+}
