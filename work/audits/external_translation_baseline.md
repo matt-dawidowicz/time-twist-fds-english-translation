@@ -61,37 +61,39 @@ A deliberately conservative first-pass heuristic marks 406 scenario records for
 human review. That is a triage count, **not** a mistranslation count. Each flagged
 record still has to be read against its Japanese source before any edit.
 
-TT3A contributes 17 candidates to that conservative queue. All 17 have now been
-adjudicated against the original Japanese: genuine omissions or distortions were
-revised, while short-but-faithful lines were explicitly rejected as false
-positives. This does **not** mean the complete 152-record TT3A linguistic review
-is finished; it means the first conservative triage queue for that bank is
-closed.
+TT3A contributes 17 candidates to that conservative queue. All 17 were
+adjudicated against the original Japanese, and the review then continued through
+every remaining record. **All 152 TT3A scenario records have now been reread
+against Japanese.** Nine source-grounded revisions survived that full pass;
+differences that were merely alternate but faithful wording were left unchanged.
 
-## Fixed-UI pilot
+## Fixed-UI baseline
 
-TT3A also contains 95 fixed-address command, object, and quiz-answer records.
-The current patch keeps those 95 records in one contiguous table beginning at
-`0x0A04`. The external patch does not: records 0-63 begin at `0x0A9E`, while
-records 64-94 remain at `0x0A04`. Reassembling those two external segments in
-source-record order produces a clean 95-record alignment with zero unresolved
-tokens.
+The external fixed-UI comparison now covers all eleven major scenario-bank tables
+plus TT1A's blood-type, month, and confirmation selectors. Because the external
+patch relocates many tables in roughly 32-record pages, the comparison tool
+reconstructs physical segments into source-record order without relaxing the
+production parser.
 
-| Bank | Fixed UI records | Exact English | Different English | Unresolved |
+| Scope | Records | Exact English | Different English | Unresolved |
 | --- | ---: | ---: | ---: | ---: |
-| TT3A | 95 | 47 | 48 | 0 |
+| Major scenario-bank fixed tables | 721 | 375 | 346 | 0 |
+| TT1A selectors | 19 | 18 | 1 | 0 |
+| **Total** | **740** | **393** | **347** | **0** |
 
-This is a structural pilot, not yet the complete fixed-UI total for the game.
-The 48 wording differences are diagnostic only. Several are plainly different
-abbreviation choices; ambiguous labels still have to be resolved from Japanese
-and gameplay context. For example, TT3A fixed record 93 is `がいとう`, which can
-represent either a streetlamp (`街灯`) or an overcoat (`外套`) in kana. The
-current patch uses `Lamp`; no change is justified until context resolves the
-homophone independently of the external patch.
+The detailed per-bank segment map is stored in
+`work/audits/external_fixed_ui_baseline.{json,md}`. Differences remain diagnostic
+only and must be resolved from Japanese and gameplay context.
+
+That comparison also exposed six NOV2 save/system records that had never been
+translated in the current runtime image. They are now source-verified, translated
+in place with zero byte growth, covered by source-drift regression tests, and
+represented in the canonical review corpus. The external NOV2 layout is repacked,
+so those six records are not yet included in the 740 external-alignment count.
 
 ## Current packed headroom
 
-The canonical `test_live_translation_fit.py` measurement after seven
+The canonical `test_live_translation_fit.py` measurement after nine
 source-grounded TT3A revisions gives the following packed usage. These are the
 actual compressed byte limits used by the build, not visible-character counts.
 
@@ -105,18 +107,18 @@ actual compressed byte limits used by the build, not visible-character counts.
 | T22 | 1913 | 1939 | 26 |
 | TT2 | 4092 | 4141 | 49 |
 | TT6B | 2547 | 2601 | 54 |
-| TT3A | 4113 | 4169 | 56 |
+| TT3A | 4118 | 4169 | 51 |
 | TT6C | 3848 | 3947 | 99 |
 | T25 | 2441 | 2561 | 120 |
 | TT6A | 2828 | 3000 | 172 |
 | TT1B | 3930 | 4234 | 304 |
 
-The true pressure points are therefore TT1A, TT6D, TT5, TT3B, and TT4. TT3A
-had 79 bytes free before the previous three revisions and 65 bytes afterward:
-43 additional visible characters cost only **14 packed bytes**. The latest two
-revisions add another 24 visible characters but consume only **9 packed bytes**,
-leaving 56 bytes free. There is no technical reason to pre-emptively shorten
-those restored details.
+The true pressure points are therefore TT1A, TT6D, TT5, TT3B, and TT4.
+TT3A's earlier three-detail restoration cost 14 packed bytes despite adding 43
+visible characters. The next two revisions cost 9 packed bytes. The final
+full-bank reread produced two more edits with a net increase of only one visible
+character; those cost 5 packed bytes, leaving **51 bytes free**. There is no
+technical reason to pre-emptively shorten faithful text before measuring it.
 
 ## Current editorial findings
 
@@ -140,6 +142,12 @@ Resistance, and restores the source's reported-information nuance. In
 pointed-stakes image rather than flattening the ritual phrase to "human fat and
 stakes."
 
+The final full-bank sweep found two further improvements that the heuristic queue
+had not required. `TT3A/g2/r0` now gives Ralph's clothing instruction in natural
+English while preserving the post-escape timing and dirt warning. `TT3A/g3/r18`
+now directly renders the source statement that the object is hard to see because
+it is underwater.
+
 The same review has rejected many false positives. For example,
 `TT3A/g0/r15`, `TT3A/g0/r30`, `TT3A/g0/r31`, `TT3A/g1/r25`, and several short
 sound/action lines are materially faithful to the Japanese despite wording or
@@ -154,8 +162,18 @@ all passed. The Python 3.12 job also passed package build, wheel reinstall,
 installed-wheel import smoke, `time-twist --help`, and
 `time-twist release-build --help`.
 
+
+Targeted post-review workflow `33290609436` also regenerated the expanded
+**2,058-row** comparison/workbook corpus and passed Ruff, pydocstyle, mypy,
+targeted workbook/comparison tests, and the full **167-test** unit suite. Its live
+fit measurement confirmed TT3A at 4,118/4,169 bytes.
+
 ## Still pending
 
-- Align and count fixed-UI records for the remaining banks and system prompts.
-- Complete the full TT3A source-grounded review, then continue bank by bank.
-- Keep generated review artifacts synchronized after source edits.
+- Reconstruct and compare the external NOV2/NOV4 system-text blocks without
+  assuming source offsets survived the external repack.
+- Review the 347 differing aligned fixed labels against Japanese and gameplay
+  context before changing any wording.
+- Continue the full source-grounded scenario review with TT3B, then proceed bank
+  by bank.
+- Perform rebuilt-ROM and emulator validation after the editorial pass.

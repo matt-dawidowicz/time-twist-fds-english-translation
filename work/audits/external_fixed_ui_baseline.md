@@ -44,16 +44,18 @@ ordinary independent localization choices or abbreviations forced by fixed
 slots. Each candidate still has to be checked against the Japanese and against
 its gameplay context before the current patch changes.
 
-The comparison has already exposed a separate completeness issue in NOV2: six
-save/system records in the current English image are byte-for-byte identical to
-the Japanese ROM. NOV2 is repacked differently by the external patch, so those
-records are being handled as a separate system-text block rather than folded
-into the 740-record total prematurely.
+The comparison exposed a separate completeness issue in NOV2: six save/system
+records in the English image were byte-for-byte identical to the Japanese ROM.
+Those six records have now been independently decoded from Japanese, translated
+in their exact fixed allocations, protected by source-drift tests, and added as
+first-class rows to the 2,058-record review corpus. NOV2 is repacked differently
+by the external patch, so it still remains outside the 740-record external
+alignment until its system block is structurally reconstructed.
 
 ## Pending
 
-- Recover and compare the NOV2/NOV4 system-text block, including the six
-  currently untranslated NOV2 records.
+- Recover and compare the external NOV2/NOV4 system-text blocks without
+  assuming that source offsets survived the external repack.
 - Review fixed-label differences against Japanese before making editorial
   changes.
 - Keep competitor prose out of committed reports and change audits.

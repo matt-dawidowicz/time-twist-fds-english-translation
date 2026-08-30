@@ -157,6 +157,112 @@
       "visible_character_delta": 4,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "NOV2/system/save_destination",
+      "japanese": "えー らむせーぶ{CTRL:0}びー ですくせーぶ{CTRL:0}せる きゃんせる",
+      "previous_english": "(untranslated Japanese source bytes)",
+      "new_english": "A RAM Save{CTRL:0}B Disk{CTRL:0}Select Cancel ",
+      "category": [
+        "translation_completeness",
+        "system_ui",
+        "instruction_clarity"
+      ],
+      "reason": "Translate the RAM-save/disk-save destination chooser. The source SEL abbreviation is localized as Select; Cancel remains a separate action.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": null,
+      "encoded_byte_delta": 0,
+      "encoded_byte_delta_note": "Replacement remains exactly 26 packed bytes."
+    },
+    {
+      "id": "NOV2/system/saving_status",
+      "japanese": "でぃすくせーぶ{CTRL:0}しとるからの",
+      "previous_english": "(untranslated Japanese source bytes)",
+      "new_english": "Saving{CTRL:0}to disk. ",
+      "category": [
+        "translation_completeness",
+        "system_ui"
+      ],
+      "reason": "Render the disk-save-in-progress status naturally while preserving the source line control.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": null,
+      "encoded_byte_delta": 0,
+      "encoded_byte_delta_note": "Replacement remains exactly 13 packed bytes."
+    },
+    {
+      "id": "NOV2/system/chapter_start",
+      "japanese": "しょうはじめ",
+      "previous_english": "(untranslated Japanese source bytes)",
+      "new_english": "Chapter",
+      "category": [
+        "translation_completeness",
+        "system_ui"
+      ],
+      "reason": "Translate the chapter-start system label within its seven-byte fixed record.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": null,
+      "encoded_byte_delta": 0,
+      "encoded_byte_delta_note": "Replacement remains exactly 7 packed bytes."
+    },
+    {
+      "id": "NOV2/system/disk_trouble",
+      "japanese": "でぃすく、とらぶる",
+      "previous_english": "(untranslated Japanese source bytes)",
+      "new_english": "Disk error",
+      "category": [
+        "translation_completeness",
+        "system_ui",
+        "naturalness"
+      ],
+      "reason": "Translate the literal disk-trouble message using conventional English system wording.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": null,
+      "encoded_byte_delta": 0,
+      "encoded_byte_delta_note": "Replacement remains exactly 9 packed bytes."
+    },
+    {
+      "id": "NOV2/system/ram_store",
+      "japanese": "おぼえる",
+      "previous_english": "(untranslated Japanese source bytes)",
+      "new_english": "Store",
+      "category": [
+        "translation_completeness",
+        "system_ui",
+        "terminology"
+      ],
+      "reason": "Localize the RAM-memory remember/store command distinctly from the neighboring literal disk Save command.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": null,
+      "encoded_byte_delta": 0,
+      "encoded_byte_delta_note": "Replacement remains exactly 5 packed bytes."
+    },
+    {
+      "id": "NOV2/system/ram_fetch",
+      "japanese": "おもいだす",
+      "previous_english": "(untranslated Japanese source bytes)",
+      "new_english": "Fetch",
+      "category": [
+        "translation_completeness",
+        "system_ui",
+        "terminology"
+      ],
+      "reason": "Localize the paired RAM-memory recall/retrieve command distinctly from the neighboring literal disk Load command.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": null,
+      "encoded_byte_delta": 0,
+      "encoded_byte_delta_note": "Replacement remains exactly 5 packed bytes."
     }
   ]
 }
