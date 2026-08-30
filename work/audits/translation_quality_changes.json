@@ -1128,6 +1128,142 @@
       "visible_character_delta": 2,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT4/fixed/r31",
+      "japanese": "うる",
+      "previous_english": "Soil",
+      "new_english": "Sell",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the sell action; Soil is an unrelated noun.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT4/fixed/r74",
+      "japanese": "つりびと",
+      "previous_english": "Fish",
+      "new_english": "Fisherman",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the fisherman character target; Fish changes a person into an animal/object.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 5,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT4/fixed/r78",
+      "japanese": "ありす",
+      "previous_english": "Aristotle",
+      "new_english": "Alice",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the Japanese distractor Alice; Aristotle is a different historical person not present in the source.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT5/fixed/r5",
+      "japanese": "べる",
+      "previous_english": "Bell",
+      "new_english": "Belle",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the established character name Belle rather than the misspelling Bell.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT5/fixed/r18",
+      "japanese": "まど",
+      "previous_english": "Woods",
+      "new_english": "Window",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the architectural target Window; Woods is unrelated to the Japanese.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT5/fixed/r54",
+      "japanese": "とむ",
+      "previous_english": "Time",
+      "new_english": "Tom",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the character name Tom; Time is an unrelated English word.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T25/fixed/r7",
+      "japanese": "すすめる",
+      "previous_english": "Outside",
+      "new_english": "Offer",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the coffee interaction action Offer; Outside is a location and does not represent the source verb.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T25/fixed/r16",
+      "japanese": "まどのそと",
+      "previous_english": "Wood",
+      "new_english": "Outside",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the navigation target outside the window; Wood is unrelated to the source location.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
     }
   ]
 }

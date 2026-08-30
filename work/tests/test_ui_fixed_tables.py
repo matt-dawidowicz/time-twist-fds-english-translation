@@ -370,7 +370,7 @@ class FixedMenuCopyTests(unittest.TestCase):
                     48: "None",
                     49: "Oil",
                     56: "Plant",
-                    74: "Fish",
+                    74: "Fisherman",
                     75: "Kid",
                     94: "Rice",
                     95: "Pearl",
@@ -400,7 +400,7 @@ class FixedMenuCopyTests(unittest.TestCase):
                 {
                     9: "Room",
                     15: "Out",
-                    16: "Wood",
+                    16: "Outside",
                     17: "Hall",
                     18: "Area",
                     19: "Guest",
@@ -488,7 +488,7 @@ class FixedMenuCopyTests(unittest.TestCase):
                 59: "Grind",
                 60: "Boil",
                 70: "Plato",
-                78: "Aristotle",
+                78: "Alice",
                 93: "Fig",
             },
             "TT5": {

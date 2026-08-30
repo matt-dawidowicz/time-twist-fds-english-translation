@@ -85,7 +85,7 @@ The detailed per-bank segment map is stored in
 `work/audits/external_fixed_ui_baseline.{json,md}`. Differences remain diagnostic
 only and must be resolved from Japanese and gameplay context.
 
-Source-grounded fixed-UI review is now **332/740 records (44.9%)**. TT1A, TT1B, TT2, T22, TT3A, TT3B, and TT6A have been reread against Japanese. Confirmed corrections are recorded individually in `translation_quality_changes.json`; compact but functionally faithful labels are left unchanged.
+Source-grounded fixed-UI review is now **584/740 records (78.9%)**. TT1A, TT1B, TT2, T22, TT3A, TT3B, TT4, TT5, T25, and TT6A have been reread against Japanese. Confirmed corrections are recorded individually in `translation_quality_changes.json`; compact but functionally faithful labels are left unchanged.
 
 That comparison also exposed six NOV2 save/system records that had never been
 translated in the current runtime image. They are now source-verified, translated
@@ -96,21 +96,21 @@ so those six records are not yet included in the 740 external-alignment count.
 ## Current packed headroom
 
 The canonical `test_live_translation_fit.py` measurement after the complete
-1,299-record scenario review and the first 332 fixed-UI source reviews gives:
+1,299-record scenario review and 584 fixed-UI source reviews gives:
 
 | Bank | Used | Capacity | Free |
 | --- | ---: | ---: | ---: |
 | TT1A | 1666 | 1669 | 3 |
 | TT6D | 327 | 332 | 5 |
-| TT5 | 4184 | 4201 | 17 |
+| TT5 | 4186 | 4201 | 15 |
 | TT3B | 1917 | 1927 | 10 |
-| TT4 | 5183 | 5187 | 4 |
+| TT4 | 5179 | 5187 | 8 |
 | T22 | 1898 | 1939 | 41 |
 | TT2 | 4125 | 4141 | 16 |
 | TT6B | 2548 | 2601 | 53 |
 | TT3A | 4119 | 4169 | 50 |
 | TT6C | 3851 | 3947 | 96 |
-| T25 | 2440 | 2561 | 121 |
+| T25 | 2441 | 2561 | 120 |
 | TT6A | 2829 | 3000 | 171 |
 | TT1B | 3922 | 4234 | 312 |
 
@@ -169,6 +169,7 @@ fit measurement confirmed TT3A at 4,118/4,169 bytes.
 
 - Reconstruct and compare the external NOV2/NOV4 system-text blocks without
   assuming source offsets survived the external repack.
-- Finish source-grounded review of the remaining 408/740 fixed-UI records,
-  changing only labels that Japanese and gameplay context prove incorrect.
+- Finish source-grounded review of the remaining 156/740 fixed-UI records
+  in TT6B and TT6C, changing only labels that Japanese and gameplay context
+  prove incorrect.
 - Perform rebuilt-ROM and emulator validation after the editorial pass.
