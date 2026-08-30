@@ -1,0 +1,61 @@
+name: normalize-docs-once
+
+on:
+  push:
+    branches: [codebase-architecture-polish]
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codebase-architecture-polish
+      - name: Normalize stale architecture references
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              "work/time_twist/": "src/time_twist/",
+              "work/tools/": "tools/",
+              "work/tests/": "tests/unit/",
+              "work/integration_tests/": "tests/integration/",
+              "work/run_tests.py": "tools/maintenance/run_tests.py",
+              "test_release_integrity_polish.py": "test_release_integrity.py",
+              "test_scenario_validation_hardening.py": "test_scenario_validation.py",
+              "test_modern_module_layout.py": "test_public_api.py",
+              "PYTHONPATH=work ": "",
+          }
+
+          paths = list(Path("docs").rglob("*.md")) + list(Path(".").glob("*.md"))
+          for path in paths:
+              text = path.read_text(encoding="utf-8")
+              updated = text
+              for old, new in replacements.items():
+                  updated = updated.replace(old, new)
+              if updated != text:
+                  path.write_text(updated, encoding="utf-8", newline="\n")
+
+          test_path = Path("tests/unit/test_scenario_validation.py")
+          text = test_path.read_text(encoding="utf-8")
+          text = text.replace(
+              "class ScenarioValidationHardeningTests(unittest.TestCase):",
+              "class ScenarioValidationTests(unittest.TestCase):",
+          )
+          test_path.write_text(text, encoding="utf-8", newline="\n")
+          PY
+      - name: Commit normalization if needed
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs '*.md' tests/unit/test_scenario_validation.py
+          git commit -m "Normalize stale architecture references"
+          git push origin HEAD:codebase-architecture-polish
