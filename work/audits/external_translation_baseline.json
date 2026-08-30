@@ -127,7 +127,7 @@
       "canonical_corpus_rows_after_integration": 2058,
       "note": "NOV2 external layout is repacked and is not folded into the 740-record external alignment yet."
     },
-    "source_records_reviewed": 584,
+    "source_records_reviewed": 740,
     "source_reviewed_banks": [
       "TT1A",
       "TT1B",
@@ -138,7 +138,9 @@
       "TT4",
       "TT5",
       "T25",
-      "TT6A"
+      "TT6A",
+      "TT6B",
+      "TT6C"
     ],
     "tt1a_source_reviewed_records": 19,
     "tt1a_source_review_revisions": 0,
@@ -159,7 +161,12 @@
     "tt5_source_reviewed_records": 113,
     "tt5_source_review_revisions": 3,
     "t25_source_reviewed_records": 42,
-    "t25_source_review_revisions": 2
+    "t25_source_review_revisions": 2,
+    "source_review_complete": true,
+    "tt6b_source_reviewed_records": 62,
+    "tt6b_source_review_revisions": 1,
+    "tt6c_source_reviewed_records": 94,
+    "tt6c_source_review_revisions": 7
   },
   "banks": [
     {
@@ -268,7 +275,7 @@
     }
   ],
   "current_live_fit": {
-    "measurement": "canonical test_live_translation_fit.py after 1,299/1,299 scenario review and 584/740 fixed-UI source review",
+    "measurement": "canonical test_live_translation_fit.py after 1,299/1,299 scenario review and 740/740 fixed-UI source review",
     "banks": [
       {
         "bank": "TT1A",
@@ -314,9 +321,9 @@
       },
       {
         "bank": "TT6B",
-        "used": 2548,
+        "used": 2554,
         "capacity": 2601,
-        "free": 53
+        "free": 47
       },
       {
         "bank": "TT3A",
@@ -326,9 +333,9 @@
       },
       {
         "bank": "TT6C",
-        "used": 3851,
+        "used": 3854,
         "capacity": 3947,
-        "free": 96
+        "free": 93
       },
       {
         "bank": "T25",

@@ -717,6 +717,7 @@ FIXED_NATURAL = {
     "あたっく": "Attack",
     "つっつく": "Poke",
     "あるく": "Walk",
+    "よむ": "Read",
     "つぼ": "Jar",
     "てんじひん": "Exhibit",
     "おんなのこ": "Girl",

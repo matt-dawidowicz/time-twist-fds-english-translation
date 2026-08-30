@@ -1264,6 +1264,142 @@
       "visible_character_delta": 3,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6B/fixed/r9",
+      "japanese": "そで",
+      "previous_english": "Soil",
+      "new_english": "Sleeve",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the clothing-part target Sleeve; Soil is an unrelated noun.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r1",
+      "japanese": "あくま",
+      "previous_english": "Down",
+      "new_english": "Devil",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the Devil target; Down is an unrelated direction and changes the selectable subject.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r23",
+      "japanese": "あな",
+      "previous_english": "Hill",
+      "new_english": "Hole",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the selectable hole/opening target; Hill is unrelated to the Japanese.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r31",
+      "japanese": "よむ",
+      "previous_english": "Road",
+      "new_english": "Read",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the read action; Road is an unrelated noun and repeats the same source error already corrected in TT3B.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r33",
+      "japanese": "え",
+      "previous_english": "Paper",
+      "new_english": "Picture",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the picture/drawing target; the adjacent label separately identifies text, while Paper is not the source noun.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r55",
+      "japanese": "とらっど",
+      "previous_english": "Trader",
+      "new_english": "Trad",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Preserve the Japanese loanword/distractor Trad; Trader adds an unsupported -er and changes the word.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r61",
+      "japanese": "あまちゃづる",
+      "previous_english": "Amacha",
+      "new_english": "Jiaogulan",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Use the established English plant name Jiaogulan for amachazuru; Amacha can denote a different Japanese sweet-tea plant.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r87",
+      "japanese": "にくらす",
+      "previous_english": "Nick",
+      "new_english": "Nicras",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the established character name Nicras rather than inventing the nickname Nick.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
     }
   ]
 }
