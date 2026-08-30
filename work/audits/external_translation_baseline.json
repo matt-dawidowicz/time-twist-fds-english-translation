@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "scenario records only; fixed UI comparison remains pending",
+  "scope": "scenario records plus TT3A fixed-UI pilot; remaining fixed UI comparison is pending",
   "policy": {
     "competitor_role": "diagnostic comparison only",
     "translation_source": "original Japanese",
@@ -58,6 +58,37 @@
     "tt3a_conservative_heuristic_candidates_adjudicated": 17,
     "tt3a_full_source_review_complete": false
   },
+  "fixed_ui_progress": {
+    "complete_total_pending": true,
+    "tt3a": {
+      "aligned_records": 95,
+      "exact_english_matches": 47,
+      "different_english_records": 48,
+      "unresolved_external_token_records": 0,
+      "current_contiguous_range": {
+        "start_offset": 2564,
+        "start_offset_hex": "0x0A04",
+        "record_count": 95
+      },
+      "external_segment_alignment": [
+        {
+          "source_record_start": 0,
+          "source_record_end_inclusive": 63,
+          "external_start_offset": 2718,
+          "external_start_offset_hex": "0x0A9E",
+          "record_count": 64
+        },
+        {
+          "source_record_start": 64,
+          "source_record_end_inclusive": 94,
+          "external_start_offset": 2564,
+          "external_start_offset_hex": "0x0A04",
+          "record_count": 31
+        }
+      ],
+      "note": "The external patch reorders the two fixed-UI segments; recombining them by source record order yields a clean 95-record alignment. Differences remain diagnostic only."
+    }
+  },
   "banks": [
     {"bank": "TT3A", "half": "zenpen", "groups": 5, "records": 152, "exact": 10, "different": 142},
     {"bank": "TT3B", "half": "zenpen", "groups": 2, "records": 58, "exact": 1, "different": 57},
@@ -98,9 +129,20 @@
     "tt3a_latest_two_edits_packed_cost": 9,
     "tt3a_free_after_seven_revisions": 56
   },
+  "validation": {
+    "clean_branch_workflow_run": 33289092641,
+    "python_3_11": "success",
+    "python_3_12": "success",
+    "generated_artifacts_current": true,
+    "black": "success",
+    "ruff": "success",
+    "pydocstyle": "success",
+    "mypy": "success",
+    "unit_tests": "success",
+    "python_3_12_build_wheel_cli_smoke": "success"
+  },
   "pending": [
-    "fixed UI aligned comparison and total",
-    "complete TT3A source-grounded review, then continue bank by bank",
-    "full green CI after the latest TT3A edit batch"
+    "align and count fixed UI for all remaining banks and system prompts",
+    "complete TT3A source-grounded review, then continue bank by bank"
   ]
 }
