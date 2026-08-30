@@ -145,18 +145,22 @@ jobs:
               )
           PY
 
-      - name: Remove temporary workflows and commit phase 1
+      - name: Commit phase 1 source refactor
         shell: bash
         run: |
           set -euo pipefail
-          rm .github/workflows/architecture_polish_phase1_once.yml
-          rm .github/workflows/architecture_polish_phase1_retry.yml
-          rm .github/workflows/architecture_polish_phase1_retry2.yml
-          rm .github/workflows/architecture_polish_phase1_retry3.yml
-          rm .github/workflows/architecture_polish_phase1_cleanup.yml
+          # GitHub Actions' repository token cannot push workflow-file edits.
+          # Restore every workflow file exactly; those path updates and helper
+          # removals are applied through the GitHub API after this source commit.
+          git checkout HEAD -- .github/workflows
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
+          if git diff --cached --name-only | grep -q '^.github/workflows/'; then
+            echo "workflow file unexpectedly staged in source refactor" >&2
+            exit 1
+          fi
           git diff --cached --check
           git commit -m "Organize developer tooling by responsibility"
           git push origin HEAD:codebase-architecture-polish
