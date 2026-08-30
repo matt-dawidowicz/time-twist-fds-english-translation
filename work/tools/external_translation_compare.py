@@ -17,7 +17,8 @@ LOAD_ADDRESS = 0xA200
 PATCH_GAP = 5
 MAX_SYMBOLS_PER_RECORD = 4096
 
-# Recovered third-party common table. Entries are packed-code values, not tile IDs.
+# Recovered third-party common table. Entries are packed-code values, not tile
+# IDs.
 COMMON = (
     " ",
     "e",
@@ -112,7 +113,7 @@ class Symbol:
 
 
 class BitReader:
-    """Read the third-party packed text stream most-significant bit first."""
+    """Read third-party packed text most-significant bit first."""
 
     def __init__(self, data: bytes, bit_position: int = 0) -> None:
         """Initialize a bounded reader over ``data``."""
@@ -122,7 +123,7 @@ class BitReader:
         self.bit_position = bit_position
 
     def read_bit(self) -> int:
-        """Return the next packed bit and advance by one position."""
+        """Return the next packed bit and advance one position."""
         if self.bit_position >= len(self.data) * 8:
             raise EOFError("packed stream ended")
         byte_index, bit_index = divmod(self.bit_position, 8)
@@ -137,7 +138,7 @@ class BitReader:
         return value
 
     def align(self) -> None:
-        """Advance to the next byte boundary after a record separator."""
+        """Advance to the next byte boundary after a separator."""
         self.bit_position = (self.bit_position + 7) // 8 * 8
 
     @property
@@ -147,7 +148,7 @@ class BitReader:
 
 
 def decode_symbol(reader: BitReader) -> Symbol:
-    """Decode one symbol using the third-party NOV2 prefix-tree behavior."""
+    """Decode one symbol using third-party NOV2 prefix-tree behavior."""
     first = reader.read_bit()
     second = reader.read_bit()
     if first == 0 or second == 0:
@@ -156,7 +157,7 @@ def decode_symbol(reader: BitReader) -> Symbol:
     third = reader.read_bit()
     if third == 0:
         value = reader.read_bits(6)
-        # Third-party NOV2 redirects values 4..31 to dictionary entries 32..59.
+        # NOV2 redirects values 4..31 to dictionary entries 32..59.
         if 4 <= value <= 31:
             return Symbol("dictionary", value + 28)
         return Symbol("extended", value)
@@ -164,7 +165,9 @@ def decode_symbol(reader: BitReader) -> Symbol:
     if fourth == 0:
         return Symbol("dictionary", reader.read_bits(5))
     value = reader.read_bits(3)
-    return Symbol("separator", value) if value == 5 else Symbol("control", value)
+    if value == 5:
+        return Symbol("separator", value)
+    return Symbol("control", value)
 
 
 def decode_fixed_records(
@@ -184,7 +187,8 @@ def decode_fixed_records(
                 break
             record.append(symbol)
         else:
-            raise ValueError(f"record {record_index} exceeded symbol limit")
+            message = f"record {record_index} exceeded symbol limit"
+            raise ValueError(message)
         records.append(record)
     return records, reader.byte_position
 
@@ -192,7 +196,7 @@ def decode_fixed_records(
 def decode_external_bank(
     data: bytes, group_counts: Iterable[int]
 ) -> tuple[list[list[list[Symbol]]], list[list[Symbol]]]:
-    """Decode relocated external groups using source record counts as truth."""
+    """Decode external groups using source record counts as truth."""
     counts = list(group_counts)
     if not counts:
         raise ValueError("at least one source group count is required")
@@ -205,7 +209,8 @@ def decode_external_bank(
     dictionary_offset = word(0x16) - LOAD_ADDRESS
     table_offset = word(0x24) - LOAD_ADDRESS
     if not 0 <= dictionary_offset < len(data):
-        raise ValueError(f"dictionary pointer outside bank: {dictionary_offset}")
+        message = f"dictionary pointer outside bank: {dictionary_offset}"
+        raise ValueError(message)
     if not 0 <= table_offset < len(data):
         raise ValueError(f"group table pointer outside bank: {table_offset}")
 
@@ -232,7 +237,8 @@ def decode_external_bank(
     if max_dictionary_index == 0:
         return groups, []
     if max_dictionary_index > 59:
-        raise ValueError(f"unsupported dictionary index: {max_dictionary_index}")
+        message = f"unsupported dictionary index: {max_dictionary_index}"
+        raise ValueError(message)
 
     dictionary, _ = decode_fixed_records(
         data, dictionary_offset, max_dictionary_index
@@ -248,8 +254,12 @@ def decode_external_bank(
     )
     if nested_max > len(dictionary):
         if nested_max > 59:
-            raise ValueError(f"unsupported nested dictionary index: {nested_max}")
-        dictionary, _ = decode_fixed_records(data, dictionary_offset, nested_max)
+            raise ValueError(
+                f"unsupported nested dictionary index: {nested_max}"
+            )
+        dictionary, _ = decode_fixed_records(
+            data, dictionary_offset, nested_max
+        )
     return groups, dictionary
 
 
@@ -259,16 +269,18 @@ def render_record(
     *,
     stack: tuple[int, ...] = (),
 ) -> str:
-    """Render one decoded external record without discarding unknown tokens."""
+    """Render one external record without discarding unknown tokens."""
     rendered: list[str] = []
     for symbol in record:
         if symbol.kind == "common":
             try:
                 rendered.append(COMMON[symbol.value])
             except IndexError as error:
-                raise ValueError(f"unknown common code: {symbol.value}") from error
+                message = f"unknown common code: {symbol.value}"
+                raise ValueError(message) from error
         elif symbol.kind == "extended":
-            rendered.append(EXTENDED.get(symbol.value, f"<E{symbol.value}>"))
+            token = EXTENDED.get(symbol.value, f"<E{symbol.value}>")
+            rendered.append(token)
         elif symbol.kind == "control":
             rendered.append(f"{{CTRL:{symbol.value}}}")
         elif symbol.kind == "dictionary":
@@ -277,12 +289,15 @@ def render_record(
                 rendered.append(f"<D{symbol.value}>")
                 continue
             if index in stack:
-                raise ValueError(f"recursive dictionary reference: {symbol.value}")
-            rendered.append(
-                render_record(dictionary[index], dictionary, stack=(*stack, index))
+                message = f"recursive dictionary reference: {symbol.value}"
+                raise ValueError(message)
+            expanded = render_record(
+                dictionary[index], dictionary, stack=(*stack, index)
             )
+            rendered.append(expanded)
         else:
-            raise ValueError(f"unexpected symbol kind in record: {symbol.kind}")
+            message = f"unexpected symbol kind in record: {symbol.kind}"
+            raise ValueError(message)
     return "".join(rendered)
 
 
@@ -291,9 +306,9 @@ def patch_spans(
 ) -> list[tuple[int, int]]:
     """Infer coalesced write spans from a sparse absolute-offset payload.
 
-    The observed patch writer coalesces non-zero changed bytes when no more than
-    five bytes lie between them. Returning full spans preserves intentional zero
-    writes inside each hunk.
+    The observed patch writer coalesces non-zero changed bytes when no more
+    than five bytes lie between them. Returning full spans preserves
+    intentional zero writes inside each hunk.
     """
     nonzero = [index for index, value in enumerate(payload) if value]
     if not nonzero:
@@ -313,7 +328,7 @@ def patch_spans(
 def overlay_sparse_payload(
     base: bytes, payload: bytes, *, max_gap: int = PATCH_GAP
 ) -> bytes:
-    """Overlay inferred external patch hunks onto a clean reconstruction base."""
+    """Overlay inferred external patch hunks onto a clean base."""
     if len(payload) > len(base):
         raise ValueError("payload is larger than reconstruction base")
     rebuilt = bytearray(base)
@@ -328,24 +343,31 @@ def extract_raw_fds_file(path: Path, name: str) -> bytes:
     if len(raw) < SIDE_SIZE or len(raw) % SIDE_SIZE:
         raise ValueError(f"not a raw side-aligned FDS image: {path}")
     for side_index in range(len(raw) // SIDE_SIZE):
-        side = raw[side_index * SIDE_SIZE : (side_index + 1) * SIDE_SIZE]
+        start = side_index * SIDE_SIZE
+        side = raw[start : start + SIDE_SIZE]
         if side[0] != 1 or side[56] != 2:
             continue
         position = 58
         for _ in range(side[57]):
             header = side[position : position + 16]
             if len(header) != 16 or header[0] != 3:
-                raise ValueError(
-                    f"invalid file header on side {side_index} at {position}"
+                message = (
+                    f"invalid file header on side {side_index} at "
+                    f"{position}"
                 )
-            file_name = header[3:11].decode("ascii", "replace").rstrip("\0 ")
+                raise ValueError(message)
+            file_name = header[3:11].decode("ascii", "replace")
+            file_name = file_name.rstrip("\0 ")
             size = int.from_bytes(header[13:15], "little")
             position += 16
             if position >= len(side) or side[position] != 4:
-                raise ValueError(
-                    f"missing data block on side {side_index} at {position}"
+                message = (
+                    f"missing data block on side {side_index} at "
+                    f"{position}"
                 )
-            data = side[position + 1 : position + 1 + size]
+                raise ValueError(message)
+            start = position + 1
+            data = side[start : start + size]
             position += 1 + size
             if file_name == name:
                 return data
