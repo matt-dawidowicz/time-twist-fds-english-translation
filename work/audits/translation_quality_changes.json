@@ -437,6 +437,24 @@
       "visible_character_delta": 1,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT6C/g0/r2",
+      "japanese": "すくいぬしのいのちをねらう じゃあくなるもの",
+      "previous_english": "You seek the savior.",
+      "new_english": "You want the savior dead",
+      "category": [
+        "omitted_detail",
+        "threat_specificity",
+        "fidelity"
+      ],
+      "reason": "Restore いのちをねらう: the evil one is targeting the Savior's life, not merely seeking or pursuing him.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
     }
   ]
 }
