@@ -27,13 +27,7 @@ jobs:
 
           comparison_path = Path("work/generate_bilingual_comparison.py")
           text = comparison_path.read_text(encoding="utf-8")
-          marker = '''    ui_specs.extend(
-              ("NOV2", f"NOV2/disk/r{index}", 0x6000 + offset, packed, english)
-              for index, (offset, packed, english) in enumerate(
-                  (*ui.DISK_PROMPT_PATCHES, *ui.WRONG_DISK_PATCHES)
-              )
-          )
-          '''
+          loop_marker = "    for bank, text_id, address, packed, english in ui_specs:\n"
           insertion = '''    save_system_ids = (
               "save_destination",
               "saving_status",
@@ -54,10 +48,10 @@ jobs:
                   save_system_ids, ui.NOV2_SAVE_SYSTEM_PATCHES, strict=True
               )
           )
-          ''' + marker
-          if marker not in text:
-              raise SystemExit("NOV2 ui_specs insertion marker missing")
-          text = text.replace(marker, insertion, 1)
+          '''
+          if loop_marker not in text:
+              raise SystemExit("NOV2 ui_specs loop marker missing")
+          text = text.replace(loop_marker, insertion + loop_marker, 1)
           comparison_path.write_text(text, encoding="utf-8")
 
           workbook_path = Path("work/generate_translation_workbook.py")
