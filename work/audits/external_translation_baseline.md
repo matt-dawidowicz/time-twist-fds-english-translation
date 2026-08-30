@@ -68,6 +68,27 @@ positives. This does **not** mean the complete 152-record TT3A linguistic review
 is finished; it means the first conservative triage queue for that bank is
 closed.
 
+## Fixed-UI pilot
+
+TT3A also contains 95 fixed-address command, object, and quiz-answer records.
+The current patch keeps those 95 records in one contiguous table beginning at
+`0x0A04`. The external patch does not: records 0-63 begin at `0x0A9E`, while
+records 64-94 remain at `0x0A04`. Reassembling those two external segments in
+source-record order produces a clean 95-record alignment with zero unresolved
+tokens.
+
+| Bank | Fixed UI records | Exact English | Different English | Unresolved |
+| --- | ---: | ---: | ---: | ---: |
+| TT3A | 95 | 47 | 48 | 0 |
+
+This is a structural pilot, not yet the complete fixed-UI total for the game.
+The 48 wording differences are diagnostic only. Several are plainly different
+abbreviation choices; ambiguous labels still have to be resolved from Japanese
+and gameplay context. For example, TT3A fixed record 93 is `がいとう`, which can
+represent either a streetlamp (`街灯`) or an overcoat (`外套`) in kana. The
+current patch uses `Lamp`; no change is justified until context resolves the
+homophone independently of the external patch.
+
 ## Current packed headroom
 
 The canonical `test_live_translation_fit.py` measurement after seven
@@ -125,9 +146,16 @@ sound/action lines are materially faithful to the Japanese despite wording or
 length differences from the external translation. Comparison differences are
 therefore never automatic replacement candidates.
 
+## Validation
+
+Clean-branch GitHub Actions run `33289092641` passed on Python 3.11 and 3.12.
+Generated-artifact checks, Black, Ruff, pydocstyle, mypy, and the full unit suite
+all passed. The Python 3.12 job also passed package build, wheel reinstall,
+installed-wheel import smoke, `time-twist --help`, and
+`time-twist release-build --help`.
+
 ## Still pending
 
-- Align and count fixed-UI records so the audit covers more than scenario text.
+- Align and count fixed-UI records for the remaining banks and system prompts.
 - Complete the full TT3A source-grounded review, then continue bank by bank.
 - Keep generated review artifacts synchronized after source edits.
-- Obtain a fully green CI run on the cleaned branch after this edit batch.
