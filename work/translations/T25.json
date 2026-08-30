@@ -11,7 +11,7 @@
   "T25/g0/r9": "What?!",
   "T25/g0/r10": "Soldier 1: Thanks.",
   "T25/g0/r11": "Soldier 1: Your master's{CTRL:1}quite the man. When the{CTRL:0}South began losing, he{CTRL:0}joined Union, gave intel{CTRL:3}Soldier 2: Stop that!{CTRL:4}Soldier 1: I admire{CTRL:4}his skill at survival...",
-  "T25/g0/r12": "Lincoln: Such cruelty...{CTRL:1}Meyer: A grave problem.{CTRL:0}Deep bias still lingers{CTRL:0}in the South.{CTRL:3}Lincoln: With men like{CTRL:4}you, no war would start.",
+  "T25/g0/r12": "Lincoln: Such cruelty...{CTRL:1}Meyer: A grave problem.{CTRL:0}Deep prejudice lingers{CTRL:0}in the South.{CTRL:3}Lincoln: With men like{CTRL:4}you, no war would start.",
   "T25/g0/r13": "The entrance hall.",
   "T25/g0/r14": "Coffee pot and two cups.",
   "T25/g0/r15": "He smiles broadly.",
@@ -31,7 +31,6 @@
   "T25/g0/r29": "George: I spoke with{CTRL:0}the President! I'm awed.",
   "T25/g0/r30": "The upstairs hallway.",
   "T25/g0/r31": "Nobody is here.",
-
   "T25/g1/r0": "Me: !{CTRL:0}George: M-mother...!{CTRL:2}Meyer: Belle! George!{CTRL:0}Come down. A fine treat!",
   "T25/g1/r1": "Meyer's study.{CTRL:0}A portrait hangs there.",
   "T25/g1/r2": "It has three drawers.",
@@ -64,7 +63,6 @@
   "T25/g1/r29": "The water rises fast.{CTRL:1}No one can swim across.",
   "T25/g1/r30": "Meyer: Keep quiet!",
   "T25/g1/r31": "Lincoln: Do not worry.",
-
   "T25/g2/r0": "Lincoln: I cannot{CTRL:0}abandon all of you.",
   "T25/g2/r1": "George: What now, Mom?!",
   "T25/g2/r2": "Coyote: Whiiine...",

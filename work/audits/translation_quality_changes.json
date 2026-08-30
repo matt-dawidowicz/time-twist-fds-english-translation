@@ -666,6 +666,60 @@
       "visible_character_delta": -2,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT5/g2/r12",
+      "japanese": "せいぶで いんでぃあんからはくじんを{CTRL:0}まもるため たたかったぐんたいは！",
+      "previous_english": "Which unit fought tribes{CTRL:0}to guard white settlers?",
+      "new_english": "Which unit fought{CTRL:0}Indians to guard whites?",
+      "category": [
+        "historical_diction",
+        "source_specificity",
+        "unsanitized_source"
+      ],
+      "reason": "Restore the source's explicit historical terms: it asks which military unit fought Indians to protect white people, rather than substituting tribes and settlers.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -7,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT5/g2/r23",
+      "japanese": "とむ「1000どるぴったしで{CTRL:0} うし ひつじ ぶたを50ぴきかってこいと{CTRL:0} いわれただ{CTRL:6} うしは1ぴき120どる{CTRL:3} ひつじは1ぴき30どる{CTRL:3} ぶたは1ぴき5どる かかる{CTRL:3} いったい なんびきずつかえばええんかのー」",
+      "previous_english": "Tom: Exactly 1,000.{CTRL:0}Buy 50 total: cows,{CTRL:0}sheep, and pigs. Spend{CTRL:6}Cows: 120 dollars each.{CTRL:3}Sheep: 30 dollars each.{CTRL:3}Pigs: 5 dollars each.{CTRL:3}How many of each?",
+      "new_english": "Tom: Exactly 1,000.{CTRL:0}Buy 50 total: cows,{CTRL:0}sheep and pigs. Prices:{CTRL:6}Cows: 120 dollars each.{CTRL:3}Sheep: 30 dollars each.{CTRL:3}Pigs: 5 dollars each.{CTRL:3}How many of each?",
+      "category": [
+        "naturalness",
+        "instruction_clarity",
+        "quiz_wording"
+      ],
+      "reason": "Repair the dangling Spend fragment and introduce the per-animal price list cleanly without changing the arithmetic or control structure.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "T25/g0/r12",
+      "japanese": "りんかーん「そうですか そんなひどいめに……」{CTRL:1}まいやー「まったく こまったものです{CTRL:0} なんぶにはまだまだ ねづよいさべついしきが{CTRL:0} のこっているようでして……」{CTRL:3}りんかーん「あなたみたいなかた ばかりなら{CTRL:4} せんそうはおきませんでしたよ まいやーさん」",
+      "previous_english": "Lincoln: Such cruelty...{CTRL:1}Meyer: A grave problem.{CTRL:0}Deep bias still lingers{CTRL:0}in the South.{CTRL:3}Lincoln: With men like{CTRL:4}you, no war would start.",
+      "new_english": "Lincoln: Such cruelty...{CTRL:1}Meyer: A grave problem.{CTRL:0}Deep prejudice lingers{CTRL:0}in the South.{CTRL:3}Lincoln: With men like{CTRL:4}you, no war would start.",
+      "category": [
+        "historical_diction",
+        "source_specificity",
+        "racism_context"
+      ],
+      "reason": "Render 差別意識 explicitly as prejudice/discriminatory attitudes rather than the softer and broader bias in Meyer's self-serving discussion of racism in the South.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
     }
   ]
 }
