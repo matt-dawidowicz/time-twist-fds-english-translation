@@ -924,6 +924,210 @@
       "visible_character_delta": 2,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r7",
+      "japanese": "おんなたち",
+      "previous_english": "Woman",
+      "new_english": "Women",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the explicit plural women rather than presenting the group as a single woman.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r12",
+      "japanese": "ちかしつ",
+      "previous_english": "Cell",
+      "new_english": "Cellar",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the basement/cellar location and keep it distinct from the separate prison-cell label.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r15",
+      "japanese": "おす",
+      "previous_english": "Passage",
+      "new_english": "Push",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the push action; Passage changes a verb into an unrelated location noun.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r18",
+      "japanese": "かべ",
+      "previous_english": "Well",
+      "new_english": "Wall",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct wall; Well is an unrelated object caused by a one-letter English error.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r20",
+      "japanese": "あな",
+      "previous_english": "Hill",
+      "new_english": "Hole",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the selectable hole/opening object; Hill is unrelated to the Japanese.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r21",
+      "japanese": "ろうや",
+      "previous_english": "Jail",
+      "new_english": "Cell",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the individual prison cell and keep it distinct from the broader prison/jail location.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r32",
+      "japanese": "あるく",
+      "previous_english": "Move",
+      "new_english": "Walk",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the specific walk action instead of collapsing it into the separate generic Move command.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT3A/fixed/r16",
+      "japanese": "おす",
+      "previous_english": "Pass",
+      "new_english": "Push",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the push action; Pass is a different action and can mislead the interaction menu.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT3A/fixed/r27",
+      "japanese": "ふく",
+      "previous_english": "Rub",
+      "new_english": "Clothes",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the clothes object; Rub incorrectly turns the noun into an unrelated action.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT3A/fixed/r62",
+      "japanese": "みた",
+      "previous_english": "Mita",
+      "new_english": "Saw it",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Translate the response as Saw it rather than leaving an untranslated-looking romanization.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT3B/fixed/r17",
+      "japanese": "よむ",
+      "previous_english": "Road",
+      "new_english": "Read",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the read action; Road is an unrelated noun and the chapter requires reading the charm text.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6A/fixed/r11",
+      "japanese": "そで",
+      "previous_english": "Soil",
+      "new_english": "Sleeve",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the clothing part Sleeve; Soil is an unrelated noun.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
     }
   ]
 }

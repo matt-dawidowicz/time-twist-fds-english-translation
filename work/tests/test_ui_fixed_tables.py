@@ -72,7 +72,7 @@ class FixedMenuCopyTests(unittest.TestCase):
             ),
             (
                 ui.T22_FIXED_TEXT_RECORDS,
-                {1: "Talk", 2: "Use", 4: "Move", 22: "Open", 32: "Move"},
+                {1: "Talk", 2: "Use", 4: "Move", 22: "Open", 32: "Walk"},
             ),
             (
                 ui.TT3A_FIXED_TEXT_RECORDS,

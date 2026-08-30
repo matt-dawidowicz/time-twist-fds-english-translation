@@ -127,18 +127,30 @@
       "canonical_corpus_rows_after_integration": 2058,
       "note": "NOV2 external layout is repacked and is not folded into the 740-record external alignment yet."
     },
-    "source_records_reviewed": 142,
+    "source_records_reviewed": 332,
     "source_reviewed_banks": [
       "TT1A",
       "TT1B",
-      "TT2"
+      "TT2",
+      "T22",
+      "TT3A",
+      "TT3B",
+      "TT6A"
     ],
     "tt1a_source_reviewed_records": 19,
     "tt1a_source_review_revisions": 0,
     "tt1b_source_reviewed_records": 53,
     "tt1b_source_review_revisions": 0,
     "tt2_source_reviewed_records": 70,
-    "tt2_source_review_revisions": 12
+    "tt2_source_review_revisions": 12,
+    "t22_source_reviewed_records": 33,
+    "t22_source_review_revisions": 7,
+    "tt3a_source_reviewed_records": 95,
+    "tt3a_source_review_revisions": 3,
+    "tt3b_source_reviewed_records": 21,
+    "tt3b_source_review_revisions": 1,
+    "tt6a_source_reviewed_records": 41,
+    "tt6a_source_review_revisions": 1
   },
   "banks": [
     {
@@ -247,7 +259,7 @@
     }
   ],
   "current_live_fit": {
-    "measurement": "canonical test_live_translation_fit.py after full 1,299-record scenario source review",
+    "measurement": "canonical test_live_translation_fit.py after 1,299/1,299 scenario review and 332/740 fixed-UI source review",
     "banks": [
       {
         "bank": "TT1A",
@@ -281,9 +293,9 @@
       },
       {
         "bank": "T22",
-        "used": 1879,
+        "used": 1898,
         "capacity": 1939,
-        "free": 60
+        "free": 41
       },
       {
         "bank": "TT2",
@@ -299,9 +311,9 @@
       },
       {
         "bank": "TT3A",
-        "used": 4118,
+        "used": 4119,
         "capacity": 4169,
-        "free": 51
+        "free": 50
       },
       {
         "bank": "TT6C",
@@ -317,9 +329,9 @@
       },
       {
         "bank": "TT6A",
-        "used": 2828,
+        "used": 2829,
         "capacity": 3000,
-        "free": 172
+        "free": 171
       },
       {
         "bank": "TT1B",

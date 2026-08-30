@@ -85,6 +85,8 @@ The detailed per-bank segment map is stored in
 `work/audits/external_fixed_ui_baseline.{json,md}`. Differences remain diagnostic
 only and must be resolved from Japanese and gameplay context.
 
+Source-grounded fixed-UI review is now **332/740 records (44.9%)**. TT1A, TT1B, TT2, T22, TT3A, TT3B, and TT6A have been reread against Japanese. Confirmed corrections are recorded individually in `translation_quality_changes.json`; compact but functionally faithful labels are left unchanged.
+
 That comparison also exposed six NOV2 save/system records that had never been
 translated in the current runtime image. They are now source-verified, translated
 in place with zero byte growth, covered by source-drift regression tests, and
@@ -93,32 +95,27 @@ so those six records are not yet included in the 740 external-alignment count.
 
 ## Current packed headroom
 
-The canonical `test_live_translation_fit.py` measurement after nine
-source-grounded TT3A revisions gives the following packed usage. These are the
-actual compressed byte limits used by the build, not visible-character counts.
+The canonical `test_live_translation_fit.py` measurement after the complete
+1,299-record scenario review and the first 332 fixed-UI source reviews gives:
 
 | Bank | Used | Capacity | Free |
 | --- | ---: | ---: | ---: |
-| TT1A | 1666 | 1669 | **3** |
-| TT6D | 327 | 332 | **5** |
-| TT5 | 4191 | 4201 | **10** |
-| TT3B | 1909 | 1927 | **18** |
-| TT4 | 5169 | 5187 | **18** |
-| T22 | 1913 | 1939 | 26 |
-| TT2 | 4092 | 4141 | 49 |
-| TT6B | 2547 | 2601 | 54 |
-| TT3A | 4118 | 4169 | 51 |
-| TT6C | 3848 | 3947 | 99 |
-| T25 | 2441 | 2561 | 120 |
-| TT6A | 2828 | 3000 | 172 |
-| TT1B | 3930 | 4234 | 304 |
+| TT1A | 1666 | 1669 | 3 |
+| TT6D | 327 | 332 | 5 |
+| TT5 | 4184 | 4201 | 17 |
+| TT3B | 1917 | 1927 | 10 |
+| TT4 | 5183 | 5187 | 4 |
+| T22 | 1898 | 1939 | 41 |
+| TT2 | 4125 | 4141 | 16 |
+| TT6B | 2548 | 2601 | 53 |
+| TT3A | 4119 | 4169 | 50 |
+| TT6C | 3851 | 3947 | 96 |
+| T25 | 2440 | 2561 | 121 |
+| TT6A | 2829 | 3000 | 171 |
+| TT1B | 3922 | 4234 | 312 |
 
-The true pressure points are therefore TT1A, TT6D, TT5, TT3B, and TT4.
-TT3A's earlier three-detail restoration cost 14 packed bytes despite adding 43
-visible characters. The next two revisions cost 9 packed bytes. The final
-full-bank reread produced two more edits with a net increase of only one visible
-character; those cost 5 packed bytes, leaving **51 bytes free**. There is no
-technical reason to pre-emptively shorten faithful text before measuring it.
+These are compressed byte limits used by the build, not visible-character counts.
+Faithful wording is retained unless measured capacity proves a shorter form necessary.
 
 ## Current editorial findings
 
@@ -172,8 +169,6 @@ fit measurement confirmed TT3A at 4,118/4,169 bytes.
 
 - Reconstruct and compare the external NOV2/NOV4 system-text blocks without
   assuming source offsets survived the external repack.
-- Review the 347 differing aligned fixed labels against Japanese and gameplay
-  context before changing any wording.
-- Continue the full source-grounded scenario review with TT3B, then proceed bank
-  by bank.
+- Finish source-grounded review of the remaining 408/740 fixed-UI records,
+  changing only labels that Japanese and gameplay context prove incorrect.
 - Perform rebuilt-ROM and emulator validation after the editorial pass.
