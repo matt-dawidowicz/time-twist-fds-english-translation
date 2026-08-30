@@ -29,6 +29,48 @@
       "visible_character_delta": 19,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g0/r11",
+      "japanese": "へいし「だっそうへい1めい はっけん／」",
+      "previous_english": "Soldier: Escapee!",
+      "new_english": "Soldier: Escapee found!",
+      "category": ["omitted_detail", "action_clarity"],
+      "reason": "Restore that the soldier reports finding an escapee rather than merely naming one.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 6,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g1/r26",
+      "japanese": "ふらんきー「いま あめりかとどいつが きそって{CTRL:0} かんせいをいそいでいる ひみつへいきがある……{CTRL:2} げんしばくだん といってな たったの1ぱつで{CTRL:0} ぱりが はいのやまにかわる」",
+      "previous_english": "Frankie: Both sides race{CTRL:0}to build an atom bomb{CTRL:2}One bomb could{CTRL:0}turn Paris to ash.",
+      "new_english": "Frankie: America and{CTRL:0}Germany race to build a{CTRL:2}secret weapon: atom bomb{CTRL:0}One turns Paris to ash.",
+      "category": ["omitted_detail", "historical_specificity"],
+      "reason": "Restore that America and Germany are the two competitors and preserve the source's secret-weapon-to-atomic-bomb reveal.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 13,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g3/r4",
+      "japanese": "しもん「なちすは わたしをかんきんして{CTRL:0} ひみつへいきのかいはつを きょうせいしました{CTRL:2} しかしわたしはもう ひとごろしのてだすけなど{CTRL:0} したくない／」",
+      "previous_english": "Simon: Nazis held me{CTRL:0}to build their weapon.{CTRL:2}I will not aid murder{CTRL:0}anymore!",
+      "new_english": "Simon: Nazis confined me{CTRL:0}and forced me to develop{CTRL:2}a secret weapon. I won't{CTRL:0}help them kill anymore!",
+      "category": ["omitted_detail", "coercion", "naturalness"],
+      "reason": "Restore Simon's confinement, the explicit coercion to develop a secret weapon, and his refusal to assist further killing.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 24,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
     }
   ]
 }
