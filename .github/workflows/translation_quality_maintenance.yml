@@ -1,0 +1,37 @@
+name: translation-quality-maintenance
+
+on:
+  push:
+    paths:
+      - ".github/workflows/translation_quality_maintenance.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  normalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: translation-quality-comparison-audit
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - run: python work/generate_bilingual_comparison_ci.py
+      - run: python work/generate_translation_workbook.py
+      - run: python -m black work
+      - name: Commit normalized generated artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add outputs work/translation_workbook_banks work/tools/external_translation_compare.py work/tests/test_external_translation_compare.py
+          if git diff --cached --quiet; then
+            echo "No generated or formatting changes"
+          else
+            git commit -m "Refresh translation review artifacts"
+            git push origin HEAD:translation-quality-comparison-audit
+          fi
