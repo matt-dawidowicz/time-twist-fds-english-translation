@@ -14,9 +14,10 @@ python -m pip install -e ".[dev]"
 time-twist --help
 ```
 
-The wheel contains the Python package only. Translation maps, title assets,
-source locks, and ROM inputs remain project-checkout data. An installed command
-can drive any checkout with `--project-root PATH`.
+The wheel contains the `src/time_twist/` Python package only. Translation maps,
+title assets, source locks, review evidence, and ROM inputs remain
+project-checkout data. An installed command can drive any checkout with
+`--project-root PATH`.
 
 ## Code style
 
@@ -25,15 +26,30 @@ modules, classes, functions, and methods follow the PEP 257 docstring
 conventions used throughout the tooling. Run the complete style gate with:
 
 ```powershell
-python -m black --check work tools tests
-python -m ruff check work tools tests
-python -m pydocstyle --convention=pep257 work tools
+python -m black --check src tools tests
+python -m ruff check src tools tests
+python -m pydocstyle --convention=pep257 src tools
 python -m mypy
 ```
 
-Use `python -m black work tools tests` and
-`python -m ruff check --fix work tools tests` for safe mechanical corrections,
-then review docstring changes manually.
+Use `python -m black src tools tests` and
+`python -m ruff check --fix src tools tests` for safe mechanical corrections,
+then review the diff manually.
+
+## Repository layout
+
+- `src/time_twist/`: release-critical installable package.
+- `tools/`: developer analysis, audit, generation, maintenance, and preview code.
+- `tests/unit/`: fixture-free public tests.
+- `tests/integration/`: exact ROM-derived maintainer tests.
+- `tests/fixtures/`: public metadata for the private integration overlay.
+- `work/`: project data, canonical translations, manifests, evidence, and
+  generated review-bank inputs; it is not a Python package.
+- `outputs/`: committed review artifacts regenerated in CI.
+
+Repository-relative developer tooling should use `tools.paths` instead of
+indexing `Path.parents`. Tests reuse that same path abstraction through
+`tests.support.paths`.
 
 ## Test suites
 
@@ -43,10 +59,10 @@ then review docstring changes manually.
 python -m tools.maintenance.run_tests unit
 ```
 
-This suite is fixture-free, runs in public CI, and permits no skips.
-It covers codecs, synthetic FDS behavior, compression invariants,
-comparison/workbook integrity, declarative patch guards, and release-control
-logic. Skips are treated as failures.
+This suite is fixture-free, runs in public CI, and permits no skips. It covers
+codecs, synthetic FDS behavior, compression invariants, comparison/workbook
+integrity, declarative patch guards, release control, repository boundaries,
+and public API compatibility.
 
 ### Private integration suite
 
@@ -55,9 +71,10 @@ python -m tools.maintenance.run_tests integration
 ```
 
 This suite currently contains 75 exact-ROM tests. Before discovery, the runner
-validates the private local overlay against `tests/fixtures/integration_fixtures.json`.
-Missing or changed fixtures stop the run as a setup error; integration tests do
-not quietly disappear behind `skipTest()`.
+validates the private local overlay against
+`tests/fixtures/integration_fixtures.json`. Missing or changed fixtures stop the
+run as a setup error; integration tests do not quietly disappear behind
+`skipTest()`.
 
 Run both suites with:
 
@@ -73,16 +90,19 @@ See [`PRIVATE_FIXTURES.md`](PRIVATE_FIXTURES.md) for the public/private split.
 
 ## CI and wheel checks
 
-Public CI runs the public-tree gate, style checks, type checking, and fixture-free
-unit suite on Python 3.11 and 3.12. Python 3.12 additionally performs the
-packaging and installed-wheel smoke checks:
+Public CI runs the public-tree gate, deterministic review-artifact regeneration,
+style checks, type checking, and fixture-free unit suite on Python 3.11 and
+3.12. Python 3.12 additionally performs packaging and installed-wheel smoke
+checks:
 
 ```powershell
-python tools/maintenance/check_public_tree.py
+python -m tools.maintenance.check_public_tree
 python -m pip install -e ".[dev]"
-python -m black --check work tools tests
-python -m ruff check work tools tests
-python -m pydocstyle --convention=pep257 work tools
+python -m tools.generation.generate_bilingual_comparison_ci
+python -m tools.generation.generate_translation_workbook
+python -m black --check src tools tests
+python -m ruff check src tools tests
+python -m pydocstyle --convention=pep257 src tools
 python -m mypy
 python -m tools.maintenance.run_tests unit
 python -m build
@@ -91,9 +111,10 @@ time-twist --help
 time-twist release-build --help
 ```
 
-This catches both source-tree import accidents and incomplete wheel packaging.
-The release command itself requires a project checkout and user-supplied
-baselines; those data are intentionally not embedded in the wheel.
+This catches source-tree import accidents, incomplete wheel packaging, stale
+review artifacts, and provenance mismatches. The release command itself requires
+a project checkout and user-supplied baselines; those data are intentionally not
+embedded in the wheel.
 
 ## Adding or changing a binary patch
 
@@ -122,9 +143,9 @@ explicit supported revision with evidence instead.
 Use the highest-level playable source:
 
 - story dialogue: `work/translations/BANK.json`;
-- fixed UI labels: the named record definition in `work/time_twist/ui.py`;
-- font glyphs: `PIXEL_FONT_5X7` and mapping tables;
-- title art: the title reference image and conversion code.
+- fixed UI labels: the named record definition in `src/time_twist/ui.py`;
+- font glyphs: `PIXEL_FONT_5X7` and mapping tables in `src/time_twist/font.py`;
+- title art: the approved title assets plus `src/time_twist/title*.py`.
 
 The complete workbook is regenerated review output. Its patch-safe field mirrors
 the playable text; the natural-translation field may preserve a less constrained
@@ -165,8 +186,8 @@ impossible to encode. Treat scenario and fixed-table use as one budget.
 | Final character wraps/gets overwritten | 24-column segmentation or control placement |
 
 Do not solve a line-clearing bug by padding every line with visible or opaque
-spaces. The typewriter renderer can process them as silent characters and
-alter timing.
+spaces. The typewriter renderer can process them as silent characters and alter
+timing.
 
 ## Title debugging
 
@@ -192,8 +213,13 @@ declares `lf` normalization for `work/translations/*.json` and `raw` for the
 Japanese FDS baselines and indexed title PNG. This makes equivalent LF/CRLF
 translation checkouts portable while retaining byte-exact binary guards. The
 lock document's own SHA-256 is likewise calculated after LF normalization.
-`.gitattributes` reinforces this representation, but validation does not
-depend on Git.
+`.gitattributes` reinforces this representation, but validation does not depend
+on Git.
+
+Release-code provenance v2 binds the logical `src/time_twist` source tree. The
+hash includes normalized POSIX paths and LF-normalized source contents. An
+installed wheel is accepted only when its imported `time_twist` package hashes
+to the same logical tree as the supplied checkout.
 
 Strict builds also require a promoted `work/release_target.json`, whose hashes
 are tied to that exact logical source lock and to the active release-critical
