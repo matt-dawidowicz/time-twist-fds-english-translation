@@ -39,10 +39,12 @@ patched `.fds` files are intentionally excluded from Git.
 | `title.py` | Convert, relocate, and verify the NOV4 English title assets | Translate story dialogue |
 | `cli.py` | Compose the above layers into reproducible commands | Hide validation failures |
 
-Developer-facing commands live under the top-level `tools/` package, grouped
-by responsibility (`analysis`, `audit`, `generation`, `maintenance`, and
-`preview`). Core binary behavior remains in `work/time_twist/`; tools may
-orchestrate or inspect that package but must not become hidden runtime layers.
+Release-critical binary behavior lives in the conventional `src/time_twist/`
+package. Developer-facing commands live under the top-level `tools/` package,
+grouped by responsibility (`analysis`, `audit`, `generation`, `maintenance`, and
+`preview`). Tools may orchestrate or inspect the runtime package but must not
+become hidden release layers. `work/` contains project data and evidence and is
+not a Python import root.
 
 ## Runtime organization
 
@@ -88,7 +90,7 @@ followed by data or code that must remain at its original CPU address.
    the original fixed tail address.
 5. The release layer regenerates the fixed-menu page index and shifts only the
    recovered pointer-addressed prefix data.
-5. `replace-file` writes the rebuilt overlay back into an FDS image.
+6. `replace-file` writes the rebuilt overlay back into an FDS image.
 
 ## Patch layers
 
@@ -178,16 +180,17 @@ The release layer separates four approvals that were previously conflated:
    identity for FDS/PNG inputs. The lock document is itself hashed after LF
    normalization, so Windows checkout policy cannot change its release
    identity.
-2. Code provenance records the checkout Git commit/dirty state when available.
-   It computes the same authoritative digest for the imported/executing
-   `time_twist` package and the checkout's `work/time_twist/**/*.py`, using
-   checkout-equivalent logical paths, and fails unless those trees match.
+2. Release-code provenance v2 records the checkout Git commit/dirty state when
+   available. It computes the same authoritative digest for the
+   imported/executing `time_twist` package and the checkout's
+   `src/time_twist/**/*.py`, using checkout-equivalent logical paths, and fails
+   unless those trees match.
 3. `release-build --candidate` deterministically composes an unapproved build
    and records scenario capacities, component hashes, final image hashes, and
    the active code provenance.
-4. `release-promote` revalidates the exact candidate files and code tree, then writes
-   `work/release_target.json`, tying output hashes to the active source-lock
-   SHA-256 and release-critical implementation.
+4. `release-promote` revalidates the exact candidate files and code tree, then
+   writes `work/release_target.json`, tying output hashes to the active
+   source-lock SHA-256 and release-critical implementation.
 
 A strict `release-build` requires both ties and reproduces the promoted sizes
 and hashes. No target is checked in while the current candidate awaits
@@ -221,6 +224,6 @@ elsewhere.
 Fixture-free tests use synthetic FDS data and generated workbook inputs and run
 in public CI. Exact tests against original or derived game bytes live under
 `tests/integration/`. Their local inputs are described only by hashes in
-`tests/fixtures/integration_fixtures.json` and are validated before discovery. This
-prevents a missing private fixture from turning a critical exact-output test
-into an unnoticed skip.
+`tests/fixtures/integration_fixtures.json` and are validated before discovery.
+This prevents a missing private fixture from turning a critical exact-output
+test into an unnoticed skip.
