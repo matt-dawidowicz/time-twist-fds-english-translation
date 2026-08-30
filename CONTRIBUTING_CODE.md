@@ -35,14 +35,15 @@ python -m tools.maintenance.run_tests unit
 For changes to Python code, run the project style and type checks as well:
 
 ```powershell
-python -m black --check work
-python -m ruff check work
-python -m pydocstyle --convention=pep257 work
+python -m black --check work tools tests
+python -m ruff check work tools tests
+python -m pydocstyle --convention=pep257 work tools
 python -m mypy
 ```
 
-Use `python -m black work` or `python -m ruff check --fix work` only for
-mechanical corrections, then review the diff.
+Use `python -m black work tools tests` or
+`python -m ruff check --fix work tools tests` only for mechanical corrections,
+then review the diff.
 
 ## Public tests versus private maintainer tests
 
