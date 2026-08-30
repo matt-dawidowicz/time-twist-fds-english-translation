@@ -351,6 +351,92 @@
       "visible_character_delta": 1,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "T22/g0/r22",
+      "japanese": "なかから ひかりがもれてる……",
+      "previous_english": "Light leaks in...",
+      "new_english": "Light leaks from inside.",
+      "category": [
+        "fidelity",
+        "directionality"
+      ],
+      "reason": "Correct the direction in なかから: the light is leaking from inside, not leaking inward.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 7,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "T22/g0/r28",
+      "japanese": "あいた…… ひみつのつうろだ",
+      "previous_english": "It opened... a passage!",
+      "new_english": "Opened... a secret path!",
+      "category": [
+        "omitted_detail",
+        "source_specificity"
+      ],
+      "reason": "Restore ひみつ: the newly opened route is explicitly a secret passage.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "T22/g1/r6",
+      "japanese": "しきょう「これから このむすめのひあぶりを{CTRL:0} おこなうのだが… みせしめのため もっとひとが{CTRL:0} あつまってからのほうが おもしろいのう{CTRL:6} ふぉふぉふぉ……」",
+      "previous_english": "Bishop: She will burn,{CTRL:0}but first, draw a crowd.{CTRL:0}A public lesson is best.{CTRL:6}Ho ho ho...",
+      "new_english": "Bishop: She will burn,{CTRL:0}once a crowd gathers.{CTRL:0}A public lesson is best.{CTRL:6}Ho ho ho...",
+      "category": [
+        "fidelity",
+        "action_clarity"
+      ],
+      "reason": "Remove the invented instruction to draw a crowd. The Japanese says the bishop wants to wait until more people have gathered for the public example.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "T22/g1/r7",
+      "japanese": "しきょう「さかや るごーのまごむすめ{CTRL:0} じゃんぬ・だるくは あくまのせんれいをうけ{CTRL:0} みにくき よくぼうのとりこと なりはてた……{CTRL:6} よってきょうかいのなにより しけいにしょす」",
+      "previous_english": "Bishop: Jeanne d'Arc,{CTRL:0}Lugot's granddaughter,{CTRL:0}Devil-baptized, depraved{CTRL:6}Church condemns her.",
+      "new_english": "Bishop: Jeanne d'Arc,{CTRL:0}Lugot's granddaughter,{CTRL:0}Devil-baptized, depraved{CTRL:6}Church orders her death.",
+      "category": [
+        "omitted_detail",
+        "sentence_specificity"
+      ],
+      "reason": "Restore the explicit 死刑 sentence: the bishop is sentencing Jeanne to death in the Church's name, not merely condemning her abstractly.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "T22/g1/r17",
+      "japanese": "……「ちくしょう みちゃいられない…」{CTRL:0}……「かみさま…／」",
+      "previous_english": "Man: I cannot watch...{CTRL:0}Man: God help her!",
+      "new_english": "Man: Damn, can't watch.{CTRL:0}Man: God help her!",
+      "category": [
+        "register",
+        "emotional_fidelity",
+        "naturalness"
+      ],
+      "reason": "Restore ちくしょう, the onlooker's angry expletive, while keeping the compact reaction natural.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
     }
   ]
 }

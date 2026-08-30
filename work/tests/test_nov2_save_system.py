@@ -15,7 +15,10 @@ class Nov2SaveSystemTests(unittest.TestCase):
     def test_replacements_keep_exact_source_sizes(self) -> None:
         """Keep the reviewed English and every fixed packed allocation."""
         self.assertEqual(
-            tuple(replacement for _, _, replacement in ui.NOV2_SAVE_SYSTEM_PATCHES),
+            tuple(
+                replacement
+                for _, _, replacement in ui.NOV2_SAVE_SYSTEM_PATCHES
+            ),
             (
                 "A RAM Save{CTRL:0}B Disk{CTRL:0}Select Cancel ",
                 "Saving{CTRL:0}to disk. ",
@@ -46,7 +49,9 @@ class Nov2SaveSystemTests(unittest.TestCase):
         self.assertEqual(len(patched), len(source))
         for offset, original, replacement in ui.NOV2_SAVE_SYSTEM_PATCHES:
             expected = pack_records([encode_english(replacement)])
-            self.assertEqual(patched[offset : offset + len(original)], expected)
+            self.assertEqual(
+                patched[offset : offset + len(original)], expected
+            )
 
     def test_patcher_rejects_source_drift(self) -> None:
         """Fail closed if any supposedly immutable source slot changes."""
