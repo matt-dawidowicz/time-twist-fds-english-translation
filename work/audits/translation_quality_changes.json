@@ -720,6 +720,210 @@
       "visible_character_delta": -1,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT2/fixed/r32",
+      "japanese": "しみん",
+      "previous_english": "Commoners",
+      "new_english": "Citizens",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the source category citizens; commoners substitutes a social class the Japanese does not specify.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r33",
+      "japanese": "げいにん",
+      "previous_english": "Actors",
+      "new_english": "Entertainers",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the broader entertainer/performer category; actors is only one subset.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 6,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r35",
+      "japanese": "がいど",
+      "previous_english": "Guild",
+      "new_english": "Guide",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct Guide; a separate nearby choice ぎるど is the actual Guild entry.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r36",
+      "japanese": "ぞいど",
+      "previous_english": "Zois",
+      "new_english": "Zoid",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the source distractor transliteration from Zois to Zoid.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r43",
+      "japanese": "で・にーろ",
+      "previous_english": "Nero",
+      "new_english": "De Niro",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the full proper-name distractor De Niro.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r44",
+      "japanese": "ど・ぬーぶ",
+      "previous_english": "Dante",
+      "new_english": "Danube",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the place-name distractor Danube; Dante is unrelated to the Japanese.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r51",
+      "japanese": "まつ",
+      "previous_english": "White",
+      "new_english": "Wait",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the wait choice; it is paired with またない, the do-not-wait option.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r56",
+      "japanese": "さけ",
+      "previous_english": "All",
+      "new_english": "Wine",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Replace the meaningless All label with the alcoholic-drink sense used by the surrounding medieval-France scene; dialogue elsewhere renders the same item contextually as wine.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r62",
+      "japanese": "かんしゅ",
+      "previous_english": "Jail",
+      "new_english": "Jailer",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the person Jailer and keep it distinct from the separate prison/jail location label.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r63",
+      "japanese": "おんなたち",
+      "previous_english": "Woman",
+      "new_english": "Women",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the explicit plural women.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r64",
+      "japanese": "ちかしつ",
+      "previous_english": "Cell",
+      "new_english": "Cellar",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the cellar/basement location and keep it distinct from the separate ろうや cell label.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r68",
+      "japanese": "ろうそく",
+      "previous_english": "Lamp",
+      "new_english": "Candle",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the specific candle object rather than changing it to a lamp.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
     }
   ]
 }

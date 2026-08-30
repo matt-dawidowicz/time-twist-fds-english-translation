@@ -126,7 +126,19 @@
       "source_verified_missing_records_translated": 6,
       "canonical_corpus_rows_after_integration": 2058,
       "note": "NOV2 external layout is repacked and is not folded into the 740-record external alignment yet."
-    }
+    },
+    "source_records_reviewed": 142,
+    "source_reviewed_banks": [
+      "TT1A",
+      "TT1B",
+      "TT2"
+    ],
+    "tt1a_source_reviewed_records": 19,
+    "tt1a_source_review_revisions": 0,
+    "tt1b_source_reviewed_records": 53,
+    "tt1b_source_review_revisions": 0,
+    "tt2_source_reviewed_records": 70,
+    "tt2_source_review_revisions": 12
   },
   "banks": [
     {
@@ -275,9 +287,9 @@
       },
       {
         "bank": "TT2",
-        "used": 4092,
+        "used": 4125,
         "capacity": 4141,
-        "free": 49
+        "free": 16
       },
       {
         "bank": "TT6B",
@@ -343,7 +355,8 @@
     "tt6d_free_after_full_review": 5,
     "tt4_free_after_seven_revisions": 4,
     "tt5_free_after_full_review": 17,
-    "t25_free_after_full_review": 121
+    "t25_free_after_full_review": 121,
+    "tt2_free_after_fixed_ui_review": 16
   },
   "validation": {
     "clean_branch_workflow_run": 33289092641,
