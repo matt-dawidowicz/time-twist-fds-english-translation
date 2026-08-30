@@ -67,7 +67,7 @@ def _synthetic_bank(
     path.write_bytes(prefix + group_stream + dictionary_stream + b"\xea" * 16)
 
 
-class ScenarioValidationHardeningTests(unittest.TestCase):
+class ScenarioValidationTests(unittest.TestCase):
     """Group current regression tests by project contract."""
 
     def test_beam_search_can_beat_a_greedy_dictionary(self) -> None:

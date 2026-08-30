@@ -101,7 +101,7 @@ reproducible translation.
 
 ### 1. Parse the FDS container losslessly
 
-`work/time_twist/fds.py` models the disk header, fixed 65,500-byte sides, FDS
+`src/time_twist/fds.py` models the disk header, fixed 65,500-byte sides, FDS
 file headers, payloads, and trailing padding. An untouched image must parse and
 serialize byte-identically. This establishes trustworthy file names, load
 addresses, sizes, and side order before game-specific interpretation begins.
@@ -279,19 +279,19 @@ model was the difficult part.
 
 | Subject | Primary source |
 | --- | --- |
-| FDS layout | `work/time_twist/fds.py`, `docs/FORMATS.md` |
+| FDS layout | `src/time_twist/fds.py`, `docs/FORMATS.md` |
 | Packed symbols | `textcodec.py`, `scenario.py`, `compression.py` |
 | Playable dialogue | `work/translations/*.json` |
-| Fixed UI | `work/time_twist/ui.py` |
+| Fixed UI | `src/time_twist/ui.py` |
 | Workbook authority | `docs/WORKBOOK_PIPELINE.md` |
-| Font | `work/time_twist/font.py` |
+| Font | `src/time_twist/font.py` |
 | Native final title art | `work/title_assets/Time Twist approved native title.png` |
 | Native swipe title art | `work/title_assets/Time Twist approved native slide.png` |
 | Art reconstruction | `tools/preview/rebuild_native_title_asset.py` |
-| Title patch | `work/time_twist/title.py` |
+| Title patch | `src/time_twist/title.py` |
 | Title architecture | `docs/TITLE_SEQUENCE.md` |
 | Exact title tests | `tests/integration/test_title.py` |
-| Release controls | `work/time_twist/release.py` |
+| Release controls | `src/time_twist/release.py` |
 | Playtest coverage | `docs/PLAYTEST_MATRIX.md` |
 
 ## What remains before a final release

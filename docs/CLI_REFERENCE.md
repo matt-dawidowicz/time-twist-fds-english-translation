@@ -181,7 +181,7 @@ release-critical Python code, or project metadata. The canonical
 
 Candidate and target metadata record an optional checkout Git commit and dirty
 flag, plus an authoritative SHA-256 over normalized logical
-`work/time_twist/**/*.py` paths and contents. Git is not required. Candidate and
+`src/time_twist/**/*.py` paths and contents. Git is not required. Candidate and
 verified manifests also record Python implementation/version and the executing
 Pillow version for diagnostics. The package-level Pillow pin narrows the
 expected release environment; source, code, component, and output hashes remain

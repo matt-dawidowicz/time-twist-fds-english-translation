@@ -31,8 +31,8 @@ literal readings, and natural English are editorial layers.
 | --- | --- |
 | `work/translated_scripts/BANK.json` | Decoded scenario records and stable IDs |
 | `work/translations/BANK.json` | Authoritative playable scenario English |
-| `work/time_twist/ui_fixed_tables.py` | Authoritative full-word scenario menu labels |
-| `work/time_twist/ui.py` | Fixed-interface/graphics text and menu relocation logic |
+| `src/time_twist/ui_fixed_tables.py` | Authoritative full-word scenario menu labels |
+| `src/time_twist/ui.py` | Fixed-interface/graphics text and menu relocation logic |
 | `outputs/Time Twist Japanese-English script comparison.json` | Ordered comparison corpus |
 | `work/translation_workbook_banks/BANK.json` | Per-bank workbook checkpoints |
 | `outputs/Time_Twist_complete_translation_workbook.*` | Aggregate review output |

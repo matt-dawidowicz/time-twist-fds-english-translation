@@ -158,7 +158,7 @@ time-twist release-build --candidate --output-dir build/candidate
 
 The candidate manifest records every scenario-bank capacity/hash, all final
 output hashes, and deterministic release-code provenance. The imported package
-and checkout `work/time_twist/**/*.py` trees are independently hashed with the
+and checkout `src/time_twist/**/*.py` trees are independently hashed with the
 same logical paths and must match. Git commit and dirty-state metadata are
 included when Git is available; the normalized code-tree SHA-256 is the
 authoritative fallback. Candidate mode is not approval. Inspect the diff and

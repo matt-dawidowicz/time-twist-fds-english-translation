@@ -10,12 +10,12 @@ problems or replace the title screen. It is intentionally tied to the current
 source code rather than to a finished `.fds` file. The authoritative
 implementations are:
 
-- `work/time_twist/ui.py` for fixed-address prompts, renderer corrections,
+- `src/time_twist/ui.py` for fixed-address prompts, renderer corrections,
   and the NOV2 input fix;
-- `work/time_twist/font.py` for deterministic dialogue glyphs;
-- `work/time_twist/title.py` for the English title, native swipe, clock, and
+- `src/time_twist/font.py` for deterministic dialogue glyphs;
+- `src/time_twist/title.py` for the English title, native swipe, clock, and
   title-state helpers;
-- `work/time_twist/release.py` for patch ordering, FDS replacement, output
+- `src/time_twist/release.py` for patch ordering, FDS replacement, output
   validation, and safe publication;
 - `tests/integration/test_ui.py` and
   `tests/integration/test_title.py` for exact ROM-derived regression

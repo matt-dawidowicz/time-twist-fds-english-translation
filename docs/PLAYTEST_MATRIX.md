@@ -90,7 +90,7 @@ Expected behavior:
 Root cause:
 Smallest safe source-level fix:
   - scenario prose: work/translations/<BANK>.json
-  - engine/font/title/UI: work/time_twist/
+  - engine/font/title/UI: src/time_twist/
 Controls before/after:
 Fixed address/tail/capacity affected:
 Regression test to add:

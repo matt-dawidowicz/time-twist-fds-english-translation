@@ -29,7 +29,7 @@ to `work/time_twist`.
 
 | Risk | Control |
 | --- | --- |
-| Installed tool differs from checkout | The executing package and checkout are independently hashed under identical logical `work/time_twist/...` paths and must match. |
+| Installed tool differs from checkout | The executing package and checkout are independently hashed under identical logical `src/time_twist/...` paths and must match. |
 | Candidate manifest is structurally incomplete | Manifest schema v4 requires the exact generated top-level fields, complete scenario reports, fixed-component hashes, target state, environment metadata, and canonical output records. |
 | Candidate manifest lies about its subtitle | Promotion requires the manifest subtitle to equal the validated source-lock subtitle. |
 | Candidate manifest/output hashes are self-consistent but were not produced by the approved build | Promotion performs a fresh candidate-mode `build_release` from the active source lock and current release code and requires the rebuilt scenario reports, component hashes, and all three output records to equal the reviewed candidate manifest. |
