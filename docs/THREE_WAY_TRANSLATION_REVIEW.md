@@ -90,6 +90,54 @@ fragment, or missing terminal punctuation. A longer competitor line is not
 automatically more faithful, and its altered control layout must never be
 copied into this project's fixed overlay without independent runtime proof.
 
+## First source-based revision pass
+
+The first bank-by-bank pass reviewed every high-priority lead against the
+Japanese and accepted 55 playable revisions in eight banks:
+
+| Bank | Revised records |
+|---|---:|
+| `TT1B` | 32 |
+| `TT3B` | 9 |
+| `TT6C` | 4 |
+| `TT6A` | 3 |
+| `T22` | 2 |
+| `T25` | 2 |
+| `TT6B` | 2 |
+| `TT5` | 1 |
+
+The accepted set fixes source-supported issues such as the unnatural blue-sky
+thought, a deserter mislabeled as a POW, a missing speaker after the donkey's
+reply, Jeanne's explicit death sentence, the bishop's plea to talk, the Time
+Belt's status as Simon's invention, and inconsistent `Magic-Sealing Jar`
+terminology. It also restores compact voice and narrative details where the
+native controls permit them. Mechanical flags in `TT1A`, `TT2`, `TT3A`,
+`TT4`, and `TT6D` did not justify a change in this pass; they were mostly
+location labels, intentional fragments, or already-faithful concise lines.
+
+The fixture-free greedy compression gate after those revisions reports:
+
+| Bank | Used / capacity | Free bytes |
+|---|---:|---:|
+| `TT1A` | 1,666 / 1,669 | 3 |
+| `TT1B` | 3,976 / 4,234 | 258 |
+| `TT2` | 4,092 / 4,141 | 49 |
+| `T22` | 1,915 / 1,939 | 24 |
+| `TT3A` | 4,078 / 4,169 | 91 |
+| `TT3B` | 1,922 / 1,927 | 5 |
+| `TT4` | 5,169 / 5,187 | 18 |
+| `TT5` | 4,199 / 4,201 | 2 |
+| `T25` | 2,427 / 2,561 | 134 |
+| `TT6A` | 2,822 / 3,000 | 178 |
+| `TT6B` | 2,548 / 2,601 | 53 |
+| `TT6C` | 3,847 / 3,947 | 100 |
+| `TT6D` | 327 / 332 | 5 |
+
+These are current greedy-baseline measurements, not permission to expand a
+tight bank casually. The release builder may find an equal or smaller
+deterministic optimized layout, but every accepted map already fits without
+depending on that optional improvement.
+
 ## Review and revision procedure
 
 Review one bank at a time. For each coordinate:
