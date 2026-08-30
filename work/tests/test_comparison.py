@@ -87,7 +87,7 @@ class BilingualComparisonTests(unittest.TestCase):
 
     def test_comparison_ids_are_unique_and_complete(self) -> None:
         """Verify the current contract described by this regression test."""
-        self.assertEqual(len(self.rows), 2052)
+        self.assertEqual(len(self.rows), 2058)
         self.assertEqual(
             len(self.rows), len({row["text_id"] for row in self.rows})
         )
@@ -97,7 +97,7 @@ class BilingualComparisonTests(unittest.TestCase):
         }
         self.assertEqual(
             counts,
-            {"scenario": 1299, "fixed-address": 750, "graphics-text": 3},
+            {"scenario": 1299, "fixed-address": 756, "graphics-text": 3},
         )
 
 

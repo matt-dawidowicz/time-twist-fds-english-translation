@@ -50,14 +50,14 @@ class TranslationWorkbookTests(unittest.TestCase):
 
     def test_all_source_records_are_present_once_and_in_order(self) -> None:
         """Verify the current contract described by this regression test."""
-        self.assertEqual(len(self.rows), 2052)
+        self.assertEqual(len(self.rows), 2058)
         self.assertEqual(
             [row.original_record_id for row in self.rows],
             [row["text_id"] for row in self.source_payload["rows"]],
         )
         self.assertEqual(
             len({row.original_record_id for row in self.rows}),
-            2052,
+            2058,
         )
 
     def test_exact_japanese_is_byte_for_byte_source_text(self) -> None:
@@ -154,14 +154,14 @@ class TranslationWorkbookTests(unittest.TestCase):
         json_path = OUTPUTS / "Time_Twist_complete_translation_workbook.json"
         csv_path = OUTPUTS / "Time_Twist_complete_translation_workbook.csv"
         payload = json.loads(json_path.read_text(encoding="utf-8"))
-        self.assertEqual(len(payload["rows"]), 2052)
+        self.assertEqual(len(payload["rows"]), 2058)
         self.assertEqual(
             payload["patch_validation"]["revised_bank_footprints"],
             PATCH_FOOTPRINT_RESULTS,
         )
         with csv_path.open(encoding="utf-8-sig", newline="") as handle:
             csv_rows = list(csv.DictReader(handle))
-        self.assertEqual(len(csv_rows), 2052)
+        self.assertEqual(len(csv_rows), 2058)
         self.assertEqual(
             [row["original_record_id"] for row in payload["rows"]],
             [row["original_record_id"] for row in csv_rows],
