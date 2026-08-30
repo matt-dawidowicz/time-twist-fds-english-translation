@@ -1,0 +1,359 @@
+test_file_and_header_side_count_boundaries_fail_cleanly (tests.test_binary_properties.FdsPropertyTests.test_file_and_header_side_count_boundaries_fail_cleanly)
+Accept one-byte maxima and reject counts that cannot be serialized. ... ok
+test_single_file_exact_capacity_and_one_byte_overflow (tests.test_binary_properties.FdsPropertyTests.test_single_file_exact_capacity_and_one_byte_overflow)
+Verify the current contract described by this regression test. ... ok
+test_valid_synthetic_images_round_trip_byte_identically (tests.test_binary_properties.FdsPropertyTests.test_valid_synthetic_images_round_trip_byte_identically)
+Verify the current contract described by this regression test. ... ok
+test_compression_expands_to_original_symbols (tests.test_binary_properties.PackedBinaryPropertyTests.test_compression_expands_to_original_symbols)
+Verify the current contract described by this regression test. ... ok
+test_nested_source_dictionary_expands_and_loops_fail (tests.test_binary_properties.PackedBinaryPropertyTests.test_nested_source_dictionary_expands_and_loops_fail)
+Support nested source dictionaries while rejecting recursive loops. ... ok
+test_packed_records_round_trip (tests.test_binary_properties.PackedBinaryPropertyTests.test_packed_records_round_trip)
+Verify the current contract described by this regression test. ... ok
+test_repeated_literal_compression_regression (tests.test_binary_properties.PackedBinaryPropertyTests.test_repeated_literal_compression_regression)
+Verify the current contract described by this regression test. ... ok
+test_all_scenario_records_are_present_once (tests.test_comparison.BilingualComparisonTests.test_all_scenario_records_are_present_once)
+Verify the current contract described by this regression test. ... ok
+test_comparison_ids_are_unique_and_complete (tests.test_comparison.BilingualComparisonTests.test_comparison_ids_are_unique_and_complete)
+Verify the current contract described by this regression test. ... ok
+test_every_row_keeps_japanese_and_english (tests.test_comparison.BilingualComparisonTests.test_every_row_keeps_japanese_and_english)
+Verify the current contract described by this regression test. ... ok
+test_scenario_control_sequences_and_playable_text_match (tests.test_comparison.BilingualComparisonTests.test_scenario_control_sequences_and_playable_text_match)
+Verify the current contract described by this regression test. ... ok
+test_every_module_class_and_function_explains_its_purpose (tests.test_documentation_contract.DocumentationContractTests.test_every_module_class_and_function_explains_its_purpose)
+Require documentation for every maintained Python definition. ... FAIL
+test_dictionary_order_accepts_more_than_31_entries (tests.test_extended_dictionary_compression.ExtendedDictionaryCompressionTests.test_dictionary_order_accepts_more_than_31_entries)
+Allow hill-climbing across dictionaries that use extended slots. ... ok
+test_extended_rebuild_round_trips_and_preserves_fixed_tail (tests.test_extended_dictionary_compression.ExtendedDictionaryCompressionTests.test_extended_rebuild_round_trips_and_preserves_fixed_tail)
+Keep dictionary slots above 31 decodable without moving fixed data. ... ok
+test_overlay_preserves_zero_writes_inside_hunk (tests.test_external_translation_compare.ExternalTranslationCompareTests.test_overlay_preserves_zero_writes_inside_hunk)
+Copy intentional zero bytes that occur inside a recovered hunk. ... ok
+test_patch_spans_merge_five_byte_gap (tests.test_external_translation_compare.ExternalTranslationCompareTests.test_patch_spans_merge_five_byte_gap)
+Merge five-byte gaps but split spans separated by six bytes. ... ok
+test_combine_keeps_side_order (tests.test_fds_synthetic.SyntheticFdsTests.test_combine_keeps_side_order)
+Verify the current contract described by this regression test. ... ok
+test_growth_refreshes_size_and_consumes_padding (tests.test_fds_synthetic.SyntheticFdsTests.test_growth_refreshes_size_and_consumes_padding)
+Verify the current contract described by this regression test. ... ok
+test_headered_round_trip (tests.test_fds_synthetic.SyntheticFdsTests.test_headered_round_trip)
+Verify the current contract described by this regression test. ... ok
+test_raw_round_trip_and_manifest (tests.test_fds_synthetic.SyntheticFdsTests.test_raw_round_trip_and_manifest)
+Verify the current contract described by this regression test. ... ok
+test_rejects_bad_block_marker_and_capacity_overflow (tests.test_fds_synthetic.SyntheticFdsTests.test_rejects_bad_block_marker_and_capacity_overflow)
+Verify the current contract described by this regression test. ... ok
+test_apostrophe_is_a_closing_mark (tests.test_font.PixelFontTests.test_apostrophe_is_a_closing_mark)
+Verify the current contract described by this regression test. ... ok
+test_patched_font_keeps_the_active_x_and_z_glyphs (tests.test_font.PixelFontTests.test_patched_font_keeps_the_active_x_and_z_glyphs)
+Never replace active uppercase letters with prompt-only glyphs. ... ok
+test_patched_font_preserves_the_title_background_tile (tests.test_font.PixelFontTests.test_patched_font_preserves_the_title_background_tile)
+Do not repurpose NOV4 tile $AC, which the title nametable draws. ... ok
+test_title_case_start_intermediate_is_explicitly_allowlisted (tests.test_font.PixelFontTests.test_title_case_start_intermediate_is_explicitly_allowlisted)
+Permit only the recovered NOV4 state produced by the Start patch. ... ok
+test_title_menu_load_intermediate_is_explicitly_allowlisted (tests.test_font.PixelFontTests.test_title_menu_load_intermediate_is_explicitly_allowlisted)
+Permit only the guarded NOV4 state with both title choices patched. ... ok
+test_current_translation_maps_fit (tests.test_live_translation_fit.LiveTranslationFitTests.test_current_translation_maps_fit)
+Recompress every bank and fail only when current text exceeds capacity. ... ok
+test_relocated_capacity_facts_cover_exactly_the_repacked_banks (tests.test_live_translation_fit.LiveTranslationFitTests.test_relocated_capacity_facts_cover_exactly_the_repacked_banks)
+Keep ROM-free capacity evidence aligned with the release architecture. ... ok
+test_report_rejects_a_bank_from_another_candidate (tests.test_menu_audit_tools.CandidateReportTests.test_report_rejects_a_bank_from_another_candidate)
+Require each audited scenario bank to match the release manifest. ... ok
+test_report_rejects_empty_and_stale_candidate_audits (tests.test_menu_audit_tools.CandidateReportTests.test_report_rejects_empty_and_stale_candidate_audits)
+Reject missing evidence and rows from a different candidate image. ... ok
+test_report_rejects_source_only_and_width_failures_before_output (tests.test_menu_audit_tools.CandidateReportTests.test_report_rejects_source_only_and_width_failures_before_output)
+Do not label source-only or overflowing rows as candidate evidence. ... ok
+test_report_writes_only_a_manifest_matched_candidate_audit (tests.test_menu_audit_tools.CandidateReportTests.test_report_writes_only_a_manifest_matched_candidate_audit)
+Bind the report to both the candidate image and its scenario bank. ... ok
+test_target_audit_emits_the_current_target_schema (tests.test_menu_audit_tools.FixedMenuAuditToolTests.test_target_audit_emits_the_current_target_schema)
+Prevent a silent producer/consumer schema drift. ... ok
+test_target_loader_accepts_the_canonical_label_column (tests.test_menu_audit_tools.FixedMenuAuditToolTests.test_target_loader_accepts_the_canonical_label_column)
+Load the current full-word-target CSV format. ... ok
+test_cli_facade_exports_the_parser_and_command_implementations (tests.test_modern_module_layout.ModernModuleLayoutTests.test_cli_facade_exports_the_parser_and_command_implementations)
+Keep established command imports valid after the CLI split. ... ok
+test_private_capture_fixture_paths_are_emulator_neutral (tests.test_modern_module_layout.ModernModuleLayoutTests.test_private_capture_fixture_paths_are_emulator_neutral)
+Keep private runtime evidence separate from any emulator brand. ... ok
+test_release_facade_exports_metadata_validation_helpers (tests.test_modern_module_layout.ModernModuleLayoutTests.test_release_facade_exports_metadata_validation_helpers)
+Keep release callers independent of metadata-module placement. ... ok
+test_title_facade_exports_layout_asset_and_patch_helpers (tests.test_modern_module_layout.ModernModuleLayoutTests.test_title_facade_exports_layout_asset_and_patch_helpers)
+Keep title callers independent of the internal three-way split. ... ok
+test_ui_facade_exports_the_fixed_table_data (tests.test_modern_module_layout.ModernModuleLayoutTests.test_ui_facade_exports_the_fixed_table_data)
+Keep fixed-table callers independent of the declarative-data split. ... ok
+test_active_english_tiles_stay_in_proven_font_source (tests.test_nov4_font_source_safety.Nov4FontSourceSafetyTests.test_active_english_tiles_stay_in_proven_font_source)
+Fail if any active glyph enters slots $98-$AF or leaves $B0-$FE. ... ok
+test_direct_graphics_slots_are_never_active_font_tiles (tests.test_nov4_font_source_safety.Nov4FontSourceSafetyTests.test_direct_graphics_slots_are_never_active_font_tiles)
+Catch future reuse of slots $98-$AF, including the old $AC alias. ... ok
+test_font_patch_preserves_entire_direct_graphics_source (tests.test_nov4_font_source_safety.Nov4FontSourceSafetyTests.test_font_patch_preserves_entire_direct_graphics_source)
+Exercise production patching and protect every byte in $203D-$20FC. ... ok
+test_recovered_source_boundaries_match_font_table_geometry (tests.test_nov4_font_source_safety.Nov4FontSourceSafetyTests.test_recovered_source_boundaries_match_font_table_geometry)
+Lock the direct-graphics/font boundary to recovered NOV4 offsets. ... ok
+test_bank_name_inference_accepts_supported_patterns (tests.test_project.ProjectConfigurationTests.test_bank_name_inference_accepts_supported_patterns)
+Verify the current contract described by this regression test. ... ok
+test_bank_name_inference_rejects_ambiguous_or_unknown_names (tests.test_project.ProjectConfigurationTests.test_bank_name_inference_rejects_ambiguous_or_unknown_names)
+Verify the current contract described by this regression test. ... ok
+test_deep_menu_pass_reserves_proven_dictionary_tokens (tests.test_project.ProjectConfigurationTests.test_deep_menu_pass_reserves_proven_dictionary_tokens)
+Verify the current contract described by this regression test. ... ok
+test_explicit_bank_name_is_validated (tests.test_project.ProjectConfigurationTests.test_explicit_bank_name_is_validated)
+Verify the current contract described by this regression test. ... ok
+test_clean_synthetic_public_tree_passes (tests.test_public_tree.PublicTreePolicyTests.test_clean_synthetic_public_tree_passes)
+Verify the current contract described by this regression test. ... ok
+test_private_artifacts_and_personal_paths_are_rejected (tests.test_public_tree.PublicTreePolicyTests.test_private_artifacts_and_personal_paths_are_rejected)
+Verify the current contract described by this regression test. ... ok
+test_tt6d_accepts_dictionary_entry_32 (tests.test_release_extended_dictionary_policy.ReleaseExtendedDictionaryPolicyTests.test_tt6d_accepts_dictionary_entry_32)
+Prove the canonical non-relocated path permits more than 31 entries. ... ok
+test_build_environment_records_python_and_pillow (tests.test_release_integrity_polish.ReleaseIntegrityPolishTests.test_build_environment_records_python_and_pillow)
+Verify the current contract described by this regression test. ... ok
+test_manifest_validator_rejects_missing_audit_fields (tests.test_release_integrity_polish.ReleaseIntegrityPolishTests.test_manifest_validator_rejects_missing_audit_fields)
+Verify the current contract described by this regression test. ... ok
+test_promotion_accepts_candidate_matching_fresh_rebuild (tests.test_release_integrity_polish.ReleaseIntegrityPolishTests.test_promotion_accepts_candidate_matching_fresh_rebuild)
+Verify the current contract described by this regression test. ... ok
+test_promotion_rechecks_candidate_outputs_before_target_write (tests.test_release_integrity_polish.ReleaseIntegrityPolishTests.test_promotion_rechecks_candidate_outputs_before_target_write)
+Verify the current contract described by this regression test. ... ok
+test_promotion_rejects_candidate_not_matching_fresh_rebuild (tests.test_release_integrity_polish.ReleaseIntegrityPolishTests.test_promotion_rejects_candidate_not_matching_fresh_rebuild)
+Verify the current contract described by this regression test. ... ok
+test_promotion_rejects_manifest_subtitle_not_in_source_lock (tests.test_release_integrity_polish.ReleaseIntegrityPolishTests.test_promotion_rejects_manifest_subtitle_not_in_source_lock)
+Verify the current contract described by this regression test. ... ok
+test_promotion_target_rejects_candidate_manifest_destination (tests.test_release_integrity_polish.ReleaseIntegrityPolishTests.test_promotion_target_rejects_candidate_manifest_destination)
+Verify the current contract described by this regression test. ... ok
+test_source_lock_update_rejects_approved_source_destination (tests.test_release_integrity_polish.ReleaseIntegrityPolishTests.test_source_lock_update_rejects_approved_source_destination)
+Verify the current contract described by this regression test. ... ok
+test_checked_in_target_is_current_or_explicitly_absent (tests.test_release_unit.ReleaseConfigurationUnitTests.test_checked_in_target_is_current_or_explicitly_absent)
+Require either a valid current target or documented pre-promotion state. ... ok
+test_cli_uses_console_script_name_and_repository_defaults (tests.test_release_unit.ReleaseConfigurationUnitTests.test_cli_uses_console_script_name_and_repository_defaults)
+Verify the current contract described by this regression test. ... ok
+test_code_provenance_does_not_require_git (tests.test_release_unit.ReleaseConfigurationUnitTests.test_code_provenance_does_not_require_git)
+Verify the current contract described by this regression test. ... ok
+test_code_tree_hash_binds_normalized_path_identity (tests.test_release_unit.ReleaseConfigurationUnitTests.test_code_tree_hash_binds_normalized_path_identity)
+Verify the current contract described by this regression test. ... ok
+test_code_tree_hash_is_path_order_and_line_ending_independent (tests.test_release_unit.ReleaseConfigurationUnitTests.test_code_tree_hash_is_path_order_and_line_ending_independent)
+Verify the current contract described by this regression test. ... ok
+test_distinct_execution_and_checkout_paths_hash_logically (tests.test_release_unit.ReleaseConfigurationUnitTests.test_distinct_execution_and_checkout_paths_hash_logically)
+Compare installed and checkout trees by logical package identity. ... ok
+test_explicit_non_project_is_rejected (tests.test_release_unit.ReleaseConfigurationUnitTests.test_explicit_non_project_is_rejected)
+Verify the current contract described by this regression test. ... ok
+test_external_paths_are_manifest_safe (tests.test_release_unit.ReleaseConfigurationUnitTests.test_external_paths_are_manifest_safe)
+Verify the current contract described by this regression test. ... ok
+test_failed_publication_invalidates_previous_manifest (tests.test_release_unit.ReleaseConfigurationUnitTests.test_failed_publication_invalidates_previous_manifest)
+Never leave an old manifest attesting a partly replaced output set. ... ok
+test_known_cli_error_has_no_traceback (tests.test_release_unit.ReleaseConfigurationUnitTests.test_known_cli_error_has_no_traceback)
+Verify the current contract described by this regression test. ... ok
+test_mismatched_execution_and_checkout_trees_fail_closed (tests.test_release_unit.ReleaseConfigurationUnitTests.test_mismatched_execution_and_checkout_trees_fail_closed)
+Reject an installed implementation with different source contents. ... ok
+test_project_root_is_discovered_from_nested_directory (tests.test_release_unit.ReleaseConfigurationUnitTests.test_project_root_is_discovered_from_nested_directory)
+Verify the current contract described by this regression test. ... ok
+test_promotion_accepts_external_lock_when_rebuild_matches (tests.test_release_unit.ReleaseConfigurationUnitTests.test_promotion_accepts_external_lock_when_rebuild_matches)
+Keep external-lock support while requiring canonical reproduction. ... ok
+test_publisher_replaces_from_destination_local_temporary_files (tests.test_release_unit.ReleaseConfigurationUnitTests.test_publisher_replaces_from_destination_local_temporary_files)
+Verify the current contract described by this regression test. ... ok
+test_release_build_checks_code_before_inputs_or_generation (tests.test_release_unit.ReleaseConfigurationUnitTests.test_release_build_checks_code_before_inputs_or_generation)
+Fail on executor mismatch before validating private release inputs. ... ok
+test_release_target_is_tied_to_source_lock (tests.test_release_unit.ReleaseConfigurationUnitTests.test_release_target_is_tied_to_source_lock)
+Verify the current contract described by this regression test. ... ok
+test_release_target_rejects_boolean_numeric_fields (tests.test_release_unit.ReleaseConfigurationUnitTests.test_release_target_rejects_boolean_numeric_fields)
+JSON booleans must not pass integer provenance or size checks. ... ok
+test_release_target_rejects_different_code_tree (tests.test_release_unit.ReleaseConfigurationUnitTests.test_release_target_rejects_different_code_tree)
+Verify the current contract described by this regression test. ... ok
+test_release_target_reports_malformed_json_with_its_path (tests.test_release_unit.ReleaseConfigurationUnitTests.test_release_target_reports_malformed_json_with_its_path)
+Turn malformed metadata into a concise release-domain error. ... ok
+test_source_lock_document_hash_normalizes_line_endings (tests.test_release_unit.ReleaseConfigurationUnitTests.test_source_lock_document_hash_normalizes_line_endings)
+Bind targets to one logical lock document on Windows and Unix. ... ok
+test_source_lock_keeps_binary_inputs_byte_exact (tests.test_release_unit.ReleaseConfigurationUnitTests.test_source_lock_keeps_binary_inputs_byte_exact)
+Never apply text normalization to ROMs or title artwork. ... ok
+test_source_lock_metadata_enforces_path_normalization_policy (tests.test_release_unit.ReleaseConfigurationUnitTests.test_source_lock_metadata_enforces_path_normalization_policy)
+Reject a binary-as-text policy that could weaken exact locking. ... ok
+test_source_lock_normalizes_translation_line_endings (tests.test_release_unit.ReleaseConfigurationUnitTests.test_source_lock_normalizes_translation_line_endings)
+Treat LF and CRLF translation JSON as the same approved input. ... ok
+test_source_lock_payload_uses_current_schema (tests.test_release_unit.ReleaseConfigurationUnitTests.test_source_lock_payload_uses_current_schema)
+Verify the current contract described by this regression test. ... ok
+test_source_lock_rejects_changed_normalized_translation (tests.test_release_unit.ReleaseConfigurationUnitTests.test_source_lock_rejects_changed_normalized_translation)
+Line-ending tolerance must not hide a text-content change. ... ok
+test_beam_search_can_beat_a_greedy_dictionary (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_beam_search_can_beat_a_greedy_dictionary)
+Keep a corpus where overlapping choices punish greedy selection. ... ok
+test_beam_search_preserves_required_dictionary_prefix (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_beam_search_preserves_required_dictionary_prefix)
+Keep fixed-UI dictionary indices stable during alternative search. ... ok
+test_capacity_fallback_retries_without_candidate_pruning (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_capacity_fallback_retries_without_candidate_pruning)
+Verify the current contract described by this regression test. ... ok
+test_dictionary_boundary_can_include_fixed_ui_only_entries (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_dictionary_boundary_can_include_fixed_ui_only_entries)
+Verify the current contract described by this regression test. ... ok
+test_dictionary_order_search_can_improve_overlapping_entries (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_dictionary_order_search_can_improve_overlapping_entries)
+Prove that optional-entry order can reduce the exact packed size. ... ok
+test_extract_preserves_english_only_for_matching_stable_id (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_extract_preserves_english_only_for_matching_stable_id)
+Verify the current contract described by this regression test. ... ok
+test_fds_parser_rejects_zero_side_images (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_fds_parser_rejects_zero_side_images)
+Verify the current contract described by this regression test. ... ok
+test_fixed_ui_dictionary_requirement_fails_closed (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_fixed_ui_dictionary_requirement_fails_closed)
+Verify the current contract described by this regression test. ... ok
+test_fixed_ui_insert_rejects_no_compress (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_fixed_ui_insert_rejects_no_compress)
+Verify the current contract described by this regression test. ... ok
+test_insert_enforces_display_width (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_insert_enforces_display_width)
+Verify the current contract described by this regression test. ... ok
+test_insert_rejects_mismatched_record_id (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_insert_rejects_mismatched_record_id)
+Verify the current contract described by this regression test. ... ok
+test_optimize_excludes_release_invalid_candidates (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_optimize_excludes_release_invalid_candidates)
+Choose the smallest candidate that satisfies a bank constraint. ... ok
+test_optimize_selects_the_smallest_valid_result (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_optimize_selects_the_smallest_valid_result)
+Wire alternative search into the opt-in production entry point. ... ok
+test_rebuild_rejects_more_than_31_dictionary_entries (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_rebuild_rejects_more_than_31_dictionary_entries)
+Verify the current contract described by this regression test. ... ok
+test_rebuild_rejects_per_group_record_count_change (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_rebuild_rejects_per_group_record_count_change)
+Verify the current contract described by this regression test. ... ok
+test_release_pins_pillow_version (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_release_pins_pillow_version)
+Verify the current contract described by this regression test. ... ok
+test_shared_validator_keeps_personality_wrap_exception (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_shared_validator_keeps_personality_wrap_exception)
+Verify the current contract described by this regression test. ... ok
+test_split_records_rejects_negative_limit (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_split_records_rejects_negative_limit)
+Verify the current contract described by this regression test. ... ok
+test_undersized_fixed_slot_labels_are_reserved (tests.test_scenario_validation_hardening.ScenarioValidationHardeningTests.test_undersized_fixed_slot_labels_are_reserved)
+Keep complete labels encodable after alternative dictionary search. ... ok
+test_encoder_rejects_zero_dictionary_reference (tests.test_textcodec.PackedTextTests.test_encoder_rejects_zero_dictionary_reference)
+Verify the current contract described by this regression test. ... ok
+test_encoder_round_trip (tests.test_textcodec.PackedTextTests.test_encoder_round_trip)
+Verify the current contract described by this regression test. ... ok
+test_extended_english_dictionary_round_trip (tests.test_textcodec.PackedTextTests.test_extended_english_dictionary_round_trip)
+Decode entries 32-68 only when the patched mode is explicit. ... ok
+test_maximum_symbol_values_round_trip (tests.test_textcodec.PackedTextTests.test_maximum_symbol_values_round_trip)
+Verify the current contract described by this regression test. ... ok
+test_pack_records_writes_aligned_separators (tests.test_textcodec.PackedTextTests.test_pack_records_writes_aligned_separators)
+Verify the current contract described by this regression test. ... ok
+test_prefix_tree (tests.test_textcodec.PackedTextTests.test_prefix_tree)
+Verify the current contract described by this regression test. ... ok
+test_separator_aligns_the_next_record (tests.test_textcodec.PackedTextTests.test_separator_aligns_the_next_record)
+Verify the current contract described by this regression test. ... ok
+test_checked_in_asset_files_are_locked (tests.test_title_opening_assets.TitleOpeningAssetTests.test_checked_in_asset_files_are_locked)
+Keep source and encoded PNG files byte-identical across rebuilds. ... ok
+test_letter_boundary_white_mask_is_pixel_locked (tests.test_title_opening_assets.TitleOpeningAssetTests.test_letter_boundary_white_mask_is_pixel_locked)
+Reject another one-pixel phase shift along the wordmark outline. ... ok
+test_native_phase_geometry_is_pixel_locked_and_distinct (tests.test_title_opening_assets.TitleOpeningAssetTests.test_native_phase_geometry_is_pixel_locked_and_distinct)
+Reject resampling drift or replacement with one shared wordmark. ... ok
+test_one_pixel_clock_and_trademark_details_survive (tests.test_title_opening_assets.TitleOpeningAssetTests.test_one_pixel_clock_and_trademark_details_survive)
+Keep the thin 12/9/3/6 and TM strokes from the display authority. ... ok
+test_opening_regenerates_both_native_assets_exactly (tests.test_title_opening_assets.TitleOpeningAssetTests.test_opening_regenerates_both_native_assets_exactly)
+Prove the checked-in PNGs regenerate with reviewed polish. ... ok
+test_reviewed_polish_repairs_all_reported_logo_details (tests.test_title_opening_assets.TitleOpeningAssetTests.test_reviewed_polish_repairs_all_reported_logo_details)
+Lock the reviewed T, clock, W/I/S, and TM cleanup regions. ... ok
+test_exit_helper_blanks_rendering_before_split_teardown (tests.test_title_unit.TitleHelperTests.test_exit_helper_blanks_rendering_before_split_teardown)
+Prevent lower title tiles from flashing as upper-logo fragments. ... ok
+test_pre_slide_helper_restores_chr_before_queuing_palette (tests.test_title_unit.TitleHelperTests.test_pre_slide_helper_restores_chr_before_queuing_palette)
+Keep the BIOS upload from clobbering the staged slide palette. ... ok
+test_camel_dialect_fragment_is_internally_valid (tests.test_translation_patch_fragments.TranslationPatchFragmentTests.test_camel_dialect_fragment_is_internally_valid)
+Verify the current contract described by this regression test. ... ok
+test_camel_dialect_fragment_keeps_control_orders (tests.test_translation_patch_fragments.TranslationPatchFragmentTests.test_camel_dialect_fragment_keeps_control_orders)
+Verify the current contract described by this regression test. ... ok
+test_camel_dialect_fragment_preserves_expected_records (tests.test_translation_patch_fragments.TranslationPatchFragmentTests.test_camel_dialect_fragment_preserves_expected_records)
+Verify the current contract described by this regression test. ... ok
+test_all_source_records_are_present_once_and_in_order (tests.test_translation_workbook.TranslationWorkbookTests.test_all_source_records_are_present_once_and_in_order)
+Verify the current contract described by this regression test. ... ok
+test_every_record_has_required_translation_fields (tests.test_translation_workbook.TranslationWorkbookTests.test_every_record_has_required_translation_fields)
+Verify the current contract described by this regression test. ... ok
+test_every_scenario_patch_is_encodable_by_the_rom_font (tests.test_translation_workbook.TranslationWorkbookTests.test_every_scenario_patch_is_encodable_by_the_rom_font)
+Verify the current contract described by this regression test. ... ok
+test_exact_japanese_is_byte_for_byte_source_text (tests.test_translation_workbook.TranslationWorkbookTests.test_exact_japanese_is_byte_for_byte_source_text)
+Verify the current contract described by this regression test. ... ok
+test_html_contains_required_filters_and_all_record_ids (tests.test_translation_workbook.TranslationWorkbookTests.test_html_contains_required_filters_and_all_record_ids)
+Verify the current contract described by this regression test. ... ok
+test_machine_readable_outputs_round_trip (tests.test_translation_workbook.TranslationWorkbookTests.test_machine_readable_outputs_round_trip)
+Verify the current contract described by this regression test. ... ok
+test_no_patch_safe_record_requires_storage_expansion (tests.test_translation_workbook.TranslationWorkbookTests.test_no_patch_safe_record_requires_storage_expansion)
+Verify the current contract described by this regression test. ... ok
+test_patch_controls_match_source_except_documented_ui_override (tests.test_translation_workbook.TranslationWorkbookTests.test_patch_controls_match_source_except_documented_ui_override)
+Verify the current contract described by this regression test. ... ok
+test_patch_safe_text_matches_playable_authority (tests.test_translation_workbook.TranslationWorkbookTests.test_patch_safe_text_matches_playable_authority)
+Verify the current contract described by this regression test. ... ok
+test_reconstruction_avoids_known_substring_corruption (tests.test_translation_workbook.TranslationWorkbookTests.test_reconstruction_avoids_known_substring_corruption)
+Verify the current contract described by this regression test. ... ok
+test_romaji_contains_no_unromanized_japanese_characters (tests.test_translation_workbook.TranslationWorkbookTests.test_romaji_contains_no_unromanized_japanese_characters)
+Verify the current contract described by this regression test. ... ok
+test_validation_function_accepts_completed_workbook (tests.test_translation_workbook.TranslationWorkbookTests.test_validation_function_accepts_completed_workbook)
+Verify the current contract described by this regression test. ... ok
+test_visible_words_after_ellipses_have_a_space (tests.test_translation_workbook.TranslationWorkbookTests.test_visible_words_after_ellipses_have_a_space)
+Verify the current contract described by this regression test. ... ok
+test_august_12_dictionary_assisted_full_word_experiment_is_locked (tests.test_ui_fixed_tables.FixedMenuCopyTests.test_august_12_dictionary_assisted_full_word_experiment_is_locked)
+Protect full-word labels proven by existing/reused dictionary slots. ... ok
+test_august_12_full_label_fit_examples_are_locked (tests.test_ui_fixed_tables.FixedMenuCopyTests.test_august_12_full_label_fit_examples_are_locked)
+Protect the latest safe fixed-menu label expansions. ... ok
+test_disk_copy_is_title_case_and_exactly_size_neutral (tests.test_ui_fixed_tables.FixedMenuCopyTests.test_disk_copy_is_title_case_and_exactly_size_neutral)
+Preserve every NOV2 prompt slot while avoiding all-caps copy. ... ok
+test_fixed_menu_labels_use_mixed_case_where_verified (tests.test_ui_fixed_tables.FixedMenuCopyTests.test_fixed_menu_labels_use_mixed_case_where_verified)
+Keep complete menu words readable while leaving forced abbreviations. ... ok
+test_fixed_month_and_confirmation_choices_use_title_case (tests.test_ui_fixed_tables.FixedMenuCopyTests.test_fixed_month_and_confirmation_choices_use_title_case)
+Keep selector choices consistent with the rest of the English UI. ... ok
+test_full_word_blockers_are_explicit_and_source_reviewed (tests.test_ui_fixed_tables.FixedMenuCopyTests.test_full_word_blockers_are_explicit_and_source_reviewed)
+Never turn an unavailable full-word target into a hidden success. ... ok
+test_full_word_target_branch_removes_known_placeholder_abbreviations (tests.test_ui_fixed_tables.FixedMenuCopyTests.test_full_word_target_branch_removes_known_placeholder_abbreviations)
+The compression branch should target readable labels, not codes. ... ok
+test_kouhen_direct_boot_copy_uses_the_same_title_case_style (tests.test_ui_fixed_tables.FixedMenuCopyTests.test_kouhen_direct_boot_copy_uses_the_same_title_case_style)
+Keep the FDS-only direct-boot warning consistent with NOV2. ... ok
+test_proven_full_command_labels_use_title_case (tests.test_ui_fixed_tables.FixedMenuCopyTests.test_proven_full_command_labels_use_title_case)
+Protect the size-neutral replacements for cramped menu verbs. ... ok
+test_tt3b_fight_suffix_fits_the_fixed_record (tests.test_ui_fixed_tables.FixedMenuCopyTests.test_tt3b_fight_suffix_fits_the_fixed_record)
+Spell Fight in full within its four-byte native menu slot. ... ok
+test_disk_set_error_record_is_translated_in_place (tests.test_ui_unit.FixedPromptTests.test_disk_set_error_record_is_translated_in_place)
+Replace the byte-aligned double-swap retry heading. ... ok
+test_disk_set_error_record_rejects_unknown_source (tests.test_ui_unit.FixedPromptTests.test_disk_set_error_record_rejects_unknown_source)
+Guard the recovered source bytes before changing them. ... ok
+test_load_prompt_rejects_an_unknown_source (tests.test_ui_unit.FixedPromptTests.test_load_prompt_rejects_an_unknown_source)
+Fail closed instead of writing Load onto an unverified revision. ... ok
+test_load_prompt_replaces_only_its_verified_four_byte_slot (tests.test_ui_unit.FixedPromptTests.test_load_prompt_replaces_only_its_verified_four_byte_slot)
+Render Load after Start without moving following NOV2 data. ... ok
+test_nov4_load_prompt_rejects_an_unknown_source (tests.test_ui_unit.FixedPromptTests.test_nov4_load_prompt_rejects_an_unknown_source)
+Reject an unknown title-overlay revision without altering it. ... ok
+test_nov4_load_prompt_replaces_the_visible_saved_game_choice (tests.test_ui_unit.FixedPromptTests.test_nov4_load_prompt_replaces_the_visible_saved_game_choice)
+Render Load in NOV4's six-byte title-menu saved-game slot. ... ok
+test_save_prompt_rejects_an_unknown_source (tests.test_ui_unit.FixedPromptTests.test_save_prompt_rejects_an_unknown_source)
+Fail closed instead of writing Save onto an unknown revision. ... ok
+test_save_prompt_replaces_only_its_verified_four_byte_slot (tests.test_ui_unit.FixedPromptTests.test_save_prompt_replaces_only_its_verified_four_byte_slot)
+Render Save in NOV2's visible system-menu command slot. ... ok
+test_title_menu_prompts_use_title_case_without_growing (tests.test_ui_unit.FixedPromptTests.test_title_menu_prompts_use_title_case_without_growing)
+Keep the live Start and Load choices readable and size-neutral. ... ok
+test_all_declared_patch_addresses_match_the_verified_load (tests.test_ui_unit.SourceVerifiedPatchTests.test_all_declared_patch_addresses_match_the_verified_load)
+Audit every production record through its established load mapping. ... ok
+test_cpu_address_must_match_verified_component_load (tests.test_ui_unit.SourceVerifiedPatchTests.test_cpu_address_must_match_verified_component_load)
+Reject a descriptive CPU address that disagrees with the file offset. ... ok
+test_documented_patch_offsets_match_declarative_records (tests.test_ui_unit.SourceVerifiedPatchTests.test_documented_patch_offsets_match_declarative_records)
+Keep the implementation guide's file/CPU pairs auditable. ... ok
+test_extended_dictionary_decoder_is_an_exact_size_replacement (tests.test_ui_unit.SourceVerifiedPatchTests.test_extended_dictionary_decoder_is_an_exact_size_replacement)
+Lock the 13-byte escape decoder and its recovered load address. ... ok
+test_matching_source_is_patched_in_place (tests.test_ui_unit.SourceVerifiedPatchTests.test_matching_source_is_patched_in_place)
+Apply a same-size replacement at its declared file offset. ... ok
+test_size_changing_metadata_is_rejected (tests.test_ui_unit.SourceVerifiedPatchTests.test_size_changing_metadata_is_rejected)
+Reject declarative metadata that would move following code. ... ok
+test_source_mismatch_fails_without_mutation (tests.test_ui_unit.SourceVerifiedPatchTests.test_source_mismatch_fails_without_mutation)
+Reject an unexpected binary revision before changing bytes. ... ok
+test_unknown_component_load_mapping_is_rejected (tests.test_ui_unit.SourceVerifiedPatchTests.test_unknown_component_load_mapping_is_rejected)
+Avoid inventing generic mappings for unverified components. ... ok
+
+======================================================================
+FAIL: test_every_module_class_and_function_explains_its_purpose (tests.test_documentation_contract.DocumentationContractTests.test_every_module_class_and_function_explains_its_purpose)
+Require documentation for every maintained Python definition.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/runner/work/time-twist-fds-english-translation/time-twist-fds-english-translation/work/tests/test_documentation_contract.py", line 66, in test_every_module_class_and_function_explains_its_purpose
+    self.assertEqual(
+AssertionError: Lists differ: ['work/tools/external_translation_compare.py:204: function word'] != []
+
+First list contains 1 additional elements.
+First extra element 0:
+'work/tools/external_translation_compare.py:204: function word'
+
+- ['work/tools/external_translation_compare.py:204: function word']
++ [] : Add a purpose docstring before introducing new maintained code:
+work/tools/external_translation_compare.py:204: function word
+
+----------------------------------------------------------------------
+Ran 160 tests in 52.080s
+
+FAILED (failures=1)
+FIT TT1A: 1666/1669 (3 bytes free; recorded delta +10)
+FIT TT1B: 3930/4234 (304 bytes free; recorded delta -92)
+FIT TT2: 4092/4141 (49 bytes free; recorded delta +258)
+FIT T22: 1913/1939 (26 bytes free; recorded delta +112)
+FIT TT3A: 4090/4169 (79 bytes free; recorded delta +357)
+FIT TT3B: 1909/1927 (18 bytes free; recorded delta +72)
+FIT TT4: 5169/5187 (18 bytes free; recorded delta +431)
+FIT TT5: 4191/4201 (10 bytes free; recorded delta +498)
+FIT T25: 2441/2561 (120 bytes free; recorded delta +78)
+FIT TT6A: 2828/3000 (172 bytes free; recorded delta +5)
+FIT TT6B: 2547/2601 (54 bytes free; recorded delta +249)
+FIT TT6C: 3848/3947 (99 bytes free; recorded delta +328)
+FIT TT6D: 327/332 (5 bytes free; recorded delta +4)
+/tmp/tmphbmr6fkb/scenario.json
+/tmp/tmphbmr6fkb/scenario.json
+/tmp/tmpsmsciwav/scenario.json
+/tmp/tmpnlurt7we/scenario.json
