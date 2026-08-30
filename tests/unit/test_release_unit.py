@@ -1,4 +1,4 @@
-"""Unit tests for current source-lock, provenance, and safe publication behavior."""
+"""Unit tests for source locking, provenance, and safe release publication."""
 
 from __future__ import annotations
 
@@ -38,43 +38,16 @@ from time_twist.release import (
 )
 
 from tests.support.paths import PROJECT_ROOT
-
-
-def make_synthetic_project(root: Path) -> Path:
-    """Create the public source inputs needed by release unit tests."""
-    work = root / "work"
-    translations = work / "translations"
-    title_assets = work / "title_assets"
-    baseline = work / "baseline"
-    code = work / "time_twist"
-    translations.mkdir(parents=True)
-    title_assets.mkdir()
-    baseline.mkdir()
-    code.mkdir()
-    (root / "pyproject.toml").write_text(
-        "[project]\nname='test'\n", encoding="utf-8"
-    )
-    (code / "__init__.py").write_text('"""Synthetic package."""\n')
-    for bank in KNOWN_SCENARIO_BANKS:
-        (translations / f"{bank}.json").write_text("{}\n", encoding="utf-8")
-    (title_assets / "Time Twist approved native title.png").write_bytes(
-        b"title"
-    )
-    (title_assets / "Time Twist approved native slide.png").write_bytes(
-        b"slide"
-    )
-    (baseline / "time_twist_zenpen_japan.fds").write_bytes(b"zenpen")
-    (baseline / "time_twist_kouhen_japan.fds").write_bytes(b"kouhen")
-    return root
+from tests.support.release_project import make_synthetic_project
 
 
 class ReleaseConfigurationUnitTests(unittest.TestCase):
-    """Group current regression tests by project contract."""
+    """Protect release configuration, provenance, and publication contracts."""
 
     def test_publisher_replaces_from_destination_local_temporary_files(
         self,
     ) -> None:
-        """Verify the current contract described by this regression test."""
+        """Publish staged outputs through destination-local temporary files."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             staging = root / "private-stage"
@@ -94,7 +67,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             def recording_replace(
                 source: str | Path, destination: str | Path
             ) -> None:
-                """Provide a deterministic helper for the current contract tests."""
+                """Record atomic replacements while preserving real behavior."""
                 replacements.append((Path(source), Path(destination)))
                 real_replace(source, destination)
 
@@ -144,14 +117,14 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             self.assertFalse(previous_manifest.exists())
 
     def test_project_root_is_discovered_from_nested_directory(self) -> None:
-        """Verify the current contract described by this regression test."""
+        """Find the checkout from a nested current test directory."""
         self.assertEqual(
-            discover_project_root(start=PROJECT_ROOT / "work" / "tests"),
+            discover_project_root(start=PROJECT_ROOT / "tests" / "unit"),
             PROJECT_ROOT,
         )
 
     def test_explicit_non_project_is_rejected(self) -> None:
-        """Verify the current contract described by this regression test."""
+        """Reject an explicit directory that lacks the project contract."""
         with (
             tempfile.TemporaryDirectory() as directory,
             self.assertRaisesRegex(ReleaseBuildError, "not a Time Twist"),
@@ -159,7 +132,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             discover_project_root(Path(directory))
 
     def test_external_paths_are_manifest_safe(self) -> None:
-        """Verify the current contract described by this regression test."""
+        """Render external metadata paths without pretending they are relative."""
         with tempfile.TemporaryDirectory() as directory:
             external = Path(directory) / "lock.json"
             self.assertEqual(
@@ -239,14 +212,14 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
                 validate_source_lock_metadata(payload)
 
     def test_source_lock_payload_uses_current_schema(self) -> None:
-        """Verify the current contract described by this regression test."""
+        """Emit the current source-lock schema for newly created locks."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             payload = build_source_lock_payload(root)
             self.assertEqual(payload["schema"], SOURCE_LOCK_SCHEMA)
 
     def test_release_target_is_tied_to_source_lock(self) -> None:
-        """Verify the current contract described by this regression test."""
+        """Reject a promoted target from a different source lock."""
         payload = {
             "schema": RELEASE_TARGET_SCHEMA,
             "release_id": "test",
@@ -273,22 +246,22 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
     def test_code_tree_hash_is_path_order_and_line_ending_independent(
         self,
     ) -> None:
-        """Verify the current contract described by this regression test."""
+        """Hash equivalent src trees identically across file and EOL ordering."""
         with tempfile.TemporaryDirectory() as directory:
             first = Path(directory) / "first"
             second = Path(directory) / "second"
             for root in (first, second):
-                (root / "work" / "time_twist").mkdir(parents=True)
-            (first / "work" / "time_twist" / "a.py").write_bytes(
+                (root / "src" / "time_twist").mkdir(parents=True)
+            (first / "src" / "time_twist" / "a.py").write_bytes(
                 b"value = 1\n"
             )
-            (first / "work" / "time_twist" / "b.py").write_bytes(
+            (first / "src" / "time_twist" / "b.py").write_bytes(
                 b"other = 2\n"
             )
-            (second / "work" / "time_twist" / "b.py").write_bytes(
+            (second / "src" / "time_twist" / "b.py").write_bytes(
                 b"other = 2\r\n"
             )
-            (second / "work" / "time_twist" / "a.py").write_bytes(
+            (second / "src" / "time_twist" / "a.py").write_bytes(
                 b"value = 1\r\n"
             )
             self.assertEqual(
@@ -302,7 +275,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
         """Compare installed and checkout trees by logical package identity."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "checkout"
-            checkout_code = root / "work" / "time_twist"
+            checkout_code = root / "src" / "time_twist"
             installed_code = (
                 Path(directory) / "venv" / "site-packages" / "time_twist"
             )
@@ -315,7 +288,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
                 root, executing_code_root=installed_code
             )
 
-            self.assertEqual(provenance["code_root"], "work/time_twist")
+            self.assertEqual(provenance["code_root"], "src/time_twist")
             self.assertEqual(
                 provenance["tree_sha256"], release_code_tree_sha256(root)
             )
@@ -324,7 +297,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
         """Reject an installed implementation with different source contents."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory) / "checkout"
-            checkout_code = root / "work" / "time_twist"
+            checkout_code = root / "src" / "time_twist"
             installed_code = Path(directory) / "installed" / "time_twist"
             checkout_code.mkdir(parents=True)
             installed_code.mkdir(parents=True)
@@ -356,10 +329,10 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             lock.assert_not_called()
 
     def test_code_tree_hash_binds_normalized_path_identity(self) -> None:
-        """Verify the current contract described by this regression test."""
+        """Change provenance when a release-critical module is renamed."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            code = root / "work" / "time_twist"
+            code = root / "src" / "time_twist"
             code.mkdir(parents=True)
             source = code / "a.py"
             source.write_bytes(b"value = 1\n")
@@ -368,10 +341,10 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             self.assertNotEqual(original, release_code_tree_sha256(root))
 
     def test_code_provenance_does_not_require_git(self) -> None:
-        """Verify the current contract described by this regression test."""
+        """Retain deterministic code provenance when Git is unavailable."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            code = root / "work" / "time_twist"
+            code = root / "src" / "time_twist"
             code.mkdir(parents=True)
             (code / "module.py").write_bytes(b"value = 1\n")
             with mock.patch(
@@ -389,7 +362,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             )
 
     def test_release_target_rejects_different_code_tree(self) -> None:
-        """Verify the current contract described by this regression test."""
+        """Reject a target tied to different release-critical source."""
         provenance = build_code_provenance(PROJECT_ROOT)
         provenance["tree_sha256"] = "0" * 64
         payload = {
@@ -496,7 +469,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
     def test_cli_uses_console_script_name_and_repository_defaults(
         self,
     ) -> None:
-        """Verify the current contract described by this regression test."""
+        """Keep release CLI defaults project-relative and installation-safe."""
         parser = build_parser()
         self.assertEqual(parser.prog, "time-twist")
         args = parser.parse_args(["release-build"])
@@ -507,7 +480,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
         self.assertFalse(args.candidate)
 
     def test_known_cli_error_has_no_traceback(self) -> None:
-        """Verify the current contract described by this regression test."""
+        """Render expected configuration errors without Python tracebacks."""
         stderr = io.StringIO()
         with (
             tempfile.TemporaryDirectory() as directory,
@@ -547,7 +520,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
                     "sha256": sha256_bytes(data),
                 }
             manifest_path = candidate / "release_manifest.json"
-            code_root = work / "time_twist"
+            code_root = root / "src" / "time_twist"
             manifest_payload = {
                 "schema": RELEASE_MANIFEST_SCHEMA,
                 "mode": "candidate",
