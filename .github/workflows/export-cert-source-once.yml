@@ -1,0 +1,22 @@
+name: export-cert-source-once
+
+on:
+  push:
+    branches: [codebase-architecture-polish]
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload exact checkout
+        uses: actions/upload-artifact@v4
+        with:
+          name: time-twist-cert-source
+          path: .
+          include-hidden-files: true
+          retention-days: 1
