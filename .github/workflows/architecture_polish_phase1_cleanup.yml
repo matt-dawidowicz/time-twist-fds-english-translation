@@ -62,6 +62,38 @@ jobs:
               )
           PY
 
+      - name: Keep review evidence outside the runtime package
+        shell: bash
+        run: |
+          set -euo pipefail
+          git mv work/time_twist/evidence.py tools/generation/evidence.py
+          python - <<'PY'
+          from pathlib import Path
+
+          for root in (Path("work"), Path("tools")):
+              for path in root.rglob("*.py"):
+                  text = path.read_text(encoding="utf-8")
+                  updated = text.replace(
+                      "from time_twist.evidence import PATCH_FOOTPRINT_RESULTS",
+                      "from tools.generation.evidence import PATCH_FOOTPRINT_RESULTS",
+                  )
+                  if updated != text:
+                      path.write_text(updated, encoding="utf-8")
+          PY
+          python -m black work tools
+          python -m ruff check --fix work tools
+          python -m ruff check work tools
+          python -m pydocstyle --convention=pep257 work tools
+          python -m mypy
+
+          PYTHONPATH=work python -m tools.generation.generate_bilingual_comparison_ci
+          PYTHONPATH=work python -m tools.generation.generate_translation_workbook
+          git diff --exit-code -- outputs work/translation_workbook_banks
+
+          # Phase 1 is a tooling-layout refactor. The installable production
+          # package must remain source-identical to the branch base.
+          git diff --exit-code HEAD -- work/time_twist
+
       - name: Run complete public unit suite
         run: python work/run_tests.py unit
 
@@ -84,6 +116,7 @@ jobs:
           find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
           PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=work python -B -m tools.maintenance.check_public_tree
 
+          git diff --exit-code HEAD -- work/time_twist
           git diff --exit-code -- work/translations work/manifests work/release_sources.json
 
           changed_title_assets="$(git diff --name-only -- work/title_assets | grep -v '^work/title_assets/README.md$' || true)"
