@@ -48,8 +48,10 @@ findings.
 Read:
 
 1. [Translation workflow](TRANSLATION_WORKFLOW.md)
-2. [Workbook pipeline](WORKBOOK_PIPELINE.md)
-3. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
+2. [Three-way translation review](THREE_WAY_TRANSLATION_REVIEW.md), when
+   comparing an independently supplied patch
+3. [Workbook pipeline](WORKBOOK_PIPELINE.md)
+4. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
 
 Playable scenario text lives in `work/translations/*.json`. The workbook's
 patch-safe field mirrors it; the natural field can retain a more expansive

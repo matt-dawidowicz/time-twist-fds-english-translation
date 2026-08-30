@@ -224,6 +224,7 @@ Start with [`docs/README.md`](docs/README.md). Important guides:
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/FORMATS.md`](docs/FORMATS.md)
 - [`docs/TRANSLATION_WORKFLOW.md`](docs/TRANSLATION_WORKFLOW.md)
+- [`docs/THREE_WAY_TRANSLATION_REVIEW.md`](docs/THREE_WAY_TRANSLATION_REVIEW.md)
 - [`docs/CLI_REFERENCE.md`](docs/CLI_REFERENCE.md)
 - [`docs/WORKBOOK_PIPELINE.md`](docs/WORKBOOK_PIPELINE.md)
 - [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)

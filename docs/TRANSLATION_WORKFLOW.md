@@ -144,6 +144,11 @@ python work/generate_translation_workbook.py
 python work/run_tests.py unit
 ```
 
+For an independently sourced competitor-patch audit, use the private
+three-way workflow in `docs/THREE_WAY_TRANSLATION_REVIEW.md`. Its decoded
+competitor corpus belongs under ignored `work/runtime_capture/`, never in the
+public generated artifacts.
+
 The workbook's patch-safe scenario text must equal the playable maps exactly.
 Natural translations may remain more expansive for editorial review.
 

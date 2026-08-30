@@ -16,6 +16,7 @@ need to change.
 | Fixed UI and input behavior | `work/time_twist/ui.py` | `ui_fixed_tables.py` | `work/tests/test_ui_unit.py`, `test_ui_fixed_tables.py` |
 | English title | `work/time_twist/title.py` | `title_layout.py`, `title_assets.py`, `title_patch.py` | `work/tests/test_title_unit.py` and private title integration tests |
 | Packed scenario text | `work/time_twist/scenario.py` | `textcodec.py`, `compression.py`, `scenario_validation.py` | `work/tests/test_textcodec.py`, `test_scenario_validation_hardening.py` |
+| Private three-way translation audit | `work/generate_three_way_comparison.py` | `work/time_twist/three_way.py` | `work/tests/test_three_way.py` |
 | FDS container | `work/time_twist/fds.py` | — | `work/tests/test_fds_synthetic.py`, `test_binary_properties.py` |
 
 `work/tests/test_modern_module_layout.py` protects the public facades and the
