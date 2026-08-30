@@ -62,7 +62,7 @@
     "tt3b_full_source_review_complete": true,
     "tt3b_source_records_reviewed": 58,
     "tt3b_audited_revisions": 2,
-    "scenario_source_records_fully_reviewed": 715,
+    "scenario_source_records_fully_reviewed": 917,
     "scenario_banks_fully_reviewed": [
       "TT3A",
       "TT3B",
@@ -70,7 +70,10 @@
       "TT1A",
       "TT2",
       "T22",
-      "TT6C"
+      "TT6C",
+      "TT6B",
+      "TT6A",
+      "TT6D"
     ],
     "tt1b_full_source_review_complete": true,
     "tt1b_source_records_reviewed": 137,
@@ -86,7 +89,16 @@
     "t22_audited_revisions": 5,
     "tt6c_full_source_review_complete": true,
     "tt6c_source_records_reviewed": 106,
-    "tt6c_audited_revisions": 1
+    "tt6c_audited_revisions": 1,
+    "tt6b_full_source_review_complete": true,
+    "tt6b_source_records_reviewed": 94,
+    "tt6b_audited_revisions": 5,
+    "tt6a_full_source_review_complete": true,
+    "tt6a_source_records_reviewed": 100,
+    "tt6a_audited_revisions": 0,
+    "tt6d_full_source_review_complete": true,
+    "tt6d_source_records_reviewed": 8,
+    "tt6d_audited_revisions": 0
   },
   "fixed_ui_progress": {
     "baseline_file": "work/audits/external_fixed_ui_baseline.json",
@@ -210,7 +222,7 @@
     }
   ],
   "current_live_fit": {
-    "measurement": "canonical test_live_translation_fit.py after completed source review through TT6C",
+    "measurement": "canonical test_live_translation_fit.py after completed source review through TT6D",
     "banks": [
       {
         "bank": "TT1A",
@@ -256,9 +268,9 @@
       },
       {
         "bank": "TT6B",
-        "used": 2547,
+        "used": 2548,
         "capacity": 2601,
-        "free": 54
+        "free": 53
       },
       {
         "bank": "TT3A",
@@ -312,7 +324,10 @@
     "tt1a_free_after_full_review": 3,
     "tt2_free_after_full_review": 49,
     "t22_free_after_five_revisions": 60,
-    "tt6c_free_after_one_revision": 96
+    "tt6c_free_after_one_revision": 96,
+    "tt6b_free_after_full_review": 53,
+    "tt6a_free_after_full_review": 172,
+    "tt6d_free_after_full_review": 5
   },
   "validation": {
     "clean_branch_workflow_run": 33289092641,
@@ -332,7 +347,7 @@
   "pending": [
     "complete external NOV2/NOV4 system-text alignment without assuming source offsets",
     "review fixed-label differences against Japanese and gameplay context",
-    "review TT6B source-grounded scenario text next, then continue bank by bank",
+    "review TT4 source-grounded scenario text next, then continue bank by bank",
     "perform final rebuilt-ROM and emulator validation after editorial review"
   ]
 }

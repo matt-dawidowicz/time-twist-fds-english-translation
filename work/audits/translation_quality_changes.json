@@ -455,6 +455,95 @@
       "visible_character_delta": 4,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT6B/g0/r1",
+      "japanese": "ろばのきも しらないで……",
+      "previous_english": "He knows no donkey pain.",
+      "new_english": "He knows no donkey woes.",
+      "category": [
+        "naturalness",
+        "fidelity",
+        "character_voice"
+      ],
+      "reason": "Render ろばのきも as the donkey's feelings/plight rather than the unnatural and overly narrow donkey pain, while retaining the comic animal voice.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT6B/g0/r9",
+      "japanese": "ろばのじんせいって かなしい……",
+      "previous_english": "A donkey's life is hard.",
+      "new_english": "A donkey's life is sad.",
+      "category": [
+        "emotional_fidelity",
+        "word_choice"
+      ],
+      "reason": "Restore かなしい as sad rather than changing the donkey's emotional complaint into the broader hard.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT6B/g0/r15",
+      "japanese": "よせふ「どうした！ かしむ…」",
+      "previous_english": "Joseph: What is it?",
+      "new_english": "Joseph: Kashim, what?!",
+      "category": [
+        "omitted_detail",
+        "addressee_specificity",
+        "character_context"
+      ],
+      "reason": "Restore Joseph explicitly addressing Kashim, which the current translation omits.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT6B/g1/r30",
+      "japanese": "{CTRL:0}{CTRL:0}へびにそそのかされ えばが くちにしたものは！",
+      "previous_english": "{CTRL:0}{CTRL:0}What fruit did Eve eat?",
+      "new_english": "{CTRL:0}{CTRL:0}What did Eve eat?",
+      "category": [
+        "fidelity",
+        "unsupported_specificity",
+        "quiz_wording"
+      ],
+      "reason": "Remove fruit, a category the Japanese does not state; the source simply asks what Eve ate after the serpent tempted her.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -6,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT6B/g2/r28",
+      "japanese": "めすうま「あら わかる！ これ… えるされむで{CTRL:0} はやりの かっとなのよ ふふふ…」",
+      "previous_english": "Mare: You noticed? This{CTRL:0}cut is hot in town.",
+      "new_english": "Mare: You noticed? This{CTRL:0}cut is hot in Jerusalem.",
+      "category": [
+        "omitted_detail",
+        "location_specificity",
+        "character_voice"
+      ],
+      "reason": "Restore the explicit Jerusalem reference in the mare's joke about her fashionable haircut.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 5,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
     }
   ]
 }
