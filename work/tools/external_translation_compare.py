@@ -17,6 +17,23 @@ LOAD_ADDRESS = 0xA200
 PATCH_GAP = 5
 MAX_SYMBOLS_PER_RECORD = 4096
 
+# Logical fixed-address records in the supplied external patch are frequently
+# stored as relocated 32-record pages. These offsets are relative to each
+# decoded bank file and contain structure only, never third-party prose.
+EXTERNAL_FIXED_SEGMENTS: dict[str, tuple[tuple[int, int], ...]] = {
+    "TT1B": ((0x1AC8, 32), (0x3542, 21)),
+    "TT2": ((0x3500, 32), (0x1BEE, 32), (0x3596, 6)),
+    "T22": ((0x0E14, 33),),
+    "TT3A": ((0x0A9E, 64), (0x0A04, 31)),
+    "TT3B": ((0x0AF4, 21),),
+    "TT4": ((0x21CE, 32), (0x2141, 32), (0x20A9, 32), (0x0E81, 1)),
+    "TT5": ((0x0B50, 32), (0x0AA5, 32), (0x0BDA, 32), (0x1B63, 17)),
+    "T25": ((0x098A, 32), (0x1281, 10)),
+    "TT6A": ((0x0547, 32), (0x0F28, 9)),
+    "TT6B": ((0x0580, 32), (0x0D4E, 30)),
+    "TT6C": ((0x176A, 32), (0x1643, 32), (0x16DB, 30)),
+}
+
 # Recovered third-party common table. Entries are packed-code values, not tile
 # IDs.
 COMMON = (
@@ -190,6 +207,22 @@ def decode_fixed_records(
             raise ValueError(message)
         records.append(record)
     return records, reader.byte_position
+
+
+def decode_external_fixed_segments(
+    data: bytes, segments: Iterable[tuple[int, int]]
+) -> list[list[Symbol]]:
+    """Decode relocated fixed-address segments in logical record order."""
+    segment_list = list(segments)
+    if not segment_list:
+        raise ValueError("at least one fixed-text segment is required")
+    records: list[list[Symbol]] = []
+    for offset, count in segment_list:
+        if count <= 0:
+            raise ValueError(f"fixed-text segment has invalid count: {count}")
+        decoded, _ = decode_fixed_records(data, offset, count)
+        records.extend(decoded)
+    return records
 
 
 def decode_external_bank(
