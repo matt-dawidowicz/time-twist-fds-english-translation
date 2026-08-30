@@ -215,8 +215,9 @@ def decode_external_bank(
         raise ValueError(f"group table pointer outside bank: {table_offset}")
 
     addresses = [word(0x26)]
-    for index in range(len(counts) - 1):
-        addresses.append(word(table_offset + index * 2))
+    addresses.extend(
+        word(table_offset + index * 2) for index in range(len(counts) - 1)
+    )
 
     groups: list[list[list[Symbol]]] = []
     for address, count in zip(addresses, counts, strict=True):
