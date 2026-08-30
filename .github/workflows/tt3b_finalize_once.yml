@@ -1,0 +1,122 @@
+name: TT3B finalize once
+
+on:
+  push:
+    branches: [translation-quality-comparison-audit]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: translation-quality-comparison-audit
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - name: Record TT3B source-grounded revisions
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          audit_path = Path('work/audits/translation_quality_changes.json')
+          audit = json.loads(audit_path.read_text(encoding='utf-8'))
+          changes = audit['changes']
+          by_id = {item['id'] for item in changes}
+          additions = [
+              {
+                  'id': 'TT3B/g0/r2',
+                  'japanese': 'おんな「ほうこくします だっそうへい1めいと{CTRL:0} かがくしゃ1めいを たいほしました」{CTRL:2}しゅみっと「ごくろう あとはわたしがひきうける」{CTRL:6}おんな「はいる ひとらー／」{CTRL:4}しゅみっと「はいる ひとらー／」',
+                  'previous_english': 'Woman: We caught one POW{CTRL:0}and one scientist.{CTRL:2}Schmidt: Good. My turn.{CTRL:6}Woman: Heil Hitler!{CTRL:4}Schmidt: Heil Hitler!',
+                  'new_english': 'Woman: We caught one{CTRL:0}escapee, one scientist.{CTRL:2}Schmidt: Good. My turn.{CTRL:6}Woman: Heil Hitler!{CTRL:4}Schmidt: Heil Hitler!',
+                  'category': ['source_specificity', 'character_status'],
+                  'reason': 'Restore だっそうへい as an escapee rather than reducing the report to the broader POW status, while preserving the one-escapee/one-scientist count.',
+                  'external_difference_triggered_review': False,
+                  'external_text_stored': False,
+                  'presentation_controls_changed': False,
+                  'visible_character_delta': 4,
+                  'encoded_byte_delta': None,
+                  'encoded_byte_delta_note': 'Measured at bank level after rebuild/compression; visible characters are not packed-byte cost.',
+              },
+              {
+                  'id': 'TT3B/g0/r7',
+                  'japanese': 'しもん「あいんしゅたいんは てんさいです{CTRL:0} いや かみのこ というべきか……{CTRL:0} だからこそ かれのりろんを{CTRL:0} ばくだんせいぞうなどに つかってはならない／」',
+                  'previous_english': 'Einstein was a genius.{CTRL:0}No, a child of God...{CTRL:0}his work must never fuel{CTRL:0}making bombs!',
+                  'new_english': 'Einstein was a genius.{CTRL:0}No, a child of God...{CTRL:0}His theory must not be{CTRL:0}used to make bombs!',
+                  'category': ['terminology', 'naturalness', 'source_specificity'],
+                  'reason': 'Render かれのりろん explicitly as Einstein\'s theory and replace the awkward fuel-making-bombs phrasing with the source\'s direct prohibition on using it to manufacture bombs.',
+                  'external_difference_triggered_review': False,
+                  'external_text_stored': False,
+                  'presentation_controls_changed': False,
+                  'visible_character_delta': -5,
+                  'encoded_byte_delta': None,
+                  'encoded_byte_delta_note': 'Measured at bank level after rebuild/compression; visible characters are not packed-byte cost.',
+              },
+          ]
+          for item in additions:
+              if item['id'] not in by_id:
+                  changes.append(item)
+          audit_path.write_text(json.dumps(audit, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+      - name: Regenerate review artifacts
+        run: |
+          python work/generate_bilingual_comparison_ci.py
+          python work/generate_translation_workbook.py
+      - name: Measure live translation fit
+        run: python -m unittest work.tests.test_live_translation_fit 2>&1 | tee /tmp/tt3b_fit.txt
+      - name: Synchronize TT3B baseline status
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          baseline_path = Path('work/audits/external_translation_baseline.json')
+          baseline = json.loads(baseline_path.read_text(encoding='utf-8'))
+          summary = baseline['scenario_summary']
+          summary['tt3b_full_source_review_complete'] = True
+          summary['tt3b_source_records_reviewed'] = 58
+          summary['tt3b_audited_revisions'] = 2
+          summary['scenario_source_records_fully_reviewed'] = 210
+          summary['scenario_banks_fully_reviewed'] = ['TT3A', 'TT3B']
+
+          fit_text = Path('/tmp/tt3b_fit.txt').read_text(encoding='utf-8')
+          match = re.search(r'FIT TT3B: (\d+)/(\d+) \((\d+) bytes free;', fit_text)
+          if not match:
+              raise SystemExit('TT3B fit line not found')
+          used, capacity, free = map(int, match.groups())
+          live = baseline['current_live_fit']
+          live['measurement'] = 'canonical test_live_translation_fit.py after nine TT3A and two TT3B source-grounded revisions'
+          for item in live['banks']:
+              if item['bank'] == 'TT3B':
+                  item.update(used=used, capacity=capacity, free=free)
+                  break
+          else:
+              raise SystemExit('TT3B bank row missing')
+          live['tt3b_free_after_two_revisions'] = free
+
+          pending = baseline.get('pending', [])
+          replacement = 'review TT1B source-grounded scenario text next, then continue bank by bank'
+          pending = [replacement if p == 'review TT3B source-grounded scenario text next, then continue bank by bank' else p for p in pending]
+          baseline['pending'] = pending
+          baseline_path.write_text(json.dumps(baseline, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print(f'TT3B FIT FINAL {used}/{capacity}; {free} bytes free')
+          PY
+      - name: Run unit suite
+        run: python work/run_tests.py unit
+      - name: Remove one-shot workflow and commit
+        run: |
+          rm .github/workflows/tt3b_finalize_once.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Complete source-grounded TT3B review"
+          git push origin HEAD:translation-quality-comparison-audit
