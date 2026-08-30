@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from tests.support.paths import PROJECT_ROOT
 from time_twist.compression import expand_dictionary_symbols
 from time_twist.english import render_english
 from time_twist.fds import FdsImage
@@ -25,8 +26,6 @@ from time_twist.release import (
 from time_twist.scenario import parse_scenario_bank
 from time_twist.textcodec import split_records
 from time_twist.ui import FIXED_RECORD_TABLE_SPECS
-
-from tests.support.paths import PROJECT_ROOT
 
 
 class ReleaseBuildTests(unittest.TestCase):

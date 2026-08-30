@@ -9,6 +9,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
+from tests.support.paths import PROJECT_ROOT
 from time_twist.cli import command_scenario_extract, command_scenario_insert
 from time_twist.compression import (
     _compress_english_groups_beam,
@@ -33,8 +34,6 @@ from time_twist.textcodec import (
     pack_records,
     split_records,
 )
-
-from tests.support.paths import PROJECT_ROOT
 
 LOAD_ADDRESS = 0xA200
 

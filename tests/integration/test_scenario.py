@@ -9,6 +9,7 @@ import unittest
 from pathlib import Path
 from types import SimpleNamespace
 
+from tests.support.paths import WORK_ROOT
 from time_twist.charmap import decode_common, decode_extended
 from time_twist.cli import (
     PERSONALITY_QUESTION_IDS,
@@ -40,8 +41,6 @@ from time_twist.scenario import (
     render_symbols,
 )
 from time_twist.textcodec import PackedSymbol, SymbolKind
-
-from tests.support.paths import WORK_ROOT
 
 WORK_DIR = WORK_ROOT
 

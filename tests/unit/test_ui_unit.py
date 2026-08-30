@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import unittest
 
+from tests.support.paths import PROJECT_ROOT
 from time_twist import ui
 from time_twist.english import encode_english, render_english
 from time_twist.textcodec import pack_records, split_records
@@ -28,8 +29,6 @@ from time_twist.ui import (
     _patched_nov4_load_prompt,
     _patched_save_prompt,
 )
-
-from tests.support.paths import PROJECT_ROOT
 
 
 class SourceVerifiedPatchTests(unittest.TestCase):

@@ -10,6 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PIL import Image
+
 from time_twist.title import (
     SLIDE_SCROLL_ORIGINS,
     build_title_assets,

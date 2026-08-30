@@ -11,6 +11,8 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from tests.support.paths import PROJECT_ROOT
+from tests.support.release_project import make_synthetic_project
 from time_twist.cli import build_parser, main
 from time_twist.project import KNOWN_SCENARIO_BANKS
 from time_twist.release import (
@@ -36,9 +38,6 @@ from time_twist.release import (
     validate_source_lock_metadata,
     write_source_lock,
 )
-
-from tests.support.paths import PROJECT_ROOT
-from tests.support.release_project import make_synthetic_project
 
 
 class ReleaseConfigurationUnitTests(unittest.TestCase):

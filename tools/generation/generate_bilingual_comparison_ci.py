@@ -16,7 +16,6 @@ from pathlib import Path
 from time_twist import ui
 from time_twist.scenario import render_symbols
 from time_twist.textcodec import split_records
-
 from tools.generation import generate_bilingual_comparison as comparison
 
 FIXED_SOURCE_TABLES = (

@@ -9,7 +9,6 @@ import unittest
 
 from time_twist.cli import PERSONALITY_QUESTION_IDS
 from time_twist.english import encode_english, validate_display_width
-
 from tools.generation.evidence import PATCH_FOOTPRINT_RESULTS
 from tools.generation.generate_translation_workbook import (
     CONTROL_OVERRIDE_IDS,

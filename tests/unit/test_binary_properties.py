@@ -6,6 +6,7 @@ import unittest
 
 from hypothesis import given, settings
 from hypothesis import strategies as st
+
 from time_twist.compression import (
     compress_english_groups,
     expand_dictionary_symbols,

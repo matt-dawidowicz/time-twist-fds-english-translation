@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import unittest
 
+from tests.support.paths import WORK_ROOT
 from time_twist.compression import expand_dictionary_symbols
 from time_twist.english import encode_english, render_english
 from time_twist.scenario import parse_scenario_bank
@@ -84,8 +85,6 @@ from time_twist.ui import (
     patched_tt6b_ui,
     patched_tt6c_ui,
 )
-
-from tests.support.paths import WORK_ROOT
 
 WORK_DIR = WORK_ROOT
 

@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from PIL import Image
+
 from time_twist.font import render_glyph
 
 SAMPLES = (

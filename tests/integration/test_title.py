@@ -7,9 +7,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import time_twist.title as title
 from PIL import Image
 
+import time_twist.title as title
 from tests.support.paths import WORK_ROOT
 from tools.preview.rebuild_native_title_asset import build_native_titles
 

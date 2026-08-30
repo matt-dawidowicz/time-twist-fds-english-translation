@@ -6,6 +6,7 @@ import json
 import re
 import unittest
 
+from tests.support.paths import WORK_ROOT
 from time_twist.capacity import (
     RELOCATED_FIXED_TABLE_PREFIX_BYTES,
     playable_capacity,
@@ -24,8 +25,6 @@ from time_twist.ui import (
     FIXED_RECORD_TABLE_SPECS,
     fixed_record_table_page_pointer_bytes,
 )
-
-from tests.support.paths import WORK_ROOT
 from tools.generation.evidence import PATCH_FOOTPRINT_RESULTS
 
 WORK = WORK_ROOT
