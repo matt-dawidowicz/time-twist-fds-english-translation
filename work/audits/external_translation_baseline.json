@@ -53,7 +53,10 @@
     "different_english_records": 1249,
     "unresolved_external_token_records": 0,
     "heuristic_human_review_candidates": 406,
-    "heuristic_note": "triage count only; not a mistranslation count"
+    "heuristic_note": "triage count only; not a mistranslation count",
+    "tt3a_conservative_heuristic_candidates": 17,
+    "tt3a_conservative_heuristic_candidates_adjudicated": 17,
+    "tt3a_full_source_review_complete": false
   },
   "banks": [
     {"bank": "TT3A", "half": "zenpen", "groups": 5, "records": 152, "exact": 10, "different": 142},
@@ -71,7 +74,7 @@
     {"bank": "T25", "half": "kouhen", "groups": 3, "records": 76, "exact": 5, "different": 71}
   ],
   "current_live_fit": {
-    "measurement": "canonical test_live_translation_fit.py after the first five TT3A source-grounded revisions",
+    "measurement": "canonical test_live_translation_fit.py after seven TT3A source-grounded revisions",
     "banks": [
       {"bank": "TT1A", "used": 1666, "capacity": 1669, "free": 3},
       {"bank": "TT6D", "used": 327, "capacity": 332, "free": 5},
@@ -81,16 +84,19 @@
       {"bank": "T22", "used": 1913, "capacity": 1939, "free": 26},
       {"bank": "TT2", "used": 4092, "capacity": 4141, "free": 49},
       {"bank": "TT6B", "used": 2547, "capacity": 2601, "free": 54},
-      {"bank": "TT3A", "used": 4104, "capacity": 4169, "free": 65},
+      {"bank": "TT3A", "used": 4113, "capacity": 4169, "free": 56},
       {"bank": "TT6C", "used": 3848, "capacity": 3947, "free": 99},
       {"bank": "T25", "used": 2441, "capacity": 2561, "free": 120},
       {"bank": "TT6A", "used": 2828, "capacity": 3000, "free": 172},
       {"bank": "TT1B", "used": 3930, "capacity": 4234, "free": 304}
     ],
     "tightest_banks": ["TT1A", "TT6D", "TT5", "TT3B", "TT4"],
-    "tt3a_free_before_latest_three_edits": 79,
-    "tt3a_free_after_latest_three_edits": 65,
-    "tt3a_latest_three_edits_packed_cost": 14
+    "tt3a_free_before_previous_three_edits": 79,
+    "tt3a_free_after_five_revisions": 65,
+    "tt3a_previous_three_edits_packed_cost": 14,
+    "tt3a_latest_two_visible_character_delta": 24,
+    "tt3a_latest_two_edits_packed_cost": 9,
+    "tt3a_free_after_seven_revisions": 56
   },
   "pending": [
     "fixed UI aligned comparison and total",
