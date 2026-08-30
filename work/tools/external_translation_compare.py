@@ -20,87 +20,17 @@ MAX_SYMBOLS_PER_RECORD = 4096
 # Recovered third-party common table. Entries are packed-code values, not tile
 # IDs.
 COMMON = (
-    " ",
-    "e",
-    "o",
-    "a",
-    "t",
-    ".",
-    "n",
-    "i",
-    "r",
-    "h",
-    "s",
-    "l",
-    "d",
-    "u",
-    "m",
-    ":",
-    "y",
-    "g",
-    "c",
-    "w",
-    "p",
-    "f",
-    "!",
-    ",",
-    "b",
-    "M",
-    "k",
-    "T",
-    "v",
-    "'",
-    "A",
-    "?",
-    "I",
-    "S",
-    "G",
-    "H",
-    "W",
-    "D",
-    "N",
-    "B",
-    "C",
-    "-",
-    "O",
-    "J",
-    "P",
-    "R",
-    "E",
-    "Y",
+    " ", "e", "o", "a", "t", ".", "n", "i", "r", "h", "s", "l", "d", "u", "m", ":",
+    "y", "g", "c", "w", "p", "f", "!", ",", "b", "M", "k", "T", "v", "'", "A", "?",
+    "I", "S", "G", "H", "W", "D", "N", "B", "C", "-", "O", "J", "P", "R", "E", "Y",
 )
 
 # The patch uses some extended codes as multi-character output tokens.
 EXTENDED = {
-    1: "j",
-    2: "F",
-    32: "s",
-    33: "ac",
-    34: "I ",
-    35: "Me",
-    36: "'",
-    37: "x",
-    38: "z",
-    39: "q",
-    40: ";",
-    41: "V",
-    42: "Q",
-    43: '"',
-    44: "Z",
-    46: "1",
-    47: "2",
-    48: "3",
-    49: "4",
-    50: "5",
-    51: "6",
-    52: "7",
-    53: "8",
-    54: "9",
-    55: "0",
-    59: "K",
-    60: "L",
-    61: "U",
-    63: " ",
+    1: "j", 2: "F", 32: "s", 33: "ac", 34: "I ", 35: "Me", 36: "'", 37: "x",
+    38: "z", 39: "q", 40: ";", 41: "V", 42: "Q", 43: '"', 44: "Z", 46: "1",
+    47: "2", 48: "3", 49: "4", 50: "5", 51: "6", 52: "7", 53: "8", 54: "9",
+    55: "0", 59: "K", 60: "L", 61: "U", 63: " ",
 }
 
 
@@ -157,7 +87,6 @@ def decode_symbol(reader: BitReader) -> Symbol:
     third = reader.read_bit()
     if third == 0:
         value = reader.read_bits(6)
-        # NOV2 redirects values 4..31 to dictionary entries 32..59.
         if 4 <= value <= 31:
             return Symbol("dictionary", value + 28)
         return Symbol("extended", value)
@@ -202,6 +131,7 @@ def decode_external_bank(
         raise ValueError("at least one source group count is required")
 
     def word(offset: int) -> int:
+        """Read one bounded little-endian pointer from the external bank."""
         if offset < 0 or offset + 2 > len(data):
             raise ValueError(f"pointer read outside bank: {offset}")
         return int.from_bytes(data[offset : offset + 2], "little")
