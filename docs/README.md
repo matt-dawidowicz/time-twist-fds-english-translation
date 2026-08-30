@@ -81,7 +81,8 @@ Read:
 
 1. [Architecture](ARCHITECTURE.md)
 2. [Formats](FORMATS.md)
-3. `fds.py`, `textcodec.py`, `scenario.py`, `english.py`, then `compression.py`
+3. `src/time_twist/fds.py`, `textcodec.py`, `scenario.py`, `english.py`, then
+   `compression.py`
 
 ## Work on the title or font
 
@@ -92,8 +93,8 @@ Read:
 3. [Font/title formats](FORMATS.md#font-and-title-assets)
 4. [Title sequence architecture](TITLE_SEQUENCE.md)
 5. [Patch layers](ARCHITECTURE.md#patch-layers)
-6. `work/time_twist/font.py`
-7. `work/time_twist/title.py`
+6. `src/time_twist/font.py`
+7. `src/time_twist/title.py`
 8. `tests/integration/test_title.py`
 
 The title conversion reuses the existing pattern-table split and animated
@@ -115,8 +116,9 @@ Read:
 3. [Contributing](../CONTRIBUTING.md)
 4. [CLI reference](CLI_REFERENCE.md)
 
-Run `python -m tools.maintenance.run_tests unit` for public work and the integration/all
-suite when the private overlay is available. Supported suites allow no skips.
+Run `python -m tools.maintenance.run_tests unit` for public work and the
+integration/all suite when the private overlay is available. Supported suites
+allow no skips.
 
 For the Python entry points, companion modules, and matching test files, read
 the [module map](MODULE_MAP.md).
@@ -139,12 +141,13 @@ promotion approves the exact reviewed hashes; a strict build reproduces them.
 | Representation | Purpose |
 | --- | --- |
 | `work/translations/*.json` | Playable scenario source |
-| `work/time_twist/ui.py` | Playable fixed/interface source |
+| `src/time_twist/ui.py` | Playable fixed/interface source |
+| `src/time_twist/font.py` and `title*.py` | Playable font/title transforms |
 | `work/title_assets/Time Twist approved native title.png` | Native ROM-bound final title geometry |
 | `work/title_assets/Time Twist approved native slide.png` | Native ROM-bound monochrome swipe geometry |
 | `work/release_sources.json` | Approved non-code input hashes |
 | `work/release_target.json` | Absent until a reviewed candidate is promoted |
-| `work/translated_scripts/*.json` | Decoded/review scenario records |
+| `work/translated_scripts/*.json` | Decoded/review scenario records used by comparison generation |
 | `work/translation_workbook_banks/*.json` | Detailed per-bank review |
 | `outputs/Time_Twist_complete_translation_workbook.*` | Aggregate review artifacts |
 | User-supplied FDS bytes | Authoritative original binary layout |
