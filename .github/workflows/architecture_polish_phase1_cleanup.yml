@@ -82,7 +82,7 @@ jobs:
           rm -rf build dist *.egg-info work/*.egg-info
           find . -type d -name __pycache__ -prune -exec rm -rf {} +
           find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
-          PYTHONPATH=work python -m tools.maintenance.check_public_tree
+          PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=work python -B -m tools.maintenance.check_public_tree
           git diff --exit-code -- work/translations work/manifests work/release_sources.json work/title_assets
 
       - name: Remove temporary workflows and commit phase 1
