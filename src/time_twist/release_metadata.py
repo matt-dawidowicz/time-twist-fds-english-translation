@@ -86,11 +86,12 @@ RELEASE_OUTPUT_KEYS = ("zenpen", "kouhen", "four_side")
 SOURCE_LOCK_SCHEMA = "Time Twist release source lock v2"
 SOURCE_NORMALIZATION_RAW = "raw"
 SOURCE_NORMALIZATION_LF = "lf"
-CODE_PROVENANCE_SCHEMA = "Time Twist release code provenance v1"
+CODE_PROVENANCE_SCHEMA = "Time Twist release code provenance v2"
 CODE_TREE_HASH_ALGORITHM = (
     "sha256-length-prefixed-posix-path-and-lf-normalized-content-v1"
 )
-CODE_LOGICAL_ROOT = "work/time_twist"
+RELEASE_CODE_RELATIVE_PATH = Path("src") / "time_twist"
+CODE_LOGICAL_ROOT = RELEASE_CODE_RELATIVE_PATH.as_posix()
 BUILD_ENVIRONMENT_SCHEMA = "Time Twist build environment v1"
 RELEASE_MANIFEST_SCHEMA = "Time Twist reproducible release manifest v4"
 RELEASE_TARGET_SCHEMA = "Time Twist release target v2"
@@ -243,7 +244,7 @@ def build_environment_provenance() -> dict[str, str]:
 def release_code_paths(project_root: Path) -> tuple[Path, ...]:
     """Return release-critical Python sources in deterministic path order."""
     root = project_root.resolve()
-    code_root = root / "work" / "time_twist"
+    code_root = root / RELEASE_CODE_RELATIVE_PATH
     return tuple(path for _, path in _release_code_entries(code_root))
 
 
@@ -309,7 +310,7 @@ def release_code_tree_sha256(project_root: Path) -> str:
     """
     root = project_root.resolve()
     return _release_code_tree_sha256(
-        _release_code_entries(root / "work" / "time_twist")
+        _release_code_entries(root / RELEASE_CODE_RELATIVE_PATH)
     )
 
 
@@ -355,7 +356,7 @@ def build_code_provenance(
 ) -> dict[str, object]:
     """Describe code proven identical in the executor and project checkout."""
     root = project_root.resolve()
-    project_entries = _release_code_entries(root / "work" / "time_twist")
+    project_entries = _release_code_entries(root / RELEASE_CODE_RELATIVE_PATH)
     executing_entries = _release_code_entries(
         executing_code_root or EXECUTING_PACKAGE_ROOT
     )
@@ -384,6 +385,7 @@ def _is_project_root(path: Path) -> bool:
     """Return whether ``path`` has the source checkout's stable public markers."""
     return (
         (path / "pyproject.toml").is_file()
+        and (path / RELEASE_CODE_RELATIVE_PATH).is_dir()
         and (path / "work" / "translations").is_dir()
         and (path / "work" / "title_assets").is_dir()
     )
@@ -406,7 +408,8 @@ def discover_project_root(
         if not _is_project_root(candidate):
             raise ReleaseBuildError(
                 f"not a Time Twist project checkout: {candidate}; expected "
-                "pyproject.toml, work/translations, and work/title_assets"
+                "pyproject.toml, src/time_twist, work/translations, and "
+                "work/title_assets"
             )
         return candidate
 
