@@ -22,12 +22,12 @@ from tests.support.paths import (
     FIXTURE_MANIFEST,
     INTEGRATION_TEST_ROOT,
     PROJECT_ROOT,
+    SOURCE_ROOT,
     UNIT_TEST_ROOT,
-    WORK_ROOT,
 )
 
 sys.path.insert(0, str(PROJECT_ROOT))
-sys.path.insert(0, str(WORK_ROOT))
+sys.path.insert(0, str(SOURCE_ROOT))
 
 UNIT_TEST_REQUIREMENTS = {
     "PIL": "Pillow==12.3.0",
