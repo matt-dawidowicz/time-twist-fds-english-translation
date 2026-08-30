@@ -222,28 +222,87 @@ jobs:
               raise SystemExit(main())
           PY
 
-      - name: Decouple tests from their filesystem depth
+      - name: Decouple every test from filesystem depth
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
+          from __future__ import annotations
+
+          import ast
           from pathlib import Path
 
-          live_fit = Path("tests/unit/test_live_translation_fit.py")
-          text = live_fit.read_text(encoding="utf-8")
-          old = "WORK = Path(__file__).resolve().parents[1]"
-          if old not in text:
-              raise SystemExit("live-fit test no longer has expected legacy WORK path")
-          text = text.replace(old, "WORK = WORK_ROOT")
-          text = text.replace("from pathlib import Path\n", "")
-          marker = "from tools.generation.evidence import PATCH_FOOTPRINT_RESULTS\n"
-          if marker not in text:
-              raise SystemExit("live-fit evidence import not found")
-          text = text.replace(
-              marker,
-              "from tests.support.paths import WORK_ROOT\n" + marker,
-          )
-          live_fit.write_text(text, encoding="utf-8")
+
+          def add_support_import(text: str, names: set[str]) -> str:
+              if not names:
+                  return text
+              statement = (
+                  "from tests.support.paths import "
+                  + ", ".join(sorted(names))
+                  + "\n"
+              )
+              if statement in text:
+                  return text
+              future = "from __future__ import annotations\n"
+              if future in text:
+                  return text.replace(future, future + "\n" + statement, 1)
+              tree = ast.parse(text)
+              lines = text.splitlines(keepends=True)
+              insert_at = 0
+              if (
+                  tree.body
+                  and isinstance(tree.body[0], ast.Expr)
+                  and isinstance(tree.body[0].value, ast.Constant)
+                  and isinstance(tree.body[0].value.value, str)
+              ):
+                  insert_at = tree.body[0].end_lineno or 0
+              lines.insert(insert_at, "\n" + statement)
+              return "".join(lines)
+
+
+          for path in sorted(
+              [*Path("tests/unit").glob("*.py"), *Path("tests/integration").glob("*.py")]
+          ):
+              text = path.read_text(encoding="utf-8")
+              updated = text
+              imports: set[str] = set()
+
+              replacements = (
+                  (
+                      "WORK = Path(__file__).resolve().parents[1]",
+                      "WORK = WORK_ROOT",
+                      "WORK_ROOT",
+                  ),
+                  (
+                      "WORK_DIR = Path(__file__).resolve().parents[1]",
+                      "WORK_DIR = WORK_ROOT",
+                      "WORK_ROOT",
+                  ),
+                  (
+                      "PROJECT_ROOT = Path(__file__).resolve().parents[2]\n",
+                      "",
+                      "PROJECT_ROOT",
+                  ),
+                  (
+                      "ROOT = Path(__file__).resolve().parents[2]",
+                      "ROOT = PROJECT_ROOT",
+                      "PROJECT_ROOT",
+                  ),
+                  (
+                      "project_root = Path(__file__).resolve().parents[2]",
+                      "project_root = PROJECT_ROOT",
+                      "PROJECT_ROOT",
+                  ),
+              )
+              for old, new, imported_name in replacements:
+                  if old in updated:
+                      updated = updated.replace(old, new)
+                      imports.add(imported_name)
+
+              if imports:
+                  updated = add_support_import(updated, imports)
+              if updated != text:
+                  path.write_text(updated, encoding="utf-8")
 
           public_tree_test = Path("tests/unit/test_public_tree.py")
           text = public_tree_test.read_text(encoding="utf-8")
@@ -254,8 +313,7 @@ jobs:
           public_tree_test.write_text(text.replace(old, new), encoding="utf-8")
           PY
 
-          if grep -R -n -F 'Path(__file__).resolve().parents[' tests --include='*.py' \
-              | grep -v '^tests/support/paths.py:'; then
+          if grep -R -n -F 'Path(__file__).resolve().parents[' tests --include='*.py'; then
             echo "depth-coupled test path resolution remains" >&2
             exit 1
           fi
