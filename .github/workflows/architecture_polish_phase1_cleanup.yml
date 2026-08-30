@@ -1,0 +1,102 @@
+name: architecture polish phase 1 cleanup
+
+on:
+  push:
+    branches: [codebase-architecture-polish]
+    paths: [.github/workflows/architecture_polish_phase1_cleanup.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: codebase-architecture-polish
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+
+      - name: Replay validated architecture transformations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          import textwrap
+
+          workflow = Path(".github/workflows/architecture_polish_phase1_retry3.yml")
+          lines = workflow.read_text(encoding="utf-8").splitlines()
+          wanted = (
+              "Reapply reviewed phase-one transformations",
+              "Complete import and evidence migration precisely",
+              "Verify architecture and legacy imports",
+              "Prove generated artifacts are byte-stable",
+          )
+          for name in wanted:
+              marker = f"      - name: {name}"
+              start = lines.index(marker)
+              run_line = next(
+                  index
+                  for index in range(start + 1, len(lines))
+                  if lines[index].startswith("        run: |")
+              )
+              body = []
+              for line in lines[run_line + 1 :]:
+                  if (
+                      line.startswith("      - name:")
+                      or line.startswith("      - uses:")
+                      or line.startswith("      - run:")
+                  ):
+                      break
+                  body.append(line[10:] if line.startswith("          ") else line)
+              subprocess.run(
+                  ["bash", "-euo", "pipefail", "-c", textwrap.dedent("\n".join(body)) + "\n"],
+                  check=True,
+              )
+          PY
+
+      - name: Run complete public unit suite
+        run: python work/run_tests.py unit
+
+      - name: Build and verify installed wheel
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m build
+          python -m pip install --force-reinstall dist/*.whl
+          python -c "from pathlib import Path; import time_twist; imported = Path(time_twist.__file__).resolve(); checkout = Path('work/time_twist').resolve(); print(imported); assert checkout not in imported.parents"
+          time-twist --help >/dev/null
+          time-twist release-build --help >/dev/null
+
+      - name: Verify clean public tree and immutable release content
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build dist *.egg-info work/*.egg-info
+          find . -type d -name __pycache__ -prune -exec rm -rf {} +
+          find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
+          PYTHONPATH=work python -m tools.maintenance.check_public_tree
+          git diff --exit-code -- work/translations work/manifests work/release_sources.json work/title_assets
+
+      - name: Remove temporary workflows and commit phase 1
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/architecture_polish_phase1_once.yml
+          rm .github/workflows/architecture_polish_phase1_retry.yml
+          rm .github/workflows/architecture_polish_phase1_retry2.yml
+          rm .github/workflows/architecture_polish_phase1_retry3.yml
+          rm .github/workflows/architecture_polish_phase1_cleanup.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "Organize developer tooling by responsibility"
+          git push origin HEAD:codebase-architecture-polish
