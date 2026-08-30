@@ -61,31 +61,57 @@ A deliberately conservative first-pass heuristic marks 406 scenario records for
 human review. That is a triage count, **not** a mistranslation count. Each flagged
 record still has to be read against its Japanese source before any edit.
 
+## Current packed headroom
+
+The canonical `test_live_translation_fit.py` measurement after the first five
+source-grounded TT3A revisions gives the following packed usage. These are the
+actual compressed byte limits used by the build, not visible-character counts.
+
+| Bank | Used | Capacity | Free |
+| --- | ---: | ---: | ---: |
+| TT1A | 1666 | 1669 | **3** |
+| TT6D | 327 | 332 | **5** |
+| TT5 | 4191 | 4201 | **10** |
+| TT3B | 1909 | 1927 | **18** |
+| TT4 | 5169 | 5187 | **18** |
+| T22 | 1913 | 1939 | 26 |
+| TT2 | 4092 | 4141 | 49 |
+| TT6B | 2547 | 2601 | 54 |
+| TT3A | 4104 | 4169 | 65 |
+| TT6C | 3848 | 3947 | 99 |
+| T25 | 2441 | 2561 | 120 |
+| TT6A | 2828 | 3000 | 172 |
+| TT1B | 3930 | 4234 | 304 |
+
+The true pressure points are therefore TT1A, TT6D, TT5, TT3B, and TT4. TT3A
+had 79 bytes free before the latest three revisions and has 65 bytes free after
+them: 43 additional visible characters cost only **14 packed bytes** after the
+canonical dictionary/compression pass. There is no technical reason to shorten
+those restored details.
+
 ## Current editorial findings
 
-The first TT3A review already found a real omission in `TT3A/g0/r14`: the
-Japanese identifies the location as a POW camp in southern Germany and gives
-Cougar's U.S. air-force lieutenant rank. The old English reduced this to
-`PLACE: S. GERMANY` and `U.S. AIR LT.`. The revision restores the omitted POW-camp
-context and rank detail while keeping the current presentation-control sequence.
+The TT3A review has already found several concrete compression losses. In
+`TT3A/g0/r14`, the Japanese identifies a POW camp in southern Germany and gives
+Cougar's U.S. air-force lieutenant rank; both details are now restored.
+`TT3A/g1/r21` now preserves the route west from the woods to the park, Rebecca's
+role as the instruction contact/code name, and the distinct password.
 
-`TT3A/g1/r21` also compressed its route instructions enough to lose useful
-information. The Japanese directs Cougar west from the woods until he reaches a
-park, then tells him to seek Rebecca's instructions; Rebecca is an escape-network
-code name and a separate password follows. The revised English restores those
-distinctions without using external-patch prose.
+A second small batch restored three more source details without changing the
+existing presentation-control sequences. `TT3A/g0/r11` once again reports that
+an escapee was *found*. `TT3A/g1/r26` names America and Germany as the competing
+powers and preserves the source's secret-weapon-to-atomic-bomb reveal.
+`TT3A/g3/r4` now states that Simon was confined and forced to develop a secret
+weapon before refusing to help the Nazis kill further.
 
-The same review also rejected several false positives. For example,
+The same review has rejected several false positives. For example,
 `TT3A/g0/r15` and `TT3A/g1/r25` are materially faithful to the Japanese despite
-wording differences from the external translation. This is why comparison
-differences must never be treated as automatic replacement candidates.
+wording differences from the external translation. Comparison differences are
+therefore never automatic replacement candidates.
 
 ## Still pending
 
 - Align and count fixed-UI records so the audit covers more than scenario text.
-- Produce the current-English per-bank byte-headroom table and identify the truly
-  constrained banks.
 - Complete the TT3A source-grounded review, then continue bank by bank.
 - Keep generated review artifacts synchronized after source edits.
-- Obtain a fully green CI run after the new comparison helper passes all lint,
-  docstring, type, unit, build, and wheel-smoke gates.
+- Obtain a fully green CI run after the latest TT3A edit batch.
