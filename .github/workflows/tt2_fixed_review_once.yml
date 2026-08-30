@@ -1,0 +1,141 @@
+name: TT2 fixed review once
+
+on:
+  push:
+    branches: [translation-quality-comparison-audit]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: translation-quality-comparison-audit
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - name: Apply TT2 fixed-label corrections
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          table_path = Path('work/time_twist/ui_fixed_tables.py')
+          text = table_path.read_text(encoding='utf-8')
+          replacements = {
+              '    "Merchants",\n    "Commoners",\n    "Actors",\n    "Criminals",\n    "Guild",\n    "Zois",\n    "Geld",\n    "Guild",\n':
+              '    "Merchants",\n    "Citizens",\n    "Entertainers",\n    "Criminals",\n    "Guide",\n    "Zoid",\n    "Geld",\n    "Guild",\n',
+              '    "De Palma",\n    "Nero",\n    "Dante",\n    "U Thant",\n':
+              '    "De Palma",\n    "De Niro",\n    "Danube",\n    "U Thant",\n',
+              '    "Chino",\n    "Gordo",\n    "White",\n    "No",\n    "Lugot",\n    "Yes",\n    "No",\n    "All",\n    "Guard",\n    "Crowd",\n    "Building",\n    "Jail",\n    "Town",\n    "Jail",\n    "Woman",\n    "Cell",\n    "Bishop",\n    "Jeanne",\n    "Rope",\n    "Lamp",\n    "Cell",\n':
+              '    "Chino",\n    "Gordo",\n    "Wait",\n    "No",\n    "Lugot",\n    "Yes",\n    "No",\n    "Wine",\n    "Guard",\n    "Crowd",\n    "Building",\n    "Jail",\n    "Town",\n    "Jailer",\n    "Women",\n    "Cellar",\n    "Bishop",\n    "Jeanne",\n    "Rope",\n    "Candle",\n    "Cell",\n',
+          }
+          for old, new in replacements.items():
+              if old not in text:
+                  raise SystemExit(f'expected TT2 fixed-table block missing: {old!r}')
+              text = text.replace(old, new, 1)
+          table_path.write_text(text, encoding='utf-8')
+
+          test_path = Path('work/tests/test_ui_fixed_tables.py')
+          tests = test_path.read_text(encoding='utf-8')
+          old = '                    60: "Jail",\n                    62: "Jail",\n                    67: "Rope",\n                    68: "Lamp",\n                    69: "Cell",\n'
+          new = '                    60: "Jail",\n                    62: "Jailer",\n                    63: "Women",\n                    64: "Cellar",\n                    67: "Rope",\n                    68: "Candle",\n                    69: "Cell",\n'
+          if old not in tests:
+              raise SystemExit('expected TT2 mixed-case test block missing')
+          tests = tests.replace(old, new, 1)
+          test_path.write_text(tests, encoding='utf-8')
+
+          audit_path = Path('work/audits/translation_quality_changes.json')
+          audit = json.loads(audit_path.read_text(encoding='utf-8'))
+          existing = {item['id'] for item in audit['changes']}
+          specs = [
+              ('TT2/fixed/r32', 'しみん', 'Commoners', 'Citizens', 'Restore the source category citizens; commoners substitutes a social class the Japanese does not specify.'),
+              ('TT2/fixed/r33', 'げいにん', 'Actors', 'Entertainers', 'Restore the broader entertainer/performer category; actors is only one subset.'),
+              ('TT2/fixed/r35', 'がいど', 'Guild', 'Guide', 'Correct Guide; a separate nearby choice ぎるど is the actual Guild entry.'),
+              ('TT2/fixed/r36', 'ぞいど', 'Zois', 'Zoid', 'Correct the source distractor transliteration from Zois to Zoid.'),
+              ('TT2/fixed/r43', 'で・にーろ', 'Nero', 'De Niro', 'Restore the full proper-name distractor De Niro.'),
+              ('TT2/fixed/r44', 'ど・ぬーぶ', 'Dante', 'Danube', 'Correct the place-name distractor Danube; Dante is unrelated to the Japanese.'),
+              ('TT2/fixed/r51', 'まつ', 'White', 'Wait', 'Correct the wait choice; it is paired with またない, the do-not-wait option.'),
+              ('TT2/fixed/r56', 'さけ', 'All', 'Wine', 'Replace the meaningless All label with the alcoholic-drink sense used by the surrounding medieval-France scene; dialogue elsewhere renders the same item contextually as wine.'),
+              ('TT2/fixed/r62', 'かんしゅ', 'Jail', 'Jailer', 'Restore the person Jailer and keep it distinct from the separate prison/jail location label.'),
+              ('TT2/fixed/r63', 'おんなたち', 'Woman', 'Women', 'Restore the explicit plural women.'),
+              ('TT2/fixed/r64', 'ちかしつ', 'Cell', 'Cellar', 'Restore the cellar/basement location and keep it distinct from the separate ろうや cell label.'),
+              ('TT2/fixed/r68', 'ろうそく', 'Lamp', 'Candle', 'Restore the specific candle object rather than changing it to a lamp.'),
+          ]
+          for rid, jp, old_en, new_en, reason in specs:
+              if rid in existing:
+                  continue
+              audit['changes'].append({
+                  'id': rid,
+                  'japanese': jp,
+                  'previous_english': old_en,
+                  'new_english': new_en,
+                  'category': ['fixed_ui', 'meaning_correction'],
+                  'reason': reason,
+                  'external_difference_triggered_review': True,
+                  'external_text_stored': False,
+                  'presentation_controls_changed': False,
+                  'visible_character_delta': len(new_en) - len(old_en),
+                  'encoded_byte_delta': None,
+                  'encoded_byte_delta_note': 'Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path.'
+              })
+          audit_path.write_text(json.dumps(audit, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+      - name: Regenerate review artifacts
+        run: |
+          python work/generate_bilingual_comparison_ci.py
+          python work/generate_translation_workbook.py
+      - name: Run fixed-table tests
+        run: python -m unittest work.tests.test_ui_fixed_tables
+      - name: Measure live bank fit
+        run: python -m unittest work.tests.test_live_translation_fit 2>&1 | tee /tmp/tt2_fixed_fit.txt
+      - name: Record TT2 fixed review status
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+          path = Path('work/audits/external_translation_baseline.json')
+          baseline = json.loads(path.read_text(encoding='utf-8'))
+          fixed = baseline['fixed_ui_progress']
+          fixed['source_records_reviewed'] = 142
+          fixed['source_reviewed_banks'] = ['TT1A', 'TT1B', 'TT2']
+          fixed['tt1a_source_reviewed_records'] = 19
+          fixed['tt1a_source_review_revisions'] = 0
+          fixed['tt1b_source_reviewed_records'] = 53
+          fixed['tt1b_source_review_revisions'] = 0
+          fixed['tt2_source_reviewed_records'] = 70
+          fixed['tt2_source_review_revisions'] = 12
+          fit_text = Path('/tmp/tt2_fixed_fit.txt').read_text(encoding='utf-8')
+          match = re.search(r'FIT TT2: (\d+)/(\d+) \((\d+) bytes free;', fit_text)
+          if not match:
+              raise SystemExit('TT2 fit line not found')
+          used, capacity, free = map(int, match.groups())
+          for item in baseline['current_live_fit']['banks']:
+              if item['bank'] == 'TT2':
+                  item.update(used=used, capacity=capacity, free=free)
+                  break
+          baseline['current_live_fit']['tt2_free_after_fixed_ui_review'] = free
+          path.write_text(json.dumps(baseline, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+      - name: Verify style
+        run: |
+          python -m black --check work
+          python -m ruff check work
+      - name: Run full unit suite
+        run: python work/run_tests.py unit
+      - name: Remove one-shot workflow and commit
+        run: |
+          rm .github/workflows/tt2_fixed_review_once.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Correct source-grounded TT2 fixed labels"
+          git push origin HEAD:translation-quality-comparison-audit
