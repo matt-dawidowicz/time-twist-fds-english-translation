@@ -71,6 +71,20 @@
       "visible_character_delta": 24,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g3/r20",
+      "japanese": "おとこ「じょうほうによれば ここが とうぼう{CTRL:0} そしきとの れんらくばしょらしいのだが……{CTRL:2} あやしいやつを みなかったか！」",
+      "previous_english": "Man: This is a{CTRL:0}Resistance contact site.{CTRL:2}Seen anyone suspicious?!",
+      "new_english": "Man: Info says it's an{CTRL:0}escape-network contact.{CTRL:2}Seen anyone suspicious?!",
+      "category": ["terminology", "source_specificity"],
+      "reason": "Restore the source's escape-organization/network terminology and its reported-information nuance instead of broadening the group to the Resistance.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 7,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
     }
   ]
 }
