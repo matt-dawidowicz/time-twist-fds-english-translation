@@ -1,9 +1,9 @@
 """Run fixture-free unit tests or the private ROM integration suite.
 
-Public CI runs ``unit``. Maintainers can overlay the separately distributed
-private fixture bundle and run ``integration`` or ``all``. The runner verifies
-fixture hashes before discovery so missing local ROM data is an explicit setup
-error, never a misleading skipped test.
+Public CI runs ``unit``. Maintainers can overlay the separately
+distributed private fixture bundle and run ``integration`` or ``all``.
+The runner verifies fixture hashes before discovery so missing local ROM
+data is an explicit setup error, never a misleading skipped test.
 """
 
 from __future__ import annotations
@@ -18,9 +18,14 @@ import tempfile
 import unittest
 from pathlib import Path
 
-WORK_ROOT = Path(__file__).resolve().parent
-PROJECT_ROOT = WORK_ROOT.parent
-FIXTURE_MANIFEST = WORK_ROOT / "integration_fixtures.json"
+from tests.support.paths import (
+    FIXTURE_MANIFEST,
+    INTEGRATION_TEST_ROOT,
+    PROJECT_ROOT,
+    UNIT_TEST_ROOT,
+    WORK_ROOT,
+)
+
 sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(WORK_ROOT))
 
@@ -56,7 +61,7 @@ def sha256(path: Path) -> str:
 
 
 def validate_integration_fixtures() -> None:
-    """Fail before test discovery unless the complete private overlay is present."""
+    """Fail before discovery unless the complete private overlay exists."""
     payload = json.loads(FIXTURE_MANIFEST.read_text(encoding="utf-8"))
     if payload.get("schema") != "Time Twist private integration fixtures v1":
         raise SystemExit("unsupported integration fixture manifest schema")
@@ -86,18 +91,20 @@ def validate_integration_fixtures() -> None:
         )
 
 
-def discover(directory: str) -> unittest.TestSuite:
-    """Discover an importable suite beneath the project test root."""
+def discover(directory: Path) -> unittest.TestSuite:
+    """Discover an importable suite beneath the top-level test package."""
     return unittest.defaultTestLoader.discover(
-        start_dir=str(WORK_ROOT / directory),
+        start_dir=str(directory),
         pattern="test*.py",
-        top_level_dir=str(WORK_ROOT),
+        top_level_dir=str(PROJECT_ROOT),
     )
 
 
 def main(argv: list[str] | None = None) -> int:
     """Run the selected suite and reject all skips."""
-    parser = argparse.ArgumentParser(prog="python work/run_tests.py")
+    parser = argparse.ArgumentParser(
+        prog="python -m tools.maintenance.run_tests"
+    )
     parser.add_argument(
         "suite",
         nargs="?",
@@ -107,15 +114,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-q", "--quiet", action="store_true")
     args = parser.parse_args(argv)
 
-    # Tests and legacy helper scripts may open project-relative resources.
-    # Normalize execution so invoking this runner from any directory uses
-    # the checkout that contains the runner itself.
     os.chdir(PROJECT_ROOT)
 
-    # Hypothesis otherwise stores a database under ``.hypothesis`` in the
-    # checkout. Its generated examples are useful only for this invocation and
-    # violate the public-source-tree policy, so keep them in system temporary
-    # storage for the lifetime of the test run.
     previous_storage = os.environ.get("HYPOTHESIS_STORAGE_DIRECTORY")
     with tempfile.TemporaryDirectory(
         prefix="time-twist-hypothesis-"
@@ -124,10 +124,10 @@ def main(argv: list[str] | None = None) -> int:
         suite = unittest.TestSuite()
         if args.suite in {"unit", "all"}:
             validate_unit_dependencies()
-            suite.addTests(discover("tests"))
+            suite.addTests(discover(UNIT_TEST_ROOT))
         if args.suite in {"integration", "all"}:
             validate_integration_fixtures()
-            suite.addTests(discover("integration_tests"))
+            suite.addTests(discover(INTEGRATION_TEST_ROOT))
 
         result = unittest.TextTestRunner(verbosity=1 if args.quiet else 2).run(
             suite

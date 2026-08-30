@@ -181,7 +181,7 @@ lossless tooling.
 ```powershell
 python tools/generation/generate_bilingual_comparison.py
 python tools/generation/generate_translation_workbook.py
-python work/run_tests.py unit
+python -m tools.maintenance.run_tests unit
 ```
 
 Then confirm:

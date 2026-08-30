@@ -41,7 +41,9 @@ from time_twist.scenario import (
 )
 from time_twist.textcodec import PackedSymbol, SymbolKind
 
-WORK_DIR = Path(__file__).resolve().parents[1]
+from tests.support.paths import WORK_ROOT
+
+WORK_DIR = WORK_ROOT
 
 
 class ScenarioTests(unittest.TestCase):

@@ -9,12 +9,12 @@ against the recovered game revision.
 
 | Suite | Command | Distributed publicly | Purpose |
 | --- | --- | --- | --- |
-| Unit | `python work/run_tests.py unit` | Yes | Parsers, codecs, workbook rules, synthetic FDS behavior, and release-control logic |
-| Integration | `python work/run_tests.py integration` | No fixtures | Exact ROM-bank transforms, full release hashes, title/UI/font scope, and FDS replacement behavior |
-| All | `python work/run_tests.py all` | No fixtures | Unit plus integration |
+| Unit | `python -m tools.maintenance.run_tests unit` | Yes | Parsers, codecs, workbook rules, synthetic FDS behavior, and release-control logic |
+| Integration | `python -m tools.maintenance.run_tests integration` | No fixtures | Exact ROM-bank transforms, full release hashes, title/UI/font scope, and FDS replacement behavior |
+| All | `python -m tools.maintenance.run_tests all` | No fixtures | Unit plus integration |
 
 The test runner rejects skips. Before discovering integration tests it checks
-all required local files against `work/integration_fixtures.json`. A missing,
+all required local files against `tests/fixtures/integration_fixtures.json`. A missing,
 modified, or wrong-revision fixture stops the run with a setup error.
 
 ## Overlay layout

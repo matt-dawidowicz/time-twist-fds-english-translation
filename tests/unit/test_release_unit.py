@@ -37,7 +37,7 @@ from time_twist.release import (
     write_source_lock,
 )
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+from tests.support.paths import PROJECT_ROOT
 
 
 def make_synthetic_project(root: Path) -> Path:

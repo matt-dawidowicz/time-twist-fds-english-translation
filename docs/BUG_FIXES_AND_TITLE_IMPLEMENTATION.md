@@ -17,8 +17,8 @@ implementations are:
   title-state helpers;
 - `work/time_twist/release.py` for patch ordering, FDS replacement, output
   validation, and safe publication;
-- `work/integration_tests/test_ui.py` and
-  `work/integration_tests/test_title.py` for exact ROM-derived regression
+- `tests/integration/test_ui.py` and
+  `tests/integration/test_title.py` for exact ROM-derived regression
   coverage.
 
 The documentation uses three address spaces. A **file offset** is relative to
@@ -676,11 +676,11 @@ fails before generation if they differ.
 | Behavior | Primary automated evidence |
 | --- | --- |
 | One-choice B is ignored and larger-menu Back survives | `test_zenpen_nov2_b_ignores_one_choice_but_keeps_normal_back` |
-| Declarative patches reject wrong source/size | `work/tests/test_ui_unit.py` |
+| Declarative patches reject wrong source/size | `tests/unit/test_ui_unit.py` |
 | Menu tails clear while dialogue rows remain intact | `test_zenpen_nov2_preserves_dialogue_rows_and_transparent_tails` |
-| Disk, wrong-disk, wait, and START slots remain fixed | `work/integration_tests/test_ui.py` |
+| Disk, wrong-disk, wait, and START slots remain fixed | `tests/integration/test_ui.py` |
 | Kouhen warning changes only its fixed assets | `test_kouhen_direct_boot_guard_is_horizontal_english` |
-| Apostrophe uses the corrected closing shape | `work/tests/test_font.py` |
+| Apostrophe uses the corrected closing shape | `tests/unit/test_font.py` |
 | Source NOV4 layout and hashes are exact | `test_recovered_title_boundaries_and_source_hashes` |
 | Approved native title regenerates exactly | `test_native_authority_regenerates_exactly_and_has_locked_geometry` |
 | Tile budgets and exact phase delta reconstruct | `test_exact_tile_budgets_phase_delta_and_completed_origin` |

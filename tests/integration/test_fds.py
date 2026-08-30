@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import sys
 import unittest
-from pathlib import Path
 
-WORK_DIR = Path(__file__).resolve().parents[1]
+from tests.support.paths import WORK_ROOT
+
+WORK_DIR = WORK_ROOT
 sys.path.insert(0, str(WORK_DIR))
 
 from time_twist.fds import SIDE_SIZE, FdsImage, combine_images  # noqa: E402

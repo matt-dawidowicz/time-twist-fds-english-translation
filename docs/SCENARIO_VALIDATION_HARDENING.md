@@ -111,7 +111,7 @@ bytes can improve the release candidate.
 
 ## Regression coverage
 
-`work/tests/test_scenario_validation_hardening.py` uses synthetic banks and no
+`tests/unit/test_scenario_validation_hardening.py` uses synthetic banks and no
 private ROM bytes. It verifies:
 
 - cross-bank extraction does not carry English by coordinates;

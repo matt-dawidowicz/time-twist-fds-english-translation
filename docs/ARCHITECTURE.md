@@ -220,7 +220,7 @@ elsewhere.
 
 Fixture-free tests use synthetic FDS data and generated workbook inputs and run
 in public CI. Exact tests against original or derived game bytes live under
-`work/integration_tests/`. Their local inputs are described only by hashes in
-`work/integration_fixtures.json` and are validated before discovery. This
+`tests/integration/`. Their local inputs are described only by hashes in
+`tests/fixtures/integration_fixtures.json` and are validated before discovery. This
 prevents a missing private fixture from turning a critical exact-output test
 into an unnoticed skip.

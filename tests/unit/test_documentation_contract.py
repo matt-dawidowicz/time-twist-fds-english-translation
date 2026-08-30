@@ -12,7 +12,8 @@ import ast
 import unittest
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+from tests.support.paths import PROJECT_ROOT
+
 WORK_ROOT = PROJECT_ROOT / "work"
 
 

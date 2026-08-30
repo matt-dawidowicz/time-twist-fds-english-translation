@@ -141,7 +141,7 @@ that installs every full label; the standalone commands retain the legacy
 ```powershell
 python tools/generation/generate_bilingual_comparison.py
 python tools/generation/generate_translation_workbook.py
-python work/run_tests.py unit
+python -m tools.maintenance.run_tests unit
 ```
 
 The workbook's patch-safe scenario text must equal the playable maps exactly.
@@ -178,7 +178,7 @@ and no failures before runtime review begins.
 Maintainers with the private fixture overlay should also run:
 
 ```powershell
-python work/run_tests.py integration
+python -m tools.maintenance.run_tests integration
 ```
 
 ## 9. Promote and reproduce

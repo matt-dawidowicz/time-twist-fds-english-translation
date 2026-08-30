@@ -39,7 +39,7 @@ mechanical corrections, then review docstring changes manually.
 ### Public unit suite
 
 ```powershell
-python work/run_tests.py unit
+python -m tools.maintenance.run_tests unit
 ```
 
 This suite is fixture-free, runs in public CI, and permits no skips.
@@ -50,18 +50,18 @@ logic. Skips are treated as failures.
 ### Private integration suite
 
 ```powershell
-python work/run_tests.py integration
+python -m tools.maintenance.run_tests integration
 ```
 
 This suite currently contains 75 exact-ROM tests. Before discovery, the runner
-validates the private local overlay against `work/integration_fixtures.json`.
+validates the private local overlay against `tests/fixtures/integration_fixtures.json`.
 Missing or changed fixtures stop the run as a setup error; integration tests do
 not quietly disappear behind `skipTest()`.
 
 Run both suites with:
 
 ```powershell
-python work/run_tests.py all
+python -m tools.maintenance.run_tests all
 ```
 
 Private results must be attributed to the exact release-code revision on which
@@ -83,7 +83,7 @@ python -m black --check work
 python -m ruff check work
 python -m pydocstyle --convention=pep257 work
 python -m mypy
-python work/run_tests.py unit
+python -m tools.maintenance.run_tests unit
 python -m build
 python -m pip install --force-reinstall dist/*.whl
 time-twist --help

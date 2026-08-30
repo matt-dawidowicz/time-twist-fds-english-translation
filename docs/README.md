@@ -94,7 +94,7 @@ Read:
 5. [Patch layers](ARCHITECTURE.md#patch-layers)
 6. `work/time_twist/font.py`
 7. `work/time_twist/title.py`
-8. `work/integration_tests/test_title.py`
+8. `tests/integration/test_title.py`
 
 The title conversion reuses the existing pattern-table split and animated
 clock sprites and is guarded by source hashes and size checks.
@@ -115,7 +115,7 @@ Read:
 3. [Contributing](../CONTRIBUTING.md)
 4. [CLI reference](CLI_REFERENCE.md)
 
-Run `python work/run_tests.py unit` for public work and the integration/all
+Run `python -m tools.maintenance.run_tests unit` for public work and the integration/all
 suite when the private overlay is available. Supported suites allow no skips.
 
 For the Python entry points, companion modules, and matching test files, read

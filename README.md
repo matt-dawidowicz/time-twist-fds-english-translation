@@ -82,8 +82,8 @@ manual Zenpen-to-Kouhen playthrough.
 | --- | --- |
 | `docs/` | Architecture, formats, CLI, workflow, and development guides |
 | `work/time_twist/` | FDS parsing, compression, text, font, title, UI, and release code |
-| `work/tests/` | Fixture-free public unit tests |
-| `work/integration_tests/` | ROM-derived integration tests for maintainers |
+| `tests/unit/` | Fixture-free public unit tests |
+| `tests/integration/` | ROM-derived integration tests for maintainers |
 | `work/translations/` | Authoritative playable scenario maps |
 | `work/translated_scripts/` | Extracted/review-oriented scenario records |
 | `work/translation_workbook_banks/` | Per-bank linguistic review checkpoints |
@@ -117,7 +117,7 @@ Python 3.11 or newer is required. The release dependency set pins Pillow
 python tools/maintenance/check_public_tree.py
 python -m pip install -r requirements.txt
 time-twist --help
-python work/run_tests.py unit
+python -m tools.maintenance.run_tests unit
 ```
 
 The public suite is fixture-free and permits no skips. Public
@@ -129,12 +129,12 @@ Maintainers with legally obtained local ROM-derived fixtures can overlay the
 private fixture bundle at the repository root and run:
 
 ```powershell
-python work/run_tests.py integration
-python work/run_tests.py all
+python -m tools.maintenance.run_tests integration
+python -m tools.maintenance.run_tests all
 ```
 
 The integration suite contains **75 tests** and also permits no skips. The
-runner validates every fixture against `work/integration_fixtures.json` before
+runner validates every fixture against `tests/fixtures/integration_fixtures.json` before
 test discovery, so missing fixtures produce an explicit setup failure rather
 than a misleading green run with skipped tests. See
 [`docs/PRIVATE_FIXTURES.md`](docs/PRIVATE_FIXTURES.md).

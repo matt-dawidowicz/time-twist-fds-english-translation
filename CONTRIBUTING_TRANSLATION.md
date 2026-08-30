@@ -37,7 +37,7 @@ footprints that are not visible in ordinary prose.
 
    ```powershell
    python -m pip install -e ".[dev]"
-   python work/run_tests.py unit
+   python -m tools.maintenance.run_tests unit
    ```
 
 6. In your pull request, name every changed record ID, give the scene context,

@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import json
 import unittest
-from pathlib import Path
 
 from time_twist.english import control_values
 
+from tests.support.paths import PROJECT_ROOT
 from tools.maintenance.validate_translation_patch_fragments import (
     validate_fragment,
 )
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = PROJECT_ROOT
 PATCH = ROOT / "work/translation_patches/TT6B_camel_ibaraki_style.json"
 
 

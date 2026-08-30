@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import re
 import unittest
-from pathlib import Path
 
 from time_twist.capacity import (
     RELOCATED_FIXED_TABLE_PREFIX_BYTES,
@@ -26,9 +25,10 @@ from time_twist.ui import (
     fixed_record_table_page_pointer_bytes,
 )
 
+from tests.support.paths import WORK_ROOT
 from tools.generation.evidence import PATCH_FOOTPRINT_RESULTS
 
-WORK = Path(__file__).resolve().parents[1]
+WORK = WORK_ROOT
 TRANSLATIONS = WORK / "translations"
 RECORD_ID_RE = re.compile(
     r"^(?P<bank>[A-Z0-9]+?)/g(?P<group>\d+)/r(?P<record>\d+)$"

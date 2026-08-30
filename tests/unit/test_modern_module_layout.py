@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import unittest
-from pathlib import Path
 
 from time_twist import (
     cli,
@@ -20,7 +19,7 @@ from time_twist import (
     ui_fixed_tables,
 )
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+from tests.support.paths import FIXTURE_MANIFEST
 
 
 class ModernModuleLayoutTests(unittest.TestCase):
@@ -83,7 +82,7 @@ class ModernModuleLayoutTests(unittest.TestCase):
 
     def test_private_capture_fixture_paths_are_emulator_neutral(self) -> None:
         """Keep private runtime evidence separate from any emulator brand."""
-        fixture_path = PROJECT_ROOT / "work" / "integration_fixtures.json"
+        fixture_path = FIXTURE_MANIFEST
         fixture_paths = json.loads(fixture_path.read_text(encoding="utf-8"))[
             "files"
         ]

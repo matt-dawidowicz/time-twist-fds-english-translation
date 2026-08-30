@@ -12,7 +12,7 @@ The historical failure used extended code 63, whose native lookup tile is `$AC`,
 
 The current source intentionally leaves extended codes 45 and 63 inactive. The disk-change labels use ordinary-glyph `Part2` and `SideA`; they do not install private prompt ligatures.
 
-`work/tests/test_nov4_font_source_safety.py` generalizes the regression guard from one protected tile to the complete recovered source ranges.
+`tests/unit/test_nov4_font_source_safety.py` generalizes the regression guard from one protected tile to the complete recovered source ranges.
 
 ## Distribution provenance hazard
 

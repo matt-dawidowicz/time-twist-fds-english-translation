@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import unittest
-from pathlib import Path
 
 from PIL import Image
 
+from tests.support.paths import PROJECT_ROOT
 from tools.preview.rebuild_native_title_asset import (
     CLOCK_NUMERAL_BOXES,
     CLOCK_RIM_BRIDGE_PATCH,
@@ -26,7 +26,6 @@ from tools.preview.rebuild_native_title_asset import (
     build_native_titles,
 )
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ASSET_ROOT = PROJECT_ROOT / "work" / "title_assets"
 OPENING = ASSET_ROOT / "Time Twist approved English opening.gif"
 FINAL = ASSET_ROOT / "Time Twist approved native title.png"

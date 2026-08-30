@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import unittest
-from pathlib import Path
 
 from time_twist import ui
 from time_twist.english import encode_english, render_english
@@ -29,6 +28,8 @@ from time_twist.ui import (
     _patched_nov4_load_prompt,
     _patched_save_prompt,
 )
+
+from tests.support.paths import PROJECT_ROOT
 
 
 class SourceVerifiedPatchTests(unittest.TestCase):
@@ -118,7 +119,7 @@ class SourceVerifiedPatchTests(unittest.TestCase):
 
     def test_documented_patch_offsets_match_declarative_records(self) -> None:
         """Keep the implementation guide's file/CPU pairs auditable."""
-        project_root = Path(__file__).resolve().parents[2]
+        project_root = PROJECT_ROOT
         documentation = (
             project_root / "docs" / "BUG_FIXES_AND_TITLE_IMPLEMENTATION.md"
         ).read_text(encoding="utf-8")

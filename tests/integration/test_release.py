@@ -26,7 +26,7 @@ from time_twist.scenario import parse_scenario_bank
 from time_twist.textcodec import split_records
 from time_twist.ui import FIXED_RECORD_TABLE_SPECS
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+from tests.support.paths import PROJECT_ROOT
 
 
 class ReleaseBuildTests(unittest.TestCase):

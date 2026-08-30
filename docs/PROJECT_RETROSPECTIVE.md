@@ -290,7 +290,7 @@ model was the difficult part.
 | Art reconstruction | `tools/preview/rebuild_native_title_asset.py` |
 | Title patch | `work/time_twist/title.py` |
 | Title architecture | `docs/TITLE_SEQUENCE.md` |
-| Exact title tests | `work/integration_tests/test_title.py` |
+| Exact title tests | `tests/integration/test_title.py` |
 | Release controls | `work/time_twist/release.py` |
 | Playtest coverage | `docs/PLAYTEST_MATRIX.md` |
 

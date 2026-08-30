@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import unittest
-from pathlib import Path
 
 from time_twist.compression import expand_dictionary_symbols
 from time_twist.english import encode_english, render_english
@@ -86,7 +85,9 @@ from time_twist.ui import (
     patched_tt6c_ui,
 )
 
-WORK_DIR = Path(__file__).resolve().parents[1]
+from tests.support.paths import WORK_ROOT
+
+WORK_DIR = WORK_ROOT
 
 
 def _record_ends(data: bytes, start: int, count: int) -> tuple[int, ...]:

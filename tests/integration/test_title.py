@@ -10,9 +10,10 @@ from pathlib import Path
 import time_twist.title as title
 from PIL import Image
 
+from tests.support.paths import WORK_ROOT
 from tools.preview.rebuild_native_title_asset import build_native_titles
 
-WORK_DIR = Path(__file__).resolve().parents[1]
+WORK_DIR = WORK_ROOT
 
 NATIVE_FILE_SHA256 = (
     "B1F262770FB490E2A933B956D5857432C101EE378A0F765CCCFACD8EE5FBF9A8"

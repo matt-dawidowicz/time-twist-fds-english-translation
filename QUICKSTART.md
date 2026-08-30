@@ -27,7 +27,7 @@ used by the project, including Hypothesis for the public unit suite.
 ## Public tests
 
 ```powershell
-python work/run_tests.py unit
+python -m tools.maintenance.run_tests unit
 ```
 
 These tests are fixture-free: they exercise the codec, synthetic FDS behavior,

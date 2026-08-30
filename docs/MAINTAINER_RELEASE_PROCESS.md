@@ -21,18 +21,18 @@ The fixture-free public suite is the required baseline for every change:
 
 ```powershell
 python tools/maintenance/check_public_tree.py
-python work/run_tests.py unit
+python -m tools.maintenance.run_tests unit
 ```
 
 Maintainers who have the private fixture overlay must then run:
 
 ```powershell
-python work/run_tests.py integration
-python work/run_tests.py all
+python -m tools.maintenance.run_tests integration
+python -m tools.maintenance.run_tests all
 ```
 
 The integration runner verifies the overlay against
-`work/integration_fixtures.json` before it runs tests. A missing overlay is an
+`tests/fixtures/integration_fixtures.json` before it runs tests. A missing overlay is an
 expected setup limitation; do not add test skips or substitute public fixtures.
 See [private integration fixtures](PRIVATE_FIXTURES.md) for its local layout.
 

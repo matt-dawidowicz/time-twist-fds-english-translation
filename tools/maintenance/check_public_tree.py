@@ -33,7 +33,7 @@ REQUIRED_PUBLIC_MARKERS = (
     Path("work/time_twist"),
     Path("work/translations"),
     Path("work/title_assets"),
-    Path("work/integration_fixtures.json"),
+    Path("tests/fixtures/integration_fixtures.json"),
 )
 
 

@@ -34,6 +34,8 @@ from time_twist.textcodec import (
     split_records,
 )
 
+from tests.support.paths import PROJECT_ROOT
+
 LOAD_ADDRESS = 0xA200
 
 
@@ -429,7 +431,7 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
 
     def test_release_pins_pillow_version(self) -> None:
         """Verify the current contract described by this regression test."""
-        project_root = Path(__file__).resolve().parents[2]
+        project_root = PROJECT_ROOT
         pyproject = (project_root / "pyproject.toml").read_text(
             encoding="utf-8"
         )

@@ -21,7 +21,8 @@ class PublicTreePolicyTests(unittest.TestCase):
         (root / "pyproject.toml").write_text(
             "[project]\nname='test'\n", encoding="utf-8"
         )
-        (root / "work" / "integration_fixtures.json").write_text(
+        (root / "tests" / "fixtures").mkdir(parents=True)
+        (root / "tests" / "fixtures" / "integration_fixtures.json").write_text(
             "{}\n", encoding="utf-8"
         )
 

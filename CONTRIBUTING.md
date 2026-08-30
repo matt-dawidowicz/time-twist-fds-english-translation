@@ -60,14 +60,14 @@ Run the public suite:
 
 ```powershell
 python -m pip install -r requirements.txt
-python work/run_tests.py unit
+python -m tools.maintenance.run_tests unit
 python -m build
 ```
 
 Maintainers with the private fixture overlay must also run:
 
 ```powershell
-python work/run_tests.py integration
+python -m tools.maintenance.run_tests integration
 ```
 
 Supported suites reject skipped tests. Missing private fixtures must be

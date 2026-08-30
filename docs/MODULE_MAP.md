@@ -11,14 +11,14 @@ need to change.
 
 | Area | Start here | Companion modules | Main tests |
 | --- | --- | --- | --- |
-| Command line | `work/time_twist/cli.py` | `cli_commands.py`, `cli_parser.py` | `work/tests/test_release_unit.py` |
-| Release build and promotion | `work/time_twist/release.py` | `release_metadata.py` | `work/tests/test_release_unit.py`, `test_release_integrity_polish.py` |
-| Fixed UI and input behavior | `work/time_twist/ui.py` | `ui_fixed_tables.py` | `work/tests/test_ui_unit.py`, `test_ui_fixed_tables.py` |
-| English title | `work/time_twist/title.py` | `title_layout.py`, `title_assets.py`, `title_patch.py` | `work/tests/test_title_unit.py` and private title integration tests |
-| Packed scenario text | `work/time_twist/scenario.py` | `textcodec.py`, `compression.py`, `scenario_validation.py` | `work/tests/test_textcodec.py`, `test_scenario_validation_hardening.py` |
-| FDS container | `work/time_twist/fds.py` | — | `work/tests/test_fds_synthetic.py`, `test_binary_properties.py` |
+| Command line | `work/time_twist/cli.py` | `cli_commands.py`, `cli_parser.py` | `tests/unit/test_release_unit.py` |
+| Release build and promotion | `work/time_twist/release.py` | `release_metadata.py` | `tests/unit/test_release_unit.py`, `test_release_integrity_polish.py` |
+| Fixed UI and input behavior | `work/time_twist/ui.py` | `ui_fixed_tables.py` | `tests/unit/test_ui_unit.py`, `test_ui_fixed_tables.py` |
+| English title | `work/time_twist/title.py` | `title_layout.py`, `title_assets.py`, `title_patch.py` | `tests/unit/test_title_unit.py` and private title integration tests |
+| Packed scenario text | `work/time_twist/scenario.py` | `textcodec.py`, `compression.py`, `scenario_validation.py` | `tests/unit/test_textcodec.py`, `test_scenario_validation_hardening.py` |
+| FDS container | `work/time_twist/fds.py` | — | `tests/unit/test_fds_synthetic.py`, `test_binary_properties.py` |
 
-`work/tests/test_modern_module_layout.py` protects the public facades and the
+`tests/unit/test_modern_module_layout.py` protects the public facades and the
 generic private runtime-capture layout after module moves.
 
 ## Facade rule

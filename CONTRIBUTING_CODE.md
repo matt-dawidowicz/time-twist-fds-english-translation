@@ -29,7 +29,7 @@ assets, source locks, and legal game inputs remain checkout data.
 Run this for every code change:
 
 ```powershell
-python work/run_tests.py unit
+python -m tools.maintenance.run_tests unit
 ```
 
 For changes to Python code, run the project style and type checks as well:
@@ -46,8 +46,8 @@ mechanical corrections, then review the diff.
 
 ## Public tests versus private maintainer tests
 
-`python work/run_tests.py unit` is fixture-free and runs without game data.
-`python work/run_tests.py integration` checks exact ROM-derived transforms and
+`python -m tools.maintenance.run_tests unit` is fixture-free and runs without game data.
+`python -m tools.maintenance.run_tests integration` checks exact ROM-derived transforms and
 requires a separately maintained private fixture overlay. Missing fixtures are
 an expected setup limitation, not a reason to add skips or weaken checks.
 
@@ -55,7 +55,7 @@ Most code contributors only need the public suite. Maintainers with legal
 fixtures must also run:
 
 ```powershell
-python work/run_tests.py integration
+python -m tools.maintenance.run_tests integration
 ```
 
 See [Maintainer release process](docs/MAINTAINER_RELEASE_PROCESS.md#private-fixtures-and-integration-tests)
@@ -91,7 +91,7 @@ recovered address, byte sequence, capacity limit, or fail-closed condition
 exists. Do not pad routine syntax with line-by-line narration; it makes the
 binary constraints harder to find.
 
-`work/tests/test_documentation_contract.py` enforces this baseline in the
+`tests/unit/test_documentation_contract.py` enforces this baseline in the
 public unit suite. A new function without a docstring is an incomplete change.
 
 ## High-risk areas

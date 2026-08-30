@@ -140,8 +140,8 @@ binary authority by guessing at an unknown bank, pointer table, or renderer.
 
 | Test location | What it proves | What it does **not** prove |
 | --- | --- | --- |
-| `work/tests/` | Public parser, codec, validation, source-tree, documentation, and facade behavior. | That a candidate has run in a game. |
-| `work/integration_tests/` | Private-overlay source guards, recovered file layout, title/UI patch locations, and reproducible candidate data. | Full player progression. |
+| `tests/unit/` | Public parser, codec, validation, source-tree, documentation, and facade behavior. | That a candidate has run in a game. |
+| `tests/integration/` | Private-overlay source guards, recovered file layout, title/UI patch locations, and reproducible candidate data. | Full player progression. |
 | `docs/PLAYTEST_MATRIX.md` | The runtime routes that a maintainer and playtesters must verify. | Static source correctness. |
 
 The test name is the exact behavior under protection; its docstring says why it
@@ -173,6 +173,6 @@ being added later.
 3. Change source data or a guarded transform—not a generated FDS image.
 4. Add/update a focused test and explain the recovered constraint in code.
 5. Run `python tools/maintenance/check_public_tree.py` and
-   `python work/run_tests.py unit`.
+   `python -m tools.maintenance.run_tests unit`.
 6. For a binary-visible change, rebuild privately and replay the affected route
    before asking outside playtesters to verify broader behavior.
