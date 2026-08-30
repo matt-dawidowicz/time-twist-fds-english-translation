@@ -14,7 +14,7 @@ silently copy English into an unrelated record at the same coordinates.
 
 ## One translation validation policy
 
-`work/time_twist/scenario_validation.py` is the shared policy layer for
+`src/time_twist/scenario_validation.py` is the shared policy layer for
 scenario-facing English. It checks:
 
 - a nonempty string value;
@@ -111,8 +111,8 @@ bytes can improve the release candidate.
 
 ## Regression coverage
 
-`tests/unit/test_scenario_validation_hardening.py` uses synthetic banks and no
-private ROM bytes. It verifies:
+`tests/unit/test_scenario_validation.py` uses synthetic banks and no private ROM
+bytes. It verifies:
 
 - cross-bank extraction does not carry English by coordinates;
 - direct insertion rejects mismatched stable IDs;
