@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import unittest
 
-from tools.external_translation_compare import overlay_sparse_payload, patch_spans
+from tools.external_translation_compare import (
+    overlay_sparse_payload,
+    patch_spans,
+)
 
 
 class ExternalTranslationCompareTests(unittest.TestCase):
@@ -21,8 +24,6 @@ class ExternalTranslationCompareTests(unittest.TestCase):
     def test_overlay_preserves_zero_writes_inside_hunk(self) -> None:
         """Copy intentional zero bytes that occur inside a recovered hunk."""
         base = b"abcdefghij"
-        payload = bytes(
-            [0, 0, ord("X"), 0, 0, 0, 0, 0, ord("Y"), 0]
-        )
+        payload = bytes([0, 0, ord("X"), 0, 0, 0, 0, 0, ord("Y"), 0])
         rebuilt = overlay_sparse_payload(base, payload)
         self.assertEqual(rebuilt, b"abX\0\0\0\0\0Yj")
