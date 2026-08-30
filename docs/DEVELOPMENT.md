@@ -25,14 +25,15 @@ modules, classes, functions, and methods follow the PEP 257 docstring
 conventions used throughout the tooling. Run the complete style gate with:
 
 ```powershell
-python -m black --check work
-python -m ruff check work
-python -m pydocstyle --convention=pep257 work
+python -m black --check work tools tests
+python -m ruff check work tools tests
+python -m pydocstyle --convention=pep257 work tools
 python -m mypy
 ```
 
-Use `python -m black work` and `python -m ruff check --fix work` for safe
-mechanical corrections, then review docstring changes manually.
+Use `python -m black work tools tests` and
+`python -m ruff check --fix work tools tests` for safe mechanical corrections,
+then review docstring changes manually.
 
 ## Test suites
 
@@ -79,9 +80,9 @@ packaging and installed-wheel smoke checks:
 ```powershell
 python tools/maintenance/check_public_tree.py
 python -m pip install -e ".[dev]"
-python -m black --check work
-python -m ruff check work
-python -m pydocstyle --convention=pep257 work
+python -m black --check work tools tests
+python -m ruff check work tools tests
+python -m pydocstyle --convention=pep257 work tools
 python -m mypy
 python -m tools.maintenance.run_tests unit
 python -m build
@@ -243,9 +244,9 @@ files. The release threat model remains a trusted local build environment.
 Custom metadata destinations are fail-closed. A source-lock update cannot
 overwrite an approved source, project metadata, release code, or the release
 target. Promotion cannot write its target over the active source lock, candidate
-manifest, candidate outputs, approved sources, project metadata, or release
-code. The canonical source-lock and target locations remain valid exceptions for
-their respective commands.
+manifest, candidate outputs, approved sources, project metadata, or release code.
+The canonical source-lock and target locations remain valid exceptions for their
+respective commands.
 
 Git commit and dirty-state metadata are recorded when Git is available, but the
 platform-independent code-tree hash is authoritative. Python and Pillow versions
