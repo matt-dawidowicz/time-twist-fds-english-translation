@@ -10,13 +10,13 @@ from tools.maintenance.check_public_tree import check_public_tree
 
 
 class PublicTreePolicyTests(unittest.TestCase):
-    """Group current regression tests by project contract."""
+    """Protect the public repository boundary from private or generated state."""
 
     @staticmethod
     def make_public_skeleton(root: Path) -> None:
-        """Provide a deterministic helper for the current contract tests."""
-        (root / "work" / "time_twist").mkdir(parents=True)
-        (root / "work" / "translations").mkdir()
+        """Create the minimal directory contract required by the public check."""
+        (root / "src" / "time_twist").mkdir(parents=True)
+        (root / "work" / "translations").mkdir(parents=True)
         (root / "work" / "title_assets").mkdir()
         (root / "pyproject.toml").write_text(
             "[project]\nname='test'\n", encoding="utf-8"
@@ -27,14 +27,14 @@ class PublicTreePolicyTests(unittest.TestCase):
         )
 
     def test_clean_synthetic_public_tree_passes(self) -> None:
-        """Verify the current contract described by this regression test."""
+        """Accept a source-only checkout that satisfies the public contract."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.make_public_skeleton(root)
             self.assertEqual(check_public_tree(root), [])
 
     def test_private_artifacts_and_personal_paths_are_rejected(self) -> None:
-        """Verify the current contract described by this regression test."""
+        """Reject ROM data, archives, emulator state, and personal paths."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.make_public_skeleton(root)
