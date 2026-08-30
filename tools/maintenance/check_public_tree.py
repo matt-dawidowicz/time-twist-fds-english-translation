@@ -10,6 +10,8 @@ import argparse
 import re
 from pathlib import Path
 
+from tools.paths import PROJECT_ROOT
+
 FORBIDDEN_SUFFIXES = {
     ".fds",
     ".mss",
@@ -30,7 +32,7 @@ PERSONAL_PATH_PATTERNS = (
 )
 REQUIRED_PUBLIC_MARKERS = (
     Path("pyproject.toml"),
-    Path("work/time_twist"),
+    Path("src/time_twist"),
     Path("work/translations"),
     Path("work/title_assets"),
     Path("tests/fixtures/integration_fixtures.json"),
@@ -97,8 +99,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--root",
         type=Path,
-        default=Path(__file__).resolve().parents[2],
-        help="project root (default: auto-resolved from this script)",
+        default=PROJECT_ROOT,
+        help="project root (default: detected repository root)",
     )
     args = parser.parse_args(argv)
     problems = check_public_tree(args.root)
