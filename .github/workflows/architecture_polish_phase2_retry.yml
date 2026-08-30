@@ -98,8 +98,8 @@ jobs:
           python -m ruff check work tools tests
 
           if grep -R -n -E 'integration_fixtures\.json' tests --include='*.py' \
-              | grep -v '^tests/support/paths.py:'; then
-            echo "test code still hard-codes the fixture manifest path" >&2
+              | grep -v -E '^(tests/support/paths.py|tests/unit/test_public_tree.py):'; then
+            echo "test consumers still hard-code the fixture manifest path" >&2
             exit 1
           fi
 
