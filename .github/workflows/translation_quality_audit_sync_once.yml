@@ -1,0 +1,339 @@
+name: Translation quality audit sync once
+
+on:
+  push:
+    branches:
+      - translation-quality-comparison-audit
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: translation-quality-comparison-audit
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Synchronize translation-quality audits
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          changes_path = Path("work/audits/translation_quality_changes.json")
+          changes = json.loads(changes_path.read_text(encoding="utf-8"))
+          existing = {item["id"] for item in changes["changes"]}
+          additions = [
+              {
+                  "id": "NOV2/system/save_destination",
+                  "japanese": "えー らむせーぶ{CTRL:0}びー ですくせーぶ{CTRL:0}せる きゃんせる",
+                  "previous_english": "(untranslated Japanese source bytes)",
+                  "new_english": "A RAM Save{CTRL:0}B Disk{CTRL:0}Select Cancel ",
+                  "category": ["translation_completeness", "system_ui", "instruction_clarity"],
+                  "reason": "Translate the RAM-save/disk-save destination chooser. The source SEL abbreviation is localized as Select; Cancel remains a separate action.",
+                  "external_difference_triggered_review": True,
+                  "external_text_stored": False,
+                  "presentation_controls_changed": False,
+                  "visible_character_delta": None,
+                  "encoded_byte_delta": 0,
+                  "encoded_byte_delta_note": "Replacement remains exactly 26 packed bytes.",
+              },
+              {
+                  "id": "NOV2/system/saving_status",
+                  "japanese": "でぃすくせーぶ{CTRL:0}しとるからの",
+                  "previous_english": "(untranslated Japanese source bytes)",
+                  "new_english": "Saving{CTRL:0}to disk. ",
+                  "category": ["translation_completeness", "system_ui"],
+                  "reason": "Render the disk-save-in-progress status naturally while preserving the source line control.",
+                  "external_difference_triggered_review": True,
+                  "external_text_stored": False,
+                  "presentation_controls_changed": False,
+                  "visible_character_delta": None,
+                  "encoded_byte_delta": 0,
+                  "encoded_byte_delta_note": "Replacement remains exactly 13 packed bytes.",
+              },
+              {
+                  "id": "NOV2/system/chapter_start",
+                  "japanese": "しょうはじめ",
+                  "previous_english": "(untranslated Japanese source bytes)",
+                  "new_english": "Chapter",
+                  "category": ["translation_completeness", "system_ui"],
+                  "reason": "Translate the chapter-start system label within its seven-byte fixed record.",
+                  "external_difference_triggered_review": True,
+                  "external_text_stored": False,
+                  "presentation_controls_changed": False,
+                  "visible_character_delta": None,
+                  "encoded_byte_delta": 0,
+                  "encoded_byte_delta_note": "Replacement remains exactly 7 packed bytes.",
+              },
+              {
+                  "id": "NOV2/system/disk_trouble",
+                  "japanese": "でぃすく、とらぶる",
+                  "previous_english": "(untranslated Japanese source bytes)",
+                  "new_english": "Disk error",
+                  "category": ["translation_completeness", "system_ui", "naturalness"],
+                  "reason": "Translate the literal disk-trouble message using conventional English system wording.",
+                  "external_difference_triggered_review": True,
+                  "external_text_stored": False,
+                  "presentation_controls_changed": False,
+                  "visible_character_delta": None,
+                  "encoded_byte_delta": 0,
+                  "encoded_byte_delta_note": "Replacement remains exactly 9 packed bytes.",
+              },
+              {
+                  "id": "NOV2/system/ram_store",
+                  "japanese": "おぼえる",
+                  "previous_english": "(untranslated Japanese source bytes)",
+                  "new_english": "Store",
+                  "category": ["translation_completeness", "system_ui", "terminology"],
+                  "reason": "Localize the RAM-memory remember/store command distinctly from the neighboring literal disk Save command.",
+                  "external_difference_triggered_review": True,
+                  "external_text_stored": False,
+                  "presentation_controls_changed": False,
+                  "visible_character_delta": None,
+                  "encoded_byte_delta": 0,
+                  "encoded_byte_delta_note": "Replacement remains exactly 5 packed bytes.",
+              },
+              {
+                  "id": "NOV2/system/ram_fetch",
+                  "japanese": "おもいだす",
+                  "previous_english": "(untranslated Japanese source bytes)",
+                  "new_english": "Fetch",
+                  "category": ["translation_completeness", "system_ui", "terminology"],
+                  "reason": "Localize the paired RAM-memory recall/retrieve command distinctly from the neighboring literal disk Load command.",
+                  "external_difference_triggered_review": True,
+                  "external_text_stored": False,
+                  "presentation_controls_changed": False,
+                  "visible_character_delta": None,
+                  "encoded_byte_delta": 0,
+                  "encoded_byte_delta_note": "Replacement remains exactly 5 packed bytes.",
+              },
+          ]
+          duplicates = [item["id"] for item in additions if item["id"] in existing]
+          if duplicates:
+              raise SystemExit(f"audit entries already present: {duplicates}")
+          changes["changes"].extend(additions)
+          changes_path.write_text(
+              json.dumps(changes, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          baseline_path = Path("work/audits/external_translation_baseline.json")
+          baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+          baseline["scope"] = (
+              "scenario comparison plus recovered fixed-UI baseline; NOV2/NOV4 "
+              "external system-text alignment remains separate"
+          )
+          baseline["scenario_summary"]["tt3a_full_source_review_complete"] = True
+          baseline["scenario_summary"]["tt3a_source_records_reviewed"] = 152
+          baseline["scenario_summary"]["tt3a_audited_revisions"] = 9
+          baseline["fixed_ui_progress"] = {
+              "baseline_file": "work/audits/external_fixed_ui_baseline.json",
+              "aligned_records": 740,
+              "exact_english_matches": 393,
+              "different_english_records": 347,
+              "unresolved_external_token_records": 0,
+              "major_fixed_table_records": 721,
+              "tt1a_selector_records": 19,
+              "nov2_runtime_completeness": {
+                  "source_verified_missing_records_found": 6,
+                  "source_verified_missing_records_translated": 6,
+                  "canonical_corpus_rows_after_integration": 2058,
+                  "note": "NOV2 external layout is repacked and is not folded into the 740-record external alignment yet.",
+              },
+          }
+          fit = baseline["current_live_fit"]
+          fit["measurement"] = (
+              "canonical test_live_translation_fit.py after nine TT3A "
+              "source-grounded revisions"
+          )
+          for bank in fit["banks"]:
+              if bank["bank"] == "TT3A":
+                  bank.update({"used": 4118, "capacity": 4169, "free": 51})
+          fit["tt3a_free_after_seven_revisions"] = 56
+          fit["tt3a_final_two_visible_character_delta"] = 1
+          fit["tt3a_final_two_edits_packed_cost"] = 5
+          fit["tt3a_free_after_nine_revisions"] = 51
+          baseline["validation"]["latest_targeted_workflow_run"] = 33290609436
+          baseline["validation"]["latest_targeted_unit_tests"] = 167
+          baseline["validation"]["latest_targeted_corpus_rows"] = 2058
+          baseline["pending"] = [
+              "complete external NOV2/NOV4 system-text alignment without assuming source offsets",
+              "review fixed-label differences against Japanese and gameplay context",
+              "review TT3B source-grounded scenario text next, then continue bank by bank",
+              "perform final rebuilt-ROM and emulator validation after editorial review",
+          ]
+          baseline_path.write_text(
+              json.dumps(baseline, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          fixed_path = Path("work/audits/external_fixed_ui_baseline.json")
+          fixed = json.loads(fixed_path.read_text(encoding="utf-8"))
+          fixed["summary"]["nov2_source_verified_missing_records_found"] = 6
+          fixed["summary"]["nov2_source_verified_missing_records_translated"] = 6
+          fixed["summary"]["canonical_corpus_rows_after_nov2_integration"] = 2058
+          fixed["comparison_notes"]["nov2"] = (
+              "Six previously untranslated NOV2 save/system records are now "
+              "source-verified runtime patches and first-class corpus rows. "
+              "The external NOV2 layout remains repacked and is not included "
+              "in the 740 aligned-record total."
+          )
+          fixed["pending"] = [
+              "recover and compare NOV2/NOV4 external system text as separate repacked blocks",
+              "review fixed-label differences against Japanese before any translation edit",
+          ]
+          fixed_path.write_text(
+              json.dumps(fixed, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          fixed_md_path = Path("work/audits/external_fixed_ui_baseline.md")
+          fixed_md = fixed_md_path.read_text(encoding="utf-8")
+          old = """The comparison has already exposed a separate completeness issue in NOV2: six
+          save/system records in the current English image are byte-for-byte identical to
+          the Japanese ROM. NOV2 is repacked differently by the external patch, so those
+          records are being handled as a separate system-text block rather than folded
+          into the 740-record total prematurely.
+          """
+          new = """The comparison exposed a separate completeness issue in NOV2: six save/system
+          records in the English image were byte-for-byte identical to the Japanese ROM.
+          Those six records have now been independently decoded from Japanese, translated
+          in their exact fixed allocations, protected by source-drift tests, and added as
+          first-class rows to the 2,058-record review corpus. NOV2 is repacked differently
+          by the external patch, so it still remains outside the 740-record external
+          alignment until its system block is structurally reconstructed.
+          """
+          if old not in fixed_md:
+              raise SystemExit("fixed-UI NOV2 paragraph marker missing")
+          fixed_md = fixed_md.replace(old, new, 1)
+          fixed_md = fixed_md.replace(
+              "- Recover and compare the NOV2/NOV4 system-text block, including the six\n  currently untranslated NOV2 records.\n",
+              "- Recover and compare the external NOV2/NOV4 system-text blocks without\n  assuming that source offsets survived the external repack.\n",
+              1,
+          )
+          fixed_md_path.write_text(fixed_md, encoding="utf-8")
+
+          baseline_md_path = Path("work/audits/external_translation_baseline.md")
+          md = baseline_md_path.read_text(encoding="utf-8")
+          start = md.index("TT3A contributes 17 candidates")
+          end = md.index("## Fixed-UI pilot")
+          replacement = """TT3A contributes 17 candidates to that conservative queue. All 17 were
+          adjudicated against the original Japanese, and the review then continued through
+          every remaining record. **All 152 TT3A scenario records have now been reread
+          against Japanese.** Nine source-grounded revisions survived that full pass;
+          differences that were merely alternate but faithful wording were left unchanged.
+
+          """
+          md = md[:start] + replacement + md[end:]
+
+          start = md.index("## Fixed-UI pilot")
+          end = md.index("## Current packed headroom")
+          replacement = """## Fixed-UI baseline
+
+          The external fixed-UI comparison now covers all eleven major scenario-bank tables
+          plus TT1A's blood-type, month, and confirmation selectors. Because the external
+          patch relocates many tables in roughly 32-record pages, the comparison tool
+          reconstructs physical segments into source-record order without relaxing the
+          production parser.
+
+          | Scope | Records | Exact English | Different English | Unresolved |
+          | --- | ---: | ---: | ---: | ---: |
+          | Major scenario-bank fixed tables | 721 | 375 | 346 | 0 |
+          | TT1A selectors | 19 | 18 | 1 | 0 |
+          | **Total** | **740** | **393** | **347** | **0** |
+
+          The detailed per-bank segment map is stored in
+          `work/audits/external_fixed_ui_baseline.{json,md}`. Differences remain diagnostic
+          only and must be resolved from Japanese and gameplay context.
+
+          That comparison also exposed six NOV2 save/system records that had never been
+          translated in the current runtime image. They are now source-verified, translated
+          in place with zero byte growth, covered by source-drift regression tests, and
+          represented in the canonical review corpus. The external NOV2 layout is repacked,
+          so those six records are not yet included in the 740 external-alignment count.
+
+          """
+          md = md[:start] + replacement + md[end:]
+          md = md.replace(
+              "The canonical `test_live_translation_fit.py` measurement after seven\nsource-grounded TT3A revisions",
+              "The canonical `test_live_translation_fit.py` measurement after nine\nsource-grounded TT3A revisions",
+              1,
+          )
+          md = md.replace("| TT3A | 4113 | 4169 | 56 |", "| TT3A | 4118 | 4169 | 51 |", 1)
+          old = """The true pressure points are therefore TT1A, TT6D, TT5, TT3B, and TT4. TT3A
+          had 79 bytes free before the previous three revisions and 65 bytes afterward:
+          43 additional visible characters cost only **14 packed bytes**. The latest two
+          revisions add another 24 visible characters but consume only **9 packed bytes**,
+          leaving 56 bytes free. There is no technical reason to pre-emptively shorten
+          those restored details.
+          """
+          new = """The true pressure points are therefore TT1A, TT6D, TT5, TT3B, and TT4.
+          TT3A's earlier three-detail restoration cost 14 packed bytes despite adding 43
+          visible characters. The next two revisions cost 9 packed bytes. The final
+          full-bank reread produced two more edits with a net increase of only one visible
+          character; those cost 5 packed bytes, leaving **51 bytes free**. There is no
+          technical reason to pre-emptively shorten faithful text before measuring it.
+          """
+          if old not in md:
+              raise SystemExit("packed-headroom paragraph marker missing")
+          md = md.replace(old, new, 1)
+          editorial_marker = """The same review has rejected many false positives. For example,
+          """
+          editorial_add = """The final full-bank sweep found two further improvements that the heuristic queue
+          had not required. `TT3A/g2/r0` now gives Ralph's clothing instruction in natural
+          English while preserving the post-escape timing and dirt warning. `TT3A/g3/r18`
+          now directly renders the source statement that the object is hard to see because
+          it is underwater.
+
+          """
+          if editorial_marker not in md:
+              raise SystemExit("editorial insertion marker missing")
+          md = md.replace(editorial_marker, editorial_add + editorial_marker, 1)
+          validation_marker = """`time-twist release-build --help`.
+          """
+          validation_add = """
+
+          Targeted post-review workflow `33290609436` also regenerated the expanded
+          **2,058-row** comparison/workbook corpus and passed Ruff, pydocstyle, mypy,
+          targeted workbook/comparison tests, and the full **167-test** unit suite. Its live
+          fit measurement confirmed TT3A at 4,118/4,169 bytes.
+          """
+          if validation_marker not in md:
+              raise SystemExit("validation marker missing")
+          md = md.replace(validation_marker, validation_marker + validation_add, 1)
+          pending_start = md.index("## Still pending")
+          md = md[:pending_start] + """## Still pending
+
+          - Reconstruct and compare the external NOV2/NOV4 system-text blocks without
+            assuming source offsets survived the external repack.
+          - Review the 347 differing aligned fixed labels against Japanese and gameplay
+            context before changing any wording.
+          - Continue the full source-grounded scenario review with TT3B, then proceed bank
+            by bank.
+          - Perform rebuilt-ROM and emulator validation after the editorial pass.
+          """
+          baseline_md_path.write_text(md, encoding="utf-8")
+          PY
+      - name: Validate audit files
+        run: |
+          python -m json.tool work/audits/translation_quality_changes.json >/dev/null
+          python -m json.tool work/audits/external_translation_baseline.json >/dev/null
+          python -m json.tool work/audits/external_fixed_ui_baseline.json >/dev/null
+          grep -q 'All 152 TT3A scenario records' work/audits/external_translation_baseline.md
+          grep -q '2,058-record' work/audits/external_fixed_ui_baseline.md
+      - name: Commit audits and remove helper
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/translation_quality_audit_sync_once.yml
+          git add work/audits/translation_quality_changes.json work/audits/external_translation_baseline.json work/audits/external_translation_baseline.md work/audits/external_fixed_ui_baseline.json work/audits/external_fixed_ui_baseline.md
+          git commit -m 'Synchronize translation quality audit status'
+          git pull --rebase origin translation-quality-comparison-audit
+          git push origin HEAD:translation-quality-comparison-audit
