@@ -544,6 +544,128 @@
       "visible_character_delta": 5,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g0/r0",
+      "japanese": "あくま「いまわしき めがみぞう……{CTRL:0} あまりのみにくさに へどがでるわ／」",
+      "previous_english": "Devil: Vile goddess...{CTRL:0}its ugliness sickens me!",
+      "new_english": "Devil: Vile goddess idol{CTRL:0}its ugliness sickens me!",
+      "category": [
+        "object_specificity",
+        "omitted_detail"
+      ],
+      "reason": "Restore めがみぞう as a goddess statue/idol rather than referring to the goddess herself; the physical statue is plot-relevant.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 5,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g0/r9",
+      "japanese": "しんかん「めがみのくびが とれていたのを{CTRL:0} みたしゅんかん くらくらっとめまいがしまして…{CTRL:2} おそらく ここらへんにたむろする{CTRL:0} ふりょうどもの しわざでしょう{CTRL:3} なんという ばちあたりな／」",
+      "previous_english": "Priest: I saw her{CTRL:0}head broken off...{CTRL:2}local thugs did it.{CTRL:0}What sacrilege!{CTRL:3}Utter heathens!",
+      "new_english": "Priest: Her head was off{CTRL:0}I got dizzy seeing it...{CTRL:2}Likely local thugs{CTRL:0}did it.{CTRL:3}What sacrilege!",
+      "category": [
+        "omitted_detail",
+        "causal_clarity",
+        "uncertainty"
+      ],
+      "reason": "Restore that seeing Athena's broken-off head made the priest dizzy, which explains his collapse, and preserve his uncertainty that nearby thugs likely did it instead of stating guilt as fact.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g4/r4",
+      "japanese": "けるべろす「おす」{CTRL:0}おれ「こんにちは…」{CTRL:2}けるべろす「ここは \"よみのくに\"{CTRL:6} いわゆる あのよのいりぐちだ……」{CTRL:3}おれ「あの…」{CTRL:4}けるべろす「はなしはきいている{CTRL:4} こどもをたすけたいのなら わがはいのといに{CTRL:4} こたえてみろ{CTRL:3} みごとあてたら かえしてやる」",
+      "previous_english": "Cerberus: Yo.{CTRL:0}Me: Hello...{CTRL:2}this is the underworld.{CTRL:6}Gateway to the dead.{CTRL:3}Me: Um...{CTRL:4}I know the tale.{CTRL:4}To save him,{CTRL:4}answer my riddles.{CTRL:3}Win and he is free.",
+      "new_english": "Cerberus: Yo.{CTRL:0}Me: Hello...{CTRL:2}Cerberus: The underworld{CTRL:6}Gateway to the dead.{CTRL:3}Me: Um...{CTRL:4}Cerberus: Heard of it.{CTRL:4}To save him,{CTRL:4}answer my riddles.{CTRL:3}Win and he is free.",
+      "category": [
+        "speaker_attribution",
+        "dialogue_clarity"
+      ],
+      "reason": "Restore Cerberus as speaker after both protagonist interjections. The old English makes the protagonist appear to explain the underworld and say he knows the tale.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g4/r20",
+      "japanese": "あくま「よるな／」{CTRL:2}からだが うごかない／{CTRL:3}あくま「このからだは わしのものだ{CTRL:4} もうあきらめろ」{CTRL:3}おれ「んなこと いったって……」{CTRL:3}あくま「さあこっちへこい こぞう／ さもないと{CTRL:4} なんどでもきさまを ころしにいくぞ／」",
+      "previous_english": "Devil: Stay back!{CTRL:2}I cannot move!{CTRL:3}This body is mine.{CTRL:4}Give up.{CTRL:3}Me: But...{CTRL:3}come here, boy!{CTRL:4}Or I kill you again!",
+      "new_english": "Devil: Stay back!{CTRL:2}I cannot move!{CTRL:3}This body is mine.{CTRL:4}Give up.{CTRL:3}Me: But...{CTRL:3}Devil: Come here, boy!{CTRL:4}or I'll kill you again!",
+      "category": [
+        "speaker_attribution",
+        "naturalness",
+        "threat_clarity"
+      ],
+      "reason": "Restore the Devil as speaker after the protagonist's interjection and make the conditional threat grammatical while retaining the source's repeated-killing sense as again.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 10,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g4/r27",
+      "japanese": "おとこ「おうじ／ きこえますか このすずのねが／{CTRL:0} おうじ／ へんじをしてください／／」{CTRL:2}にくらす「おうじ……！」{CTRL:6}おとこ「このかたは まけどにあの おうじ{CTRL:4} あれくさんだーさまなんです／」",
+      "previous_english": "Man: Prince, can you{CTRL:0}hear the bell? Answer!{CTRL:2}Nicras: Prince...!{CTRL:6}This is Alexander,{CTRL:4}prince of Macedonia!",
+      "new_english": "Man: Prince, can you{CTRL:0}hear the bell? Answer!{CTRL:2}Nicras: Prince...!{CTRL:6}Man: This is Alexander,{CTRL:4}prince of Macedonia!",
+      "category": [
+        "speaker_attribution",
+        "dialogue_clarity"
+      ],
+      "reason": "Restore the servant/man as the speaker who identifies Alexander after Nicras reacts; the old line reads as though Nicras makes the identification.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 5,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g5/r1",
+      "japanese": "……「そのこを しなせてはいけません……」{CTRL:1}おれ「！ だれだ！」{CTRL:0}{CTRL:6}……「そのこは かみのめいをうけた{CTRL:4} とくべつな こどもなのです{CTRL:3} あなたのちからで たすけてあげてください……」",
+      "previous_english": "Voice: He cannot die.{CTRL:1}Me: Who is there?!{CTRL:0}{CTRL:6}The gods chose the child{CTRL:4}for a sacred task.{CTRL:3}Use your gift. Save him.",
+      "new_english": "Voice: Don't let him die{CTRL:1}Me: Who is there?!{CTRL:0}{CTRL:6}Voice: God chose him.{CTRL:4}for a sacred task.{CTRL:3}Use your gift. Save him.",
+      "category": [
+        "meaning_correction",
+        "speaker_attribution",
+        "divine_mission"
+      ],
+      "reason": "Correct the urgent prohibition not to let the child die; the old English changes it into a claim that he cannot die. Also restore the returning voice after the protagonist speaks.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g5/r7",
+      "japanese": "{CTRL:0}{CTRL:0}ぎりしゃかくちの としを なんとよぶ！",
+      "previous_english": "{CTRL:0}{CTRL:0}Name a Greek city-state.",
+      "new_english": "{CTRL:0}{CTRL:0}Name for Greek cities?",
+      "category": [
+        "quiz_semantics",
+        "meaning_correction"
+      ],
+      "reason": "Correct the quiz from asking for an example city-state to asking what the cities across Greece are called.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
     }
   ]
 }

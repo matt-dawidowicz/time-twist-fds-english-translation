@@ -62,7 +62,7 @@
     "tt3b_full_source_review_complete": true,
     "tt3b_source_records_reviewed": 58,
     "tt3b_audited_revisions": 2,
-    "scenario_source_records_fully_reviewed": 917,
+    "scenario_source_records_fully_reviewed": 1100,
     "scenario_banks_fully_reviewed": [
       "TT3A",
       "TT3B",
@@ -73,7 +73,8 @@
       "TT6C",
       "TT6B",
       "TT6A",
-      "TT6D"
+      "TT6D",
+      "TT4"
     ],
     "tt1b_full_source_review_complete": true,
     "tt1b_source_records_reviewed": 137,
@@ -98,7 +99,10 @@
     "tt6a_audited_revisions": 0,
     "tt6d_full_source_review_complete": true,
     "tt6d_source_records_reviewed": 8,
-    "tt6d_audited_revisions": 0
+    "tt6d_audited_revisions": 0,
+    "tt4_full_source_review_complete": true,
+    "tt4_source_records_reviewed": 183,
+    "tt4_audited_revisions": 7
   },
   "fixed_ui_progress": {
     "baseline_file": "work/audits/external_fixed_ui_baseline.json",
@@ -222,7 +226,7 @@
     }
   ],
   "current_live_fit": {
-    "measurement": "canonical test_live_translation_fit.py after completed source review through TT6D",
+    "measurement": "canonical test_live_translation_fit.py after completed source review through TT4",
     "banks": [
       {
         "bank": "TT1A",
@@ -250,9 +254,9 @@
       },
       {
         "bank": "TT4",
-        "used": 5169,
+        "used": 5183,
         "capacity": 5187,
-        "free": 18
+        "free": 4
       },
       {
         "bank": "T22",
@@ -327,7 +331,8 @@
     "tt6c_free_after_one_revision": 96,
     "tt6b_free_after_full_review": 53,
     "tt6a_free_after_full_review": 172,
-    "tt6d_free_after_full_review": 5
+    "tt6d_free_after_full_review": 5,
+    "tt4_free_after_seven_revisions": 4
   },
   "validation": {
     "clean_branch_workflow_run": 33289092641,
@@ -347,7 +352,7 @@
   "pending": [
     "complete external NOV2/NOV4 system-text alignment without assuming source offsets",
     "review fixed-label differences against Japanese and gameplay context",
-    "review TT4 source-grounded scenario text next, then continue bank by bank",
+    "review TT5 source-grounded scenario text next, then continue bank by bank",
     "perform final rebuilt-ROM and emulator validation after editorial review"
   ]
 }
