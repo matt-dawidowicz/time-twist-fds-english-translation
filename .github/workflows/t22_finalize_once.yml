@@ -164,6 +164,7 @@ jobs:
           PY
       - name: Verify Python style
         run: |
+          python -m black work/tests/test_nov2_save_system.py
           python -m black --check work
           python -m ruff check work
       - name: Run unit suite
