@@ -85,6 +85,20 @@
       "visible_character_delta": 7,
       "encoded_byte_delta": null,
       "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g0/r28",
+      "japanese": "ひとらー「いだいなりし あんこくのかみよ{CTRL:1} ひと あぶらと とがったくいのおきてにかけて{CTRL:0} わがしょうがいのすべてを ささげることを{CTRL:0} ここにちかわん……」",
+      "previous_english": "Hitler: Great dark god,{CTRL:1}by human fat and stakes,{CTRL:0}I vow my whole life{CTRL:0}to you...",
+      "new_english": "Hitler: Great dark god,{CTRL:1}by the law of human fat{CTRL:0}and sharp stakes, I vow{CTRL:0}my whole life to you...",
+      "category": ["omitted_detail", "ritual_diction", "naturalness"],
+      "reason": "Restore the explicit law/code term in the oath and the source's pointed-stakes image while keeping the ritual speech natural and within the display width.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 17,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
     }
   ]
 }
