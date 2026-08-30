@@ -172,7 +172,7 @@ being added later.
 2. Read the module docstring, the function contract, and its matching test.
 3. Change source data or a guarded transform—not a generated FDS image.
 4. Add/update a focused test and explain the recovered constraint in code.
-5. Run `python work/tools/check_public_tree.py` and
+5. Run `python tools/maintenance/check_public_tree.py` and
    `python work/run_tests.py unit`.
 6. For a binary-visible change, rebuild privately and replay the affected route
    before asking outside playtesters to verify broader behavior.

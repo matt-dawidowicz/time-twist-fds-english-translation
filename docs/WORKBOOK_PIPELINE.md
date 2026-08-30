@@ -42,8 +42,8 @@ literal readings, and natural English are editorial layers.
 From the repository root:
 
 ```powershell
-python work/generate_bilingual_comparison.py
-python work/generate_translation_workbook.py
+python tools/generation/generate_bilingual_comparison.py
+python tools/generation/generate_translation_workbook.py
 ```
 
 The corpus generator walks banks in canonical order, verifies one playable
@@ -179,8 +179,8 @@ lossless tooling.
 ## Verification
 
 ```powershell
-python work/generate_bilingual_comparison.py
-python work/generate_translation_workbook.py
+python tools/generation/generate_bilingual_comparison.py
+python tools/generation/generate_translation_workbook.py
 python work/run_tests.py unit
 ```
 

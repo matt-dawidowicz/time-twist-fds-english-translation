@@ -25,7 +25,7 @@ and copyright remain ROM/code-owned. The blue clock hand is intentionally
 absent from the final background; NOV4 continues to animate it with the
 original sprite CHR and metasprite tables.
 
-`work/rebuild_native_title_asset.py` locks the GIF's SHA-256, dimensions,
+`tools/preview/rebuild_native_title_asset.py` locks the GIF's SHA-256, dimensions,
 frame count, loop flag, and all frame delays. It inverts the nearest-neighbor
 display grid by native-cell majority vote with exhaustively calibrated capture
 phases, takes the completed white swipe as its own authority, and uses temporal

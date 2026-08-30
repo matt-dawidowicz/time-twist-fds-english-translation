@@ -20,7 +20,7 @@ testing, not a file to commit.
 The fixture-free public suite is the required baseline for every change:
 
 ```powershell
-python work/tools/check_public_tree.py
+python tools/maintenance/check_public_tree.py
 python work/run_tests.py unit
 ```
 
@@ -61,7 +61,7 @@ For a candidate using the full-word menu path, generate and retain its decoded
 label audit as well:
 
 ```powershell
-python work/tools/audit_fixed_menu_labels.py `
+python tools/audit/audit_fixed_menu_labels.py `
   --candidate-fds "build/candidate/Time Twist - reproducible English four-side playtest.fds" `
   --output-csv build/candidate/fixed_menu_label_audit.csv
 ```

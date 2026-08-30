@@ -191,7 +191,7 @@ The separate completed swipe uses only black and white. The final authority may
 own rows 0-96; the swipe may own rows 0-95. Subtitle, `PUSH START`, time-machine
 art, copyright, and the live blue hand remain owned by the game.
 
-`work/rebuild_native_title_asset.py` locks the GIF hash, all 29 frame delays,
+`tools/preview/rebuild_native_title_asset.py` locks the GIF hash, all 29 frame delays,
 and the inverse display-cell mapping. It recovers the swipe from its completed
 white frame and the static final background by taking the temporal mode of 19
 frames, which removes the moving hand sprites without repainting the logo.
@@ -287,7 +287,7 @@ model was the difficult part.
 | Font | `work/time_twist/font.py` |
 | Native final title art | `work/title_assets/Time Twist approved native title.png` |
 | Native swipe title art | `work/title_assets/Time Twist approved native slide.png` |
-| Art reconstruction | `work/rebuild_native_title_asset.py` |
+| Art reconstruction | `tools/preview/rebuild_native_title_asset.py` |
 | Title patch | `work/time_twist/title.py` |
 | Title architecture | `docs/TITLE_SEQUENCE.md` |
 | Exact title tests | `work/integration_tests/test_title.py` |

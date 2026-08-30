@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import unittest
 
-from tools.external_translation_compare import (
+from tools.audit.external_translation_compare import (
     EXTERNAL_FIXED_SEGMENTS,
     decode_external_fixed_segments,
     overlay_sparse_payload,

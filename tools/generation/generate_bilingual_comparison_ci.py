@@ -13,12 +13,15 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import generate_bilingual_comparison as comparison
 from time_twist import ui
 from time_twist.scenario import render_symbols
 from time_twist.textcodec import split_records
 
-FIXED_SOURCE_TABLES = Path(__file__).with_name("fixed_source_tables.json")
+from tools.generation import generate_bilingual_comparison as comparison
+
+FIXED_SOURCE_TABLES = (
+    Path(__file__).resolve().parents[2] / "work" / "fixed_source_tables.json"
+)
 
 
 def _tracked_tables() -> dict[str, list[tuple[str, int]]]:

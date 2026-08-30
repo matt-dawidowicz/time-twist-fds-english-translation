@@ -7,7 +7,8 @@ import unittest
 from pathlib import Path
 
 from PIL import Image
-from rebuild_native_title_asset import (
+
+from tools.preview.rebuild_native_title_asset import (
     CLOCK_NUMERAL_BOXES,
     CLOCK_RIM_BRIDGE_PATCH,
     CLOCK_TRACE_CENTER_X,

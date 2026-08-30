@@ -33,7 +33,7 @@ the physical segments into source record order. TT1A exact-match counting strips
 only invisible trailing slot-padding spaces; no visible wording is normalized.
 
 The external layout is a comparison-format quirk, not a reason to relax the
-production parser. `work/tools/external_translation_compare.py` records only
+production parser. `tools/audit/external_translation_compare.py` records only
 bank-relative offsets and record counts and provides a generic logical-segment
 decoder. Unit tests lock the recovered record totals and reassembly behavior.
 

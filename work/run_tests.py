@@ -21,6 +21,7 @@ from pathlib import Path
 WORK_ROOT = Path(__file__).resolve().parent
 PROJECT_ROOT = WORK_ROOT.parent
 FIXTURE_MANIFEST = WORK_ROOT / "integration_fixtures.json"
+sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(WORK_ROOT))
 
 UNIT_TEST_REQUIREMENTS = {
@@ -86,7 +87,7 @@ def validate_integration_fixtures() -> None:
 
 
 def discover(directory: str) -> unittest.TestSuite:
-    """Discover an importable suite beneath ``work``."""
+    """Discover an importable suite beneath the project test root."""
     return unittest.defaultTestLoader.discover(
         start_dir=str(WORK_ROOT / directory),
         pattern="test*.py",

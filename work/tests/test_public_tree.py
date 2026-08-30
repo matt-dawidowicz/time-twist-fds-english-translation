@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tools.check_public_tree import check_public_tree
+from tools.maintenance.check_public_tree import check_public_tree
 
 
 class PublicTreePolicyTests(unittest.TestCase):

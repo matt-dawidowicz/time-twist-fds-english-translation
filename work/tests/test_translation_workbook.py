@@ -7,18 +7,19 @@ import json
 import re
 import unittest
 
-from generate_translation_workbook import (
+from time_twist.cli import PERSONALITY_QUESTION_IDS
+from time_twist.english import encode_english, validate_display_width
+
+from tools.generation.evidence import PATCH_FOOTPRINT_RESULTS
+from tools.generation.generate_translation_workbook import (
     CONTROL_OVERRIDE_IDS,
     OUTPUTS,
-    PATCH_FOOTPRINT_RESULTS,
     controls,
     load_playable_scenario_text,
     make_glossary,
     make_rows,
     validate,
 )
-from time_twist.cli import PERSONALITY_QUESTION_IDS
-from time_twist.english import encode_english, validate_display_width
 
 REQUIRED_FIELDS = (
     "original_record_id",

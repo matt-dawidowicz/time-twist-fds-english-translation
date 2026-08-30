@@ -7,7 +7,10 @@ import unittest
 from pathlib import Path
 
 from time_twist.english import control_values
-from tools.validate_translation_patch_fragments import validate_fragment
+
+from tools.maintenance.validate_translation_patch_fragments import (
+    validate_fragment,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 PATCH = ROOT / "work/translation_patches/TT6B_camel_ibaraki_style.json"

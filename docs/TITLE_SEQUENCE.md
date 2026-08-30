@@ -17,7 +17,7 @@ They are intentionally not forced into one silhouette. The subtitle is exact:
 
 ## Pixel authorities
 
-`work/rebuild_native_title_asset.py` validates the GIF hash, dimensions, frame
+`tools/preview/rebuild_native_title_asset.py` validates the GIF hash, dimensions, frame
 count, loop flag, and every frame delay. It then inverts the display scaling by
 majority vote within each native 256x240 pixel cell. An exhaustive round-trip
 search locks the non-integer capture phases at `x=0.81`, `y=0.0`; this is what

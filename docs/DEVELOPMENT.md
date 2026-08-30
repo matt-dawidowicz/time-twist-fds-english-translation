@@ -77,7 +77,7 @@ unit suite on Python 3.11 and 3.12. Python 3.12 additionally performs the
 packaging and installed-wheel smoke checks:
 
 ```powershell
-python work/tools/check_public_tree.py
+python tools/maintenance/check_public_tree.py
 python -m pip install -e ".[dev]"
 python -m black --check work
 python -m ruff check work

@@ -20,7 +20,7 @@ from time_twist import ui
 from time_twist.scenario import render_symbols
 from time_twist.textcodec import split_records
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 WORK = ROOT / "work"
 OUTPUTS = ROOT / "outputs"
 BANK_ORDER = (

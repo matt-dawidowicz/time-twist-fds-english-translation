@@ -7,7 +7,6 @@ import re
 import unittest
 from pathlib import Path
 
-from generate_translation_workbook import PATCH_FOOTPRINT_RESULTS
 from time_twist.capacity import (
     RELOCATED_FIXED_TABLE_PREFIX_BYTES,
     playable_capacity,
@@ -26,6 +25,8 @@ from time_twist.ui import (
     FIXED_RECORD_TABLE_SPECS,
     fixed_record_table_page_pointer_bytes,
 )
+
+from tools.generation.evidence import PATCH_FOOTPRINT_RESULTS
 
 WORK = Path(__file__).resolve().parents[1]
 TRANSLATIONS = WORK / "translations"

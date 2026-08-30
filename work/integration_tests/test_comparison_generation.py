@@ -7,7 +7,7 @@ import unittest
 from dataclasses import asdict
 from pathlib import Path
 
-from generate_bilingual_comparison import build_rows
+from tools.generation.generate_bilingual_comparison import build_rows
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 COMPARISON = (

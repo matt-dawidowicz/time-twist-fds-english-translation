@@ -114,7 +114,7 @@ Python 3.11 or newer is required. The release dependency set pins Pillow
 12.3.0 so title generation uses one exact imaging-library version.
 
 ```powershell
-python work/tools/check_public_tree.py
+python tools/maintenance/check_public_tree.py
 python -m pip install -r requirements.txt
 time-twist --help
 python work/run_tests.py unit

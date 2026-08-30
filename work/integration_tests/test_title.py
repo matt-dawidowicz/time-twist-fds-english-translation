@@ -9,7 +9,8 @@ from pathlib import Path
 
 import time_twist.title as title
 from PIL import Image
-from rebuild_native_title_asset import build_native_titles
+
+from tools.preview.rebuild_native_title_asset import build_native_titles
 
 WORK_DIR = Path(__file__).resolve().parents[1]
 

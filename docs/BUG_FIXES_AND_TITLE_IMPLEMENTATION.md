@@ -698,7 +698,7 @@ private NOV4 and emulator capture inputs present, it generates all 21 swipe
 frames, a contact sheet, and the final title with captured clock sprites:
 
 ```powershell
-python work/render_title_preview.py
+python tools/preview/render_title_preview.py
 ```
 
 Static evidence is necessary but not sufficient. This two-authority title

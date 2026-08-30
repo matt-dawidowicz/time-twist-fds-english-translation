@@ -137,7 +137,7 @@ NOV2 patch bytes and address, deterministic release output, relocated menu
 page pointers, and full-label decode equality. The audit tool is:
 
 ```powershell
-python work/tools/audit_fixed_menu_labels.py `
+python tools/audit/audit_fixed_menu_labels.py `
   --candidate-fds "build/candidate/Time Twist - reproducible English four-side playtest.fds" `
   --output-csv build/candidate/fixed_menu_label_audit.csv
 ```

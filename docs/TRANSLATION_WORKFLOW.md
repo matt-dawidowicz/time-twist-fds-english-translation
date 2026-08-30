@@ -139,8 +139,8 @@ that installs every full label; the standalone commands retain the legacy
 ## 7. Regenerate review artifacts
 
 ```powershell
-python work/generate_bilingual_comparison.py
-python work/generate_translation_workbook.py
+python tools/generation/generate_bilingual_comparison.py
+python tools/generation/generate_translation_workbook.py
 python work/run_tests.py unit
 ```
 
@@ -167,7 +167,7 @@ playtest the exact files in `build/candidate`.
 Audit the installed fixed-menu text directly from that candidate:
 
 ```powershell
-python work/tools/audit_fixed_menu_labels.py `
+python tools/audit/audit_fixed_menu_labels.py `
   --candidate-fds "build/candidate/Time Twist - reproducible English four-side playtest.fds" `
   --output-csv build/candidate/fixed_menu_label_audit.csv
 ```

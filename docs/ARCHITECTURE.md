@@ -39,9 +39,10 @@ patched `.fds` files are intentionally excluded from Git.
 | `title.py` | Convert, relocate, and verify the NOV4 English title assets | Translate story dialogue |
 | `cli.py` | Compose the above layers into reproducible commands | Hide validation failures |
 
-The standalone scripts under `work/` render CHR data, preview fonts and title
-art, generate translation workbooks, and perform exploratory analysis. Core
-binary behavior belongs in `work/time_twist/` so it can be tested.
+Developer-facing commands live under the top-level `tools/` package, grouped
+by responsibility (`analysis`, `audit`, `generation`, `maintenance`, and
+`preview`). Core binary behavior remains in `work/time_twist/`; tools may
+orchestrate or inspect that package but must not become hidden runtime layers.
 
 ## Runtime organization
 

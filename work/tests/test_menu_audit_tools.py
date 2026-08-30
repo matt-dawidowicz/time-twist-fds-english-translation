@@ -8,7 +8,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from tools import (
+from tools.audit import (
     audit_fixed_menu_labels,
     audit_full_word_menu_targets,
     report_full_word_menu_candidate,
