@@ -83,7 +83,34 @@ jobs:
           find . -type d -name __pycache__ -prune -exec rm -rf {} +
           find . -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
           PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=work python -B -m tools.maintenance.check_public_tree
-          git diff --exit-code -- work/translations work/manifests work/release_sources.json work/title_assets
+
+          git diff --exit-code -- work/translations work/manifests work/release_sources.json
+
+          changed_title_assets="$(git diff --name-only -- work/title_assets | grep -v '^work/title_assets/README.md$' || true)"
+          if [ -n "$changed_title_assets" ]; then
+            echo "unexpected title-asset content changed:" >&2
+            printf '%s\n' "$changed_title_assets" >&2
+            exit 1
+          fi
+
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          path = Path("work/title_assets/README.md")
+          before = subprocess.check_output(
+              ["git", "show", "HEAD:work/title_assets/README.md"], text=True
+          )
+          expected = before.replace(
+              "work/rebuild_native_title_asset.py",
+              "tools/preview/rebuild_native_title_asset.py",
+          )
+          current = path.read_text(encoding="utf-8")
+          if current != expected:
+              raise SystemExit(
+                  "title-assets README changed beyond the reviewed tool-path relocation"
+              )
+          PY
 
       - name: Remove temporary workflows and commit phase 1
         shell: bash
