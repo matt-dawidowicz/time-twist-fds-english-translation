@@ -35,5 +35,6 @@ jobs:
             echo "No lint changes or diagnostics"
           else
             git commit -m "Capture comparison-tool lint diagnostics"
+            git pull --rebase origin translation-quality-comparison-audit
             git push origin HEAD:translation-quality-comparison-audit
           fi
