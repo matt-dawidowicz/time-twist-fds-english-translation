@@ -49,10 +49,11 @@ from those pages.
 | Material | Authority |
 | --- | --- |
 | `work/translations/*.json` | Playable scenario dialogue and narration |
-| `work/time_twist/ui_fixed_tables.py` and `ui.py` | Playable full-word menu and fixed-interface text |
-| `work/time_twist/font.py` and `title.py` | Playable font/title transformations |
+| `src/time_twist/ui_fixed_tables.py` and `ui.py` | Playable full-word menu and fixed-interface text |
+| `src/time_twist/font.py` and `title*.py` | Playable font/title transformations |
+| `src/time_twist/release.py` and `release_metadata.py` | Candidate/release assembly, provenance, and promotion rules |
 | `work/release_sources.json` | Approved non-code release inputs and hashes |
-| `work/release_target.json` | Created only by promotion; reviewed v2 output/provenance authority |
+| `work/release_target.json` | Created only by promotion; reviewed output/provenance authority |
 | `outputs/Time_Twist_complete_translation_workbook.*` | Review surface; patch-safe text mirrors the playable sources |
 
 Do not edit generated ROMs or rebuilt banks as source material.
@@ -62,9 +63,9 @@ Do not edit generated ROMs or rebuilt banks as source material.
 | If you are looking at... | Start here |
 | --- | --- |
 | Dialogue, narration, or a scenario choice | `work/translations/<BANK>.json` and [translation contributor guide](CONTRIBUTING_TRANSLATION.md) |
-| A fixed menu, disk prompt, Save/Load label, or other shared UI | `work/time_twist/ui.py`, `ui_fixed_tables.py`, [full-word menu implementation](docs/FULL_WORD_MENU_IMPLEMENTATION.md), and [implementation notes](docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md) |
-| Font glyphs or the title sequence | `work/time_twist/font.py`, `work/time_twist/title.py`, and [title sequence](docs/TITLE_SEQUENCE.md) |
-| Candidate creation, source locks, or reproducibility | `work/time_twist/release.py`, `release_metadata.py`, and [release commands](docs/CLI_REFERENCE.md#release-commands) |
+| A fixed menu, disk prompt, Save/Load label, or other shared UI | `src/time_twist/ui.py`, `ui_fixed_tables.py`, [full-word menu implementation](docs/FULL_WORD_MENU_IMPLEMENTATION.md), and [implementation notes](docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md) |
+| Font glyphs or the title sequence | `src/time_twist/font.py`, `src/time_twist/title.py`, and [title sequence](docs/TITLE_SEQUENCE.md) |
+| Candidate creation, source locks, or reproducibility | `src/time_twist/release.py`, `release_metadata.py`, and [release commands](docs/CLI_REFERENCE.md#release-commands) |
 | A problem seen while playing | [playtesting guide](PLAYTESTING.md) |
 | Binary/format concepts | [architecture](docs/ARCHITECTURE.md) and [format reference](docs/FORMATS.md) |
 
@@ -80,50 +81,55 @@ manual Zenpen-to-Kouhen playthrough.
 
 | Path | Contents |
 | --- | --- |
-| `docs/` | Architecture, formats, CLI, workflow, and development guides |
-| `work/time_twist/` | FDS parsing, compression, text, font, title, UI, and release code |
+| `src/time_twist/` | Installable FDS parsing, compression, text, font, title, UI, and release code |
+| `tools/` | Developer analysis, audit, generation, maintenance, and preview tooling |
 | `tests/unit/` | Fixture-free public unit tests |
 | `tests/integration/` | ROM-derived integration tests for maintainers |
+| `tests/fixtures/` | Public metadata describing the private fixture overlay |
 | `work/translations/` | Authoritative playable scenario maps |
-| `work/translated_scripts/` | Extracted/review-oriented scenario records |
+| `work/translated_scripts/` | Extracted/review-oriented scenario records used by comparison generation |
 | `work/translation_workbook_banks/` | Per-bank linguistic review checkpoints |
 | `work/title_assets/` | Contributor-created English title reference art |
-| `outputs/` | Workbooks, glossary, reports, and previews |
-| `PLAYTESTING.md` | Player-focused setup, high-priority checks, and issue template |
-| `CONTRIBUTING_TRANSLATION.md` | Safe path from a reviewed line to its playable source |
+| `work/audits/` and `audit/` | External-comparison and editorial evidence |
+| `outputs/` | Deterministically generated workbooks, glossary, reports, and previews |
+| `docs/` | Architecture, formats, CLI, workflow, and development guides |
+
+`work/` is project data, not a Python package. Release-critical code belongs in
+`src/time_twist/`; developer-only code belongs in `tools/`.
 
 The searchable workbook is
 [`outputs/Time_Twist_complete_translation_workbook.html`](outputs/Time_Twist_complete_translation_workbook.html).
 CSV and JSON versions sit beside it.
 
 The workbook deliberately preserves two English versions when hardware limits
-force a scenario-line compromise. `final_natural_english_translation` is the complete,
-unconstrained translation that a future engine expansion or bank-optimization
-effort should aim to display. `patch_safe_english_translation` is the exact
-wording used by the current playable build after accounting for line width,
-control-code layout, compression, and fixed bank footprints. A shortened
-patch-safe scenario line therefore does **not** mean that the full translation
-was lost. The canonical release now installs the complete configured fixed-menu
-labels through the recovered page-indexed layout.
+force a scenario-line compromise. `final_natural_english_translation` is the
+complete, unconstrained translation that a future engine expansion or
+bank-optimization effort should aim to display. `patch_safe_english_translation`
+is the exact wording used by the current playable build after accounting for
+line width, control-code layout, compression, and fixed bank footprints. A
+shortened patch-safe scenario line therefore does **not** mean that the full
+translation was lost. The canonical release now installs the complete configured
+fixed-menu labels through the recovered page-indexed layout.
 See [`docs/WORKBOOK_PIPELINE.md`](docs/WORKBOOK_PIPELINE.md#preserving-the-full-translation)
 before moving natural-field text into the ROM.
 
 ## Install and test
 
-Python 3.11 or newer is required. The release dependency set pins Pillow
-12.3.0 so title generation uses one exact imaging-library version.
+Python 3.11 or newer is required. The release dependency set pins Pillow 12.3.0
+so title generation uses one exact imaging-library version.
 
 ```powershell
-python tools/maintenance/check_public_tree.py
 python -m pip install -r requirements.txt
+python -m tools.maintenance.check_public_tree
 time-twist --help
 python -m tools.maintenance.run_tests unit
 ```
 
-The public suite is fixture-free and permits no skips. Public
-CI runs source/style/type/unit checks on both Python 3.11 and 3.12. Python 3.12
-also builds and force-installs the wheel, proves the smoke test imports the
-installed package rather than the checkout, and exercises the CLI.
+The public suite is fixture-free and permits no skips. Public CI regenerates the
+committed review artifacts and runs source/style/type/unit checks on both Python
+3.11 and 3.12. Python 3.12 also builds and force-installs the wheel, proves the
+smoke test imports the installed package rather than the checkout, and exercises
+the CLI.
 
 Maintainers with legally obtained local ROM-derived fixtures can overlay the
 private fixture bundle at the repository root and run:
@@ -134,10 +140,10 @@ python -m tools.maintenance.run_tests all
 ```
 
 The integration suite contains **75 tests** and also permits no skips. The
-runner validates every fixture against `tests/fixtures/integration_fixtures.json` before
-test discovery, so missing fixtures produce an explicit setup failure rather
-than a misleading green run with skipped tests. See
-[`docs/PRIVATE_FIXTURES.md`](docs/PRIVATE_FIXTURES.md).
+runner validates every fixture against
+`tests/fixtures/integration_fixtures.json` before test discovery, so missing
+fixtures produce an explicit setup failure rather than a misleading green run
+with skipped tests. See [`docs/PRIVATE_FIXTURES.md`](docs/PRIVATE_FIXTURES.md).
 
 Private-suite results are recorded separately from public CI evidence. A result
 from an earlier release-code revision is historical evidence, not a claim that
@@ -179,11 +185,11 @@ Strict builds are staged and hash-checked before publication. A target mismatch
 fails without publishing new ROMs to the requested output directory.
 
 Candidate manifests record an authoritative platform-independent SHA-256 over
-the Python release tree. Before building or promoting, the command hashes both
-the imported `time_twist` package and `<project-root>/work/time_twist` under the
-same logical `work/time_twist/...` paths and requires them to match. Optional Git
-commit/dirty metadata is informational; the deterministic code-tree digest is
-authoritative.
+the release code. Provenance schema v2 binds the logical `src/time_twist` tree.
+Before building or promoting, the command hashes both the imported `time_twist`
+package and `<project-root>/src/time_twist` using the same logical paths and
+requires them to match. Optional Git commit/dirty metadata is informational; the
+deterministic code-tree digest is authoritative.
 
 **Promotion independently proves reproducibility.** `release-promote` validates
 the reviewed candidate and source lock, performs a fresh candidate-mode rebuild
@@ -232,22 +238,22 @@ Start with [`docs/README.md`](docs/README.md). Important guides:
 ## Translation constraints
 
 Time Twist uses packed bitstream text, per-bank dictionaries, several recovered
-record-addressing models, and strict RAM/storage limits. Translation changes are validated
-against those constraints; raw byte replacement is not sufficient.
+record-addressing models, and strict RAM/storage limits. Translation changes are
+validated against those constraints; raw byte replacement is not sufficient.
 
-Control codes, message ordering, dictionary contracts, scenario tails, and
-bank footprints must remain stable. A record boundary may move only when its
-complete runtime addressing model is recovered and every affected pointer is
-regenerated by a source-verified relocation.
+Control codes, message ordering, dictionary contracts, scenario tails, and bank
+footprints must remain stable. A record boundary may move only when its complete
+runtime addressing model is recovered and every affected pointer is regenerated
+by a source-verified relocation.
 
 ## Copyright and license
 
 Contributor-created code, tests, documentation, and other original materials
-are licensed under the [MIT License](LICENSE). The license does not grant
-rights to the original game or any third-party software or assets. See
+are licensed under the [MIT License](LICENSE). The license does not grant rights
+to the original game or any third-party software or assets. See
 [`THIRD_PARTY_NOTICE.md`](THIRD_PARTY_NOTICE.md).
 
-This is an unofficial fan-translation and reverse-engineering project. It is
-not affiliated with, authorized by, or endorsed by Nintendo or the original
-rights holders. The public source archive contains no original or patched ROM
-images, extracted ROM banks, firmware, emulator packages, or memory dumps.
+This is an unofficial fan-translation and reverse-engineering project. It is not
+affiliated with, authorized by, or endorsed by Nintendo or the original rights
+holders. The public source archive contains no original or patched ROM images,
+extracted ROM banks, firmware, emulator packages, or memory dumps.
