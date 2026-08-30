@@ -1,0 +1,35 @@
+name: translation-quality-fit-once
+
+on:
+  push:
+    paths:
+      - ".github/workflows/translation_quality_fit_once.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: translation-quality-comparison-audit
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Measure live packed headroom
+        run: |
+          python -m unittest discover -s work/tests -t work -p 'test_live_translation_fit.py' -v > /tmp/live_fit.txt 2>&1
+          grep '^FIT ' /tmp/live_fit.txt > work/audits/live_fit_latest.txt
+          cat work/audits/live_fit_latest.txt
+      - name: Commit capacity diagnostic
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add work/audits/live_fit_latest.txt
+          git commit -m "Capture current translation headroom"
+          git pull --rebase origin translation-quality-comparison-audit
+          git push origin HEAD:translation-quality-comparison-audit
