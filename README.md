@@ -251,3 +251,5 @@ This is an unofficial fan-translation and reverse-engineering project. It is
 not affiliated with, authorized by, or endorsed by Nintendo or the original
 rights holders. The public source archive contains no original or patched ROM
 images, extracted ROM banks, firmware, emulator packages, or memory dumps.
+
+<!-- CI validation trigger for translation-quality audit head c180d33. -->
