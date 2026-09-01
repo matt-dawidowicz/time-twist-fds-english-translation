@@ -102,10 +102,26 @@ jobs:
               "The first T's upper-right cap uses a reviewed four-pixel correction to restore the white cap and dark inner bevel.",
           )
           PY
-      - name: Regenerate title authority and release lock
+      - name: Regenerate title authority and source lock
+        shell: bash
         run: |
           python work/rebuild_native_title_asset.py
-          PYTHONPATH=work python -m time_twist.cli release-lock --update
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+
+          asset = Path("work/title_assets/Time Twist approved native title.png")
+          expected = "7792CEA1488CE2ABDEC3A2301958A8264E5EAFE17491DD1509C53D0D68E5B4FF"
+          actual = hashlib.sha256(asset.read_bytes()).hexdigest().upper()
+          if actual != expected:
+              raise SystemExit(f"unexpected regenerated title hash: {actual}")
+          lock = Path("work/release_sources.json")
+          text = lock.read_text(encoding="utf-8")
+          old = "B1F262770FB490E2A933B956D5857432C101EE378A0F765CCCFACD8EE5FBF9A8"
+          if text.count(old) != 1:
+              raise SystemExit("title release-source lock did not contain the expected old hash")
+          lock.write_text(text.replace(old, expected), encoding="utf-8")
+          PY
       - name: Verify title regression suite
         run: PYTHONPATH=work python -m unittest discover -s work/tests -p 'test_title_opening_assets.py' -v
       - name: Commit corrected source and regenerated asset
