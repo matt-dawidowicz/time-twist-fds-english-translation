@@ -384,7 +384,7 @@ and delays; inverts its display cells by majority vote; selects the completed
 white swipe; and uses temporal consensus to remove only the moving blue hand
 sprites from the colored phase. It then applies the reviewed native-pixel
 cleanup to the lower T bevel, reference-traced clock rim, W/I/S outlines, and
-balanced TM. The first T's upper cap remains exact to the GIF authority.
+balanced TM. The first T's upper-right cap uses a reviewed four-pixel correction to restore the white cap and dark inner bevel.
 The lower screen, time machine, copyright line, PUSH START, and live hand
 sprites remain derived from native game assets.
 
