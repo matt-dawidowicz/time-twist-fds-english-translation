@@ -1,0 +1,287 @@
+--- a/work/integration_tests/test_scenario.py
++++ b/work/integration_tests/test_scenario.py
+@@ -209,7 +209,7 @@
+             )
+         )
+         self.assertEqual(len(COMMON_CHARACTERS), 48)
+-        self.assertEqual(len(repertoire), 74)
++        self.assertEqual(len(repertoire), 73)
+         text = repertoire + "{CTRL:1}" + repertoire
+         self.assertEqual(render_english(encode_english(text)), text)
+ 
+@@ -258,7 +258,7 @@
+             self.fail("TT1B translation fixture is not available")
+         translations = json.loads(path.read_text(encoding="utf-8"))
+         line = translations["TT1B/g0/r1"]
+-        self.assertEqual(line, "Blue sky--how long gone?")
++        self.assertEqual(line, "Blue sky... when was it?")
+         validate_display_width(line)
+ 
+     def test_tt1a_fortune_prediction_has_terminal_punctuation(self) -> None:
+@@ -309,10 +309,10 @@
+         self.assertIn("I pledge all", t22["T22/g0/r10"])
+ 
+         tt3a = translations("TT3A")
+-        self.assertIn("Anti-Hitler plot", tt3a["TT3A/g1/r19"])
++        self.assertIn("Assassination plot", tt3a["TT3A/g1/r19"])
+         self.assertEqual(
+             tt3a["TT3A/g3/r2"],
+-            "Man: With Rebecca?!{CTRL:1}Me: No. I fled the camp{CTRL:0}"
++            "Man: One of Rebecca's?{CTRL:1}Me: No. I fled the camp{CTRL:0}"
+             "last night.",
+         )
+         self.assertIn("the Gestapo!", tt3a["TT3A/g4/r21"])
+@@ -320,7 +320,7 @@
+ 
+         tt4 = translations("TT4")
+         self.assertFalse(any("Yomi" in line for line in tt4.values()))
+-        self.assertIn("the underworld", tt4["TT4/g4/r4"])
++        self.assertIn("The underworld", tt4["TT4/g4/r4"])
+ 
+         tt5 = translations("TT5")
+         self.assertTrue(
+@@ -331,8 +331,8 @@
+         self.assertNotIn("Dixie", tt5["TT5/g0/r18"])
+ 
+         tt6a = translations("TT6A")
+-        self.assertIn("My betrothed", tt6a["TT6A/g0/r13"])
+-        self.assertIn("Mary has no idea how.", tt6a["TT6A/g0/r13"])
++        self.assertIn("My fiancee Mary", tt6a["TT6A/g0/r13"])
++        self.assertIn("She says she had no idea", tt6a["TT6A/g0/r13"])
+         self.assertIn("The fiend descended...", tt6a["TT6A/g0/r18"])
+ 
+         tt6c = translations("TT6C")
+@@ -542,26 +542,22 @@
+         if not path.exists():
+             self.fail("translation fixture is not available")
+         translations = json.loads(path.read_text(encoding="utf-8"))
+-        rows = [
+-            ("Do you prefer consommé", "to miso soup?"),
+-            ("Can you swim 50 meters?", None),
+-            ("Do you laugh at random?", None),
+-            ("Are the Giants the best?", None),
+-            ("Have you dated at least", "three girls?"),
+-            ("Have you had sleep", "paralysis?"),
+-            ("Do you want to hit", "3 or more people?"),
+-            ("Have you curled up and", "cried?"),
+-            ("Do you put play first?", None),
+-            ("Do brand names matter?", None),
+-            ("Do you leave work until", "tomorrow?"),
+-            ("Do you believe only you", "can protect yourself?"),
+-            ("Will you help society", "someday?"),
+-            ("Do you want a brief,", "full life?"),
+-            ("Is love all you need?", None),
+-        ]
+         expected = [
+-            first if second is None else first.ljust(24) + second
+-            for first, second in rows
++            "Do you prefer consommé  to miso soup?",
++            "Swim 50 meters or more?",
++            "Do you laugh at random?",
++            "Are the Giants the best?",
++            "Have you dated at least three girls?",
++            "Have you had sleep      paralysis?",
++            "Do you want to hit      3 or more people?",
++            "Have you curled up and  cried?",
++            "Don't want work cutting into your free time?",
++            "Do brand names matter?",
++            "Do you leave work until tomorrow?",
++            "Do you believe only you can protect yourself?",
++            "Want to help society    someday?",
++            "Do you want a brief,    full life?",
++            "Is love all you need?",
+         ]
+         actual = [
+             translations[f"TT1A/g0/r{record}"] for record in range(6, 21)
+@@ -569,10 +565,6 @@
+         self.assertEqual(actual, expected)
+         for question in actual:
+             validate_display_width(question, allow_wrap=True)
+-        for question, (first, second) in zip(actual, rows, strict=True):
+-            self.assertEqual(question[:24].rstrip(), first)
+-            if second is not None:
+-                self.assertEqual(question[24:], second)
+ 
+     def test_scenario_refresh_preserves_existing_english(self) -> None:
+         """Verify the current contract described by this regression test."""
+--- a/work/integration_tests/test_ui.py
++++ b/work/integration_tests/test_ui.py
+@@ -10,7 +10,11 @@
+ from time_twist.scenario import parse_scenario_bank
+ from time_twist.textcodec import pack_records, split_records
+ from time_twist.ui import (
++    DISK_NUMBER_ERROR_PATCHES,
+     DISK_PROMPT_PATCHES,
++    DISK_SET_ERROR_OFFSET,
++    DISK_SET_ERROR_SOURCE,
++    ENGLISH_NOV4_LOAD_PROMPT,
+     ENGLISH_START_PROMPT,
+     ENGLISH_WAIT_PROMPT,
+     KOUHEN_BOOT_GUARD_BLANK_TILE,
+@@ -22,13 +26,22 @@
+     KOUHEN_BOOT_GUARD_TILE_COUNT,
+     KOUHEN_BOOT_GUARD_TILEMAP_END,
+     KOUHEN_BOOT_GUARD_TILEMAP_OFFSET,
++    LOAD_PROMPT_OFFSET,
+     NOV2_BLANK_TILE,
+     NOV2_DIALOGUE_ROW_COPY,
++    NOV2_EXTENDED_DICTIONARY_PATCH,
+     NOV2_OPAQUE_CLEAR_PATCHES,
++    NOV2_SAVE_SYSTEM_PATCHES,
+     NOV2_SINGLE_CHOICE_B_PATCHES,
++    NOV4_LOAD_PROMPT_OFFSET,
+     NOV4_START_PROMPT_OFFSET,
++    ORIGINAL_LOAD_PROMPT,
++    ORIGINAL_NOV4_LOAD_PROMPT,
++    ORIGINAL_SAVE_PROMPT,
+     ORIGINAL_START_PROMPT,
+     ORIGINAL_WAIT_PROMPT,
++    SAVE_PROMPT_OFFSET,
++    SIDE_NUMBER_ERROR_PATCHES,
+     START_PROMPT_OFFSET,
+     T22_FIXED_TEXT_END_OFFSET,
+     T22_FIXED_TEXT_RECORDS,
+@@ -198,7 +211,7 @@
+         """Verify the current contract described by this regression test."""
+         self.assertEqual(len(ORIGINAL_START_PROMPT), 6)
+         self.assertEqual(len(ENGLISH_START_PROMPT), 6)
+-        self.assertEqual(ENGLISH_START_PROMPT.hex().upper(), "85C763700FA0")
++        self.assertEqual(ENGLISH_START_PROMPT.hex().upper(), "8420C9080FA0")
+ 
+     def test_zenpen_nov2_start_prompt_patch(self) -> None:
+         """Verify the current contract described by this regression test."""
+@@ -232,6 +245,27 @@
+             for index in range(offset, offset + len(source))
+         )
+         expected_changed.update(
++            index
++            for offset, source, _ in NOV2_SAVE_SYSTEM_PATCHES
++            for index in range(offset, offset + len(source))
++        )
++        expected_changed.update(
++            range(
++                DISK_SET_ERROR_OFFSET,
++                DISK_SET_ERROR_OFFSET + len(DISK_SET_ERROR_SOURCE),
++            )
++        )
++        expected_changed.update(
++            index
++            for offset, source, _ in SIDE_NUMBER_ERROR_PATCHES
++            for index in range(offset, offset + len(source))
++        )
++        expected_changed.update(
++            index
++            for offset, source, _ in DISK_NUMBER_ERROR_PATCHES
++            for index in range(offset, offset + len(source))
++        )
++        expected_changed.update(
+             range(
+                 START_PROMPT_OFFSET,
+                 START_PROMPT_OFFSET + len(ORIGINAL_START_PROMPT),
+@@ -244,6 +278,25 @@
+             )
+         )
+         expected_changed.update(
++            range(
++                SAVE_PROMPT_OFFSET,
++                SAVE_PROMPT_OFFSET + len(ORIGINAL_SAVE_PROMPT),
++            )
++        )
++        expected_changed.update(
++            range(
++                LOAD_PROMPT_OFFSET,
++                LOAD_PROMPT_OFFSET + len(ORIGINAL_LOAD_PROMPT),
++            )
++        )
++        expected_changed.update(
++            range(
++                NOV2_EXTENDED_DICTIONARY_PATCH.file_offset,
++                NOV2_EXTENDED_DICTIONARY_PATCH.file_offset
++                + len(NOV2_EXTENDED_DICTIONARY_PATCH.expected),
++            )
++        )
++        expected_changed.update(
+             patch.file_offset for patch in NOV2_OPAQUE_CLEAR_PATCHES
+         )
+         expected_changed.update(
+@@ -329,7 +382,7 @@
+         self.assertEqual(patched[WAIT_PROMPT_OFFSET:end], ENGLISH_WAIT_PROMPT)
+         records, record_end = split_records(ENGLISH_WAIT_PROMPT, limit=1)
+         self.assertEqual(record_end, len(ENGLISH_WAIT_PROMPT))
+-        self.assertEqual(render_english(records[0]).rstrip(), "PLEASE WAIT...")
++        self.assertEqual(render_english(records[0]).rstrip(), "Please wait...")
+         self.assertNotIn("{CTRL:", render_english(records[0]))
+ 
+     def test_zenpen_nov2_b_ignores_one_choice_but_keeps_normal_back(
+@@ -392,9 +445,14 @@
+         self.assertEqual(
+             patched[NOV4_START_PROMPT_OFFSET:end], ENGLISH_START_PROMPT
+         )
++        load_end = NOV4_LOAD_PROMPT_OFFSET + len(ORIGINAL_NOV4_LOAD_PROMPT)
+         self.assertEqual(
+-            patched[:NOV4_START_PROMPT_OFFSET] + patched[end:],
+-            original[:NOV4_START_PROMPT_OFFSET] + original[end:],
++            patched[NOV4_LOAD_PROMPT_OFFSET:load_end],
++            ENGLISH_NOV4_LOAD_PROMPT,
++        )
++        self.assertEqual(
++            patched[:NOV4_START_PROMPT_OFFSET] + patched[load_end:],
++            original[:NOV4_START_PROMPT_OFFSET] + original[load_end:],
+         )
+ 
+     def test_tt1a_choice_menu_patch_is_size_neutral(self) -> None:
+@@ -412,7 +470,11 @@
+             *TT1A_MONTH_PATCHES,
+             *TT1A_CONFIRMATION_PATCHES,
+         ):
+-            replacement = pack_records([encode_english(english)])
++            symbols = encode_english(english)
++            common_space = encode_english(" ")[0]
++            while len(pack_records((symbols,))) < len(source):
++                symbols = (*symbols, common_space)
++            replacement = pack_records((symbols,))
+             self.assertEqual(len(replacement), len(source))
+             self.assertEqual(
+                 patched[offset : offset + len(source)], replacement
+@@ -457,19 +519,19 @@
+         self.assertEqual(
+             [render_english(record).rstrip() for record in records],
+             [
+-                "JAN",
+-                "FEB",
+-                "MAR",
+-                "APR",
+-                "MAY",
+-                "JUN",
+-                "JUL-DEC",
+-                "JUL",
+-                "AUG",
+-                "SEP",
+-                "OCT",
+-                "NOV",
+-                "DEC",
++                "Jan",
++                "Feb",
++                "Mar",
++                "Apr",
++                "May",
++                "Jun",
++                "Jul-Dec",
++                "Jul",
++                "Aug",
++                "Sep",
++                "Oct",
++                "Nov",
++                "Dec",
+             ],
+         )
+ 
+@@ -484,7 +546,7 @@
+         self.assertEqual(end, 0x02AB)
+         self.assertEqual(
+             [render_english(record) for record in records],
+-            ["YES", "NO"],
++            ["Yes", "No"],
+         )
+ 
+     def test_tt1b_fixed_menu_and_object_table_is_size_neutral(self) -> None:
