@@ -83,7 +83,7 @@ This pass extends the source-first voice/prose pilot into TT2: October 1428 Fran
 
 ## Source-grounded semantic restorations
 
-- `TT2/g0/r25`: restores `tadachi ni` (report scarred women **at once/immediately**) and `genbatsu ni shosu` (concealers face **severe punishment**). The previous `Hiding one is a crime` lost both details.
+- `TT2/g0/r25`: restores `tadachi ni` (report scarred women **at once/immediately**) and `genbatsu ni shosu` (concealers face **severe punishment**) while retaining the source date, **October 1428**. The previous `Hiding one is a crime` lost the first two details.
 - `TT2/g3/r23`: restores Pierre's opening `bakayarou` insult in his drunken retort after Chino asks why Pierre will not rescue Jeanne himself.
 - Rough forms and stutters are retained rather than normalized away, especially Chino's `ba, baka...` restart and Pierre's repeated drunken insults/hiccups.
 - Formal official/jailer speech is retained as formal where the Japanese switches into `desu/masu` and honorific register.
@@ -108,6 +108,6 @@ Local structural validation found:
 - no changed control-delimited English segment longer than 24 visible characters;
 - maximum changed-segment width: 24 characters;
 - no unsupported English-font characters;
-- revised TT2 visible text is 86 characters shorter overall than the prior branch version.
+- revised TT2 visible text is 85 characters shorter overall than the prior branch version.
 
 The raw-character reduction is useful headroom but is not proof of packed fit. TT2 uses dictionary compression and the canonical compression/release-build fit gate remains required before release approval.
