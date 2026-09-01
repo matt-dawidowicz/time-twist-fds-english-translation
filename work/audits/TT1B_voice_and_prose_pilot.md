@@ -89,7 +89,7 @@ This pass extends the source-first voice/prose pilot into TT1B: the Devil Museum
 
 ## Capacity discipline
 
-TT1B is an unusually tight bank. The pass therefore favors sharper wording over expansion. Relative to the current branch text before this pass, the revised 137-record TT1B map is 18 visible characters shorter overall.
+TT1B is an unusually tight bank. The pass therefore favors sharper wording over expansion. Relative to the current branch text before this pass, the revised 137-record TT1B map is 28 visible characters shorter overall.
 
 A local structural validation of all 87 changed records found:
 
