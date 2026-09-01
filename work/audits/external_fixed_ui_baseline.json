@@ -16,13 +16,18 @@
     "tt1a_selector_records": 19,
     "nov2_source_verified_missing_records_found": 6,
     "nov2_source_verified_missing_records_translated": 6,
-    "canonical_corpus_rows_after_nov2_integration": 2058
+    "canonical_corpus_rows_after_nov2_integration": 2058,
+    "nov2_external_repacked_records_recovered": 15,
+    "nov2_external_unaligned_source_records": 2,
+    "nov4_external_repacked_records_recovered": 2
   },
   "comparison_notes": {
     "logical_order": "External fixed tables are reconstructed from physical segments in source record order.",
     "paging_pattern": "Most major external tables are relocated in approximately 32-record pages; segment offsets are bank-relative.",
     "tt1a_padding": "TT1A selector exact-match comparison ignores invisible trailing spaces used only to preserve fixed slot sizes.",
-    "nov2": "Six previously untranslated NOV2 save/system records are now source-verified runtime patches and first-class corpus rows. The external NOV2 layout remains repacked and is not included in the 740 aligned-record total."
+    "nov2": "Six previously untranslated NOV2 save/system records are now source-verified runtime patches and first-class corpus rows. The external NOV2 layout remains repacked and is not included in the 740 aligned-record total.",
+    "nov2_external": "The supplied external patch repacks 15 corresponding NOV2 system records at recovered physical offsets; two source disk-error records remain byte-identical Japanese and are explicitly unaligned rather than assigned invented external English.",
+    "nov4_external": "The supplied external patch appends a 26-record NOV4 table; the gameplay-equivalent Start and Load records are recovered at bank-relative offsets 0x2384 and 0x2389."
   },
   "banks": [
     {
@@ -270,7 +275,6 @@
     }
   ],
   "pending": [
-    "recover and compare NOV2/NOV4 external system text as separate repacked blocks",
     "review fixed-label differences against Japanese before any translation edit"
   ]
 }
