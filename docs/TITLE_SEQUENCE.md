@@ -28,7 +28,7 @@ The script writes two indexed authorities:
 
 | Phase | ROM-bound asset | Nonzero bounds | Pixel SHA-256 |
 | --- | --- | --- | --- |
-| Final | `Time Twist approved native title.png` | `(22,22)-(237,96)` | `27EE6BA45E19778B80EBBEACEEDC763EF896CE6A0A942D0C080114AB2C02B208` |
+| Final | `Time Twist approved native title.png` | `(22,22)-(237,96)` | `FB7AECF3D2D9349E818CF7A020CD3A6EEF2FFF4F401B69EFDC95312C0C4ED99F` |
 | Swipe | `Time Twist approved native slide.png` | `(24,25)-(235,86)` | `34FF7674E69C187BBF504C126F5F1F4ACBEF93823633C2EB00D5E4558FFC95BB` |
 
 The final background uses the temporal mode of 19 colored-title frames. That

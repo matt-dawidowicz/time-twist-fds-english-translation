@@ -170,8 +170,12 @@ S_ENTRY_PATCH = {
 }
 FINAL_OUTLINE_PATCH = {
     (54, 31): 1,
-    # Remove the lone pink cell at the first T's upper-right tip.
-    (64, 30): 3,
+    # Clean the first T's upper-right tip: the three-cell dark corner belongs
+    # to the white cap, while the enclosed pink cell is the dark inner bevel.
+    (63, 29): 1,
+    (64, 29): 1,
+    (64, 30): 1,
+    (63, 30): 3,
     # Finish the paired white/dark stairs inside the first T and W.
     (77, 59): 1,
     (77, 60): 1,
