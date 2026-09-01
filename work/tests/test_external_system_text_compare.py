@@ -25,7 +25,9 @@ class ExternalSystemTextCompareTests(unittest.TestCase):
         self.assertEqual(len(nov4), 2)
         self.assertEqual(len({record_id for record_id, _ in nov2}), len(nov2))
         self.assertEqual(len({offset for _, offset in nov2}), len(nov2))
-        self.assertEqual(dict(nov4), {"NOV4/start": 0x2384, "NOV4/load": 0x2389})
+        self.assertEqual(
+            dict(nov4), {"NOV4/start": 0x2384, "NOV4/load": 0x2389}
+        )
         self.assertEqual(EXTERNAL_NOV4_APPENDED_TABLE, (0x2375, 26))
 
     def test_unaligned_source_slots_are_explicit(self) -> None:
@@ -39,7 +41,9 @@ class ExternalSystemTextCompareTests(unittest.TestCase):
     def test_named_decoder_uses_declared_logical_order(self) -> None:
         """Decode physically separated records without assuming source offsets."""
         data = bytes([0x03, 0xE8, 0x00, 0x00, 0x07, 0xE8])
-        decoded = decode_external_named_records(data, (("first", 0), ("second", 4)))
+        decoded = decode_external_named_records(
+            data, (("first", 0), ("second", 4))
+        )
         self.assertEqual(list(decoded), ["first", "second"])
         self.assertEqual(
             [render_record(record, []) for record in decoded.values()],
@@ -56,7 +60,9 @@ class ExternalSystemTextCompareTests(unittest.TestCase):
                 (("same", 0), ("same", 2)),
             )
         with self.assertRaisesRegex(ValueError, "duplicate.*offset"):
-            decode_external_named_records(bytes([0x03, 0xE8]), (("one", 0), ("two", 0)))
+            decode_external_named_records(
+                bytes([0x03, 0xE8]), (("one", 0), ("two", 0))
+            )
 
 
 if __name__ == "__main__":
