@@ -56,19 +56,22 @@ jobs:
               '"00WWWWWDDW",',
               '"00WWWWWWWW",',
           )
-          needle = "        self.assertNotEqual(final.tobytes(), slide.tobytes())\n\n    def test_checked_in_asset_files_are_locked"
-          insertion = """        self.assertNotEqual(final.tobytes(), slide.tobytes())
-
-    def test_first_t_upper_right_tip_is_pixel_locked(self) -> None:
-        \"\"\"Keep the corrected white cap and dark inner bevel on the first T.\"\"\"
-        with Image.open(FINAL) as source:
-            final = source.copy()
-        self.assertEqual(final.getpixel((63, 29)), 1)
-        self.assertEqual(final.getpixel((64, 29)), 1)
-        self.assertEqual(final.getpixel((64, 30)), 1)
-        self.assertEqual(final.getpixel((63, 30)), 3)
-
-    def test_checked_in_asset_files_are_locked"""
+          needle = (
+              "        self.assertNotEqual(final.tobytes(), slide.tobytes())\n\n"
+              "    def test_checked_in_asset_files_are_locked"
+          )
+          insertion = (
+              "        self.assertNotEqual(final.tobytes(), slide.tobytes())\n\n"
+              "    def test_first_t_upper_right_tip_is_pixel_locked(self) -> None:\n"
+              "        \"\"\"Keep the corrected white cap and dark inner bevel on the first T.\"\"\"\n"
+              "        with Image.open(FINAL) as source:\n"
+              "            final = source.copy()\n"
+              "        self.assertEqual(final.getpixel((63, 29)), 1)\n"
+              "        self.assertEqual(final.getpixel((64, 29)), 1)\n"
+              "        self.assertEqual(final.getpixel((64, 30)), 1)\n"
+              "        self.assertEqual(final.getpixel((63, 30)), 3)\n\n"
+              "    def test_checked_in_asset_files_are_locked"
+          )
           if text.count(needle) != 1:
               raise SystemExit("title test insertion point changed")
           test.write_text(text.replace(needle, insertion), encoding="utf-8")
