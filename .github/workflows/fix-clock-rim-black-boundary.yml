@@ -1,0 +1,124 @@
+name: fix-clock-rim-black-boundary
+
+on:
+  push:
+    branches: [fix-clock-rim-black-boundary]
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix-clock-rim-black-boundary
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements.txt
+      - name: Apply GIF-faithful clock boundary fix
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              file = Path(path)
+              text = file.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected one replacement, found {count}")
+              file.write_text(text.replace(old, new), encoding="utf-8")
+
+          path = "work/rebuild_native_title_asset.py"
+          replace_once(
+              path,
+              "# Single-pixel diagonal ring traces touch only at their corners. These reviewed\n# stair bridges retain the traced silhouette while making the pink outer rim\n# and dark inner rim closed under native 4-neighbor pixel connectivity.\nCLOCK_PINK_BRIDGES_LOWER_LEFT = (\n    (109, 82),\n    (110, 85),\n    (111, 87),\n    (112, 89),\n    (113, 90),\n    (114, 91),\n    (115, 92),\n    (116, 93),\n    (117, 94),\n    (118, 95),\n)\nCLOCK_DARK_BRIDGES_LOWER_LEFT = (\n",
+              "# The display GIF has a one-native-pixel black outline immediately outside\n# the pink clock rim. Majority recovery can lose that line where the clock\n# overlaps the pink TIME TWIST wordmark, so lock it explicitly instead of\n# filling those diagonal stair cells pink.\nCLOCK_OUTER_BLACK_BOUNDARY = frozenset(\n    coordinate\n    for source_y, left, _trace in CLOCK_TRACE_ROWS\n    for y in (source_y, CLOCK_TRACE_Y_SUM - source_y)\n    for outer_x in (left - 1, 2 * CLOCK_TRACE_CENTER_X - left + 1)\n    for coordinate in ((outer_x, y),)\n)\n# The dark inner rim still needs a few reviewed stair bridges to preserve its\n# intended continuous silhouette without touching the GIF's outer black line.\nCLOCK_DARK_BRIDGES_LOWER_LEFT = (\n",
+          )
+          replace_once(
+              path,
+              "CLOCK_RIM_BRIDGE_PATCH = {\n    (mirrored_x, mirrored_y): value\n    for value, coordinates in (\n        (2, CLOCK_PINK_BRIDGES_LOWER_LEFT),\n        (3, CLOCK_DARK_BRIDGES_LOWER_LEFT),\n    )\n",
+              "CLOCK_RIM_BRIDGE_PATCH = {\n    (mirrored_x, mirrored_y): value\n    for value, coordinates in (\n        (3, CLOCK_DARK_BRIDGES_LOWER_LEFT),\n    )\n",
+          )
+          replace_once(
+              path,
+              "    for coordinate, value in CLOCK_RIM_BRIDGE_PATCH.items():\n        pixels[coordinate] = value\n    for coordinate in clock_numerals:\n",
+              "    for coordinate, value in CLOCK_RIM_BRIDGE_PATCH.items():\n        pixels[coordinate] = value\n    for coordinate in CLOCK_OUTER_BLACK_BOUNDARY:\n        pixels[coordinate] = 0\n    for coordinate in clock_numerals:\n",
+          )
+
+          test_path = Path("work/tests/test_title_opening_assets.py")
+          text = test_path.read_text(encoding="utf-8")
+          text = text.replace(
+              "    CLOCK_NUMERAL_BOXES,\n    CLOCK_RIM_BRIDGE_PATCH,\n",
+              "    CLOCK_NUMERAL_BOXES,\n    CLOCK_OUTER_BLACK_BOUNDARY,\n    CLOCK_RIM_BRIDGE_PATCH,\n",
+          )
+          text = text.replace(
+              "FB7AECF3D2D9349E818CF7A020CD3A6EEF2FFF4F401B69EFDC95312C0C4ED99F",
+              "083F2C1AD128196CAB1528D4F871EB4156896B6A47F1D87C41A898A9A6DC92E4",
+          ).replace(
+              "7792CEA1488CE2ABDEC3A2301958A8264E5EAFE17491DD1509C53D0D68E5B4FF",
+              "1D4A5F7E66B29D042B250D1E6A72BC0E2811CF7576F766B75FAAEE5399506BB0",
+          )
+          old = "        for coordinate, expected in CLOCK_RIM_BRIDGE_PATCH.items():\n            if coordinate not in numeral_pixels:\n                self.assertEqual(final.getpixel(coordinate), expected)\n\n        for value in (1, 2, 3):\n"
+          new = "        for coordinate, expected in CLOCK_RIM_BRIDGE_PATCH.items():\n            if coordinate not in numeral_pixels:\n                self.assertEqual(final.getpixel(coordinate), expected)\n\n        self.assertEqual(len(CLOCK_OUTER_BLACK_BOUNDARY), 84)\n        for coordinate in CLOCK_OUTER_BLACK_BOUNDARY:\n            self.assertEqual(\n                final.getpixel(coordinate),\n                0,\n                f\"clock outer boundary lost at {coordinate}\",\n            )\n\n        # White and dark-purple remain continuous native contours. The pink\n        # outer rim follows the GIF's diagonal stairs and is intentionally\n        # allowed to meet at corners so its surrounding black outline survives.\n        for value in (1, 3):\n"
+          if text.count(old) != 1:
+              raise SystemExit("clock connectivity test insertion point changed")
+          test_path.write_text(text.replace(old, new), encoding="utf-8")
+
+          for filename in (
+              "work/integration_tests/test_title.py",
+              "docs/TITLE_SEQUENCE.md",
+          ):
+              file = Path(filename)
+              text = file.read_text(encoding="utf-8").replace(
+                  "FB7AECF3D2D9349E818CF7A020CD3A6EEF2FFF4F401B69EFDC95312C0C4ED99F",
+                  "083F2C1AD128196CAB1528D4F871EB4156896B6A47F1D87C41A898A9A6DC92E4",
+              ).replace(
+                  "7792CEA1488CE2ABDEC3A2301958A8264E5EAFE17491DD1509C53D0D68E5B4FF",
+                  "1D4A5F7E66B29D042B250D1E6A72BC0E2811CF7576F766B75FAAEE5399506BB0",
+              )
+              file.write_text(text, encoding="utf-8")
+
+          replace_once(
+              "work/release_sources.json",
+              "7792CEA1488CE2ABDEC3A2301958A8264E5EAFE17491DD1509C53D0D68E5B4FF",
+              "1D4A5F7E66B29D042B250D1E6A72BC0E2811CF7576F766B75FAAEE5399506BB0",
+          )
+          replace_once(
+              "docs/TITLE_SEQUENCE.md",
+              "then closes\nthe diagonal stair corners and top/bottom tangent so every pink, white, and\npurple rim is a continuous native-pixel contour.",
+              "then closes\nthe dark inner stair corners while preserving the GIF's one-pixel black\noutline outside the pink rim, including where the clock overlaps the wordmark.",
+          )
+          replace_once(
+              "work/title_assets/README.md",
+              "and the clock's three traced bands receive native stair bridges so they are\nclosed under four-neighbor pixel connectivity.",
+              "and the clock preserves the GIF's one-pixel black outer boundary while the\ndark inner band receives only the stair bridges it needs.",
+          )
+          replace_once(
+              "docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md",
+              "balanced TM. The first T's upper-right cap uses a reviewed four-pixel correction to restore the white cap and dark inner bevel.\n",
+              "balanced TM. The first T's upper-right cap uses a reviewed four-pixel correction to restore the white cap and dark inner bevel. The clock rim also preserves the GIF's one-native-pixel black outer boundary instead of bridging those cells with pink.\n",
+          )
+          PY
+      - name: Regenerate and verify native title authority
+        shell: bash
+        run: |
+          python work/rebuild_native_title_asset.py
+          test "$(sha256sum 'work/title_assets/Time Twist approved native title.png' | cut -d' ' -f1)" = "1d4a5f7e66b29d042b250d1e6a72bc0e2811cf7576f766b75faaee5399506bb0"
+          python -m black work/rebuild_native_title_asset.py work/tests/test_title_opening_assets.py
+          python -m black --check work/rebuild_native_title_asset.py work/tests/test_title_opening_assets.py
+          python -m ruff check work/rebuild_native_title_asset.py work/tests/test_title_opening_assets.py
+          python -m pydocstyle --convention=pep257 work/rebuild_native_title_asset.py work/tests/test_title_opening_assets.py
+          PYTHONPATH=work python -m unittest discover -s work/tests -p 'test_title_opening_assets.py' -v
+      - name: Commit clock rim correction
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/fix-clock-rim-black-boundary.yml
+          git add work/rebuild_native_title_asset.py work/tests/test_title_opening_assets.py work/integration_tests/test_title.py work/release_sources.json work/title_assets/'Time Twist approved native title.png' work/title_assets/README.md docs/TITLE_SEQUENCE.md docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md
+          git commit -m "Restore black boundary around title clock"
+          git push origin HEAD:fix-clock-rim-black-boundary
