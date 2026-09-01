@@ -1,0 +1,30 @@
+name: apply-integration-refresh
+
+on:
+  push:
+    branches:
+      - chatgpt/finish-system-text-audit-20260831
+    paths:
+      - .github/integration-refresh.patch
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chatgpt/finish-system-text-audit-20260831
+          fetch-depth: 0
+      - name: Apply tested integration refresh
+        run: |
+          git apply .github/integration-refresh.patch
+          rm .github/integration-refresh.patch
+          rm .github/workflows/apply-integration-refresh.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Refresh private integration tests for current editorial UI"
+          git push origin HEAD:chatgpt/finish-system-text-audit-20260831
