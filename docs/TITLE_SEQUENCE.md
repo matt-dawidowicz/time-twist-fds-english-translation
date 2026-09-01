@@ -28,7 +28,7 @@ The script writes two indexed authorities:
 
 | Phase | ROM-bound asset | Nonzero bounds | Pixel SHA-256 |
 | --- | --- | --- | --- |
-| Final | `Time Twist approved native title.png` | `(22,22)-(237,96)` | `FB7AECF3D2D9349E818CF7A020CD3A6EEF2FFF4F401B69EFDC95312C0C4ED99F` |
+| Final | `Time Twist approved native title.png` | `(22,22)-(237,96)` | `083F2C1AD128196CAB1528D4F871EB4156896B6A47F1D87C41A898A9A6DC92E4` |
 | Swipe | `Time Twist approved native slide.png` | `(24,25)-(235,86)` | `34FF7674E69C187BBF504C126F5F1F4ACBEF93823633C2EB00D5E4558FFC95BB` |
 
 The final background uses the temporal mode of 19 colored-title frames. That
@@ -36,8 +36,8 @@ removes only the moving blue hand sprites; the static logo pixels remain
 unchanged before a reviewed native-pixel cleanup regularizes the lower T
 bevel, reference-traced clock rim, W/I/S outlines, and tiny TM. The clock uses
 the unobstructed lower-left GIF quadrant mirrored across both axes, then closes
-the diagonal stair corners and top/bottom tangent so every pink, white, and
-purple rim is a continuous native-pixel contour.
+the dark inner stair corners while preserving the GIF's one-pixel black
+outline outside the pink rim, including where the clock overlaps the wordmark.
 The swipe comes from the completed monochrome frame. Production builds consume
 the two PNGs and do not resample the GIF.
 

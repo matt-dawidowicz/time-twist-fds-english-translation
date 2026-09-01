@@ -9,6 +9,7 @@ from pathlib import Path
 from PIL import Image
 from rebuild_native_title_asset import (
     CLOCK_NUMERAL_BOXES,
+    CLOCK_OUTER_BLACK_BOUNDARY,
     CLOCK_RIM_BRIDGE_PATCH,
     CLOCK_TRACE_CENTER_X,
     CLOCK_TRACE_COLORS,
@@ -74,7 +75,7 @@ class TitleOpeningAssetTests(unittest.TestCase):
         self.assertEqual(set(slide.get_flattened_data()), {0, 1})
         self.assertEqual(
             _sha256(final.tobytes()),
-            "FB7AECF3D2D9349E818CF7A020CD3A6EEF2FFF4F401B69EFDC95312C0C4ED99F",
+            "083F2C1AD128196CAB1528D4F871EB4156896B6A47F1D87C41A898A9A6DC92E4",
         )
         self.assertEqual(
             _sha256(slide.tobytes()),
@@ -99,7 +100,7 @@ class TitleOpeningAssetTests(unittest.TestCase):
         )
         self.assertEqual(
             _sha256(FINAL.read_bytes()),
-            "7792CEA1488CE2ABDEC3A2301958A8264E5EAFE17491DD1509C53D0D68E5B4FF",
+            "1D4A5F7E66B29D042B250D1E6A72BC0E2811CF7576F766B75FAAEE5399506BB0",
         )
         self.assertEqual(
             _sha256(SLIDE.read_bytes()),
@@ -224,7 +225,18 @@ class TitleOpeningAssetTests(unittest.TestCase):
             if coordinate not in numeral_pixels:
                 self.assertEqual(final.getpixel(coordinate), expected)
 
-        for value in (1, 2, 3):
+        self.assertEqual(len(CLOCK_OUTER_BLACK_BOUNDARY), 84)
+        for coordinate in CLOCK_OUTER_BLACK_BOUNDARY:
+            self.assertEqual(
+                final.getpixel(coordinate),
+                0,
+                f"clock outer boundary lost at {coordinate}",
+            )
+
+        # White and dark-purple remain continuous native contours. The pink
+        # outer rim follows the GIF's diagonal stairs and is intentionally
+        # allowed to meet at corners so its surrounding black outline survives.
+        for value in (1, 3):
             remaining = {
                 (x, y)
                 for y in range(55, 97)

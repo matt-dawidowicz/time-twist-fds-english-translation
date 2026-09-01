@@ -115,21 +115,19 @@ CLOCK_TRACE_ROWS = (
     (96, 119, "PPPPPPPP"),
 )
 CLOCK_TRACE_COLORS = {"0": 0, "W": 1, "P": 2, "D": 3}
-# Single-pixel diagonal ring traces touch only at their corners. These reviewed
-# stair bridges retain the traced silhouette while making the pink outer rim
-# and dark inner rim closed under native 4-neighbor pixel connectivity.
-CLOCK_PINK_BRIDGES_LOWER_LEFT = (
-    (109, 82),
-    (110, 85),
-    (111, 87),
-    (112, 89),
-    (113, 90),
-    (114, 91),
-    (115, 92),
-    (116, 93),
-    (117, 94),
-    (118, 95),
+# The display GIF has a one-native-pixel black outline immediately outside
+# the pink clock rim. Majority recovery can lose that line where the clock
+# overlaps the pink TIME TWIST wordmark, so lock it explicitly instead of
+# filling those diagonal stair cells pink.
+CLOCK_OUTER_BLACK_BOUNDARY = frozenset(
+    coordinate
+    for source_y, left, _trace in CLOCK_TRACE_ROWS
+    for y in (source_y, CLOCK_TRACE_Y_SUM - source_y)
+    for outer_x in (left - 1, 2 * CLOCK_TRACE_CENTER_X - left + 1)
+    for coordinate in ((outer_x, y),)
 )
+# The dark inner rim still needs a few reviewed stair bridges to preserve its
+# intended continuous silhouette without touching the GIF's outer black line.
 CLOCK_DARK_BRIDGES_LOWER_LEFT = (
     (112, 80),
     (113, 83),
@@ -144,10 +142,7 @@ CLOCK_DARK_BRIDGES_LOWER_LEFT = (
 )
 CLOCK_RIM_BRIDGE_PATCH = {
     (mirrored_x, mirrored_y): value
-    for value, coordinates in (
-        (2, CLOCK_PINK_BRIDGES_LOWER_LEFT),
-        (3, CLOCK_DARK_BRIDGES_LOWER_LEFT),
-    )
+    for value, coordinates in ((3, CLOCK_DARK_BRIDGES_LOWER_LEFT),)
     for x, y in coordinates
     for mirrored_x in {x, 2 * CLOCK_TRACE_CENTER_X - x}
     for mirrored_y in {y, CLOCK_TRACE_Y_SUM - y}
@@ -361,6 +356,8 @@ def _apply_reviewed_final_polish(indexed: Image.Image) -> Image.Image:
                 pixels[2 * CLOCK_TRACE_CENTER_X - x, y] = value
     for coordinate, value in CLOCK_RIM_BRIDGE_PATCH.items():
         pixels[coordinate] = value
+    for coordinate in CLOCK_OUTER_BLACK_BOUNDARY:
+        pixels[coordinate] = 0
     for coordinate in clock_numerals:
         pixels[coordinate] = 1
 
