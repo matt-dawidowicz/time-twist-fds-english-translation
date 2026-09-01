@@ -70,9 +70,13 @@ def decode_external_named_records(
         if not record_id:
             raise ValueError("external system record ID must not be empty")
         if record_id in decoded:
-            raise ValueError(f"duplicate external system record ID: {record_id}")
+            raise ValueError(
+                f"duplicate external system record ID: {record_id}"
+            )
         if offset in seen_offsets:
-            raise ValueError(f"duplicate external system record offset: {offset}")
+            raise ValueError(
+                f"duplicate external system record offset: {offset}"
+            )
         records, _ = decode_fixed_records(data, offset, 1)
         decoded[record_id] = records[0]
         seen_offsets.add(offset)
