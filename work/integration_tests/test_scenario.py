@@ -209,7 +209,7 @@ class ScenarioTests(unittest.TestCase):
             )
         )
         self.assertEqual(len(COMMON_CHARACTERS), 48)
-        self.assertEqual(len(repertoire), 74)
+        self.assertEqual(len(repertoire), 73)
         text = repertoire + "{CTRL:1}" + repertoire
         self.assertEqual(render_english(encode_english(text)), text)
 
@@ -258,7 +258,7 @@ class ScenarioTests(unittest.TestCase):
             self.fail("TT1B translation fixture is not available")
         translations = json.loads(path.read_text(encoding="utf-8"))
         line = translations["TT1B/g0/r1"]
-        self.assertEqual(line, "Blue sky--how long gone?")
+        self.assertEqual(line, "Blue sky... when was it?")
         validate_display_width(line)
 
     def test_tt1a_fortune_prediction_has_terminal_punctuation(self) -> None:
@@ -309,10 +309,10 @@ class ScenarioTests(unittest.TestCase):
         self.assertIn("I pledge all", t22["T22/g0/r10"])
 
         tt3a = translations("TT3A")
-        self.assertIn("Anti-Hitler plot", tt3a["TT3A/g1/r19"])
+        self.assertIn("Assassination plot", tt3a["TT3A/g1/r19"])
         self.assertEqual(
             tt3a["TT3A/g3/r2"],
-            "Man: With Rebecca?!{CTRL:1}Me: No. I fled the camp{CTRL:0}"
+            "Man: One of Rebecca's?{CTRL:1}Me: No. I fled the camp{CTRL:0}"
             "last night.",
         )
         self.assertIn("the Gestapo!", tt3a["TT3A/g4/r21"])
@@ -320,7 +320,7 @@ class ScenarioTests(unittest.TestCase):
 
         tt4 = translations("TT4")
         self.assertFalse(any("Yomi" in line for line in tt4.values()))
-        self.assertIn("the underworld", tt4["TT4/g4/r4"])
+        self.assertIn("The underworld", tt4["TT4/g4/r4"])
 
         tt5 = translations("TT5")
         self.assertTrue(
@@ -331,8 +331,8 @@ class ScenarioTests(unittest.TestCase):
         self.assertNotIn("Dixie", tt5["TT5/g0/r18"])
 
         tt6a = translations("TT6A")
-        self.assertIn("My betrothed", tt6a["TT6A/g0/r13"])
-        self.assertIn("Mary has no idea how.", tt6a["TT6A/g0/r13"])
+        self.assertIn("My fiancee Mary", tt6a["TT6A/g0/r13"])
+        self.assertIn("She says she had no idea", tt6a["TT6A/g0/r13"])
         self.assertIn("The fiend descended...", tt6a["TT6A/g0/r18"])
 
         tt6c = translations("TT6C")
@@ -542,26 +542,22 @@ class ScenarioTests(unittest.TestCase):
         if not path.exists():
             self.fail("translation fixture is not available")
         translations = json.loads(path.read_text(encoding="utf-8"))
-        rows = [
-            ("Do you prefer consommé", "to miso soup?"),
-            ("Can you swim 50 meters?", None),
-            ("Do you laugh at random?", None),
-            ("Are the Giants the best?", None),
-            ("Have you dated at least", "three girls?"),
-            ("Have you had sleep", "paralysis?"),
-            ("Do you want to hit", "3 or more people?"),
-            ("Have you curled up and", "cried?"),
-            ("Do you put play first?", None),
-            ("Do brand names matter?", None),
-            ("Do you leave work until", "tomorrow?"),
-            ("Do you believe only you", "can protect yourself?"),
-            ("Will you help society", "someday?"),
-            ("Do you want a brief,", "full life?"),
-            ("Is love all you need?", None),
-        ]
         expected = [
-            first if second is None else first.ljust(24) + second
-            for first, second in rows
+            "Do you prefer consommé  to miso soup?",
+            "Swim 50 meters or more?",
+            "Do you laugh at random?",
+            "Are the Giants the best?",
+            "Have you dated at least three girls?",
+            "Have you had sleep      paralysis?",
+            "Do you want to hit      3 or more people?",
+            "Have you curled up and  cried?",
+            "Don't want work cutting into your free time?",
+            "Do brand names matter?",
+            "Do you leave work until tomorrow?",
+            "Do you believe only you can protect yourself?",
+            "Want to help society    someday?",
+            "Do you want a brief,    full life?",
+            "Is love all you need?",
         ]
         actual = [
             translations[f"TT1A/g0/r{record}"] for record in range(6, 21)
@@ -569,10 +565,6 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(actual, expected)
         for question in actual:
             validate_display_width(question, allow_wrap=True)
-        for question, (first, second) in zip(actual, rows, strict=True):
-            self.assertEqual(question[:24].rstrip(), first)
-            if second is not None:
-                self.assertEqual(question[24:], second)
 
     def test_scenario_refresh_preserves_existing_english(self) -> None:
         """Verify the current contract described by this regression test."""

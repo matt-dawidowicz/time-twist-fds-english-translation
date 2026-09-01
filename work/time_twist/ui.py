@@ -308,6 +308,27 @@ WAIT_PROMPT_OFFSET = 0x25D9
 ORIGINAL_WAIT_PROMPT = bytes.fromhex("2F 33 30 FE 37 FB F1 1E 40 7C 79 40 FD")
 ENGLISH_WAIT_PROMPT = pack_records([encode_english("Please wait... ")])
 
+# Six save-system records were still Japanese in the English runtime image.
+# Every replacement retains its source packed-byte allocation and controls.
+NOV2_SAVE_SYSTEM_PATCHES = (
+    (
+        0x25E6,
+        bytes.fromhex(
+            "0F 71 BF 9A 03 77 19 BF 19 AD C6 FF 24 60 E6 EE 33 7E 0D A3 7E 36 AE D3 68 FA"
+        ),
+        "A RAM Save{CTRL:0}B Disk{CTRL:0}Select Cancel ",
+    ),
+    (
+        0x2600,
+        bytes.fromhex("C9 69 8C 1C DD C6 6F C1 69 D0 2C CC 7D"),
+        "Saving{CTRL:0}to disk. ",
+    ),
+    (0x2631, bytes.fromhex("2F 5A 13 38 B8 7E 80"), "Chapter"),
+    (0x263A, bytes.fromhex("C9 69 8C 1E E4 E6 CD D1 F4"), "Disk error"),
+    (0x2643, bytes.fromhex("13 3A 1D 1F 40"), "Store"),
+    (0x264C, bytes.fromhex("12 20 71 E6 7D"), "Fetch"),
+)
+
 # ---------------------------------------------------------------------------
 # Kouhen direct-boot guard (SON-KOUH)
 # ---------------------------------------------------------------------------
@@ -826,6 +847,24 @@ def _patched_wait_prompt(data: bytes) -> bytes:
     return bytes(result)
 
 
+def _patched_save_system_text(data: bytes) -> bytes:
+    """Translate the remaining source-verified NOV2 save-system records."""
+    result = bytearray(data)
+    for offset, original, english in NOV2_SAVE_SYSTEM_PATCHES:
+        replacement = pack_records([encode_english(english)])
+        if len(replacement) != len(original):
+            raise UiPatchError(
+                f"NOV2 save-system text at 0x{offset:04X} changed packed size"
+            )
+        end = offset + len(original)
+        if len(result) < end or result[offset:end] != original:
+            raise UiPatchError(
+                f"NOV2 save-system text at 0x{offset:04X} does not match source"
+            )
+        result[offset:end] = replacement
+    return bytes(result)
+
+
 def _patched_opaque_text_clears(data: bytes) -> bytes:
     """Clear complete menu tails without breaking dialogue row copies.
 
@@ -901,7 +940,8 @@ def patched_nov2_ui(data: bytes) -> bytes:
     owns while leaving disjoint regions available to later helpers.
     """
     with_wait_prompt = _patched_wait_prompt(data)
-    with_disk_prompts = _patched_disk_prompts(with_wait_prompt)
+    with_save_system = _patched_save_system_text(with_wait_prompt)
+    with_disk_prompts = _patched_disk_prompts(with_save_system)
     with_disk_set_error = _patched_disk_set_error_message(with_disk_prompts)
     with_side_number_error = _patched_side_number_error_message(
         with_disk_set_error

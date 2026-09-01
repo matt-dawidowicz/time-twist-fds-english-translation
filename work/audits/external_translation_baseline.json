@@ -1,0 +1,409 @@
+{
+  "schema_version": 1,
+  "scope": "scenario comparison plus recovered fixed-UI baseline; NOV2/NOV4 external system-text alignment remains separate",
+  "policy": {
+    "competitor_role": "diagnostic comparison only",
+    "translation_source": "original Japanese",
+    "competitor_script_committed": false,
+    "production_parser_modified": false
+  },
+  "images": [
+    {
+      "role": "japanese_kouhen",
+      "size": 131000,
+      "sha256": "f62a7424fe489cbe479c3ebaabe4ce62d85127601ffd3d08abd4e5a0dc39442a"
+    },
+    {
+      "role": "japanese_zenpen",
+      "size": 131000,
+      "sha256": "b9424dd29ee195a9fa9ac4f844f058c380e30f7aca741218789fa8611f741916"
+    },
+    {
+      "role": "current_english_kouhen",
+      "size": 131000,
+      "sha256": "cb66e4fd8c64cf4e1e9c68e34a4d4ddbeb263f8414a9d86d2e77325a82e266c5"
+    },
+    {
+      "role": "current_english_zenpen",
+      "size": 131000,
+      "sha256": "3e82bcd2fdf1e4aff67ff90d97a03554ccf06a794a8f854c482dd86470f52e89"
+    },
+    {
+      "role": "external_english_kouhen_input",
+      "size": 250706,
+      "sha256": "df9bd6d6c8fc4fb1b12531dd0ce628126215d0091df980a12c183f10b644a9f2"
+    },
+    {
+      "role": "external_english_zenpen_input",
+      "size": 250706,
+      "sha256": "027ca6a4945c0bcb3c934750947f3a95b6b2a3188ca7fce348ba0f4f5e05ce78"
+    }
+  ],
+  "external_patch_structure": {
+    "normal_raw_two_side_size": 131000,
+    "external_extension_size": 119706,
+    "extensions_identical_between_supplied_external_inputs": true,
+    "interpretation": "absolute-offset patch authored for a four-side combined image",
+    "inferred_sparse_hunk_max_unchanged_gap": 5,
+    "production_parser_relaxed": false
+  },
+  "scenario_summary": {
+    "aligned_records": 1299,
+    "exact_english_matches": 50,
+    "different_english_records": 1249,
+    "unresolved_external_token_records": 0,
+    "heuristic_human_review_candidates": 406,
+    "heuristic_note": "triage count only; not a mistranslation count",
+    "tt3a_conservative_heuristic_candidates": 17,
+    "tt3a_conservative_heuristic_candidates_adjudicated": 17,
+    "tt3a_full_source_review_complete": true,
+    "tt3a_source_records_reviewed": 152,
+    "tt3a_audited_revisions": 9,
+    "tt3b_full_source_review_complete": true,
+    "tt3b_source_records_reviewed": 58,
+    "tt3b_audited_revisions": 2,
+    "scenario_source_records_fully_reviewed": 1299,
+    "scenario_banks_fully_reviewed": [
+      "TT3A",
+      "TT3B",
+      "TT1B",
+      "TT1A",
+      "TT2",
+      "T22",
+      "TT6C",
+      "TT6B",
+      "TT6A",
+      "TT6D",
+      "TT4",
+      "TT5",
+      "T25"
+    ],
+    "tt1b_full_source_review_complete": true,
+    "tt1b_source_records_reviewed": 137,
+    "tt1b_audited_revisions": 3,
+    "tt1a_full_source_review_complete": true,
+    "tt1a_source_records_reviewed": 35,
+    "tt1a_audited_revisions": 0,
+    "tt2_full_source_review_complete": true,
+    "tt2_source_records_reviewed": 169,
+    "tt2_audited_revisions": 0,
+    "t22_full_source_review_complete": true,
+    "t22_source_records_reviewed": 58,
+    "t22_audited_revisions": 5,
+    "tt6c_full_source_review_complete": true,
+    "tt6c_source_records_reviewed": 106,
+    "tt6c_audited_revisions": 1,
+    "tt6b_full_source_review_complete": true,
+    "tt6b_source_records_reviewed": 94,
+    "tt6b_audited_revisions": 5,
+    "tt6a_full_source_review_complete": true,
+    "tt6a_source_records_reviewed": 100,
+    "tt6a_audited_revisions": 0,
+    "tt6d_full_source_review_complete": true,
+    "tt6d_source_records_reviewed": 8,
+    "tt6d_audited_revisions": 0,
+    "tt4_full_source_review_complete": true,
+    "tt4_source_records_reviewed": 183,
+    "tt4_audited_revisions": 7,
+    "tt5_full_source_review_complete": true,
+    "tt5_source_records_reviewed": 123,
+    "tt5_audited_revisions": 2,
+    "t25_full_source_review_complete": true,
+    "t25_source_records_reviewed": 76,
+    "t25_audited_revisions": 1,
+    "scenario_full_source_review_complete": true
+  },
+  "fixed_ui_progress": {
+    "baseline_file": "work/audits/external_fixed_ui_baseline.json",
+    "aligned_records": 740,
+    "exact_english_matches": 393,
+    "different_english_records": 347,
+    "unresolved_external_token_records": 0,
+    "major_fixed_table_records": 721,
+    "tt1a_selector_records": 19,
+    "nov2_runtime_completeness": {
+      "source_verified_missing_records_found": 6,
+      "source_verified_missing_records_translated": 6,
+      "canonical_corpus_rows_after_integration": 2058,
+      "note": "NOV2 external layout is repacked and is not folded into the 740-record external alignment yet."
+    },
+    "source_records_reviewed": 740,
+    "source_reviewed_banks": [
+      "TT1A",
+      "TT1B",
+      "TT2",
+      "T22",
+      "TT3A",
+      "TT3B",
+      "TT4",
+      "TT5",
+      "T25",
+      "TT6A",
+      "TT6B",
+      "TT6C"
+    ],
+    "tt1a_source_reviewed_records": 19,
+    "tt1a_source_review_revisions": 0,
+    "tt1b_source_reviewed_records": 53,
+    "tt1b_source_review_revisions": 0,
+    "tt2_source_reviewed_records": 70,
+    "tt2_source_review_revisions": 12,
+    "t22_source_reviewed_records": 33,
+    "t22_source_review_revisions": 7,
+    "tt3a_source_reviewed_records": 95,
+    "tt3a_source_review_revisions": 3,
+    "tt3b_source_reviewed_records": 21,
+    "tt3b_source_review_revisions": 1,
+    "tt6a_source_reviewed_records": 41,
+    "tt6a_source_review_revisions": 1,
+    "tt4_source_reviewed_records": 97,
+    "tt4_source_review_revisions": 3,
+    "tt5_source_reviewed_records": 113,
+    "tt5_source_review_revisions": 3,
+    "t25_source_reviewed_records": 42,
+    "t25_source_review_revisions": 2,
+    "source_review_complete": true,
+    "tt6b_source_reviewed_records": 62,
+    "tt6b_source_review_revisions": 1,
+    "tt6c_source_reviewed_records": 94,
+    "tt6c_source_review_revisions": 7
+  },
+  "banks": [
+    {
+      "bank": "TT3A",
+      "half": "zenpen",
+      "groups": 5,
+      "records": 152,
+      "exact": 10,
+      "different": 142
+    },
+    {
+      "bank": "TT3B",
+      "half": "zenpen",
+      "groups": 2,
+      "records": 58,
+      "exact": 1,
+      "different": 57
+    },
+    {
+      "bank": "TT1B",
+      "half": "zenpen",
+      "groups": 5,
+      "records": 137,
+      "exact": 1,
+      "different": 136
+    },
+    {
+      "bank": "TT1A",
+      "half": "zenpen",
+      "groups": 2,
+      "records": 35,
+      "exact": 2,
+      "different": 33
+    },
+    {
+      "bank": "TT2",
+      "half": "zenpen",
+      "groups": 6,
+      "records": 169,
+      "exact": 4,
+      "different": 165
+    },
+    {
+      "bank": "T22",
+      "half": "zenpen",
+      "groups": 2,
+      "records": 58,
+      "exact": 6,
+      "different": 52
+    },
+    {
+      "bank": "TT6C",
+      "half": "kouhen",
+      "groups": 4,
+      "records": 106,
+      "exact": 3,
+      "different": 103
+    },
+    {
+      "bank": "TT6B",
+      "half": "kouhen",
+      "groups": 3,
+      "records": 94,
+      "exact": 4,
+      "different": 90
+    },
+    {
+      "bank": "TT6A",
+      "half": "kouhen",
+      "groups": 4,
+      "records": 100,
+      "exact": 5,
+      "different": 95
+    },
+    {
+      "bank": "TT6D",
+      "half": "kouhen",
+      "groups": 1,
+      "records": 8,
+      "exact": 0,
+      "different": 8
+    },
+    {
+      "bank": "TT4",
+      "half": "kouhen",
+      "groups": 6,
+      "records": 183,
+      "exact": 5,
+      "different": 178
+    },
+    {
+      "bank": "TT5",
+      "half": "kouhen",
+      "groups": 4,
+      "records": 123,
+      "exact": 4,
+      "different": 119
+    },
+    {
+      "bank": "T25",
+      "half": "kouhen",
+      "groups": 3,
+      "records": 76,
+      "exact": 5,
+      "different": 71
+    }
+  ],
+  "current_live_fit": {
+    "measurement": "canonical test_live_translation_fit.py after 1,299/1,299 scenario review and 740/740 fixed-UI source review",
+    "banks": [
+      {
+        "bank": "TT1A",
+        "used": 1666,
+        "capacity": 1669,
+        "free": 3
+      },
+      {
+        "bank": "TT6D",
+        "used": 327,
+        "capacity": 332,
+        "free": 5
+      },
+      {
+        "bank": "TT5",
+        "used": 4186,
+        "capacity": 4201,
+        "free": 15
+      },
+      {
+        "bank": "TT3B",
+        "used": 1917,
+        "capacity": 1927,
+        "free": 10
+      },
+      {
+        "bank": "TT4",
+        "used": 5179,
+        "capacity": 5187,
+        "free": 8
+      },
+      {
+        "bank": "T22",
+        "used": 1898,
+        "capacity": 1939,
+        "free": 41
+      },
+      {
+        "bank": "TT2",
+        "used": 4125,
+        "capacity": 4141,
+        "free": 16
+      },
+      {
+        "bank": "TT6B",
+        "used": 2554,
+        "capacity": 2601,
+        "free": 47
+      },
+      {
+        "bank": "TT3A",
+        "used": 4119,
+        "capacity": 4169,
+        "free": 50
+      },
+      {
+        "bank": "TT6C",
+        "used": 3854,
+        "capacity": 3947,
+        "free": 93
+      },
+      {
+        "bank": "T25",
+        "used": 2441,
+        "capacity": 2561,
+        "free": 120
+      },
+      {
+        "bank": "TT6A",
+        "used": 2829,
+        "capacity": 3000,
+        "free": 171
+      },
+      {
+        "bank": "TT1B",
+        "used": 3922,
+        "capacity": 4234,
+        "free": 312
+      }
+    ],
+    "tightest_banks": [
+      "TT1A",
+      "TT6D",
+      "TT5",
+      "TT3B",
+      "TT4"
+    ],
+    "tt3a_free_before_previous_three_edits": 79,
+    "tt3a_free_after_five_revisions": 65,
+    "tt3a_previous_three_edits_packed_cost": 14,
+    "tt3a_latest_two_visible_character_delta": 24,
+    "tt3a_latest_two_edits_packed_cost": 9,
+    "tt3a_free_after_seven_revisions": 56,
+    "tt3a_final_two_visible_character_delta": 1,
+    "tt3a_final_two_edits_packed_cost": 5,
+    "tt3a_free_after_nine_revisions": 51,
+    "tt3b_free_after_two_revisions": 10,
+    "tt1b_free_after_three_revisions": 312,
+    "tt1a_free_after_full_review": 3,
+    "tt2_free_after_full_review": 49,
+    "t22_free_after_five_revisions": 60,
+    "tt6c_free_after_one_revision": 96,
+    "tt6b_free_after_full_review": 53,
+    "tt6a_free_after_full_review": 172,
+    "tt6d_free_after_full_review": 5,
+    "tt4_free_after_seven_revisions": 4,
+    "tt5_free_after_full_review": 17,
+    "t25_free_after_full_review": 121,
+    "tt2_free_after_fixed_ui_review": 16
+  },
+  "validation": {
+    "clean_branch_workflow_run": 33289092641,
+    "python_3_11": "success",
+    "python_3_12": "success",
+    "generated_artifacts_current": true,
+    "black": "success",
+    "ruff": "success",
+    "pydocstyle": "success",
+    "mypy": "success",
+    "unit_tests": "success",
+    "python_3_12_build_wheel_cli_smoke": "success",
+    "latest_targeted_workflow_run": 33290609436,
+    "latest_targeted_unit_tests": 167,
+    "latest_targeted_corpus_rows": 2058
+  },
+  "pending": [
+    "complete external NOV2/NOV4 system-text alignment without assuming source offsets",
+    "review fixed-label differences against Japanese and gameplay context",
+    "perform final rebuilt-ROM and emulator validation after editorial and fixed-UI review"
+  ]
+}

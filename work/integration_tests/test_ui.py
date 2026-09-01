@@ -10,7 +10,11 @@ from time_twist.english import encode_english, render_english
 from time_twist.scenario import parse_scenario_bank
 from time_twist.textcodec import pack_records, split_records
 from time_twist.ui import (
+    DISK_NUMBER_ERROR_PATCHES,
     DISK_PROMPT_PATCHES,
+    DISK_SET_ERROR_OFFSET,
+    DISK_SET_ERROR_SOURCE,
+    ENGLISH_NOV4_LOAD_PROMPT,
     ENGLISH_START_PROMPT,
     ENGLISH_WAIT_PROMPT,
     KOUHEN_BOOT_GUARD_BLANK_TILE,
@@ -22,13 +26,22 @@ from time_twist.ui import (
     KOUHEN_BOOT_GUARD_TILE_COUNT,
     KOUHEN_BOOT_GUARD_TILEMAP_END,
     KOUHEN_BOOT_GUARD_TILEMAP_OFFSET,
+    LOAD_PROMPT_OFFSET,
     NOV2_BLANK_TILE,
     NOV2_DIALOGUE_ROW_COPY,
+    NOV2_EXTENDED_DICTIONARY_PATCH,
     NOV2_OPAQUE_CLEAR_PATCHES,
+    NOV2_SAVE_SYSTEM_PATCHES,
     NOV2_SINGLE_CHOICE_B_PATCHES,
+    NOV4_LOAD_PROMPT_OFFSET,
     NOV4_START_PROMPT_OFFSET,
+    ORIGINAL_LOAD_PROMPT,
+    ORIGINAL_NOV4_LOAD_PROMPT,
+    ORIGINAL_SAVE_PROMPT,
     ORIGINAL_START_PROMPT,
     ORIGINAL_WAIT_PROMPT,
+    SAVE_PROMPT_OFFSET,
+    SIDE_NUMBER_ERROR_PATCHES,
     START_PROMPT_OFFSET,
     T22_FIXED_TEXT_END_OFFSET,
     T22_FIXED_TEXT_RECORDS,
@@ -198,7 +211,7 @@ class StaticUiTests(unittest.TestCase):
         """Verify the current contract described by this regression test."""
         self.assertEqual(len(ORIGINAL_START_PROMPT), 6)
         self.assertEqual(len(ENGLISH_START_PROMPT), 6)
-        self.assertEqual(ENGLISH_START_PROMPT.hex().upper(), "85C763700FA0")
+        self.assertEqual(ENGLISH_START_PROMPT.hex().upper(), "8420C9080FA0")
 
     def test_zenpen_nov2_start_prompt_patch(self) -> None:
         """Verify the current contract described by this regression test."""
@@ -232,6 +245,27 @@ class StaticUiTests(unittest.TestCase):
             for index in range(offset, offset + len(source))
         )
         expected_changed.update(
+            index
+            for offset, source, _ in NOV2_SAVE_SYSTEM_PATCHES
+            for index in range(offset, offset + len(source))
+        )
+        expected_changed.update(
+            range(
+                DISK_SET_ERROR_OFFSET,
+                DISK_SET_ERROR_OFFSET + len(DISK_SET_ERROR_SOURCE),
+            )
+        )
+        expected_changed.update(
+            index
+            for offset, source, _ in SIDE_NUMBER_ERROR_PATCHES
+            for index in range(offset, offset + len(source))
+        )
+        expected_changed.update(
+            index
+            for offset, source, _ in DISK_NUMBER_ERROR_PATCHES
+            for index in range(offset, offset + len(source))
+        )
+        expected_changed.update(
             range(
                 START_PROMPT_OFFSET,
                 START_PROMPT_OFFSET + len(ORIGINAL_START_PROMPT),
@@ -241,6 +275,25 @@ class StaticUiTests(unittest.TestCase):
             range(
                 WAIT_PROMPT_OFFSET,
                 WAIT_PROMPT_OFFSET + len(ORIGINAL_WAIT_PROMPT),
+            )
+        )
+        expected_changed.update(
+            range(
+                SAVE_PROMPT_OFFSET,
+                SAVE_PROMPT_OFFSET + len(ORIGINAL_SAVE_PROMPT),
+            )
+        )
+        expected_changed.update(
+            range(
+                LOAD_PROMPT_OFFSET,
+                LOAD_PROMPT_OFFSET + len(ORIGINAL_LOAD_PROMPT),
+            )
+        )
+        expected_changed.update(
+            range(
+                NOV2_EXTENDED_DICTIONARY_PATCH.file_offset,
+                NOV2_EXTENDED_DICTIONARY_PATCH.file_offset
+                + len(NOV2_EXTENDED_DICTIONARY_PATCH.expected),
             )
         )
         expected_changed.update(
@@ -329,7 +382,7 @@ class StaticUiTests(unittest.TestCase):
         self.assertEqual(patched[WAIT_PROMPT_OFFSET:end], ENGLISH_WAIT_PROMPT)
         records, record_end = split_records(ENGLISH_WAIT_PROMPT, limit=1)
         self.assertEqual(record_end, len(ENGLISH_WAIT_PROMPT))
-        self.assertEqual(render_english(records[0]).rstrip(), "PLEASE WAIT...")
+        self.assertEqual(render_english(records[0]).rstrip(), "Please wait...")
         self.assertNotIn("{CTRL:", render_english(records[0]))
 
     def test_zenpen_nov2_b_ignores_one_choice_but_keeps_normal_back(
@@ -392,9 +445,14 @@ class StaticUiTests(unittest.TestCase):
         self.assertEqual(
             patched[NOV4_START_PROMPT_OFFSET:end], ENGLISH_START_PROMPT
         )
+        load_end = NOV4_LOAD_PROMPT_OFFSET + len(ORIGINAL_NOV4_LOAD_PROMPT)
         self.assertEqual(
-            patched[:NOV4_START_PROMPT_OFFSET] + patched[end:],
-            original[:NOV4_START_PROMPT_OFFSET] + original[end:],
+            patched[NOV4_LOAD_PROMPT_OFFSET:load_end],
+            ENGLISH_NOV4_LOAD_PROMPT,
+        )
+        self.assertEqual(
+            patched[:NOV4_START_PROMPT_OFFSET] + patched[load_end:],
+            original[:NOV4_START_PROMPT_OFFSET] + original[load_end:],
         )
 
     def test_tt1a_choice_menu_patch_is_size_neutral(self) -> None:
@@ -412,7 +470,11 @@ class StaticUiTests(unittest.TestCase):
             *TT1A_MONTH_PATCHES,
             *TT1A_CONFIRMATION_PATCHES,
         ):
-            replacement = pack_records([encode_english(english)])
+            symbols = encode_english(english)
+            common_space = encode_english(" ")[0]
+            while len(pack_records((symbols,))) < len(source):
+                symbols = (*symbols, common_space)
+            replacement = pack_records((symbols,))
             self.assertEqual(len(replacement), len(source))
             self.assertEqual(
                 patched[offset : offset + len(source)], replacement
@@ -457,19 +519,19 @@ class StaticUiTests(unittest.TestCase):
         self.assertEqual(
             [render_english(record).rstrip() for record in records],
             [
-                "JAN",
-                "FEB",
-                "MAR",
-                "APR",
-                "MAY",
-                "JUN",
-                "JUL-DEC",
-                "JUL",
-                "AUG",
-                "SEP",
-                "OCT",
-                "NOV",
-                "DEC",
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul-Dec",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec",
             ],
         )
 
@@ -484,7 +546,7 @@ class StaticUiTests(unittest.TestCase):
         self.assertEqual(end, 0x02AB)
         self.assertEqual(
             [render_english(record) for record in records],
-            ["YES", "NO"],
+            ["Yes", "No"],
         )
 
     def test_tt1b_fixed_menu_and_object_table_is_size_neutral(self) -> None:

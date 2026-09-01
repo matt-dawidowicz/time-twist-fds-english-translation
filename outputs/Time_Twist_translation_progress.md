@@ -1,7 +1,7 @@
 # Time Twist translation progress
 
-- Total records: **2,052**
-- Completed records: **2,052**
+- Total records: **2,058**
+- Completed records: **2,058**
 - Remaining records: **0**
 - Completed banks/components: **TT1A, TT1B, TT2, T22, TT3A, TT3B, TT4, TT5, T25, TT6A, TT6B, TT6C, TT6D, NOV2, NOV4, TITLE, SON-KOUH**
 - Current bank: **Complete — cross-bank consistency and QC finished**
@@ -11,7 +11,7 @@
 
 ## Source fingerprints
 
-- `Time Twist Japanese-English script comparison.json` — SHA-256 `9A60BF2D87116B268FF126FE6D93E19BC1ACB3DDADBACE45146F56A1C1057E72`
+- `Time Twist Japanese-English script comparison.json` — SHA-256 `825E5FCF3506E6AE673D36535C19FDBD17251EAB33FFECD9B275EF506B2568D9`
 - Diagnostic review: not supplied (neutral diagnostics used)
 
 ## Bank coverage
@@ -29,7 +29,7 @@
 - TT6B: 156 records complete
 - TT6C: 200 records complete
 - TT6D: 8 records complete
-- NOV2: 9 records complete
+- NOV2: 15 records complete
 - NOV4: 1 records complete
 - TITLE: 2 records complete
 - SON-KOUH: 1 records complete

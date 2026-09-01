@@ -1,0 +1,1405 @@
+{
+  "schema_version": 1,
+  "policy": "Every revision is independently grounded in Japanese; external wording is never copied.",
+  "changes": [
+    {
+      "id": "TT3A/g0/r14",
+      "japanese": "とき……1944ねん 7がつ{CTRL:0}ばしょ……どいつなんぶ ほりょしゅうようじょ{CTRL:0}なまえ……くーがー{CTRL:0}しょくぎょう……あめりか くうぐんちゅうい",
+      "previous_english": "DATE: JUL 1944{CTRL:0}PLACE: S. GERMANY{CTRL:0}NAME: COUGAR{CTRL:0}U.S. AIR LT.",
+      "new_english": "TIME: JULY 1944{CTRL:0}S. GERMANY POW CAMP{CTRL:0}NAME: COUGAR{CTRL:0}U.S. AIR FORCE 1ST LT.",
+      "category": [
+        "omitted_detail",
+        "metadata_precision"
+      ],
+      "reason": "Restore the POW-camp location and the explicit U.S. air-force lieutenant rank present in Japanese.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 13,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g1/r21",
+      "japanese": "らるふ「もりへでたらまっすぐ にしへむかえ{CTRL:1} しばらくいくと こうえんがみえてくる{CTRL:0} そこで \"れべっか\" のしじをあおげ」{CTRL:6}おれ「れべっか！」{CTRL:3}らるふ「とうぼうそしきの あんごうめいだ{CTRL:4} あいことばは \"くたばれ ひとらー／\"」",
+      "previous_english": "Ralph: Go west.{CTRL:1}A park lies ahead.{CTRL:0}Obey Rebecca there.{CTRL:6}Me: Rebecca?!{CTRL:3}Ralph: Resistance code.{CTRL:4}Down with Hitler!",
+      "new_english": "Ralph: Head west from{CTRL:1}the woods to a park.{CTRL:0}Ask Rebecca for orders.{CTRL:6}Me: Rebecca?!{CTRL:3}Ralph: Escape code name{CTRL:4}Pass: Drop dead, Hitler!",
+      "category": [
+        "omitted_detail",
+        "instruction_clarity",
+        "terminology"
+      ],
+      "reason": "Restore the woods-to-park route, Rebecca's role as the instruction contact/code name, and the distinction between the code name and password.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 19,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g0/r11",
+      "japanese": "へいし「だっそうへい1めい はっけん／」",
+      "previous_english": "Soldier: Escapee!",
+      "new_english": "Soldier: Escapee found!",
+      "category": [
+        "omitted_detail",
+        "action_clarity"
+      ],
+      "reason": "Restore that the soldier reports finding an escapee rather than merely naming one.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 6,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g1/r26",
+      "japanese": "ふらんきー「いま あめりかとどいつが きそって{CTRL:0} かんせいをいそいでいる ひみつへいきがある……{CTRL:2} げんしばくだん といってな たったの1ぱつで{CTRL:0} ぱりが はいのやまにかわる」",
+      "previous_english": "Frankie: Both sides race{CTRL:0}to build an atom bomb{CTRL:2}One bomb could{CTRL:0}turn Paris to ash.",
+      "new_english": "Frankie: America and{CTRL:0}Germany race to build a{CTRL:2}secret weapon: atom bomb{CTRL:0}One turns Paris to ash.",
+      "category": [
+        "omitted_detail",
+        "historical_specificity"
+      ],
+      "reason": "Restore that America and Germany are the two competitors and preserve the source's secret-weapon-to-atomic-bomb reveal.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 13,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g3/r4",
+      "japanese": "しもん「なちすは わたしをかんきんして{CTRL:0} ひみつへいきのかいはつを きょうせいしました{CTRL:2} しかしわたしはもう ひとごろしのてだすけなど{CTRL:0} したくない／」",
+      "previous_english": "Simon: Nazis held me{CTRL:0}to build their weapon.{CTRL:2}I will not aid murder{CTRL:0}anymore!",
+      "new_english": "Simon: Nazis confined me{CTRL:0}and forced me to develop{CTRL:2}a secret weapon. I won't{CTRL:0}help them kill anymore!",
+      "category": [
+        "omitted_detail",
+        "coercion",
+        "naturalness"
+      ],
+      "reason": "Restore Simon's confinement, the explicit coercion to develop a secret weapon, and his refusal to assist further killing.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 24,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g3/r20",
+      "japanese": "おとこ「じょうほうによれば ここが とうぼう{CTRL:0} そしきとの れんらくばしょらしいのだが……{CTRL:2} あやしいやつを みなかったか！」",
+      "previous_english": "Man: This is a{CTRL:0}Resistance contact site.{CTRL:2}Seen anyone suspicious?!",
+      "new_english": "Man: Info says it's an{CTRL:0}escape-network contact.{CTRL:2}Seen anyone suspicious?!",
+      "category": [
+        "terminology",
+        "source_specificity"
+      ],
+      "reason": "Restore the source's escape-organization/network terminology and its reported-information nuance instead of broadening the group to the Resistance.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 7,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g0/r28",
+      "japanese": "ひとらー「いだいなりし あんこくのかみよ{CTRL:1} ひと あぶらと とがったくいのおきてにかけて{CTRL:0} わがしょうがいのすべてを ささげることを{CTRL:0} ここにちかわん……」",
+      "previous_english": "Hitler: Great dark god,{CTRL:1}by human fat and stakes,{CTRL:0}I vow my whole life{CTRL:0}to you...",
+      "new_english": "Hitler: Great dark god,{CTRL:1}by the law of human fat{CTRL:0}and sharp stakes, I vow{CTRL:0}my whole life to you...",
+      "category": [
+        "omitted_detail",
+        "ritual_diction",
+        "naturalness"
+      ],
+      "reason": "Restore the explicit law/code term in the oath and the source's pointed-stakes image while keeping the ritual speech natural and within the display width.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 17,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g2/r0",
+      "japanese": "らるふ「きがえは だっそうしてからだ{CTRL:0} つちで よごれてしまう」",
+      "previous_english": "Ralph: Change after you{CTRL:0}escape, dirt soils it.",
+      "new_english": "Ralph: Change once free.{CTRL:0}They'll get dirty.",
+      "category": [
+        "naturalness",
+        "instruction_clarity"
+      ],
+      "reason": "Render the escape-clothes timing naturally: Ralph says to change only after escaping because the clothes would get dirty beforehand.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3A/g3/r18",
+      "japanese": "みずのなかなので よく みえない",
+      "previous_english": "The water hides it.",
+      "new_english": "Hard to see underwater.",
+      "category": [
+        "fidelity",
+        "naturalness"
+      ],
+      "reason": "Render the source causally and directly: because the object is underwater, it is hard to see clearly.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measure after bank rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "NOV2/system/save_destination",
+      "japanese": "えー らむせーぶ{CTRL:0}びー ですくせーぶ{CTRL:0}せる きゃんせる",
+      "previous_english": "(untranslated Japanese source bytes)",
+      "new_english": "A RAM Save{CTRL:0}B Disk{CTRL:0}Select Cancel ",
+      "category": [
+        "translation_completeness",
+        "system_ui",
+        "instruction_clarity"
+      ],
+      "reason": "Translate the RAM-save/disk-save destination chooser. The source SEL abbreviation is localized as Select; Cancel remains a separate action.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": null,
+      "encoded_byte_delta": 0,
+      "encoded_byte_delta_note": "Replacement remains exactly 26 packed bytes."
+    },
+    {
+      "id": "NOV2/system/saving_status",
+      "japanese": "でぃすくせーぶ{CTRL:0}しとるからの",
+      "previous_english": "(untranslated Japanese source bytes)",
+      "new_english": "Saving{CTRL:0}to disk. ",
+      "category": [
+        "translation_completeness",
+        "system_ui"
+      ],
+      "reason": "Render the disk-save-in-progress status naturally while preserving the source line control.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": null,
+      "encoded_byte_delta": 0,
+      "encoded_byte_delta_note": "Replacement remains exactly 13 packed bytes."
+    },
+    {
+      "id": "NOV2/system/chapter_start",
+      "japanese": "しょうはじめ",
+      "previous_english": "(untranslated Japanese source bytes)",
+      "new_english": "Chapter",
+      "category": [
+        "translation_completeness",
+        "system_ui"
+      ],
+      "reason": "Translate the chapter-start system label within its seven-byte fixed record.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": null,
+      "encoded_byte_delta": 0,
+      "encoded_byte_delta_note": "Replacement remains exactly 7 packed bytes."
+    },
+    {
+      "id": "NOV2/system/disk_trouble",
+      "japanese": "でぃすく、とらぶる",
+      "previous_english": "(untranslated Japanese source bytes)",
+      "new_english": "Disk error",
+      "category": [
+        "translation_completeness",
+        "system_ui",
+        "naturalness"
+      ],
+      "reason": "Translate the literal disk-trouble message using conventional English system wording.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": null,
+      "encoded_byte_delta": 0,
+      "encoded_byte_delta_note": "Replacement remains exactly 9 packed bytes."
+    },
+    {
+      "id": "NOV2/system/ram_store",
+      "japanese": "おぼえる",
+      "previous_english": "(untranslated Japanese source bytes)",
+      "new_english": "Store",
+      "category": [
+        "translation_completeness",
+        "system_ui",
+        "terminology"
+      ],
+      "reason": "Localize the RAM-memory remember/store command distinctly from the neighboring literal disk Save command.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": null,
+      "encoded_byte_delta": 0,
+      "encoded_byte_delta_note": "Replacement remains exactly 5 packed bytes."
+    },
+    {
+      "id": "NOV2/system/ram_fetch",
+      "japanese": "おもいだす",
+      "previous_english": "(untranslated Japanese source bytes)",
+      "new_english": "Fetch",
+      "category": [
+        "translation_completeness",
+        "system_ui",
+        "terminology"
+      ],
+      "reason": "Localize the paired RAM-memory recall/retrieve command distinctly from the neighboring literal disk Load command.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": null,
+      "encoded_byte_delta": 0,
+      "encoded_byte_delta_note": "Replacement remains exactly 5 packed bytes."
+    },
+    {
+      "id": "TT3B/g0/r2",
+      "japanese": "おんな「ほうこくします だっそうへい1めいと{CTRL:0} かがくしゃ1めいを たいほしました」{CTRL:2}しゅみっと「ごくろう あとはわたしがひきうける」{CTRL:6}おんな「はいる ひとらー／」{CTRL:4}しゅみっと「はいる ひとらー／」",
+      "previous_english": "Woman: We caught one POW{CTRL:0}and one scientist.{CTRL:2}Schmidt: Good. My turn.{CTRL:6}Woman: Heil Hitler!{CTRL:4}Schmidt: Heil Hitler!",
+      "new_english": "Woman: We caught one{CTRL:0}escapee, one scientist.{CTRL:2}Schmidt: Good. My turn.{CTRL:6}Woman: Heil Hitler!{CTRL:4}Schmidt: Heil Hitler!",
+      "category": [
+        "source_specificity",
+        "character_status"
+      ],
+      "reason": "Restore だっそうへい as an escapee rather than reducing the report to the broader POW status, while preserving the one-escapee/one-scientist count.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT3B/g0/r7",
+      "japanese": "しもん「あいんしゅたいんは てんさいです{CTRL:0} いや かみのこ というべきか……{CTRL:0} だからこそ かれのりろんを{CTRL:0} ばくだんせいぞうなどに つかってはならない／」",
+      "previous_english": "Einstein was a genius.{CTRL:0}No, a child of God...{CTRL:0}his work must never fuel{CTRL:0}making bombs!",
+      "new_english": "Einstein was a genius.{CTRL:0}No, a child of God...{CTRL:0}His theory must not be{CTRL:0}used to make bombs!",
+      "category": [
+        "terminology",
+        "naturalness",
+        "source_specificity"
+      ],
+      "reason": "Render かれのりろん explicitly as Einstein's theory and replace the awkward fuel-making-bombs phrasing with the source's direct prohibition on using it to manufacture bombs.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -5,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT1B/g0/r1",
+      "japanese": "さいごにあおぞらをみたのは いつだっけ",
+      "previous_english": "Blue sky--how long gone?",
+      "new_english": "Blue sky... when was it?",
+      "category": [
+        "naturalness",
+        "fidelity"
+      ],
+      "reason": "Replace the awkward implication that the blue sky itself is gone with a natural compact question about when the protagonist last saw one.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT1B/g0/r15",
+      "japanese": "「まふうじのつぼ」{CTRL:0}{CTRL:2}すうせんねんのむかし かみのこが{CTRL:0}そうぜつなたたかいのすえ あくまをとじこめ{CTRL:4}ふういんしたとされる でんせつのつぼ",
+      "previous_english": "\"Demon-Sealing Jar\"{CTRL:0}{CTRL:2}Long ago, God's son{CTRL:0}fought a devil{CTRL:4}and sealed it here.",
+      "new_english": "\"Demon-Sealing Jar\"{CTRL:0}{CTRL:2}Long ago, God's son{CTRL:0}after a fierce battle{CTRL:4}sealed the Devil within.",
+      "category": [
+        "omitted_detail",
+        "source_specificity",
+        "naturalness"
+      ],
+      "reason": "Restore the source's explicit fierce-battle detail and render the jar as sealing the Devil within rather than the vaguer fought-a-devil/it-here wording.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 12,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT1B/g2/r5",
+      "japanese": "……「このいえにすんで もう40ねんになるんだ{CTRL:0} いまさら でていけるものか／」{CTRL:2}おれ「ぼくは じあげやじゃないですよ」{CTRL:6}……「え…！ あ… どうもしつれいしました」",
+      "previous_english": "...: I've lived here{CTRL:0}40 years! I won't leave!{CTRL:2}Me: I'm no developer.{CTRL:6}...: Oh! Sorry.",
+      "new_english": "...: I've lived here{CTRL:0}40 years! I won't leave!{CTRL:2}Me: I'm no land shark.{CTRL:6}...: Oh! Sorry.",
+      "category": [
+        "cultural_specificity",
+        "terminology",
+        "character_context"
+      ],
+      "reason": "Restore 地上げ屋 as the coercive bubble-era land speculator the resident fears, rather than the neutral and broader developer.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "T22/g0/r22",
+      "japanese": "なかから ひかりがもれてる……",
+      "previous_english": "Light leaks in...",
+      "new_english": "Light leaks from inside.",
+      "category": [
+        "fidelity",
+        "directionality"
+      ],
+      "reason": "Correct the direction in なかから: the light is leaking from inside, not leaking inward.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 7,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "T22/g0/r28",
+      "japanese": "あいた…… ひみつのつうろだ",
+      "previous_english": "It opened... a passage!",
+      "new_english": "Opened... a secret path!",
+      "category": [
+        "omitted_detail",
+        "source_specificity"
+      ],
+      "reason": "Restore ひみつ: the newly opened route is explicitly a secret passage.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "T22/g1/r6",
+      "japanese": "しきょう「これから このむすめのひあぶりを{CTRL:0} おこなうのだが… みせしめのため もっとひとが{CTRL:0} あつまってからのほうが おもしろいのう{CTRL:6} ふぉふぉふぉ……」",
+      "previous_english": "Bishop: She will burn,{CTRL:0}but first, draw a crowd.{CTRL:0}A public lesson is best.{CTRL:6}Ho ho ho...",
+      "new_english": "Bishop: She will burn,{CTRL:0}once a crowd gathers.{CTRL:0}A public lesson is best.{CTRL:6}Ho ho ho...",
+      "category": [
+        "fidelity",
+        "action_clarity"
+      ],
+      "reason": "Remove the invented instruction to draw a crowd. The Japanese says the bishop wants to wait until more people have gathered for the public example.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "T22/g1/r7",
+      "japanese": "しきょう「さかや るごーのまごむすめ{CTRL:0} じゃんぬ・だるくは あくまのせんれいをうけ{CTRL:0} みにくき よくぼうのとりこと なりはてた……{CTRL:6} よってきょうかいのなにより しけいにしょす」",
+      "previous_english": "Bishop: Jeanne d'Arc,{CTRL:0}Lugot's granddaughter,{CTRL:0}Devil-baptized, depraved{CTRL:6}Church condemns her.",
+      "new_english": "Bishop: Jeanne d'Arc,{CTRL:0}Lugot's granddaughter,{CTRL:0}Devil-baptized, depraved{CTRL:6}Church orders her death.",
+      "category": [
+        "omitted_detail",
+        "sentence_specificity"
+      ],
+      "reason": "Restore the explicit 死刑 sentence: the bishop is sentencing Jeanne to death in the Church's name, not merely condemning her abstractly.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "T22/g1/r17",
+      "japanese": "……「ちくしょう みちゃいられない…」{CTRL:0}……「かみさま…／」",
+      "previous_english": "Man: I cannot watch...{CTRL:0}Man: God help her!",
+      "new_english": "Man: Damn, can't watch.{CTRL:0}Man: God help her!",
+      "category": [
+        "register",
+        "emotional_fidelity",
+        "naturalness"
+      ],
+      "reason": "Restore ちくしょう, the onlooker's angry expletive, while keeping the compact reaction natural.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT6C/g0/r2",
+      "japanese": "すくいぬしのいのちをねらう じゃあくなるもの",
+      "previous_english": "You seek the savior.",
+      "new_english": "You want the savior dead",
+      "category": [
+        "omitted_detail",
+        "threat_specificity",
+        "fidelity"
+      ],
+      "reason": "Restore いのちをねらう: the evil one is targeting the Savior's life, not merely seeking or pursuing him.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT6B/g0/r1",
+      "japanese": "ろばのきも しらないで……",
+      "previous_english": "He knows no donkey pain.",
+      "new_english": "He knows no donkey woes.",
+      "category": [
+        "naturalness",
+        "fidelity",
+        "character_voice"
+      ],
+      "reason": "Render ろばのきも as the donkey's feelings/plight rather than the unnatural and overly narrow donkey pain, while retaining the comic animal voice.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT6B/g0/r9",
+      "japanese": "ろばのじんせいって かなしい……",
+      "previous_english": "A donkey's life is hard.",
+      "new_english": "A donkey's life is sad.",
+      "category": [
+        "emotional_fidelity",
+        "word_choice"
+      ],
+      "reason": "Restore かなしい as sad rather than changing the donkey's emotional complaint into the broader hard.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT6B/g0/r15",
+      "japanese": "よせふ「どうした！ かしむ…」",
+      "previous_english": "Joseph: What is it?",
+      "new_english": "Joseph: Kashim, what?!",
+      "category": [
+        "omitted_detail",
+        "addressee_specificity",
+        "character_context"
+      ],
+      "reason": "Restore Joseph explicitly addressing Kashim, which the current translation omits.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT6B/g1/r30",
+      "japanese": "{CTRL:0}{CTRL:0}へびにそそのかされ えばが くちにしたものは！",
+      "previous_english": "{CTRL:0}{CTRL:0}What fruit did Eve eat?",
+      "new_english": "{CTRL:0}{CTRL:0}What did Eve eat?",
+      "category": [
+        "fidelity",
+        "unsupported_specificity",
+        "quiz_wording"
+      ],
+      "reason": "Remove fruit, a category the Japanese does not state; the source simply asks what Eve ate after the serpent tempted her.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -6,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT6B/g2/r28",
+      "japanese": "めすうま「あら わかる！ これ… えるされむで{CTRL:0} はやりの かっとなのよ ふふふ…」",
+      "previous_english": "Mare: You noticed? This{CTRL:0}cut is hot in town.",
+      "new_english": "Mare: You noticed? This{CTRL:0}cut is hot in Jerusalem.",
+      "category": [
+        "omitted_detail",
+        "location_specificity",
+        "character_voice"
+      ],
+      "reason": "Restore the explicit Jerusalem reference in the mare's joke about her fashionable haircut.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 5,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g0/r0",
+      "japanese": "あくま「いまわしき めがみぞう……{CTRL:0} あまりのみにくさに へどがでるわ／」",
+      "previous_english": "Devil: Vile goddess...{CTRL:0}its ugliness sickens me!",
+      "new_english": "Devil: Vile goddess idol{CTRL:0}its ugliness sickens me!",
+      "category": [
+        "object_specificity",
+        "omitted_detail"
+      ],
+      "reason": "Restore めがみぞう as a goddess statue/idol rather than referring to the goddess herself; the physical statue is plot-relevant.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 5,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g0/r9",
+      "japanese": "しんかん「めがみのくびが とれていたのを{CTRL:0} みたしゅんかん くらくらっとめまいがしまして…{CTRL:2} おそらく ここらへんにたむろする{CTRL:0} ふりょうどもの しわざでしょう{CTRL:3} なんという ばちあたりな／」",
+      "previous_english": "Priest: I saw her{CTRL:0}head broken off...{CTRL:2}local thugs did it.{CTRL:0}What sacrilege!{CTRL:3}Utter heathens!",
+      "new_english": "Priest: Her head was off{CTRL:0}I got dizzy seeing it...{CTRL:2}Likely local thugs{CTRL:0}did it.{CTRL:3}What sacrilege!",
+      "category": [
+        "omitted_detail",
+        "causal_clarity",
+        "uncertainty"
+      ],
+      "reason": "Restore that seeing Athena's broken-off head made the priest dizzy, which explains his collapse, and preserve his uncertainty that nearby thugs likely did it instead of stating guilt as fact.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g4/r4",
+      "japanese": "けるべろす「おす」{CTRL:0}おれ「こんにちは…」{CTRL:2}けるべろす「ここは \"よみのくに\"{CTRL:6} いわゆる あのよのいりぐちだ……」{CTRL:3}おれ「あの…」{CTRL:4}けるべろす「はなしはきいている{CTRL:4} こどもをたすけたいのなら わがはいのといに{CTRL:4} こたえてみろ{CTRL:3} みごとあてたら かえしてやる」",
+      "previous_english": "Cerberus: Yo.{CTRL:0}Me: Hello...{CTRL:2}this is the underworld.{CTRL:6}Gateway to the dead.{CTRL:3}Me: Um...{CTRL:4}I know the tale.{CTRL:4}To save him,{CTRL:4}answer my riddles.{CTRL:3}Win and he is free.",
+      "new_english": "Cerberus: Yo.{CTRL:0}Me: Hello...{CTRL:2}Cerberus: The underworld{CTRL:6}Gateway to the dead.{CTRL:3}Me: Um...{CTRL:4}Cerberus: Heard of it.{CTRL:4}To save him,{CTRL:4}answer my riddles.{CTRL:3}Win and he is free.",
+      "category": [
+        "speaker_attribution",
+        "dialogue_clarity"
+      ],
+      "reason": "Restore Cerberus as speaker after both protagonist interjections. The old English makes the protagonist appear to explain the underworld and say he knows the tale.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g4/r20",
+      "japanese": "あくま「よるな／」{CTRL:2}からだが うごかない／{CTRL:3}あくま「このからだは わしのものだ{CTRL:4} もうあきらめろ」{CTRL:3}おれ「んなこと いったって……」{CTRL:3}あくま「さあこっちへこい こぞう／ さもないと{CTRL:4} なんどでもきさまを ころしにいくぞ／」",
+      "previous_english": "Devil: Stay back!{CTRL:2}I cannot move!{CTRL:3}This body is mine.{CTRL:4}Give up.{CTRL:3}Me: But...{CTRL:3}come here, boy!{CTRL:4}Or I kill you again!",
+      "new_english": "Devil: Stay back!{CTRL:2}I cannot move!{CTRL:3}This body is mine.{CTRL:4}Give up.{CTRL:3}Me: But...{CTRL:3}Devil: Come here, boy!{CTRL:4}or I'll kill you again!",
+      "category": [
+        "speaker_attribution",
+        "naturalness",
+        "threat_clarity"
+      ],
+      "reason": "Restore the Devil as speaker after the protagonist's interjection and make the conditional threat grammatical while retaining the source's repeated-killing sense as again.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 10,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g4/r27",
+      "japanese": "おとこ「おうじ／ きこえますか このすずのねが／{CTRL:0} おうじ／ へんじをしてください／／」{CTRL:2}にくらす「おうじ……！」{CTRL:6}おとこ「このかたは まけどにあの おうじ{CTRL:4} あれくさんだーさまなんです／」",
+      "previous_english": "Man: Prince, can you{CTRL:0}hear the bell? Answer!{CTRL:2}Nicras: Prince...!{CTRL:6}This is Alexander,{CTRL:4}prince of Macedonia!",
+      "new_english": "Man: Prince, can you{CTRL:0}hear the bell? Answer!{CTRL:2}Nicras: Prince...!{CTRL:6}Man: This is Alexander,{CTRL:4}prince of Macedonia!",
+      "category": [
+        "speaker_attribution",
+        "dialogue_clarity"
+      ],
+      "reason": "Restore the servant/man as the speaker who identifies Alexander after Nicras reacts; the old line reads as though Nicras makes the identification.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 5,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g5/r1",
+      "japanese": "……「そのこを しなせてはいけません……」{CTRL:1}おれ「！ だれだ！」{CTRL:0}{CTRL:6}……「そのこは かみのめいをうけた{CTRL:4} とくべつな こどもなのです{CTRL:3} あなたのちからで たすけてあげてください……」",
+      "previous_english": "Voice: He cannot die.{CTRL:1}Me: Who is there?!{CTRL:0}{CTRL:6}The gods chose the child{CTRL:4}for a sacred task.{CTRL:3}Use your gift. Save him.",
+      "new_english": "Voice: Don't let him die{CTRL:1}Me: Who is there?!{CTRL:0}{CTRL:6}Voice: God chose him.{CTRL:4}for a sacred task.{CTRL:3}Use your gift. Save him.",
+      "category": [
+        "meaning_correction",
+        "speaker_attribution",
+        "divine_mission"
+      ],
+      "reason": "Correct the urgent prohibition not to let the child die; the old English changes it into a claim that he cannot die. Also restore the returning voice after the protagonist speaks.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT4/g5/r7",
+      "japanese": "{CTRL:0}{CTRL:0}ぎりしゃかくちの としを なんとよぶ！",
+      "previous_english": "{CTRL:0}{CTRL:0}Name a Greek city-state.",
+      "new_english": "{CTRL:0}{CTRL:0}Name for Greek cities?",
+      "category": [
+        "quiz_semantics",
+        "meaning_correction"
+      ],
+      "reason": "Correct the quiz from asking for an example city-state to asking what the cities across Greece are called.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT5/g2/r12",
+      "japanese": "せいぶで いんでぃあんからはくじんを{CTRL:0}まもるため たたかったぐんたいは！",
+      "previous_english": "Which unit fought tribes{CTRL:0}to guard white settlers?",
+      "new_english": "Which unit fought{CTRL:0}Indians to guard whites?",
+      "category": [
+        "historical_diction",
+        "source_specificity",
+        "unsanitized_source"
+      ],
+      "reason": "Restore the source's explicit historical terms: it asks which military unit fought Indians to protect white people, rather than substituting tribes and settlers.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -7,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT5/g2/r23",
+      "japanese": "とむ「1000どるぴったしで{CTRL:0} うし ひつじ ぶたを50ぴきかってこいと{CTRL:0} いわれただ{CTRL:6} うしは1ぴき120どる{CTRL:3} ひつじは1ぴき30どる{CTRL:3} ぶたは1ぴき5どる かかる{CTRL:3} いったい なんびきずつかえばええんかのー」",
+      "previous_english": "Tom: Exactly 1,000.{CTRL:0}Buy 50 total: cows,{CTRL:0}sheep, and pigs. Spend{CTRL:6}Cows: 120 dollars each.{CTRL:3}Sheep: 30 dollars each.{CTRL:3}Pigs: 5 dollars each.{CTRL:3}How many of each?",
+      "new_english": "Tom: Exactly 1,000.{CTRL:0}Buy 50 total: cows,{CTRL:0}sheep and pigs. Prices:{CTRL:6}Cows: 120 dollars each.{CTRL:3}Sheep: 30 dollars each.{CTRL:3}Pigs: 5 dollars each.{CTRL:3}How many of each?",
+      "category": [
+        "naturalness",
+        "instruction_clarity",
+        "quiz_wording"
+      ],
+      "reason": "Repair the dangling Spend fragment and introduce the per-animal price list cleanly without changing the arithmetic or control structure.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "T25/g0/r12",
+      "japanese": "りんかーん「そうですか そんなひどいめに……」{CTRL:1}まいやー「まったく こまったものです{CTRL:0} なんぶにはまだまだ ねづよいさべついしきが{CTRL:0} のこっているようでして……」{CTRL:3}りんかーん「あなたみたいなかた ばかりなら{CTRL:4} せんそうはおきませんでしたよ まいやーさん」",
+      "previous_english": "Lincoln: Such cruelty...{CTRL:1}Meyer: A grave problem.{CTRL:0}Deep bias still lingers{CTRL:0}in the South.{CTRL:3}Lincoln: With men like{CTRL:4}you, no war would start.",
+      "new_english": "Lincoln: Such cruelty...{CTRL:1}Meyer: A grave problem.{CTRL:0}Deep prejudice lingers{CTRL:0}in the South.{CTRL:3}Lincoln: With men like{CTRL:4}you, no war would start.",
+      "category": [
+        "historical_diction",
+        "source_specificity",
+        "racism_context"
+      ],
+      "reason": "Render 差別意識 explicitly as prejudice/discriminatory attitudes rather than the softer and broader bias in Meyer's self-serving discussion of racism in the South.",
+      "external_difference_triggered_review": false,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Measured at bank level after rebuild/compression; visible characters are not packed-byte cost."
+    },
+    {
+      "id": "TT2/fixed/r32",
+      "japanese": "しみん",
+      "previous_english": "Commoners",
+      "new_english": "Citizens",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the source category citizens; commoners substitutes a social class the Japanese does not specify.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r33",
+      "japanese": "げいにん",
+      "previous_english": "Actors",
+      "new_english": "Entertainers",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the broader entertainer/performer category; actors is only one subset.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 6,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r35",
+      "japanese": "がいど",
+      "previous_english": "Guild",
+      "new_english": "Guide",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct Guide; a separate nearby choice ぎるど is the actual Guild entry.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r36",
+      "japanese": "ぞいど",
+      "previous_english": "Zois",
+      "new_english": "Zoid",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the source distractor transliteration from Zois to Zoid.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r43",
+      "japanese": "で・にーろ",
+      "previous_english": "Nero",
+      "new_english": "De Niro",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the full proper-name distractor De Niro.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r44",
+      "japanese": "ど・ぬーぶ",
+      "previous_english": "Dante",
+      "new_english": "Danube",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the place-name distractor Danube; Dante is unrelated to the Japanese.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r51",
+      "japanese": "まつ",
+      "previous_english": "White",
+      "new_english": "Wait",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the wait choice; it is paired with またない, the do-not-wait option.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r56",
+      "japanese": "さけ",
+      "previous_english": "All",
+      "new_english": "Wine",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Replace the meaningless All label with the alcoholic-drink sense used by the surrounding medieval-France scene; dialogue elsewhere renders the same item contextually as wine.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r62",
+      "japanese": "かんしゅ",
+      "previous_english": "Jail",
+      "new_english": "Jailer",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the person Jailer and keep it distinct from the separate prison/jail location label.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r63",
+      "japanese": "おんなたち",
+      "previous_english": "Woman",
+      "new_english": "Women",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the explicit plural women.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r64",
+      "japanese": "ちかしつ",
+      "previous_english": "Cell",
+      "new_english": "Cellar",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the cellar/basement location and keep it distinct from the separate ろうや cell label.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT2/fixed/r68",
+      "japanese": "ろうそく",
+      "previous_english": "Lamp",
+      "new_english": "Candle",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the specific candle object rather than changing it to a lamp.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r7",
+      "japanese": "おんなたち",
+      "previous_english": "Woman",
+      "new_english": "Women",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the explicit plural women rather than presenting the group as a single woman.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r12",
+      "japanese": "ちかしつ",
+      "previous_english": "Cell",
+      "new_english": "Cellar",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the basement/cellar location and keep it distinct from the separate prison-cell label.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r15",
+      "japanese": "おす",
+      "previous_english": "Passage",
+      "new_english": "Push",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the push action; Passage changes a verb into an unrelated location noun.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r18",
+      "japanese": "かべ",
+      "previous_english": "Well",
+      "new_english": "Wall",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct wall; Well is an unrelated object caused by a one-letter English error.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r20",
+      "japanese": "あな",
+      "previous_english": "Hill",
+      "new_english": "Hole",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the selectable hole/opening object; Hill is unrelated to the Japanese.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r21",
+      "japanese": "ろうや",
+      "previous_english": "Jail",
+      "new_english": "Cell",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the individual prison cell and keep it distinct from the broader prison/jail location.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T22/fixed/r32",
+      "japanese": "あるく",
+      "previous_english": "Move",
+      "new_english": "Walk",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the specific walk action instead of collapsing it into the separate generic Move command.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT3A/fixed/r16",
+      "japanese": "おす",
+      "previous_english": "Pass",
+      "new_english": "Push",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the push action; Pass is a different action and can mislead the interaction menu.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT3A/fixed/r27",
+      "japanese": "ふく",
+      "previous_english": "Rub",
+      "new_english": "Clothes",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the clothes object; Rub incorrectly turns the noun into an unrelated action.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT3A/fixed/r62",
+      "japanese": "みた",
+      "previous_english": "Mita",
+      "new_english": "Saw it",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Translate the response as Saw it rather than leaving an untranslated-looking romanization.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT3B/fixed/r17",
+      "japanese": "よむ",
+      "previous_english": "Road",
+      "new_english": "Read",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the read action; Road is an unrelated noun and the chapter requires reading the charm text.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6A/fixed/r11",
+      "japanese": "そで",
+      "previous_english": "Soil",
+      "new_english": "Sleeve",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the clothing part Sleeve; Soil is an unrelated noun.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT4/fixed/r31",
+      "japanese": "うる",
+      "previous_english": "Soil",
+      "new_english": "Sell",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the sell action; Soil is an unrelated noun.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT4/fixed/r74",
+      "japanese": "つりびと",
+      "previous_english": "Fish",
+      "new_english": "Fisherman",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the fisherman character target; Fish changes a person into an animal/object.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 5,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT4/fixed/r78",
+      "japanese": "ありす",
+      "previous_english": "Aristotle",
+      "new_english": "Alice",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the Japanese distractor Alice; Aristotle is a different historical person not present in the source.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -4,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT5/fixed/r5",
+      "japanese": "べる",
+      "previous_english": "Bell",
+      "new_english": "Belle",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the established character name Belle rather than the misspelling Bell.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT5/fixed/r18",
+      "japanese": "まど",
+      "previous_english": "Woods",
+      "new_english": "Window",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the architectural target Window; Woods is unrelated to the Japanese.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT5/fixed/r54",
+      "japanese": "とむ",
+      "previous_english": "Time",
+      "new_english": "Tom",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the character name Tom; Time is an unrelated English word.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T25/fixed/r7",
+      "japanese": "すすめる",
+      "previous_english": "Outside",
+      "new_english": "Offer",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the coffee interaction action Offer; Outside is a location and does not represent the source verb.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "T25/fixed/r16",
+      "japanese": "まどのそと",
+      "previous_english": "Wood",
+      "new_english": "Outside",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the navigation target outside the window; Wood is unrelated to the source location.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6B/fixed/r9",
+      "japanese": "そで",
+      "previous_english": "Soil",
+      "new_english": "Sleeve",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the clothing-part target Sleeve; Soil is an unrelated noun.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r1",
+      "japanese": "あくま",
+      "previous_english": "Down",
+      "new_english": "Devil",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the Devil target; Down is an unrelated direction and changes the selectable subject.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 1,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r23",
+      "japanese": "あな",
+      "previous_english": "Hill",
+      "new_english": "Hole",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the selectable hole/opening target; Hill is unrelated to the Japanese.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r31",
+      "japanese": "よむ",
+      "previous_english": "Road",
+      "new_english": "Read",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Correct the read action; Road is an unrelated noun and repeats the same source error already corrected in TT3B.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 0,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r33",
+      "japanese": "え",
+      "previous_english": "Paper",
+      "new_english": "Picture",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the picture/drawing target; the adjacent label separately identifies text, while Paper is not the source noun.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r55",
+      "japanese": "とらっど",
+      "previous_english": "Trader",
+      "new_english": "Trad",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Preserve the Japanese loanword/distractor Trad; Trader adds an unsupported -er and changes the word.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": -2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r61",
+      "japanese": "あまちゃづる",
+      "previous_english": "Amacha",
+      "new_english": "Jiaogulan",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Use the established English plant name Jiaogulan for amachazuru; Amacha can denote a different Japanese sweet-tea plant.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 3,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    },
+    {
+      "id": "TT6C/fixed/r87",
+      "japanese": "にくらす",
+      "previous_english": "Nick",
+      "new_english": "Nicras",
+      "category": [
+        "fixed_ui",
+        "meaning_correction"
+      ],
+      "reason": "Restore the established character name Nicras rather than inventing the nickname Nick.",
+      "external_difference_triggered_review": true,
+      "external_text_stored": false,
+      "presentation_controls_changed": false,
+      "visible_character_delta": 2,
+      "encoded_byte_delta": null,
+      "encoded_byte_delta_note": "Each fixed-address record must retain its original packed slot size; validated by the fixed-table build/test path."
+    }
+  ]
+}

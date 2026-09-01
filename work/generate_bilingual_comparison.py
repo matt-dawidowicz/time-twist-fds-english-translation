@@ -1046,6 +1046,26 @@ def _ui_rows(start_sequence: int) -> list[ComparisonRow]:
             (*ui.DISK_PROMPT_PATCHES, *ui.WRONG_DISK_PATCHES)
         )
     )
+    save_system_ids = (
+        "save_destination",
+        "saving_status",
+        "chapter_start",
+        "disk_trouble",
+        "ram_store",
+        "ram_fetch",
+    )
+    ui_specs.extend(
+        (
+            "NOV2",
+            f"NOV2/system/{text_id}",
+            0x6000 + offset,
+            packed,
+            english,
+        )
+        for text_id, (offset, packed, english) in zip(
+            save_system_ids, ui.NOV2_SAVE_SYSTEM_PATCHES, strict=True
+        )
+    )
     for bank, text_id, address, packed, english in ui_specs:
         rows.append(
             _make_row(

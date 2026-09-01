@@ -11,10 +11,10 @@ This package is designed for a second-pass localization review, not merely a pro
 ## Coverage
 
 - 1,299 scenario records across all 13 banks: TT1A 35, TT1B 137, TT2 169, T22 58, TT3A 152, TT3B 58, TT4 183, TT5 123, T25 76, TT6A 100, TT6B 94, TT6C 106, TT6D 8.
-- 750 fixed-address command, object, quiz, personality-menu, and engine-interface records.
+- 756 fixed-address command, object, quiz, personality-menu, and engine-interface records.
 - 3 recovered graphics-text entries for the title and Kouhen direct-boot warning.
 - 416 entries carry at least one detected voice, dialect, honorific, or register marker.
-- Review queue: 46 high, 1,777 medium, 229 low.
+- Review queue: 48 high, 1,781 medium, 229 low.
 - Control-sequence mismatches: 1 (NOV2/wait).
 
 ## How to interpret the Japanese

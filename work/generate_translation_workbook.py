@@ -717,6 +717,7 @@ FIXED_NATURAL = {
     "あたっく": "Attack",
     "つっつく": "Poke",
     "あるく": "Walk",
+    "よむ": "Read",
     "つぼ": "Jar",
     "てんじひん": "Exhibit",
     "おんなのこ": "Girl",
@@ -1159,6 +1160,12 @@ FIXED_NATURAL = {
     "せっとしてください": "Please insert",
     "ちがった でぃすくが": "Wrong disk",
     "せっとされています": "is inserted",
+    "えー らむせーぶ{CTRL:0}びー ですくせーぶ{CTRL:0}せる きゃんせる": "A: RAM save / B: disk save / Select: cancel",
+    "でぃすくせーぶ{CTRL:0}しとるからの": "Saving to disk.",
+    "しょうはじめ": "Chapter start",
+    "でぃすく、とらぶる": "Disk error",
+    "おぼえる": "Store in memory",
+    "おもいだす": "Recall from memory",
 }
 
 MANUAL_FINAL = {
@@ -2943,8 +2950,8 @@ def make_rows(
     """
     payload = json.loads(SOURCE_JSON.read_text(encoding="utf-8"))
     source_rows = payload["rows"]
-    if len(source_rows) != 2052:
-        raise ValueError(f"expected 2052 source rows, got {len(source_rows)}")
+    if len(source_rows) != 2058:
+        raise ValueError(f"expected 2058 source rows, got {len(source_rows)}")
     review_map, review_path = parse_review(source_rows, review_file)
     playable_scenario_text = load_playable_scenario_text()
     output: list[WorkbookRow] = []
@@ -3633,8 +3640,8 @@ def validate(
         encoder/recompression tests, and the listed visual checks.
     """
     source_rows = source_payload["rows"]
-    if len(rows) != 2052:
-        raise AssertionError(f"expected 2052 rows, got {len(rows)}")
+    if len(rows) != 2058:
+        raise AssertionError(f"expected 2058 rows, got {len(rows)}")
     ids = [row.original_record_id for row in rows]
     if len(ids) != len(set(ids)):
         duplicates = [

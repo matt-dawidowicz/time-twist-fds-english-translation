@@ -1,0 +1,280 @@
+{
+  "schema_version": 1,
+  "scope": "fixed-address scenario-bank UI tables plus TT1A selectors; NOV2/NOV4 system text remains separate",
+  "policy": {
+    "competitor_role": "diagnostic comparison only",
+    "translation_source": "original Japanese",
+    "competitor_text_stored": false,
+    "production_parser_modified": false
+  },
+  "summary": {
+    "aligned_records": 740,
+    "exact_english_matches": 393,
+    "different_english_records": 347,
+    "unresolved_external_token_records": 0,
+    "major_fixed_table_records": 721,
+    "tt1a_selector_records": 19,
+    "nov2_source_verified_missing_records_found": 6,
+    "nov2_source_verified_missing_records_translated": 6,
+    "canonical_corpus_rows_after_nov2_integration": 2058,
+    "nov2_external_repacked_records_recovered": 15,
+    "nov2_external_unaligned_source_records": 2,
+    "nov4_external_repacked_records_recovered": 2
+  },
+  "comparison_notes": {
+    "logical_order": "External fixed tables are reconstructed from physical segments in source record order.",
+    "paging_pattern": "Most major external tables are relocated in approximately 32-record pages; segment offsets are bank-relative.",
+    "tt1a_padding": "TT1A selector exact-match comparison ignores invisible trailing spaces used only to preserve fixed slot sizes.",
+    "nov2": "Six previously untranslated NOV2 save/system records are now source-verified runtime patches and first-class corpus rows. The external NOV2 layout remains repacked and is not included in the 740 aligned-record total.",
+    "nov2_external": "The supplied external patch repacks 15 corresponding NOV2 system records at recovered physical offsets; two source disk-error records remain byte-identical Japanese and are explicitly unaligned rather than assigned invented external English.",
+    "nov4_external": "The supplied external patch appends a 26-record NOV4 table; the gameplay-equivalent Start and Load records are recovered at bank-relative offsets 0x2384 and 0x2389."
+  },
+  "banks": [
+    {
+      "bank": "TT1A",
+      "records": 19,
+      "exact": 18,
+      "different": 1,
+      "unresolved": 0,
+      "segments": [
+        {
+          "offset": 603,
+          "offset_hex": "0x025B",
+          "count": 19
+        }
+      ]
+    },
+    {
+      "bank": "TT1B",
+      "records": 53,
+      "exact": 30,
+      "different": 23,
+      "unresolved": 0,
+      "segments": [
+        {
+          "offset": 6856,
+          "offset_hex": "0x1AC8",
+          "count": 32
+        },
+        {
+          "offset": 13634,
+          "offset_hex": "0x3542",
+          "count": 21
+        }
+      ]
+    },
+    {
+      "bank": "TT2",
+      "records": 70,
+      "exact": 27,
+      "different": 43,
+      "unresolved": 0,
+      "segments": [
+        {
+          "offset": 13568,
+          "offset_hex": "0x3500",
+          "count": 32
+        },
+        {
+          "offset": 7150,
+          "offset_hex": "0x1BEE",
+          "count": 32
+        },
+        {
+          "offset": 13718,
+          "offset_hex": "0x3596",
+          "count": 6
+        }
+      ]
+    },
+    {
+      "bank": "T22",
+      "records": 33,
+      "exact": 17,
+      "different": 16,
+      "unresolved": 0,
+      "segments": [
+        {
+          "offset": 3604,
+          "offset_hex": "0x0E14",
+          "count": 33
+        }
+      ]
+    },
+    {
+      "bank": "TT3A",
+      "records": 95,
+      "exact": 47,
+      "different": 48,
+      "unresolved": 0,
+      "segments": [
+        {
+          "offset": 2718,
+          "offset_hex": "0x0A9E",
+          "count": 64
+        },
+        {
+          "offset": 2564,
+          "offset_hex": "0x0A04",
+          "count": 31
+        }
+      ]
+    },
+    {
+      "bank": "TT3B",
+      "records": 21,
+      "exact": 13,
+      "different": 8,
+      "unresolved": 0,
+      "segments": [
+        {
+          "offset": 2804,
+          "offset_hex": "0x0AF4",
+          "count": 21
+        }
+      ]
+    },
+    {
+      "bank": "TT4",
+      "records": 97,
+      "exact": 53,
+      "different": 44,
+      "unresolved": 0,
+      "segments": [
+        {
+          "offset": 8654,
+          "offset_hex": "0x21CE",
+          "count": 32
+        },
+        {
+          "offset": 8513,
+          "offset_hex": "0x2141",
+          "count": 32
+        },
+        {
+          "offset": 8361,
+          "offset_hex": "0x20A9",
+          "count": 32
+        },
+        {
+          "offset": 3713,
+          "offset_hex": "0x0E81",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "bank": "TT5",
+      "records": 113,
+      "exact": 47,
+      "different": 66,
+      "unresolved": 0,
+      "segments": [
+        {
+          "offset": 2896,
+          "offset_hex": "0x0B50",
+          "count": 32
+        },
+        {
+          "offset": 2725,
+          "offset_hex": "0x0AA5",
+          "count": 32
+        },
+        {
+          "offset": 3034,
+          "offset_hex": "0x0BDA",
+          "count": 32
+        },
+        {
+          "offset": 7011,
+          "offset_hex": "0x1B63",
+          "count": 17
+        }
+      ]
+    },
+    {
+      "bank": "T25",
+      "records": 42,
+      "exact": 24,
+      "different": 18,
+      "unresolved": 0,
+      "segments": [
+        {
+          "offset": 2442,
+          "offset_hex": "0x098A",
+          "count": 32
+        },
+        {
+          "offset": 4737,
+          "offset_hex": "0x1281",
+          "count": 10
+        }
+      ]
+    },
+    {
+      "bank": "TT6A",
+      "records": 41,
+      "exact": 24,
+      "different": 17,
+      "unresolved": 0,
+      "segments": [
+        {
+          "offset": 1351,
+          "offset_hex": "0x0547",
+          "count": 32
+        },
+        {
+          "offset": 3880,
+          "offset_hex": "0x0F28",
+          "count": 9
+        }
+      ]
+    },
+    {
+      "bank": "TT6B",
+      "records": 62,
+      "exact": 47,
+      "different": 15,
+      "unresolved": 0,
+      "segments": [
+        {
+          "offset": 1408,
+          "offset_hex": "0x0580",
+          "count": 32
+        },
+        {
+          "offset": 3406,
+          "offset_hex": "0x0D4E",
+          "count": 30
+        }
+      ]
+    },
+    {
+      "bank": "TT6C",
+      "records": 94,
+      "exact": 46,
+      "different": 48,
+      "unresolved": 0,
+      "segments": [
+        {
+          "offset": 5994,
+          "offset_hex": "0x176A",
+          "count": 32
+        },
+        {
+          "offset": 5699,
+          "offset_hex": "0x1643",
+          "count": 32
+        },
+        {
+          "offset": 5851,
+          "offset_hex": "0x16DB",
+          "count": 30
+        }
+      ]
+    }
+  ],
+  "pending": [
+    "review fixed-label differences against Japanese before any translation edit"
+  ]
+}
