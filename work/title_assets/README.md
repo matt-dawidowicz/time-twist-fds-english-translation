@@ -33,8 +33,8 @@ consensus across the colored frames to remove the moving hand sprites without
 repainting static title pixels. It then applies the reviewed native-pixel
 cleanup to the lower T bevel, reference-traced clock rim, W/I/S outlines, and
 balanced TM. The first T's upper-right cap uses a reviewed four-pixel correction,
-and the clock's three traced bands receive native stair bridges so they are
-closed under four-neighbor pixel connectivity. Regression tests independently
+and the clock preserves the GIF's one-pixel black outer boundary while the
+dark inner band receives only the stair bridges it needs. Regression tests independently
 lock those edits, the thin `12`/`9`/`3`/`6` clock strokes, the `TM`, and the
 white wordmark boundary.
 
