@@ -31,10 +31,7 @@ jobs:
           text = release_path.read_text(encoding='utf-8')
 
           old_import = 'from .compression import compress_english_groups, packed_size\n'
-          new_import = (
-              'from .compression import packed_size\n'
-              'from .release_compression import compress_release_groups\n'
-          )
+          new_import = old_import + 'from .release_compression import compress_release_groups\n'
           if text.count(old_import) != 1:
               raise SystemExit('release compression import no longer matches expected source')
           text = text.replace(old_import, new_import, 1)
@@ -48,6 +45,32 @@ jobs:
               raise SystemExit(
                   f'expected 2 unconditional optimizer flags, found {optimize_count}'
               )
+
+          old_combined_tail = '''            maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+          )
+          used = packed_size'''
+          new_combined_tail = '''            maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+              compressor=compress_english_groups,
+              measure=packed_size,
+          )
+          used = packed_size'''
+          if text.count(old_combined_tail) != 1:
+              raise SystemExit('combined compression tail no longer matches expected source')
+          text = text.replace(old_combined_tail, new_combined_tail, 1)
+
+          old_standard_tail = '''        maximum_entries=maximum_dictionary_entries,
+              candidate_validator=fixed_ui_candidate_is_valid,
+          )
+          rebuilt = rebuild_scenario_bank'''
+          new_standard_tail = '''        maximum_entries=maximum_dictionary_entries,
+              candidate_validator=fixed_ui_candidate_is_valid,
+              compressor=compress_english_groups,
+              measure=packed_size,
+          )
+          rebuilt = rebuild_scenario_bank'''
+          if text.count(old_standard_tail) != 1:
+              raise SystemExit('standard compression tail no longer matches expected source')
+          text = text.replace(old_standard_tail, new_standard_tail, 1)
           release_path.write_text(text, encoding='utf-8', newline='\n')
 
           module = '''"""Choose release compression without paying optimizer cost unnecessarily."""
@@ -61,6 +84,9 @@ jobs:
 
           ScenarioGroups = tuple[tuple[tuple[PackedSymbol, ...], ...], ...]
           ScenarioDictionary = tuple[tuple[PackedSymbol, ...], ...]
+          CompressionResult = tuple[ScenarioGroups, ScenarioDictionary]
+          CompressionFunction = Callable[..., CompressionResult]
+          MeasureFunction = Callable[[ScenarioGroups, ScenarioDictionary], int]
           CandidateValidator = Callable[[ScenarioGroups, ScenarioDictionary], bool]
 
 
@@ -71,7 +97,9 @@ jobs:
               required_entries: ScenarioDictionary = (),
               maximum_entries: int = EXTENDED_DICTIONARY_ENTRY_COUNT,
               candidate_validator: CandidateValidator | None = None,
-          ) -> tuple[ScenarioGroups, ScenarioDictionary]:
+              compressor: CompressionFunction | None = None,
+              measure: MeasureFunction | None = None,
+          ) -> CompressionResult:
               """Return a fast fitting result, escalating only when required.
 
               The normal greedy compressor already widens to exhaustive candidate
@@ -81,17 +109,25 @@ jobs:
               expensive beam search and dictionary-order hill climb remain available as
               a fallback for a genuinely tight or incompatible bank.
 
+              ``compressor`` and ``measure`` preserve the release facade's established
+              test/embedding seams: callers can inject the facade-local functions while
+              the selection policy remains isolated in this module.
+
               Args:
                   groups: Encoded scenario groups to compress.
                   max_bytes: Maximum packed groups-plus-dictionary footprint.
                   required_entries: Fixed dictionary prefix required by external UI.
                   maximum_entries: Dictionary slots supported by the target decoder.
                   candidate_validator: Optional release compatibility predicate.
+                  compressor: Optional compression implementation supplied by the facade.
+                  measure: Optional packed-size implementation supplied by the facade.
 
               Returns:
                   Compressed groups and their ordered flat dictionary.
               """
-              fast = compress_english_groups(
+              compress = compressor if compressor is not None else compress_english_groups
+              size_of = measure if measure is not None else packed_size
+              fast = compress(
                   groups,
                   required_entries=required_entries,
                   max_bytes=max_bytes,
@@ -99,9 +135,9 @@ jobs:
                   maximum_entries=maximum_entries,
               )
               fast_is_valid = candidate_validator is None or candidate_validator(*fast)
-              if packed_size(*fast) <= max_bytes and fast_is_valid:
+              if size_of(*fast) <= max_bytes and fast_is_valid:
                   return fast
-              return compress_english_groups(
+              return compress(
                   groups,
                   required_entries=required_entries,
                   max_bytes=max_bytes,
@@ -130,17 +166,12 @@ jobs:
               def test_fitting_fast_candidate_skips_optimizer(self) -> None:
                   """Accept a fitting fast candidate without expensive search."""
                   fast = ((), ())
-                  with (
-                      mock.patch(
-                          'time_twist.release_compression.compress_english_groups',
-                          return_value=fast,
-                      ) as compressor,
-                      mock.patch(
-                          'time_twist.release_compression.packed_size',
-                          return_value=10,
-                      ),
-                  ):
-                      result = compress_release_groups((), max_bytes=10)
+                  compressor = mock.Mock(return_value=fast)
+                  measure = mock.Mock(return_value=10)
+
+                  result = compress_release_groups(
+                      (), max_bytes=10, compressor=compressor, measure=measure
+                  )
 
                   self.assertEqual(result, fast)
                   self.assertEqual(compressor.call_count, 1)
@@ -150,17 +181,12 @@ jobs:
                   """Escalate when the fast result still exceeds capacity."""
                   fast = ((), ())
                   optimized = (((),), ())
-                  with (
-                      mock.patch(
-                          'time_twist.release_compression.compress_english_groups',
-                          side_effect=(fast, optimized),
-                      ) as compressor,
-                      mock.patch(
-                          'time_twist.release_compression.packed_size',
-                          return_value=11,
-                      ),
-                  ):
-                      result = compress_release_groups((), max_bytes=10)
+                  compressor = mock.Mock(side_effect=(fast, optimized))
+                  measure = mock.Mock(return_value=11)
+
+                  result = compress_release_groups(
+                      (), max_bytes=10, compressor=compressor, measure=measure
+                  )
 
                   self.assertEqual(result, optimized)
                   self.assertEqual(compressor.call_count, 2)
@@ -171,20 +197,17 @@ jobs:
                   """Escalate when fixed-UI validation rejects a fitting result."""
                   fast = ((), ())
                   optimized = (((),), ())
+                  compressor = mock.Mock(side_effect=(fast, optimized))
+                  measure = mock.Mock(return_value=5)
                   validator = mock.Mock(return_value=False)
-                  with (
-                      mock.patch(
-                          'time_twist.release_compression.compress_english_groups',
-                          side_effect=(fast, optimized),
-                      ) as compressor,
-                      mock.patch(
-                          'time_twist.release_compression.packed_size',
-                          return_value=5,
-                      ),
-                  ):
-                      result = compress_release_groups(
-                          (), max_bytes=10, candidate_validator=validator
-                      )
+
+                  result = compress_release_groups(
+                      (),
+                      max_bytes=10,
+                      candidate_validator=validator,
+                      compressor=compressor,
+                      measure=measure,
+                  )
 
                   self.assertEqual(result, optimized)
                   validator.assert_called_once_with(*fast)
