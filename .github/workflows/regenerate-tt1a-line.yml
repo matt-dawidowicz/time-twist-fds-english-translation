@@ -42,6 +42,9 @@ jobs:
           entry["bytes"] = len(normalized)
           lock_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
           PY
+      - name: Remove runner-generated caches
+        shell: bash
+        run: find . -type d \( -name '__pycache__' -o -name '*.egg-info' \) -prune -exec rm -rf {} +
       - run: python work/tools/check_public_tree.py
       - run: python work/run_tests.py unit
       - name: Commit regenerated artifacts
