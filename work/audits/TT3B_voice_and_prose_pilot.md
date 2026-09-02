@@ -31,18 +31,32 @@ This pass continues the source-first voice/prose revision through the second hal
 
 ## Deliberate constraint choice
 
-`TT3B/g0/r22` remains `Drop dead, Hitler!` without an English `Schmidt:` prefix. The Japanese explicitly identifies Schmidt, but the full speaker label plus the established passphrase cannot fit the 24-column segment. Preserving the exact recurring password/reveal phrase is more important than adding a redundant label that the scene context already supplies.
+`TT3B/g0/r22` remains `Drop dead, Hitler!` without an English `Schmidt:` prefix. The Japanese explicitly identifies Schmidt, but the full speaker label plus the established passphrase cannot fit safely. Preserving the exact recurring password/reveal phrase is more important than adding a redundant label that the scene context already supplies.
+
+## Exact-width boundary correction
+
+Runtime/visual review exposed a weakness in the original validation assumption: although the renderer is documented as 24 tiles wide, wording that occupies all 24 cells can look clipped or force punctuation to be omitted. The first TT3B candidate therefore passed the mechanical width check while still producing visibly poor boundary cases such as `Simon: No... It was real`.
+
+The TT3B pass now uses a stricter practical rule: no control-delimited segment may exceed 23 visible characters. All 26 exact-24-character segments in the first TT3B candidate were rewritten with one cell of headroom. Examples include:
+
+- `Simon: No... It was real` -> `Simon: No. It was real.`
+- `Schmidt: You're safe now` -> `Schmidt: You're safe.`
+- `All three are badly hurt` -> `They're all badly hurt.`
+- `Me: Guide those who roam` -> `Me: Guide wanderers...`
+- `the rift between worlds.` -> `a dimensional rift.`
+
+This is a TT3B runtime-safety correction, not yet a claim that every bank in the project must globally use 23 columns. The broader renderer rule should be changed only after equivalent runtime evidence is checked in other banks.
 
 ## Validation
 
-The final TT3B candidate contains 58 scenario records and changes 27 of them.
+The final TT3B candidate contains 58 scenario records and changes 33 of them relative to the pre-pass branch version.
 
 Local structural validation found:
 
 - exact control-event sequence preserved for every changed record;
-- no control-delimited English segment longer than 24 visible characters;
-- maximum changed-segment width: 24 characters;
+- no control-delimited English segment longer than 23 visible characters;
+- maximum segment width: 23 characters;
 - no non-ASCII characters introduced;
-- revised TT3B visible text is 10 characters shorter overall than the prior branch version.
+- revised TT3B visible text is 67 characters shorter overall than the pre-pass branch version.
 
 The raw-character reduction is useful headroom but is not proof of packed fit. TT3B is a tight dictionary-compressed bank, so the canonical compression/release-build fit gate remains required before release approval.
