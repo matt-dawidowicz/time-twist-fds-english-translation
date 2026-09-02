@@ -29,7 +29,7 @@ literal readings, and natural English are editorial layers.
 
 | Path | Role |
 | --- | --- |
-| `work/translated_scripts/BANK.json` | Decoded scenario records and stable IDs |
+| `work/source_records/BANK.json` | Decoded scenario records and stable IDs |
 | `work/translations/BANK.json` | Authoritative playable scenario English |
 | `work/time_twist/ui_fixed_tables.py` | Authoritative full-word scenario menu labels |
 | `work/time_twist/ui.py` | Fixed-interface/graphics text and menu relocation logic |

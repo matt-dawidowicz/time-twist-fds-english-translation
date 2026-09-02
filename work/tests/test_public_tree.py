@@ -17,6 +17,7 @@ class PublicTreePolicyTests(unittest.TestCase):
         """Provide a deterministic helper for the current contract tests."""
         (root / "work" / "time_twist").mkdir(parents=True)
         (root / "work" / "translations").mkdir()
+        (root / "work" / "source_records").mkdir()
         (root / "work" / "title_assets").mkdir()
         (root / "pyproject.toml").write_text(
             "[project]\nname='test'\n", encoding="utf-8"

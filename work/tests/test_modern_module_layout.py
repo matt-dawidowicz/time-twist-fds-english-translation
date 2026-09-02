@@ -8,7 +8,6 @@ from pathlib import Path
 
 from time_twist import (
     cli,
-    cli_commands,
     cli_parser,
     release,
     release_metadata,
@@ -26,21 +25,19 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 class ModernModuleLayoutTests(unittest.TestCase):
     """Keep modernized implementation modules behind stable public imports."""
 
-    def test_cli_facade_exports_the_parser_and_command_implementations(
+    def test_cli_entry_point_keeps_command_implementations_internal(
         self,
     ) -> None:
-        """Keep established command imports valid after the CLI split."""
+        """Expose parser/main publicly without compatibility command aliases."""
         self.assertIs(cli.build_parser, cli_parser.build_parser)
-        self.assertIs(
-            cli.command_release_build, cli_commands.command_release_build
-        )
-        self.assertIs(
-            cli.command_release_lock, cli_commands.command_release_lock
-        )
-        self.assertIs(
-            cli.command_release_promote,
-            cli_commands.command_release_promote,
-        )
+        for name in (
+            "command_release_build",
+            "command_release_lock",
+            "command_scenario_insert",
+            "command_ui_patch",
+        ):
+            with self.subTest(name=name):
+                self.assertFalse(hasattr(cli, name))
 
     def test_release_facade_exports_metadata_validation_helpers(self) -> None:
         """Keep release callers independent of metadata-module placement."""

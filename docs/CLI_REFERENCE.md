@@ -59,24 +59,6 @@ source tables as well as ordinary scenario dialogue. Banks whose translated
 fixed UI consumes the English dictionary must also produce all 31 dictionary
 entries or the footprint check fails closed.
 
-### `scenario-insert BANK TRANSLATION OUTPUT [--no-compress] [--bank-name NAME]`
-
-Rebuilds scenario groups and pointers only after validating group indices,
-record indices, stable IDs, control order, display width, and glyph support.
-Complete translations receive a new English dictionary; partial work keeps the
-Japanese dictionary. `--bank-name` is available when the input filename does
-not safely identify its bank. Capacity-constrained complete builds retry the
-deterministic compressor without candidate pruning if the normal fast search
-misses the native reservation. They then compare that valid result with bounded
-beam search and fixed-prefix-safe dictionary reordering and keep the smallest
-exact output. Fixed-UI banks also retry when the fast search stops before all
-31 required English dictionary slots are populated, and fail if no search can
-produce a complete dictionary.
-
-`--no-compress` is diagnostic only. A fully translated bank whose fixed UI
-requires the 31-entry English dictionary rejects that option before writing an
-output, because preserving the Japanese dictionary cannot produce a safe input
-for the later `ui-patch` step.
 
 ## Asset and UI commands
 
@@ -92,14 +74,6 @@ and monochrome-swipe images while preserving the clock and recovered
 raster-split behavior. `--slide-target` defaults to `Time Twist approved
 native slide.png` beside `TARGET`.
 
-### `ui-patch SOURCE OUTPUT [--component NAME]`
-
-Applies one source-verified fixed UI/text-table patch. Supported components are
-`SON-KOUH`, `NOV2`, `NOV4`, `TT1A`, `TT1B`, `TT2`, `T22`, `TT3A`, `TT3B`,
-`TT4`, `TT5`, `T25`, `TT6A`, `TT6B`, and `TT6C`.
-
-The command rejects source-byte, record-count, table-hash, dictionary, and
-exact-slot mismatches.
 
 ## Release commands
 
@@ -205,3 +179,7 @@ candidate review and promotion.
 Known command errors are rendered as concise `time-twist: error: ...` messages
 without a Python traceback. Treat them as violated invariants; do not suppress
 them in a production build.
+
+## Historical command surface
+
+Earlier revisions exposed standalone bank/UI construction commands in addition to the release builder. Those compatibility commands were removed after the source-locked release path became authoritative. Their implementation and documentation remain available in Git history and `docs/archive/`.

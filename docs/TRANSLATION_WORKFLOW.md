@@ -1,142 +1,80 @@
-# Translation and rebuild workflow
+# Translation workflow
 
-Commands below run from the repository root after:
+This is the maintained path from Japanese source evidence to a reviewable English
+candidate. Scenario English has one authority: `work/translations/*.json`.
 
-```powershell
-python -m pip install -e .
-```
+## 1. Provide private source images
 
-## 1. Supply clean source images
-
-Place legally obtained Japanese images at:
+Place legally obtained clean Japanese images in the private overlay:
 
 ```text
 work/baseline/time_twist_zenpen_japan.fds
 work/baseline/time_twist_kouhen_japan.fds
 ```
 
-Keep untouched backups. `time-twist release-lock` verifies the supported
-revisions before a release build.
-
-## 2. Validate and extract
+Validate and extract them without committing the retail data:
 
 ```powershell
-time-twist manifest work/baseline/time_twist_zenpen_japan.fds `
-  --output work/manifests/zenpen.json
-
-time-twist roundtrip work/baseline/time_twist_zenpen_japan.fds `
-  work/build/zenpen_roundtrip.fds
-
-time-twist extract work/baseline/time_twist_zenpen_japan.fds `
-  work/extracted_zenpen
+time-twist manifest work/baseline/time_twist_zenpen_japan.fds --output work/manifests/zenpen.json
+time-twist manifest work/baseline/time_twist_kouhen_japan.fds --output work/manifests/kouhen.json
+time-twist roundtrip work/baseline/time_twist_zenpen_japan.fds work/build/zenpen_roundtrip.fds
+time-twist roundtrip work/baseline/time_twist_kouhen_japan.fds work/build/kouhen_roundtrip.fds
+time-twist extract work/baseline/time_twist_zenpen_japan.fds work/extracted_zenpen
+time-twist extract work/baseline/time_twist_kouhen_japan.fds work/extracted_kouhen
 ```
 
-An extracted filename includes side, index, FDS name, and load address, such as
-`side1_01_TT1A_A200.bin`. Do not edit a bank in a normal text editor; it also
-contains pointers, code, and fixed binary data.
+See [Private fixtures](PRIVATE_FIXTURES.md) for the complete overlay policy.
 
-## 3. Extract a scenario document
+## 2. Refresh decoded source records only when source evidence changes
+
+`scenario-extract` writes Japanese/source-structure records. It deliberately does
+not carry English forward from an older output. Example:
 
 ```powershell
 time-twist scenario-extract `
   work/extracted_zenpen/side1_01_TT1A_A200.bin `
-  work/translated_scripts/TT1A.json
+  work/source_records/TT1A.json
 ```
 
-Each record has a stable ID, exact decoded Japanese, an English field, and raw
-symbol information. Refreshing an existing document retains English at matching
-coordinates.
+The checked-in source record contains stable IDs, exact decoded Japanese, and raw
+symbol metadata. It is not a translation file.
 
-## 4. Edit the playable map
+## 3. Edit the authoritative English map
 
-Authoritative scenario maps are ordinary JSON objects under
-`work/translations/`:
+Edit the matching ID-keyed map directly:
 
-```json
-{
-  "TT1A/g0/r6": "Do you prefer consommé{CTRL:0}to miso soup?"
-}
+```text
+work/translations/TT1A.json
 ```
 
-Rules:
+Preserve source control-event order, supported characters, character voice,
+terminology, and renderer limits. The shared validators enforce the technical
+contracts; translation review still requires reading the Japanese and gameplay
+context.
 
-- keep the exact record ID;
-- provide a nonempty string;
-- preserve ordered `{CTRL:n}` values;
-- use supported English glyphs;
-- keep ordinary segments within 24 columns;
-- review neighboring records and the workbook context.
+## 4. Optionally generate a merged review document
 
-Ellipsis style:
-
-- use three ASCII periods (`...`) for an ellipsis;
-- put one space between an ellipsis and a visible word in the same segment
-  (`Well... this` and `... Wait`), including a word that begins a leading
-  hesitation;
-- do not add a space solely around a `{CTRL:n}` boundary: `Well...{CTRL:0}this`
-  is rendered on separate lines/pages and the control order must remain exact;
-- lowercase the following word when the ellipsis continues the same sentence;
-- retain a capital when grammar independently requires it, including `I`, a
-  proper noun, a new speaker label, or a genuinely new sentence.
-
-The workbook's exact-Japanese field is immutable recovered evidence. Put
-probable kanji or expanded interpretation in editorial fields, not the source
-field.
-
-## 5. Validate, size, and rebuild one bank
+`scenario-merge` is a validator/review utility. It requires a separate output so
+it cannot silently turn a checked-in source record into a second English source:
 
 ```powershell
 time-twist scenario-merge `
-  work/translated_scripts/TT1A.json `
+  work/source_records/TT1A.json `
   work/translations/TT1A.json `
-  --output work/translated_scripts/TT1A_english.json
+  --output work/build/TT1A_review.json
+```
 
+Do not commit merged review JSON as a translation authority.
+
+For a quick bank-capacity diagnostic with private source bytes:
+
+```powershell
 time-twist scenario-footprint `
   work/extracted_zenpen/side1_01_TT1A_A200.bin `
   --translations work/translations/TT1A.json
-
-time-twist scenario-insert `
-  work/extracted_zenpen/side1_01_TT1A_A200.bin `
-  work/translated_scripts/TT1A_english.json `
-  work/build/TT1A_english_scenario.bin
-
-time-twist ui-patch `
-  work/build/TT1A_english_scenario.bin `
-  work/build/TT1A_english.bin `
-  --component TT1A
 ```
 
-A complete map gets a new English dictionary. Fixed UI tables may depend on
-specific dictionary entries, so apply the bank's UI patch to the matching
-rebuilt scenario. A negative footprint remainder is a real failure; do not
-write through the fixed tail.
-
-## 6. Shared UI, font, and title work
-
-```powershell
-time-twist ui-patch work/NOV2.bin work/NOV2_english.bin --component NOV2
-time-twist ui-patch work/NOV4.bin work/NOV4_ui.bin --component NOV4
-time-twist font-patch work/NOV4_ui.bin work/NOV4_font_ui.bin
-time-twist title-patch `
-  work/NOV4_font_ui.bin `
-  "work/title_assets/Time Twist approved native title.png" `
-  work/NOV4_english_title.bin `
-  --slide-target "work/title_assets/Time Twist approved native slide.png" `
-  --subtitle "On the Outskirts of History..."
-```
-
-The title step deliberately relocates data and should be last. Its two input
-images are already approved 256x240 indexed NES authorities; the production
-path does not resize or requantize the display GIF. Do not reapply a patch to
-its own output; source guards expect the known pre-patch bytes.
-
-These low-level commands are useful for diagnosis. The authoritative complete
-composition path is `release-build`. For the 11 page-indexed scenario menu
-banks, only `release-build` performs the joint 68-entry menu/dialogue packing
-that installs every full label; the standalone commands retain the legacy
-31-entry, exact-slot behavior.
-
-## 7. Regenerate review artifacts
+## 5. Regenerate public review artifacts
 
 ```powershell
 python work/generate_bilingual_comparison.py
@@ -144,27 +82,27 @@ python work/generate_translation_workbook.py
 python work/run_tests.py unit
 ```
 
-The workbook's patch-safe scenario text must equal the playable maps exactly.
-Natural translations may remain more expansive for editorial review.
+CI uses the fixture-free comparison generator and requires checked-in generated
+review artifacts to match their sources. `work/translation_workbook_banks/` holds
+per-bank review checkpoints; `outputs/Time_Twist_translation_progress.md` is the
+canonical aggregate progress report.
 
-## 8. Create and review a candidate
+## 6. Build one canonical candidate
 
-After an intentional playable change:
+There is no separate maintained scenario/UI construction path. The release builder
+encodes dialogue, shared menus, fixed UI, font, title, and container changes under
+one source lock:
 
 ```powershell
+time-twist release-lock
 time-twist release-lock --update
 time-twist release-build --candidate --output-dir build/candidate
 ```
 
-The candidate manifest records every scenario-bank capacity/hash, all final
-output hashes, and deterministic release-code provenance. The imported package
-and checkout `work/time_twist/**/*.py` trees are independently hashed with the
-same logical paths and must match. Git commit and dirty-state metadata are
-included when Git is available; the normalized code-tree SHA-256 is the
-authoritative fallback. Candidate mode is not approval. Inspect the diff and
-playtest the exact files in `build/candidate`.
+Use `release-lock` without `--update` first to inspect drift. Refresh the lock only
+for reviewed intentional source changes.
 
-Audit the installed fixed-menu text directly from that candidate:
+Audit full-word fixed-menu output:
 
 ```powershell
 python work/tools/audit_fixed_menu_labels.py `
@@ -172,16 +110,23 @@ python work/tools/audit_fixed_menu_labels.py `
   --output-csv build/candidate/fixed_menu_label_audit.csv
 ```
 
-The current inventory must report 721 full-word labels, no blocked fallbacks,
-and no failures before runtime review begins.
+The expected canonical inventory is 721 full-word labels with zero blocked or
+failed entries.
 
-Maintainers with the private fixture overlay should also run:
+## 7. Run private integration tests and playtest
+
+With the complete legal private overlay:
 
 ```powershell
 python work/run_tests.py integration
+python work/run_tests.py all
 ```
 
-## 9. Promote and reproduce
+Then play the exact candidate named by its manifest. Focus on disk transitions,
+save/load, long lines, menus, page clearing, title behavior, and the records still
+flagged for gameplay/visual verification in the generated progress report.
+
+## 8. Promote only the reviewed candidate
 
 ```powershell
 time-twist release-promote build/candidate/release_manifest.json `
@@ -189,27 +134,6 @@ time-twist release-promote build/candidate/release_manifest.json `
 time-twist release-build
 ```
 
-Promotion verifies candidate files and ties the new target to the active source
-lock and release-code tree. Strict rebuilding must then reproduce it byte for
-byte. Targets without code provenance intentionally fail closed and must be
-replaced through this reviewed promotion flow. This checkout intentionally has
-no target until the current candidate completes playtesting; never create one
-by copying hashes or mechanically rewriting legacy metadata.
-
-## 10. Playtest
-
-Automated checks cannot prove scene progression, animation timing, input
-behavior, disk swapping, visual clearing, or every translation choice.
-
-At minimum test:
-
-- new game and personality questionnaire;
-- every command/object menu;
-- normal and wrong-side disk prompts;
-- Zenpen-to-Kouhen transition;
-- save/load if used;
-- title animation plus START/B behavior;
-- all story branches, quizzes, and endings;
-- long/short line replacement and page clearing.
-
-Record the candidate or verified output SHA-256 with every report.
+Promotion independently rebuilds and verifies the candidate before establishing a
+strict release target. Never edit generated ROMs, merged review JSON, workbooks, or
+archived documents as a substitute for changing the authoritative source.

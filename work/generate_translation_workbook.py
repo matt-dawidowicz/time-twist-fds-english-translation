@@ -3681,7 +3681,7 @@ def validate(
 
 
 def write_checkpoints(rows: list[WorkbookRow]) -> None:
-    """Persist resumable per-bank JSON and a rolling generation checkpoint.
+    """Persist resumable per-bank JSON review checkpoints.
 
     Args:
         rows: Complete workbook rows, from which each bank is selected in
@@ -3720,19 +3720,6 @@ def write_checkpoints(rows: list[WorkbookRow]) -> None:
             encoding="utf-8",
         )
         completed.append(bank)
-        checkpoint = [
-            "# Time Twist translation progress (generation checkpoint)",
-            "",
-            "- Total records: 2,052",
-            f"- Completed banks/components: {', '.join(completed)}",
-            f"- Current bank: {bank}",
-            f"- Completed records in current bank: {len(bank_rows)}",
-            "- Status: bank checkpoint saved; aggregate QC pending.",
-            "",
-        ]
-        (WORK / "Time_Twist_translation_progress.checkpoint.md").write_text(
-            "\n".join(checkpoint), encoding="utf-8"
-        )
 
 
 def main() -> None:

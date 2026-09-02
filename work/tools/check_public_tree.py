@@ -32,6 +32,7 @@ REQUIRED_PUBLIC_MARKERS = (
     Path("pyproject.toml"),
     Path("work/time_twist"),
     Path("work/translations"),
+    Path("work/source_records"),
     Path("work/title_assets"),
     Path("work/integration_fixtures.json"),
 )

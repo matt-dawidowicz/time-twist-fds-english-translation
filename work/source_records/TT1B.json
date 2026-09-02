@@ -12,7 +12,6 @@
           "id": "TT1B/g0/r0",
           "record": 0,
           "japanese": "ついたぞ…… 「あくまはくぶつかん」{CTRL:1}いちどこようと おもってたんだ",
-          "english": "The Devil Museum...{CTRL:1}I've wanted to visit.",
           "symbols": [
             {
               "kind": "common",
@@ -128,7 +127,6 @@
           "id": "TT1B/g0/r1",
           "record": 1,
           "japanese": "さいごにあおぞらをみたのは いつだっけ",
-          "english": "When did I last see it?",
           "symbols": [
             {
               "kind": "common",
@@ -212,7 +210,6 @@
           "id": "TT1B/g0/r2",
           "record": 2,
           "japanese": "{CTRL:0}なんていってる ばあいじゃない／",
-          "english": "{CTRL:0}No time for that now!",
           "symbols": [
             {
               "kind": "control",
@@ -288,7 +285,6 @@
           "id": "TT1B/g0/r3",
           "record": 3,
           "japanese": "ここにはまだ みどりがある",
-          "english": "Some greenery remains.",
           "symbols": [
             {
               "kind": "common",
@@ -348,7 +344,6 @@
           "id": "TT1B/g0/r4",
           "record": 4,
           "japanese": "ちきしょう／ どこいった／",
-          "english": "Damn! Where did it go?",
           "symbols": [
             {
               "kind": "common",
@@ -408,7 +403,6 @@
           "id": "TT1B/g0/r5",
           "record": 5,
           "japanese": "いりぐちに ふだがかかっている",
-          "english": "A sign is on the door.",
           "symbols": [
             {
               "kind": "common",
@@ -468,7 +462,6 @@
           "id": "TT1B/g0/r6",
           "record": 6,
           "japanese": "「ほんじつ きゅうかんび{CTRL:1} ごようのあるかたは きょうかいまで」",
-          "english": "\"Closed today.{CTRL:1}Ask at the church.\"",
           "symbols": [
             {
               "kind": "extended",
@@ -604,7 +597,6 @@
           "id": "TT1B/g0/r7",
           "record": 7,
           "japanese": "おれは あくむをみてるんだろうか……",
-          "english": "Is this a nightmare...?",
           "symbols": [
             {
               "kind": "common",
@@ -684,7 +676,6 @@
           "id": "TT1B/g0/r8",
           "record": 8,
           "japanese": "おれ「げっ／」{CTRL:0}ぼろぼろと からだがくずれていく／",
-          "english": "Me: Agh!{CTRL:0}My body's falling apart!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -772,7 +763,6 @@
           "id": "TT1B/g0/r9",
           "record": 9,
           "japanese": "あああ…… このままでは やばいぞ／",
-          "english": "Aah... This is bad!",
           "symbols": [
             {
               "kind": "common",
@@ -852,7 +842,6 @@
           "id": "TT1B/g0/r10",
           "record": 10,
           "japanese": "だれもいない",
-          "english": "Nobody is here.",
           "symbols": [
             {
               "kind": "extended",
@@ -884,7 +873,6 @@
           "id": "TT1B/g0/r11",
           "record": 11,
           "japanese": "かぎが かかっている",
-          "english": "It is locked.",
           "symbols": [
             {
               "kind": "common",
@@ -924,7 +912,6 @@
           "id": "TT1B/g0/r12",
           "record": 12,
           "japanese": "かぎをつかって なかへはいった",
-          "english": "I unlock it and enter.",
           "symbols": [
             {
               "kind": "common",
@@ -992,7 +979,6 @@
           "id": "TT1B/g0/r13",
           "record": 13,
           "japanese": "ばらばらに こわれている",
-          "english": "It is smashed to pieces.",
           "symbols": [
             {
               "kind": "extended",
@@ -1040,7 +1026,6 @@
           "id": "TT1B/g0/r14",
           "record": 14,
           "japanese": "「さばとのはこ」{CTRL:0}{CTRL:2}ちゅうせいのよーろっぱで まじょのしゅうかいに{CTRL:6}つかわれたはこ{CTRL:3}あくまとかわした たましいのけいやくしょを{CTRL:4}おさめたといわれている",
-          "english": "\"Sabbath Box\"{CTRL:0}{CTRL:2}Used at medieval{CTRL:6}witches' rites.{CTRL:3}Said to hold contracts{CTRL:4}for souls sold to devils",
           "symbols": [
             {
               "kind": "extended",
@@ -1332,7 +1317,6 @@
           "id": "TT1B/g0/r15",
           "record": 15,
           "japanese": "「まふうじのつぼ」{CTRL:0}{CTRL:2}すうせんねんのむかし かみのこが{CTRL:0}そうぜつなたたかいのすえ あくまをとじこめ{CTRL:4}ふういんしたとされる でんせつのつぼ",
-          "english": "\"Demon-Sealing Jar\"{CTRL:0}{CTRL:2}Long ago, God's son{CTRL:0}fought a devil{CTRL:4}and sealed it here.",
           "symbols": [
             {
               "kind": "extended",
@@ -1604,7 +1588,6 @@
           "id": "TT1B/g0/r16",
           "record": 16,
           "japanese": "「いましめのすず」{CTRL:0}{CTRL:2}こだいえじぷとの ふぁらおが{CTRL:0}まよけにつかったという いいつたえのすず{CTRL:3}すきとおったねいろが あくまのこまくを{CTRL:4}ひきさいた",
-          "english": "\"Warding Bell\"{CTRL:0}{CTRL:2}Ancient pharaohs{CTRL:0}used it as a charm.{CTRL:3}Its clear tone tore{CTRL:4}the Devil's eardrums.",
           "symbols": [
             {
               "kind": "extended",
@@ -1892,7 +1875,6 @@
           "id": "TT1B/g0/r17",
           "record": 17,
           "japanese": "「あくまのて」{CTRL:0}{CTRL:2}19せいきのあめりかで あくまをすうはいする{CTRL:0}ひみつけっしゃの しんぼるとなった{CTRL:4}ぶろんずのぞう{CTRL:3}するどいつめで いけにえのしんぞうを{CTRL:4}えぐりとった",
-          "english": "\"Devil's Hand\"{CTRL:0}{CTRL:2}Bronze emblem of an{CTRL:0}1800s U.S. devil cult.{CTRL:4}A grim symbol.{CTRL:3}Its claws tore hearts{CTRL:4}from victims.",
           "symbols": [
             {
               "kind": "extended",
@@ -2216,7 +2198,6 @@
           "id": "TT1B/g0/r18",
           "record": 18,
           "japanese": "「じぷしーのまもりふだ」{CTRL:0}{CTRL:2}17せいきこうはん ほうろうのたみが{CTRL:0}たびのさいなんから みをまもった{CTRL:4}ほしがたのめだる{CTRL:3}まよけのじゅもんが きざまれている",
-          "english": "\"Romani Talisman\"{CTRL:0}{CTRL:2}1600s nomads wore{CTRL:0}this star medal{CTRL:4}for safe travel.{CTRL:3}It has a warding spell.",
           "symbols": [
             {
               "kind": "extended",
@@ -2508,7 +2489,6 @@
           "id": "TT1B/g0/r19",
           "record": 19,
           "japanese": "だだっぴろいが じめじめしている",
-          "english": "It is vast, but damp.",
           "symbols": [
             {
               "kind": "extended",
@@ -2572,7 +2552,6 @@
           "id": "TT1B/g0/r20",
           "record": 20,
           "japanese": "はげしく ゆれている",
-          "english": "It is shaking violently.",
           "symbols": [
             {
               "kind": "common",
@@ -2612,7 +2591,6 @@
           "id": "TT1B/g0/r21",
           "record": 21,
           "japanese": "ぽにーてーるが めちゃかわいい",
-          "english": "Her ponytail is so cute.",
           "symbols": [
             {
               "kind": "extended",
@@ -2680,7 +2658,6 @@
           "id": "TT1B/g0/r22",
           "record": 22,
           "japanese": "おれのうでを つかんではなさない",
-          "english": "She clings to my arm.",
           "symbols": [
             {
               "kind": "common",
@@ -2752,7 +2729,6 @@
           "id": "TT1B/g0/r23",
           "record": 23,
           "japanese": "おれのむねのなかで ふるえている",
-          "english": "She trembles in my arms.",
           "symbols": [
             {
               "kind": "common",
@@ -2816,7 +2792,6 @@
           "id": "TT1B/g0/r24",
           "record": 24,
           "japanese": "きを うしなっている",
-          "english": "She is unconscious.",
           "symbols": [
             {
               "kind": "common",
@@ -2856,7 +2831,6 @@
           "id": "TT1B/g0/r25",
           "record": 25,
           "japanese": "きもちわりい……",
-          "english": "Creepy...",
           "symbols": [
             {
               "kind": "common",
@@ -2896,7 +2870,6 @@
           "id": "TT1B/g0/r26",
           "record": 26,
           "japanese": "おれ「こ こんにちは」{CTRL:1}おんなのこ「こんにちは……」",
-          "english": "Me: H-hello.{CTRL:1}Girl: Hello...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -2972,7 +2945,6 @@
           "id": "TT1B/g0/r27",
           "record": 27,
           "japanese": "おれ「えーと……」{CTRL:1}おんなのこ「…………」",
-          "english": "Me: Um...{CTRL:1}Girl: ........",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3020,7 +2992,6 @@
           "id": "TT1B/g0/r28",
           "record": 28,
           "japanese": "おれ「えーと……」{CTRL:1}おんなのこ「てんじひん ぜんぶみました！」{CTRL:0}おれ「いえ……」",
-          "english": "Me: Um...{CTRL:1}Girl: I saw everything!{CTRL:0}Me: Oh...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3132,7 +3103,6 @@
           "id": "TT1B/g0/r29",
           "record": 29,
           "japanese": "おんなのこ「きゃあーーっ／」",
-          "english": "Girl: Aaaaah!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3156,7 +3126,6 @@
           "id": "TT1B/g0/r30",
           "record": 30,
           "japanese": "おんなのこ「ああ こわかった……」",
-          "english": "Girl: Oh... How scary!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3204,7 +3173,6 @@
           "id": "TT1B/g0/r31",
           "record": 31,
           "japanese": "おれ「まさか あんた……」{CTRL:0}あくま「いわゆるひとつの あくまだ」{CTRL:0}おれ「げげげげっ／」{CTRL:6}あくま「しんぼうづよく てれぱしーを{CTRL:4} おくりつづけたかいが あったというものだ」{CTRL:4}おれ「…………」",
-          "english": "Me: No way...{CTRL:0}Devil: Yes, a devil.{CTRL:0}Me: What?!{CTRL:6}Devil: Telepathy{CTRL:4}finally paid off.{CTRL:4}Me: ........",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3526,7 +3494,6 @@
           "id": "TT1B/g1/r0",
           "record": 0,
           "japanese": "あくま「ながいあいだ とじこめられていた{CTRL:0} おかげで からだがすっかり もろくなった{CTRL:2} おまえのからだをもらうぞ」{CTRL:6}おれ「そんなこと いわれても…」{CTRL:4}あくま「もんどうむようだ」",
-          "english": "Devil: Captivity{CTRL:0}left my body frail.{CTRL:2}I'll take yours.{CTRL:6}Me: You can't...{CTRL:4}Devil: No debate.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3846,7 +3813,6 @@
           "id": "TT1B/g1/r1",
           "record": 1,
           "japanese": "あくま「くくく…」",
-          "english": "Devil: Heh heh heh...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3882,7 +3848,6 @@
           "id": "TT1B/g1/r2",
           "record": 2,
           "japanese": "……な なんてこった／",
-          "english": "...Wh-what the hell?!",
           "symbols": [
             {
               "kind": "extended",
@@ -3934,7 +3899,6 @@
           "id": "TT1B/g1/r3",
           "record": 3,
           "japanese": "えーと たしか……{CTRL:1}おれ「…まらどぅる ばらお がらどぅーら…」",
-          "english": "It was...{CTRL:1}\"Maradul Barao Garadura\"",
           "symbols": [
             {
               "kind": "common",
@@ -4002,7 +3966,6 @@
           "id": "TT1B/g1/r4",
           "record": 4,
           "japanese": "おんなのこ「ひっ／」{CTRL:0}おれ「ぼくにつかまって／」",
-          "english": "Girl: Eek!{CTRL:0}Me: Hold on to me!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4070,7 +4033,6 @@
           "id": "TT1B/g1/r5",
           "record": 5,
           "japanese": "おれ「…まらどぅる ばらお がらどぅーら…」",
-          "english": "\"Maradul Barao Garadura\"",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4098,7 +4060,6 @@
           "id": "TT1B/g1/r6",
           "record": 6,
           "japanese": "おれ「まらどぅる ばらお がるどぅーら／{CTRL:0} まらどぅる ばらお がるどぅーら／{CTRL:0} まらどぅる ばらお がるどぅーらーーっ／／」",
-          "english": "Maradul Barao Galdura!{CTRL:0}Maradul Barao Galdura!{CTRL:0}Maradul Barao Galdura!!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4346,7 +4307,6 @@
           "id": "TT1B/g1/r7",
           "record": 7,
           "japanese": "……「ぐうううう……」{CTRL:0}{CTRL:2}おれ「……ん！」",
-          "english": "...: Grrrr...{CTRL:0}{CTRL:2}Me: ...Hm!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4410,7 +4370,6 @@
           "id": "TT1B/g1/r8",
           "record": 8,
           "japanese": "おんなのこ「いやん／」",
-          "english": "Girl: Oh!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4438,7 +4397,6 @@
           "id": "TT1B/g1/r9",
           "record": 9,
           "japanese": "おれ「でへへへー」{CTRL:1}おんなのこ「…………」",
-          "english": "Me: Heh heh heh!{CTRL:1}Girl: ........",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4494,7 +4452,6 @@
           "id": "TT1B/g1/r10",
           "record": 10,
           "japanese": "おれ「きれいな めをしてますね」{CTRL:1}おんなのこ「ありがとう」",
-          "english": "Me: Lovely eyes.{CTRL:1}Girl: Thanks.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4590,7 +4547,6 @@
           "id": "TT1B/g1/r11",
           "record": 11,
           "japanese": "おれ「かたちのいい はなですね」{CTRL:1}おんなのこ「…………」",
-          "english": "Me: Nice nose.{CTRL:1}Girl: ........",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4674,7 +4630,6 @@
           "id": "TT1B/g1/r12",
           "record": 12,
           "japanese": "おれ「ふくみみ ですね」{CTRL:1}おんなのこ「ぷっ… おかしなひと」{CTRL:0}おれ「いやあ ははは」{CTRL:0}おんなのこ「ふふふ…」{CTRL:4}{CTRL:3}わらった……／{CTRL:4}{CTRL:3}おれ「きみの なまえは！」{CTRL:4}おんなのこ「わたしは…」",
-          "english": "Me: Lucky ears.{CTRL:1}Girl: Pfft... Funny.{CTRL:0}Me: Ha ha...{CTRL:0}Girl: Hee hee...{CTRL:4}{CTRL:3}She laughed!{CTRL:4}{CTRL:3}Me: Your name?{CTRL:4}Girl: I am...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4958,7 +4913,6 @@
           "id": "TT1B/g1/r13",
           "record": 13,
           "japanese": "おんなのこ「／」{CTRL:0}おれ「じしんだ／」",
-          "english": "Girl: Ah!{CTRL:0}Me: An earthquake!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5002,7 +4956,6 @@
           "id": "TT1B/g1/r14",
           "record": 14,
           "japanese": "おれ「けっこう ぼいんですね ひひ…」{CTRL:1}おんなのこ「いやん／」",
-          "english": "Me: Quite a bust. Heh...{CTRL:1}Girl: Oh!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5102,7 +5055,6 @@
           "id": "TT1B/g1/r15",
           "record": 15,
           "japanese": "おれ「どすこいーっ／」{CTRL:1}おんなのこ「…………」",
-          "english": "Me: Dosukoi!{CTRL:1}Girl: ........",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5162,7 +5114,6 @@
           "id": "TT1B/g1/r16",
           "record": 16,
           "japanese": "つんつん……{CTRL:0}おんなのこ「うーーん……」",
-          "english": "Poke, poke...{CTRL:0}Girl: Mmm...",
           "symbols": [
             {
               "kind": "common",
@@ -5222,7 +5173,6 @@
           "id": "TT1B/g1/r17",
           "record": 17,
           "japanese": "めをさましたのも つかのま……{CTRL:0}おんなのこ「ぎゃっ／」",
-          "english": "She wakes briefly...{CTRL:0}Girl: Aah!",
           "symbols": [
             {
               "kind": "common",
@@ -5314,7 +5264,6 @@
           "id": "TT1B/g1/r18",
           "record": 18,
           "japanese": "また きぜつした",
-          "english": "She fainted again.",
           "symbols": [
             {
               "kind": "common",
@@ -5354,7 +5303,6 @@
           "id": "TT1B/g1/r19",
           "record": 19,
           "japanese": "おれ「うわっ／」",
-          "english": "Me: Whoa!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5382,7 +5330,6 @@
           "id": "TT1B/g1/r20",
           "record": 20,
           "japanese": "おれ「げっ／」{CTRL:1}あくま「ふうーー… ようやくでられたか……」",
-          "english": "Me: Agh!{CTRL:1}Devil: At last, freedom!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5482,7 +5429,6 @@
           "id": "TT1B/g1/r21",
           "record": 21,
           "japanese": "おれ「おや！{CTRL:1} なにか おとがしたような……」",
-          "english": "Me: Hm?{CTRL:1}I heard something...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5566,7 +5512,6 @@
           "id": "TT1B/g1/r22",
           "record": 22,
           "japanese": "あしが うごかない／",
-          "english": "My legs won't move!",
           "symbols": [
             {
               "kind": "common",
@@ -5614,7 +5559,6 @@
           "id": "TT1B/g1/r23",
           "record": 23,
           "japanese": "おとこ「ぎゃあああーーっ／／」",
-          "english": "Man: Aaaaah!!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5666,7 +5610,6 @@
           "id": "TT1B/g1/r24",
           "record": 24,
           "japanese": "おれ「ちょ ちょっと…／」{CTRL:0}おとこ「か かねなら なんぼでもやるで／{CTRL:0} たた たすけてくりゃーて／」{CTRL:6}おれ「だからさあ…」{CTRL:4}おとこ「よるな／ ひゃあーーっ／」",
-          "english": "Me: W-wait!{CTRL:0}Man: Take my money!{CTRL:0}P-please spare me!{CTRL:6}Me: But...{CTRL:4}Man: Stay back!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5922,7 +5865,6 @@
           "id": "TT1B/g1/r25",
           "record": 25,
           "japanese": "おおきな ちずをひろげている",
-          "english": "A huge map is laid out.",
           "symbols": [
             {
               "kind": "common",
@@ -5978,7 +5920,6 @@
           "id": "TT1B/g1/r26",
           "record": 26,
           "japanese": "おとこ「うるしゃー／ じゃまだがや／」",
-          "english": "Man: Shut up! Move!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6042,7 +5983,6 @@
           "id": "TT1B/g1/r27",
           "record": 27,
           "japanese": "おとこ「ここに むちゃんこどえりゃー{CTRL:0} れじゃーせんたーを つくるがや／{CTRL:2} いまは どいなかでも{CTRL:0} そのうちにぎやかになるでー」",
-          "english": "Man: I'll build a big{CTRL:0}resort here!{CTRL:2}It's rural now,{CTRL:0}but soon it'll boom!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6286,7 +6226,6 @@
           "id": "TT1B/g1/r28",
           "record": 28,
           "japanese": "おとこ「かねがすべて／ かねのためなら{CTRL:0} あくまにたましいを うってもええがや／」",
-          "english": "Man: Money is all! I'd{CTRL:0}sell my soul for it!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6430,7 +6369,6 @@
           "id": "TT1B/g1/r29",
           "record": 29,
           "japanese": "おんぼろだが しゃれたつくりだ",
-          "english": "Run-down, but stylish.",
           "symbols": [
             {
               "kind": "common",
@@ -6498,7 +6436,6 @@
           "id": "TT1B/g1/r30",
           "record": 30,
           "japanese": "{CTRL:0}もんに ひょうさつと いんたーほんがついている",
-          "english": "{CTRL:0}Nameplate and intercom.",
           "symbols": [
             {
               "kind": "control",
@@ -6594,7 +6531,6 @@
           "id": "TT1B/g1/r31",
           "record": 31,
           "japanese": "「くが」",
-          "english": "\"Kuga\"",
           "symbols": [
             {
               "kind": "extended",
@@ -6624,7 +6560,6 @@
           "id": "TT1B/g2/r0",
           "record": 0,
           "japanese": "……「で なにかごようですか！」{CTRL:1}おれ「いえ べつに……」",
-          "english": "...: What do you want?{CTRL:1}Me: Oh, nothing...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6648,7 +6583,6 @@
           "id": "TT1B/g2/r1",
           "record": 1,
           "japanese": "……「で なにかごようですか！」{CTRL:1}おれ「はくぶつかんに……」",
-          "english": "...: What do you want?{CTRL:1}Me: About the museum...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6684,7 +6618,6 @@
           "id": "TT1B/g2/r2",
           "record": 2,
           "japanese": "……「おお そうでしたか／{CTRL:1} じつは…… はくぶつかんにかざっていない{CTRL:0} とくべつなものが あるんです{CTRL:0} どうぞ なかへおはいりください」",
-          "english": "...: Oh, I see!{CTRL:1}I have a rare item{CTRL:0}not in the museum.{CTRL:0}Come in.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6940,7 +6873,6 @@
           "id": "TT1B/g2/r3",
           "record": 3,
           "japanese": "おれ「あのう……」",
-          "english": "Me: Um...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6968,7 +6900,6 @@
           "id": "TT1B/g2/r4",
           "record": 4,
           "japanese": "{CTRL:0}……「かえれ／」",
-          "english": "{CTRL:0}...: Go away!",
           "symbols": [
             {
               "kind": "control",
@@ -7000,7 +6931,6 @@
           "id": "TT1B/g2/r5",
           "record": 5,
           "japanese": "……「このいえにすんで もう40ねんになるんだ{CTRL:0} いまさら でていけるものか／」{CTRL:2}おれ「ぼくは じあげやじゃないですよ」{CTRL:6}……「え…！ あ… どうもしつれいしました」",
-          "english": "...: I've lived here{CTRL:0}40 years! I won't leave!{CTRL:2}Me: Not a land shark.{CTRL:6}...: Oh! Sorry.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7312,7 +7242,6 @@
           "id": "TT1B/g2/r6",
           "record": 6,
           "japanese": "{CTRL:0}……「おや！ そのこえは さっきのひとですね」",
-          "english": "{CTRL:0}...: Oh! You again.",
           "symbols": [
             {
               "kind": "control",
@@ -7408,7 +7337,6 @@
           "id": "TT1B/g2/r7",
           "record": 7,
           "japanese": "{CTRL:0}……「おや！ そのこえは さっきのひとですね{CTRL:0} どうぞなかへ おはいりください」",
-          "english": "{CTRL:0}...: You again.{CTRL:0}Please come in.",
           "symbols": [
             {
               "kind": "control",
@@ -7572,7 +7500,6 @@
           "id": "TT1B/g2/r8",
           "record": 8,
           "japanese": "かってにはいるのは まずいな",
-          "english": "I can't just barge in.",
           "symbols": [
             {
               "kind": "common",
@@ -7636,7 +7563,6 @@
           "id": "TT1B/g2/r9",
           "record": 9,
           "japanese": "ろうじん「このえは わたしがかいた{CTRL:0} あくまのしょうぞうがです{CTRL:2} せかいじゅうをたびして つたえきいた{CTRL:0} あくまのとくちょうを ちゅうじつに{CTRL:4} さいげんしました{CTRL:3} かんせいまぢかで めをわずらったので{CTRL:4} てんじは できませんでしたが……」",
-          "english": "Elder: My portrait{CTRL:0}of the Devil.{CTRL:2}I roamed the world,{CTRL:0}copying traits{CTRL:4}from legends.{CTRL:3}My sight failed,{CTRL:4}so it was never shown.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8080,7 +8006,6 @@
           "id": "TT1B/g2/r10",
           "record": 10,
           "japanese": "おれ「あのう……」{CTRL:0}ろうじん「おや！ そのこえはさっきのひとですね」",
-          "english": "Me: Um...{CTRL:0}Elder: Oh! You again.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8192,7 +8117,6 @@
           "id": "TT1B/g2/r11",
           "record": 11,
           "japanese": "おうせつまだ{CTRL:1}てーぶるに しんぶんとむしめがねが おいてある",
-          "english": "The parlor.{CTRL:1}Paper and a magnifier.",
           "symbols": [
             {
               "kind": "common",
@@ -8320,7 +8244,6 @@
           "id": "TT1B/g2/r12",
           "record": 12,
           "japanese": "「しもんはかせ じょうはつ」{CTRL:0}{CTRL:2}さくや おどろくべき たいむわーぷ・りろんを{CTRL:0}はっぴょうした しもんはかせ・84さいは{CTRL:3}ますこみのしゅざいこうせいから のがれるため{CTRL:4}いずこかへ ゆくえをくらましたもよう{CTRL:3}かんけいすじによると すでにたいむましーんは{CTRL:4}かんせいずみで はかせじしんがたいむわーぷ{CTRL:4}したのではないかと うわさされている",
-          "english": "\"Dr. Simon Vanishes\"{CTRL:0}{CTRL:2}Simon, 84, revealed{CTRL:0}time warp last night.{CTRL:3}He vanished to evade{CTRL:4}the press.{CTRL:3}His machine may be done.{CTRL:4}Rumor says he{CTRL:4}used it.",
           "symbols": [
             {
               "kind": "extended",
@@ -8940,7 +8863,6 @@
           "id": "TT1B/g2/r13",
           "record": 13,
           "japanese": "これで しんぶんをよんでるんだな",
-          "english": "He uses it on the paper.",
           "symbols": [
             {
               "kind": "common",
@@ -9012,7 +8934,6 @@
           "id": "TT1B/g2/r14",
           "record": 14,
           "japanese": "／／／ な なんだこりゃ おれじゃないか……／",
-          "english": "What?! That's me!",
           "symbols": [
             {
               "kind": "extended",
@@ -9112,7 +9033,6 @@
           "id": "TT1B/g2/r15",
           "record": 15,
           "japanese": "なんどみてもまちがいない おれだ……{CTRL:1}こしに へんなべるとをまいてるぞ",
-          "english": "No doubt. That's me...{CTRL:1}with a strange belt.",
           "symbols": [
             {
               "kind": "common",
@@ -9260,7 +9180,6 @@
           "id": "TT1B/g2/r16",
           "record": 16,
           "japanese": "めが わるいようだ",
-          "english": "His eyesight seems poor.",
           "symbols": [
             {
               "kind": "common",
@@ -9304,7 +9223,6 @@
           "id": "TT1B/g2/r17",
           "record": 17,
           "japanese": "ろうじん「せんそうちゅうの ふしぎなたいけんが{CTRL:0} わたしのじんせいを かえました{CTRL:2} わたしは あくまにかんするあらゆるぶんけんを{CTRL:0} しらべ でんせつのしなものをかいあさり{CTRL:4} そしてここに はくぶつかんをたてたのです」",
-          "english": "Elder: A wartime event{CTRL:0}changed me.{CTRL:2}I studied devil lore,{CTRL:0}bought legendary relics,{CTRL:4}and built this museum.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9700,7 +9618,6 @@
           "id": "TT1B/g2/r18",
           "record": 18,
           "japanese": "おれ「あのう…… かぎを…」{CTRL:0}ろうじん「おお／ そうでしたな」",
-          "english": "Me: Um... The key...?{CTRL:0}Elder: Oh! Of course.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9800,7 +9717,6 @@
           "id": "TT1B/g2/r19",
           "record": 19,
           "japanese": "かぎを うけとった{CTRL:0}ろうじん「どうぞ ごゆっくり」",
-          "english": "I got the key.{CTRL:0}Elder: Take your time.",
           "symbols": [
             {
               "kind": "common",
@@ -9892,7 +9808,6 @@
           "id": "TT1B/g2/r20",
           "record": 20,
           "japanese": "おれ「だれか きませんでした！」{CTRL:0}ろうじん「いいえ だれも……」",
-          "english": "Me: Did anyone come?{CTRL:0}Elder: No, nobody...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9944,7 +9859,6 @@
           "id": "TT1B/g2/r21",
           "record": 21,
           "japanese": "おれ「だれか きませんでした！」{CTRL:0}ろうじん「ああ… たったいま きましたよ{CTRL:2} しかし さわがしいおとこだった{CTRL:0} しもんはかせのことを いろいろきかれましてな」",
-          "english": "Me: Anyone come?{CTRL:0}Elder: Yes, just now.{CTRL:2}A noisy man.{CTRL:0}He asked about Simon.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10184,7 +10098,6 @@
           "id": "TT1B/g2/r22",
           "record": 22,
           "japanese": "ろうじん「はかせとは 50ねんらいのつきあい{CTRL:0} でしてね ここだけのはなしですが……{CTRL:0} かれはいま こっちにきているんです{CTRL:6} このまちに ひみつのべっそうがあるんですよ{CTRL:3} いや… わたしはどうも おしゃべりでいかんな{CTRL:4} また しゃべってしまった……」",
-          "english": "Elder: I've known Simon{CTRL:0}50 years. A secret...{CTRL:0}he is here.{CTRL:6}His villa is in town.{CTRL:3}Ah... Too much talk.{CTRL:4}I slipped again...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10660,7 +10573,6 @@
           "id": "TT1B/g2/r23",
           "record": 23,
           "japanese": "おれ「おじゃましました」{CTRL:0}ろうじん「おかまいも しませんで」",
-          "english": "Me: Thanks for the help.{CTRL:0}Elder: Sorry, I failed.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10764,7 +10676,6 @@
           "id": "TT1B/g2/r24",
           "record": 24,
           "japanese": "ろうじん「まあまあ……{CTRL:0} もうすこし いいじゃないですか」",
-          "english": "Elder: Oh, come now...{CTRL:0}Stay a little longer.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10872,7 +10783,6 @@
           "id": "TT1B/g2/r25",
           "record": 25,
           "japanese": "おいしげるきで あるくすきまもない",
-          "english": "Trees block the way.",
           "symbols": [
             {
               "kind": "common",
@@ -10948,7 +10858,6 @@
           "id": "TT1B/g2/r26",
           "record": 26,
           "japanese": "ちずが おちている",
-          "english": "A map is on the ground.",
           "symbols": [
             {
               "kind": "common",
@@ -10984,7 +10893,6 @@
           "id": "TT1B/g2/r27",
           "record": 27,
           "japanese": "なんか へんなものが……",
-          "english": "Something odd is here...",
           "symbols": [
             {
               "kind": "common",
@@ -11040,7 +10948,6 @@
           "id": "TT1B/g2/r28",
           "record": 28,
           "japanese": "へびが でそうだな",
-          "english": "Snakes could be here.",
           "symbols": [
             {
               "kind": "common",
@@ -11084,7 +10991,6 @@
           "id": "TT1B/g2/r29",
           "record": 29,
           "japanese": "このへんいったいの ちずのようだ{CTRL:1}きたに べっそうがある",
-          "english": "A map of this area.{CTRL:1}A villa lies north.",
           "symbols": [
             {
               "kind": "common",
@@ -11204,7 +11110,6 @@
           "id": "TT1B/g2/r30",
           "record": 30,
           "japanese": "つんつん……",
-          "english": "Poke, poke...",
           "symbols": [
             {
               "kind": "common",
@@ -11236,7 +11141,6 @@
           "id": "TT1B/g2/r31",
           "record": 31,
           "japanese": "おとこ「ひゃあーーっ またでたーーっ／」",
-          "english": "Man: Aaaah! It's back!!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -11314,7 +11218,6 @@
           "id": "TT1B/g3/r0",
           "record": 0,
           "japanese": "なんとか すすめるな",
-          "english": "I can force my way in.",
           "symbols": [
             {
               "kind": "common",
@@ -11362,7 +11265,6 @@
           "id": "TT1B/g3/r1",
           "record": 1,
           "japanese": "あしあとが さらにもりのおくへと{CTRL:0}つづいている",
-          "english": "Footprints continue{CTRL:0}deeper into the forest.",
           "symbols": [
             {
               "kind": "common",
@@ -11454,7 +11356,6 @@
           "id": "TT1B/g3/r2",
           "record": 2,
           "japanese": "だれかでてくる／",
-          "english": "Someone is coming out!",
           "symbols": [
             {
               "kind": "extended",
@@ -11494,7 +11395,6 @@
           "id": "TT1B/g3/r3",
           "record": 3,
           "japanese": "しもん「ごほ／ ごほごほ／」",
-          "english": "Simon: Cough! Cough!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -11546,7 +11446,6 @@
           "id": "TT1B/g3/r4",
           "record": 4,
           "japanese": "もう ておくれだ",
-          "english": "It's too late.",
           "symbols": [
             {
               "kind": "common",
@@ -11586,7 +11485,6 @@
           "id": "TT1B/g3/r5",
           "record": 5,
           "japanese": "いきも たえだえだ",
-          "english": "He is barely breathing.",
           "symbols": [
             {
               "kind": "common",
@@ -11630,7 +11528,6 @@
           "id": "TT1B/g3/r6",
           "record": 6,
           "japanese": "しもん「／ ば…ばけもの／」{CTRL:1}おれ「ちがうんです／ きいてください／{CTRL:2} ぼくはさっき あくまにからだをむりやり{CTRL:0} こうかんさせられたんです／{CTRL:3} しんじてください／」{CTRL:3}しもん「…………」",
-          "english": "Simon: Monster!{CTRL:1}Me: No, listen!{CTRL:2}A devil forced us{CTRL:0}to swap bodies!{CTRL:3}Believe me!{CTRL:3}Simon: ........",
           "symbols": [
             {
               "kind": "dictionary",
@@ -11950,7 +11847,6 @@
           "id": "TT1B/g3/r7",
           "record": 7,
           "japanese": "しもん「たったいま わかいおとこが{CTRL:0} とびこんできて わたしのはつめいした{CTRL:0} たいむべるとを うばっていった……」",
-          "english": "Simon: A young man{CTRL:0}burst in and stole{CTRL:0}my Time Belt...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -12162,7 +12058,6 @@
           "id": "TT1B/g3/r8",
           "record": 8,
           "japanese": "おれ「たいむべるとって……！」{CTRL:1}しもん「べるとがたの たいむましんだ{CTRL:0} やっと かんせいしたというのに……」{CTRL:0}おれ「……」{CTRL:4}しもん「はやく やつをおいかけろ… でないと{CTRL:4} どこかへ たいむわーぷしてしまう／」",
-          "english": "Me: The Time Belt?{CTRL:1}Simon: A time belt.{CTRL:0}I just finished it...{CTRL:0}Me: ...{CTRL:4}Simon: Chase him, or{CTRL:4}he'll warp away!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -12506,7 +12401,6 @@
           "id": "TT1B/g3/r9",
           "record": 9,
           "japanese": "しもん「はやく やつをおいかけろ／ でないと{CTRL:0} どこかへ たいむわーぷしてしまう／」",
-          "english": "Simon: Chase him, or{CTRL:0}he'll warp away!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -12662,7 +12556,6 @@
           "id": "TT1B/g3/r10",
           "record": 10,
           "japanese": "しもん「おい どこへいくんだ／」",
-          "english": "Simon: Where to?",
           "symbols": [
             {
               "kind": "dictionary",
@@ -12722,7 +12615,6 @@
           "id": "TT1B/g3/r11",
           "record": 11,
           "japanese": "めずらしいな こんないなかに{CTRL:0}きょうかいなんてさ",
-          "english": "A church, way out{CTRL:0}in the country? Strange.",
           "symbols": [
             {
               "kind": "common",
@@ -12826,7 +12718,6 @@
           "id": "TT1B/g3/r12",
           "record": 12,
           "japanese": "なかから さんびかのがっしょうがきこえてくる",
-          "english": "Hymns come from inside.",
           "symbols": [
             {
               "kind": "common",
@@ -12910,7 +12801,6 @@
           "id": "TT1B/g3/r13",
           "record": 13,
           "japanese": "……「きゃあああーーっ／」{CTRL:0}……「あくまだあーーっ／」{CTRL:2}おれ「ち ちがうって／ おれは…」",
-          "english": "...: Aah!{CTRL:0}...: The Devil!{CTRL:2}Me: No! I'm not...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -13026,7 +12916,6 @@
           "id": "TT1B/g3/r14",
           "record": 14,
           "japanese": "すてんどぐらすが きれいだ",
-          "english": "Beautiful stained glass.",
           "symbols": [
             {
               "kind": "common",
@@ -13086,7 +12975,6 @@
           "id": "TT1B/g3/r15",
           "record": 15,
           "japanese": "おだやかな えみをうかべている",
-          "english": "He wears a serene smile.",
           "symbols": [
             {
               "kind": "common",
@@ -13146,7 +13034,6 @@
           "id": "TT1B/g3/r16",
           "record": 16,
           "japanese": "けわしいかおで おれをにらみつけている",
-          "english": "He glares at me sternly.",
           "symbols": [
             {
               "kind": "common",
@@ -13222,7 +13109,6 @@
           "id": "TT1B/g3/r17",
           "record": 17,
           "japanese": "さんびかを がっしょうしている",
-          "english": "They are singing a hymn.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -13270,7 +13156,6 @@
           "id": "TT1B/g3/r18",
           "record": 18,
           "japanese": "しんぷのはなしに じっとみみをかたむけている",
-          "english": "They heed the priest.",
           "symbols": [
             {
               "kind": "common",
@@ -13358,7 +13243,6 @@
           "id": "TT1B/g3/r19",
           "record": 19,
           "japanese": "ねんれいそうが ばらばらだな",
-          "english": "All ages are here.",
           "symbols": [
             {
               "kind": "common",
@@ -13422,7 +13306,6 @@
           "id": "TT1B/g3/r20",
           "record": 20,
           "japanese": "しんぷ「なにか ごようでしょうか！」{CTRL:1}おれ「いえ べつに……」",
-          "english": "Priest: Need help?{CTRL:1}Me: No...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -13494,7 +13377,6 @@
           "id": "TT1B/g3/r21",
           "record": 21,
           "japanese": "しんぷ「なにか ごようでしょうか！」{CTRL:1}おれ「はくぶつかんの かんばんをみて{CTRL:0} きたんですが……」{CTRL:6}しんぷ「ああ… もうしわけありませんでした{CTRL:4} となりのうちで かぎをうけとってください{CTRL:3} ちちがおりますから」",
-          "english": "Priest: Need help?{CTRL:1}Me: Museum sign...{CTRL:0}Um...{CTRL:6}Priest: Sorry.{CTRL:4}Get the key next door.{CTRL:3}My father has it.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -13854,7 +13736,6 @@
           "id": "TT1B/g3/r22",
           "record": 22,
           "japanese": "しんぷ「かずはすくないですが ちちが{CTRL:0} ひとつひとつ くろうしてあつめた めずらしい{CTRL:0} ものばかりです どうぞごゆっくり」",
-          "english": "Priest: Few exhibits,{CTRL:0}but each is rare{CTRL:0}and won by my father.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -14094,7 +13975,6 @@
           "id": "TT1B/g3/r23",
           "record": 23,
           "japanese": "しんぷ「しゅよ われらのつみと{CTRL:0} われらのそせんのつみを ゆるしたまえ／」",
-          "english": "Priest: Lord, forgive us{CTRL:0}and our ancestors!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -14234,7 +14114,6 @@
           "id": "TT1B/g3/r24",
           "record": 24,
           "japanese": "おれ「あの…」{CTRL:0}しんじゃ「しっ／ さんびかのとちゅうです」",
-          "english": "Me: Excuse me...{CTRL:0}Member: Shh! We sing.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -14306,7 +14185,6 @@
           "id": "TT1B/g3/r25",
           "record": 25,
           "japanese": "おれ「あの…」{CTRL:0}しんじゃ「しっ／ おはなしのとちゅうです」",
-          "english": "Me: Excuse me...{CTRL:0}Member: Shh! A sermon.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -14390,7 +14268,6 @@
           "id": "TT1B/g3/r26",
           "record": 26,
           "japanese": "しんじゃ1「あさから みょうなむなさわぎが{CTRL:0} するんです それでここへ……」{CTRL:2}しんじゃ2「わたしもです なんかこう……{CTRL:0} じっとしていられなくて」",
-          "english": "Member 1: I felt dread{CTRL:0}all morning, so I came.{CTRL:2}Member 2: Me too.{CTRL:0}I couldn't sit still.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -14658,7 +14535,6 @@
           "id": "TT1B/g3/r27",
           "record": 27,
           "japanese": "しんじゃ「あなたも しんぷさんのおはなしを{CTRL:0} きいていきなさい きもちがすっきりしますよ」",
-          "english": "Member: Hear the priest.{CTRL:0}You'll feel better.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -14834,7 +14710,6 @@
           "id": "TT1B/g3/r28",
           "record": 28,
           "japanese": "さんびかが みみにここちよい",
-          "english": "The hymn is soothing.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -14886,7 +14761,6 @@
           "id": "TT1B/g3/r29",
           "record": 29,
           "japanese": "しんぷ「そのとき あくまのまえにたちはだかった{CTRL:0} ゆうかんなるわかものが わがみをなげうって{CTRL:0} かみのこのいのちを すくったのです{CTRL:6} わかものは やさしくほほえみ こういいました{CTRL:3} すべてがおわった……{CTRL:4} これでなにもかも もとのままだ と……」",
-          "english": "Priest: A brave youth{CTRL:0}faced the Devil and gave{CTRL:0}his life for God's son.{CTRL:6}He smiled:{CTRL:3}\"It is over...{CTRL:4}All is restored.\"",
           "symbols": [
             {
               "kind": "dictionary",
@@ -15358,7 +15232,6 @@
           "id": "TT1B/g3/r30",
           "record": 30,
           "japanese": "しんぷ「こんめいのよがおとずれるたび あくまは{CTRL:0} われわれのまえに すがたをあらわしました{CTRL:2} ふあんにおびえる こころのすきにつけいり{CTRL:0} このよを あんこくへみちびこうとしたのです{CTRL:3} しかし そのたびにわれわれは ゆうきをもって{CTRL:4} たちあがり あくまをおいはらいました{CTRL:3} ゆるがぬせいぎしんのまえに じゃあくなるものは{CTRL:4} なすすべもなく たちさるしかなかったのです」",
-          "english": "Priest: In chaos,{CTRL:0}the Devil appears.{CTRL:2}He feeds on fear{CTRL:0}to darken the world.{CTRL:3}Each time, heroes rise{CTRL:4}and drive him away.{CTRL:3}Before true justice,{CTRL:4}evil flees.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -16070,7 +15943,6 @@
           "id": "TT1B/g3/r31",
           "record": 31,
           "japanese": "あくま「ほほう… まだからだは ぶじだったか」{CTRL:1}おれ「お おれのからだを かかか かえせ／」{CTRL:0}あくま「そうはいかん わしはこれから{CTRL:0} ながいたびに でるのでな」",
-          "english": "Devil: My body's safe.{CTRL:1}Me: Give it back!{CTRL:0}Devil: No. I'm leaving{CTRL:0}on a long trip.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -16360,7 +16232,6 @@
           "id": "TT1B/g4/r0",
           "record": 0,
           "japanese": "おれ…… こんなきついかおしてたっけ！",
-          "english": "Was my face this harsh?",
           "symbols": [
             {
               "kind": "common",
@@ -16444,7 +16315,6 @@
           "id": "TT1B/g4/r1",
           "record": 1,
           "japanese": "はっきりいって ださいな",
-          "english": "Honestly, it looks lame.",
           "symbols": [
             {
               "kind": "common",
@@ -16500,7 +16370,6 @@
           "id": "TT1B/g4/r2",
           "record": 2,
           "japanese": "おれ「どこへいくつもりだ」{CTRL:1}あくま「ちょっとした びじねすだ」{CTRL:2}おれ「なんだよ それ……」{CTRL:6}あくま「わかりきったことを きくな{CTRL:4} たましいのけいやくに きまってるだろが」",
-          "english": "Me: Where to?{CTRL:1}Devil: Business.{CTRL:2}Me: What...?{CTRL:6}Devil: Isn't it obvious?{CTRL:4}Soul contracts.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -16808,7 +16677,6 @@
           "id": "TT1B/g4/r3",
           "record": 3,
           "japanese": "あくま「せかいじゅうの あくましんじゃたちが{CTRL:0} わしをよんでいる…… きゅうせいしゅの{CTRL:0} とうじょうを まちのぞんでいるのだ」{CTRL:6}おれ「……」{CTRL:3}あくま「わしはそのきたいに こたえねばならん{CTRL:4} ときをかけめぐってな」",
-          "english": "Devil: Worshipers call{CTRL:0}worldwide. They await{CTRL:0}their savior.{CTRL:6}Me: ...{CTRL:3}Devil: I must answer{CTRL:4}across time.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -17188,7 +17056,6 @@
           "id": "TT1B/g4/r4",
           "record": 4,
           "japanese": "あくま「では さらばだ{CTRL:0} くれぐれも からだをだいじにしろよ」",
-          "english": "Devil: Farewell, then.{CTRL:0}Take care of my body.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -17304,7 +17171,6 @@
           "id": "TT1B/g4/r5",
           "record": 5,
           "japanese": "……ん！",
-          "english": "...Hm!",
           "symbols": [
             {
               "kind": "extended",
@@ -17328,7 +17194,6 @@
           "id": "TT1B/g4/r6",
           "record": 6,
           "japanese": "おれ「す すいこまれる／ うああああーーっ／」",
-          "english": "Me: Pulled in! Aaaaah!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -17400,7 +17265,6 @@
           "id": "TT1B/g4/r7",
           "record": 7,
           "japanese": "おれ「…まらどぅる ばらお がるどぅーら…」{CTRL:1}あくま「それがどうした」",
-          "english": "\"Maradul Barao Galdura\"{CTRL:1}Devil: What of it?",
           "symbols": [
             {
               "kind": "dictionary",
@@ -17532,7 +17396,6 @@
           "id": "TT1B/g4/r8",
           "record": 8,
           "japanese": "そうしたいのは やまやまだ",
-          "english": "I wish I could.",
           "symbols": [
             {
               "kind": "common",

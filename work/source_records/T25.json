@@ -12,7 +12,6 @@
           "id": "T25/g0/r0",
           "record": 0,
           "japanese": "ゆうがたちかくになって ようやく{CTRL:0}まいやーが もどってきた{CTRL:2}ひとりのきゃくを つれて……",
-          "english": "Near evening, Meyer{CTRL:0}finally returned,{CTRL:2}with a guest in tow...",
           "symbols": [
             {
               "kind": "common",
@@ -192,7 +191,6 @@
           "id": "T25/g0/r1",
           "record": 1,
           "japanese": "まいやー「すばらしいおきゃくさまが おみえだぞ{CTRL:0} しょうかいしよう……{CTRL:2} みすたー えいぶらはむ・りんかーん／」{CTRL:6}じょーじ「だ だいとうりょう……／」{CTRL:3}りんかーん「こんにちは」{CTRL:3}まいやー「なんぶのしさつに みえたんだ」",
-          "english": "Meyer: A fine guest!{CTRL:0}Let me introduce him...{CTRL:2}Mr. Abraham Lincoln!{CTRL:6}George: Th-the President{CTRL:3}Lincoln: Hello.{CTRL:3}Meyer: A Southern tour.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -544,7 +542,6 @@
           "id": "T25/g0/r2",
           "record": 2,
           "japanese": "まいやー「ええ ええ… それできがついたら{CTRL:0} だいとうりょうのすがたは もうなくて…{CTRL:2} おそらく ゆうべのやつらのしわざかと……」",
-          "english": "Meyer: Yes, yes... Then{CTRL:0}I noticed he was gone...{CTRL:2}Surely that gang did it.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -792,7 +789,6 @@
           "id": "T25/g0/r3",
           "record": 3,
           "japanese": "へいし「だいとうりょう／／」{CTRL:1}まいやー「おお／ ごぶじでしたか／{CTRL:0} ……で おひとりなんですね！」{CTRL:6}りんかーん「いや ぜんいんぶじですよ{CTRL:4} こよーてもね……」",
-          "english": "Soldier: Mr. President!{CTRL:1}Meyer: You are safe!{CTRL:0}...and alone, I see!{CTRL:6}Lincoln: All are safe.{CTRL:4}Even Coyote...",
           "symbols": [
             {
               "kind": "common",
@@ -1060,7 +1056,6 @@
           "id": "T25/g0/r4",
           "record": 4,
           "japanese": "まいやー「そそ そんな…… まさか……／」{CTRL:1}りんかーん「こんどは わたしがあなたを{CTRL:0} おつれしましょう しょうしょうせまくて{CTRL:0} くらいところですが……」",
-          "english": "Meyer: I-impossible...!{CTRL:1}Lincoln: Now I shall{CTRL:0}take you somewhere.{CTRL:0}It is cramped and dim.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1320,7 +1315,6 @@
           "id": "T25/g0/r5",
           "record": 5,
           "japanese": "こんどはどこへいくきだ あくまめ／{CTRL:1}こうなりゃ じごくのはてまで{CTRL:0}ついてってやるぞ／",
-          "english": "Where now, you devil?{CTRL:1}I'll follow you anywhere{CTRL:0}even to Hell!",
           "symbols": [
             {
               "kind": "common",
@@ -1488,7 +1482,6 @@
           "id": "T25/g0/r6",
           "record": 6,
           "japanese": "たそがれている",
-          "english": "He stares into space.",
           "symbols": [
             {
               "kind": "common",
@@ -1524,7 +1517,6 @@
           "id": "T25/g0/r7",
           "record": 7,
           "japanese": "しゅういに きびしくめをひからせている",
-          "english": "He watches every side.",
           "symbols": [
             {
               "kind": "common",
@@ -1608,7 +1600,6 @@
           "id": "T25/g0/r8",
           "record": 8,
           "japanese": "へいし「あやしいものは ねずみいっぴきたりとも{CTRL:0} みのがさない／」",
-          "english": "Soldier: Not even a rat{CTRL:0}will slip past me!",
           "symbols": [
             {
               "kind": "common",
@@ -1744,7 +1735,6 @@
           "id": "T25/g0/r9",
           "record": 9,
           "japanese": "なにを！",
-          "english": "What?!",
           "symbols": [
             {
               "kind": "common",
@@ -1768,7 +1758,6 @@
           "id": "T25/g0/r10",
           "record": 10,
           "japanese": "へいし1「ありがとう いただくよ」",
-          "english": "Soldier 1: Thanks.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1828,7 +1817,6 @@
           "id": "T25/g0/r11",
           "record": 11,
           "japanese": "へいし1「あなたのごしゅじんは りっぱだ{CTRL:1} なんぐんがふりとみるや すぐにほくぐんへ{CTRL:0} ねがえって きちょうなじょうほうを{CTRL:0} ていきょうしてくれた」{CTRL:3}へいし2「おい よさないか／」{CTRL:4}へいし1「かんしんしてるのさ よわたりの{CTRL:4} うまさに……」",
-          "english": "Soldier 1: Thank you.{CTRL:1}Your master is noble.{CTRL:0}When the South faltered,{CTRL:0}he gave the Union tips.{CTRL:3}Soldier 2: Stop that!{CTRL:4}Soldier 1: I admire{CTRL:4}his skill at survival...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -2276,7 +2264,6 @@
           "id": "T25/g0/r12",
           "record": 12,
           "japanese": "りんかーん「そうですか そんなひどいめに……」{CTRL:1}まいやー「まったく こまったものです{CTRL:0} なんぶにはまだまだ ねづよいさべついしきが{CTRL:0} のこっているようでして……」{CTRL:3}りんかーん「あなたみたいなかた ばかりなら{CTRL:4} せんそうはおきませんでしたよ まいやーさん」",
-          "english": "Lincoln: Such cruelty...{CTRL:1}Meyer: A grave problem.{CTRL:0}Deep bias still lingers{CTRL:0}in the South.{CTRL:3}Lincoln: Men like you{CTRL:4}might have stopped war.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -2708,7 +2695,6 @@
           "id": "T25/g0/r13",
           "record": 13,
           "japanese": "げんかんの ほーるだ",
-          "english": "The entrance hall.",
           "symbols": [
             {
               "kind": "extended",
@@ -2756,7 +2742,6 @@
           "id": "T25/g0/r14",
           "record": 14,
           "japanese": "こーひーぽっとと かっぷが2こ おかれている",
-          "english": "Coffee pot and two cups.",
           "symbols": [
             {
               "kind": "common",
@@ -2852,7 +2837,6 @@
           "id": "T25/g0/r15",
           "record": 15,
           "japanese": "まんめんに えみをうかべている",
-          "english": "He smiles broadly.",
           "symbols": [
             {
               "kind": "common",
@@ -2920,7 +2904,6 @@
           "id": "T25/g0/r16",
           "record": 16,
           "japanese": "こちこちに きんちょうしている",
-          "english": "He is stiff with nerves.",
           "symbols": [
             {
               "kind": "common",
@@ -2988,7 +2971,6 @@
           "id": "T25/g0/r17",
           "record": 17,
           "japanese": "せはたかいが やせっぽちだ{CTRL:1}きりりとむすんだくちもとが いしのつよさを{CTRL:0}あらわしている",
-          "english": "Tall, but very thin.{CTRL:1}His set mouth reveals{CTRL:0}great determination.",
           "symbols": [
             {
               "kind": "common",
@@ -3168,7 +3150,6 @@
           "id": "T25/g0/r18",
           "record": 18,
           "japanese": "りんかーん「あめりかは うまれかわります{CTRL:1} あなたたちがおもうぞんぶん ちからをはっきする{CTRL:0} じだいが かならずきますよ」",
-          "english": "Lincoln: America reborn.{CTRL:1}A day will surely come{CTRL:0}for your gifts to shine.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3400,7 +3381,6 @@
           "id": "T25/g0/r19",
           "record": 19,
           "japanese": "まいやー「そとで けいびしているひとたちに{CTRL:0} こーひーを さしいれてやってくれ」",
-          "english": "Meyer: Take coffee out{CTRL:0}to the guards on duty.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3552,7 +3532,6 @@
           "id": "T25/g0/r20",
           "record": 20,
           "japanese": "まいやー「ふたりとも きょうはもう{CTRL:0} しごとはいいから やすみなさい{CTRL:2} こやのかわりに にかいのきゃくしつを{CTRL:0} つかっていいからな」{CTRL:3}じょーじ「あ ありがとうございます」",
-          "english": "Meyer: Both of you may{CTRL:0}stop work and rest now.{CTRL:2}Sleep in the guest room{CTRL:0}not your old shack.{CTRL:3}George: Th-thank you.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3868,7 +3847,6 @@
           "id": "T25/g0/r21",
           "record": 21,
           "japanese": "きんちょうのあまり こえがでないようだ",
-          "english": "Too nervous to speak.",
           "symbols": [
             {
               "kind": "common",
@@ -3952,7 +3930,6 @@
           "id": "T25/g0/r22",
           "record": 22,
           "japanese": "ぽっとのこーひーを かっぷにそそいだ",
-          "english": "Coffee fills both cups.",
           "symbols": [
             {
               "kind": "extended",
@@ -4032,7 +4009,6 @@
           "id": "T25/g0/r23",
           "record": 23,
           "japanese": "もう からっぽだ",
-          "english": "The pot is empty.",
           "symbols": [
             {
               "kind": "common",
@@ -4072,7 +4048,6 @@
           "id": "T25/g0/r24",
           "record": 24,
           "japanese": "げすとるーむだ{CTRL:1}すみずみまで そうじがゆきとどいている",
-          "english": "The guest room.{CTRL:1}Every corner is clean.",
           "symbols": [
             {
               "kind": "extended",
@@ -4188,7 +4163,6 @@
           "id": "T25/g0/r25",
           "record": 25,
           "japanese": "べっどのうえで はしゃいでいる",
-          "english": "He frolics on the bed.",
           "symbols": [
             {
               "kind": "extended",
@@ -4256,7 +4230,6 @@
           "id": "T25/g0/r26",
           "record": 26,
           "japanese": "あめがふりだした{CTRL:0}どしゃぶりに なりそうだ",
-          "english": "Rain begins to fall.{CTRL:0}A downpour is coming.",
           "symbols": [
             {
               "kind": "common",
@@ -4348,7 +4321,6 @@
           "id": "T25/g0/r27",
           "record": 27,
           "japanese": "たたきつけるような どしゃぶりだ",
-          "english": "Rain pounds down hard.",
           "symbols": [
             {
               "kind": "common",
@@ -4420,7 +4392,6 @@
           "id": "T25/g0/r28",
           "record": 28,
           "japanese": "じょーじ「おれ こんなべっどにねるの{CTRL:0} はじめてだよ こうふんするなあ……」",
-          "english": "George: I've never slept{CTRL:0}in such a bed. Exciting!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4560,7 +4531,6 @@
           "id": "T25/g0/r29",
           "record": 29,
           "japanese": "じょーじ「だいとうりょうと はなしが{CTRL:0} できるなんて…… かんげきしたなあ……」",
-          "english": "George: I spoke with{CTRL:0}the President! I'm awed.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4704,7 +4674,6 @@
           "id": "T25/g0/r30",
           "record": 30,
           "japanese": "にかいの ろうかだ",
-          "english": "The upstairs hallway.",
           "symbols": [
             {
               "kind": "common",
@@ -4748,7 +4717,6 @@
           "id": "T25/g0/r31",
           "record": 31,
           "japanese": "だれもいない",
-          "english": "Nobody is here.",
           "symbols": [
             {
               "kind": "extended",
@@ -4786,7 +4754,6 @@
           "id": "T25/g1/r0",
           "record": 0,
           "japanese": "おれ「／」{CTRL:0}じょーじ「か…かあさん……／」{CTRL:2}まいやー「べる／ じょーじ／ おりてこい／{CTRL:0} おもしろいところへ つれてってやる／」",
-          "english": "Me: !{CTRL:0}George: M-mother...!{CTRL:2}Meyer: Belle! George!{CTRL:0}Come down. A fine treat!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4986,7 +4953,6 @@
           "id": "T25/g1/r1",
           "record": 1,
           "japanese": "まいやーの しょさいだ{CTRL:0}かべにしょうぞうがが かざられている",
-          "english": "Meyer's study.{CTRL:0}A portrait hangs there.",
           "symbols": [
             {
               "kind": "common",
@@ -5114,7 +5080,6 @@
           "id": "T25/g1/r2",
           "record": 2,
           "japanese": "3だんの ひきだしがついている",
-          "english": "It has three drawers.",
           "symbols": [
             {
               "kind": "extended",
@@ -5182,7 +5147,6 @@
           "id": "T25/g1/r3",
           "record": 3,
           "japanese": "めぼしいものはない",
-          "english": "Nothing useful here.",
           "symbols": [
             {
               "kind": "common",
@@ -5226,7 +5190,6 @@
           "id": "T25/g1/r4",
           "record": 4,
           "japanese": "2だんめをぬいたすきまから なかをのぞくと……",
-          "english": "I peer through the gap.",
           "symbols": [
             {
               "kind": "extended",
@@ -5322,7 +5285,6 @@
           "id": "T25/g1/r5",
           "record": 5,
           "japanese": "{CTRL:0}くろびかりした かわのむちと{CTRL:0}めとはなのあながあいた ぬのぶくろがはいっている",
-          "english": "{CTRL:0}A black leather whip{CTRL:0}and a slit cloth hood.",
           "symbols": [
             {
               "kind": "control",
@@ -5478,7 +5440,6 @@
           "id": "T25/g1/r6",
           "record": 6,
           "japanese": "2だんめをぬいたすきまから なかをのぞくと……{CTRL:1}くろびかりした かわのむちと{CTRL:0}めとはなのあながあいた ぬのぶくろがはいっている",
-          "english": "Through the open gap...{CTRL:1}A black leather whip{CTRL:0}and a slit cloth hood.",
           "symbols": [
             {
               "kind": "extended",
@@ -5722,7 +5683,6 @@
           "id": "T25/g1/r7",
           "record": 7,
           "japanese": "てが とどかない",
-          "english": "I cannot reach it.",
           "symbols": [
             {
               "kind": "common",
@@ -5762,7 +5722,6 @@
           "id": "T25/g1/r8",
           "record": 8,
           "japanese": "ひきだしを ぬきとった",
-          "english": "I pulled the drawer out.",
           "symbols": [
             {
               "kind": "common",
@@ -5814,7 +5773,6 @@
           "id": "T25/g1/r9",
           "record": 9,
           "japanese": "かぎが かかっている",
-          "english": "It is locked.",
           "symbols": [
             {
               "kind": "common",
@@ -5850,7 +5808,6 @@
           "id": "T25/g1/r10",
           "record": 10,
           "japanese": "ひきだしを あけた",
-          "english": "I opened the drawer.",
           "symbols": [
             {
               "kind": "common",
@@ -5894,7 +5851,6 @@
           "id": "T25/g1/r11",
           "record": 11,
           "japanese": "あいている",
-          "english": "It is already open.",
           "symbols": [
             {
               "kind": "common",
@@ -5922,7 +5878,6 @@
           "id": "T25/g1/r12",
           "record": 12,
           "japanese": "かいだんの おどりばだ{CTRL:1}ほーるが みおろせる",
-          "english": "The stair landing.{CTRL:1}The hall lies below.",
           "symbols": [
             {
               "kind": "common",
@@ -6018,7 +5973,6 @@
           "id": "T25/g1/r13",
           "record": 13,
           "japanese": "そうしょくをほどこした ふといはしらがある",
-          "english": "A thick, ornate pillar.",
           "symbols": [
             {
               "kind": "common",
@@ -6110,7 +6064,6 @@
           "id": "T25/g1/r14",
           "record": 14,
           "japanese": "みけんに しわをよせている",
-          "english": "His brow is furrowed.",
           "symbols": [
             {
               "kind": "common",
@@ -6170,7 +6123,6 @@
           "id": "T25/g1/r15",
           "record": 15,
           "japanese": "しきりに なにごとかはなしかけている",
-          "english": "He keeps talking to him.",
           "symbols": [
             {
               "kind": "common",
@@ -6250,7 +6202,6 @@
           "id": "T25/g1/r16",
           "record": 16,
           "japanese": "ついに ほんしょうをあらわしたか……",
-          "english": "His true nature at last.",
           "symbols": [
             {
               "kind": "common",
@@ -6326,7 +6277,6 @@
           "id": "T25/g1/r17",
           "record": 17,
           "japanese": "まいやー「どうした べる…… なんかようか！」{CTRL:1}おれ「いえ べつに……」",
-          "english": "Meyer: What, Belle?{CTRL:1}Me: It is nothing...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6442,7 +6392,6 @@
           "id": "T25/g1/r18",
           "record": 18,
           "japanese": "やめとこう",
-          "english": "Better not.",
           "symbols": [
             {
               "kind": "common",
@@ -6470,7 +6419,6 @@
           "id": "T25/g1/r19",
           "record": 19,
           "japanese": "りんかーん「…で だいじなはなしというのは…！」{CTRL:1}まいやー「じつはおりいって おねがいがあるのです{CTRL:0} わたしを あなたのとくべつさんぼうに{CTRL:0} にんめいしていただきたい」{CTRL:3}りんかーん「……」{CTRL:3}まいやー「なんぶしゅっしんの わたしとくめば{CTRL:4} ばらんすのとれた すばらしいせいじができる／」",
-          "english": "Lincoln: Your business?{CTRL:1}Meyer: I have a request.{CTRL:0}Appoint me as your{CTRL:0}special adviser.{CTRL:3}Lincoln: ...{CTRL:3}Meyer: A Southern aide{CTRL:4}would balance your rule!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6954,7 +6902,6 @@
           "id": "T25/g1/r20",
           "record": 20,
           "japanese": "りんかーん「ざんねんですが ひきうけかねます{CTRL:0} だいいちわたしは あなたをよくしらない」{CTRL:2}まいやー「ゆうべ じょーじとべるをおそった{CTRL:0} ものたちが あなたのいのちをねらっています…{CTRL:3} わたしなら かれらのうごきを ふうじることも{CTRL:4} かのうなのですが……」",
-          "english": "Lincoln: I must decline.{CTRL:0}I barely know you.{CTRL:2}Meyer: Their attackers{CTRL:0}are plotting your death.{CTRL:3}I can halt their plans.{CTRL:4}That is, if appointed...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7430,7 +7377,6 @@
           "id": "T25/g1/r21",
           "record": 21,
           "japanese": "りんかーん「どうやら じかんのむだでしたな{CTRL:0} しつれいします」{CTRL:0}そういって どあにあしをむけたとき……{CTRL:6}まいやーがとつぜん ゆびぶえをならした{CTRL:3}りんかーん「／」",
-          "english": "Lincoln: This is futile.{CTRL:0}Good day.{CTRL:0}He turned to leave...{CTRL:6}Meyer suddenly whistled.{CTRL:3}Lincoln: !",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7710,7 +7656,6 @@
           "id": "T25/g1/r22",
           "record": 22,
           "japanese": "まいやー「おかえりは まだはやいですよ かっか」{CTRL:1}りんかーん「け けいびへいは……！」{CTRL:2}まいやー「ぐっすりとねむっています さっきのんだ{CTRL:0} すいみんやくいりの こーひーでね……」",
-          "english": "Meyer: Do not leave yet.{CTRL:1}Lincoln: The guards...!{CTRL:2}Meyer: Fast asleep, from{CTRL:0}the drugged coffee.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8010,7 +7955,6 @@
           "id": "T25/g1/r23",
           "record": 23,
           "japanese": "まいやー「きが かわりましたかな！」{CTRL:0}りんかーん「ばかをいうな／」",
-          "english": "Meyer: Reconsidered?{CTRL:0}Lincoln: You fool!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8106,7 +8050,6 @@
           "id": "T25/g1/r24",
           "record": 24,
           "japanese": "まいやー「だいとうりょうかっか{CTRL:1} あなたを こんなばしょにおつれしたことを{CTRL:0} いかんにおもいます……{CTRL:6} ここは いうことをきかないどれいどもの{CTRL:4} はかばです{CTRL:3} このあめなら あと1じかんもすれば{CTRL:4} しまは みずにしずんでしまうでしょう……」",
-          "english": "Meyer: Mr. President.{CTRL:1}I regret bringing you{CTRL:0}to such a place...{CTRL:6}This is the graveyard{CTRL:4}for disobedient slaves.{CTRL:3}In another hour of rain,{CTRL:4}the island will sink...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8562,7 +8505,6 @@
           "id": "T25/g1/r25",
           "record": 25,
           "japanese": "さむさときょうふで がたがたふるえている",
-          "english": "He shivers in cold fear.",
           "symbols": [
             {
               "kind": "common",
@@ -8650,7 +8592,6 @@
           "id": "T25/g1/r26",
           "record": 26,
           "japanese": "ふあんそうに こちらをぬすみみている",
-          "english": "He glances anxiously.",
           "symbols": [
             {
               "kind": "common",
@@ -8730,7 +8671,6 @@
           "id": "T25/g1/r27",
           "record": 27,
           "japanese": "いまにも とびかかってきそうだ",
-          "english": "Ready to pounce.",
           "symbols": [
             {
               "kind": "common",
@@ -8798,7 +8738,6 @@
           "id": "T25/g1/r28",
           "record": 28,
           "japanese": "らいめいが とどろいている",
-          "english": "Thunder roars overhead.",
           "symbols": [
             {
               "kind": "common",
@@ -8858,7 +8797,6 @@
           "id": "T25/g1/r29",
           "record": 29,
           "japanese": "みずかさが どんどんましている{CTRL:1}およいでわたれるような ながれじゃない",
-          "english": "The water rises fast.{CTRL:1}No one can swim across.",
           "symbols": [
             {
               "kind": "common",
@@ -9006,7 +8944,6 @@
           "id": "T25/g1/r30",
           "record": 30,
           "japanese": "まいやー「おまえはだまってろ／」",
-          "english": "Meyer: Keep quiet!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9058,7 +8995,6 @@
           "id": "T25/g1/r31",
           "record": 31,
           "japanese": "りんかーん「しんぱいしないで」",
-          "english": "Lincoln: Do not worry.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9112,7 +9048,6 @@
           "id": "T25/g2/r0",
           "record": 0,
           "japanese": "りんかーん「あなたたちを みすてるわけには{CTRL:0} いかない」",
-          "english": "Lincoln: I cannot{CTRL:0}abandon all of you.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9212,7 +9147,6 @@
           "id": "T25/g2/r1",
           "record": 1,
           "japanese": "じょーじ「どうしたらいいんだ かあさん／」",
-          "english": "George: What now, Mom?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9284,7 +9218,6 @@
           "id": "T25/g2/r2",
           "record": 2,
           "japanese": "こよーて「くをーーん」",
-          "english": "Coyote: Whiiine...",
           "symbols": [
             {
               "kind": "common",
@@ -9336,7 +9269,6 @@
           "id": "T25/g2/r3",
           "record": 3,
           "japanese": "こよーて「がるるる…」",
-          "english": "Coyote: Grrrrr...",
           "symbols": [
             {
               "kind": "common",
@@ -9388,7 +9320,6 @@
           "id": "T25/g2/r4",
           "record": 4,
           "japanese": "まいやー「だいとうりょうかっか{CTRL:0} さいごの ちゃんすです{CTRL:2} どれいたちのことなど ほっといて{CTRL:0} はやく じぶんだけぼーとにのりなさい／」{CTRL:3}りんかーん「……」{CTRL:3}まいやー「ああ いいわすれていましたが{CTRL:4} ここにいる こよーてどもは じぶんたちより{CTRL:4} おなじかずいじょうのあいてには おとなしいが{CTRL:3} あいてのかずがすくないとみるや{CTRL:4} すぐにおそってきますから きをつけて{CTRL:3} では やしきでおまちしています……」",
-          "english": "Meyer: Mr. President,{CTRL:0}your final chance.{CTRL:2}Forget those slaves.{CTRL:0}Take the boat alone!{CTRL:3}Lincoln: ...{CTRL:3}Meyer: One last thing.{CTRL:4}These coyotes stay calm{CTRL:4}with equal-size groups.{CTRL:3}Against smaller groups,{CTRL:4}they attack. Take care.{CTRL:3}I await you at home...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10132,7 +10063,6 @@
           "id": "T25/g2/r5",
           "record": 5,
           "japanese": "じょーじ「ああ だめ／{CTRL:0} ふたりしか のれそうにないや」",
-          "english": "George: Oh, no!{CTRL:0}The boat only holds two.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10236,7 +10166,6 @@
           "id": "T25/g2/r6",
           "record": 6,
           "japanese": "じょーじ「やった／ ぜんいんわたったぞ／／」",
-          "english": "George: We all crossed!!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10308,7 +10237,6 @@
           "id": "T25/g2/r7",
           "record": 7,
           "japanese": "じょーじ「こよーても ぜんぶたすけてやろうよ／」",
-          "english": "George: Save the pack!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10392,7 +10320,6 @@
           "id": "T25/g2/r8",
           "record": 8,
           "japanese": "{CTRL:0}じょーじ「このままじゃ たべられちゃうよー／／」",
-          "english": "{CTRL:0}George: They may eat us!",
           "symbols": [
             {
               "kind": "control",
@@ -10480,7 +10407,6 @@
           "id": "T25/g2/r9",
           "record": 9,
           "japanese": "じょーじ「ああ おかあさんがおもすぎて{CTRL:0} ぼーとがしずみそうだ／／」",
-          "english": "George: Mom is too heavy{CTRL:0}the boat might sink!!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10604,7 +10530,6 @@
           "id": "T25/g2/r10",
           "record": 10,
           "japanese": "じょーじ「はやくのろうよ／」",
-          "english": "George: Get aboard now!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10648,7 +10573,6 @@
           "id": "T25/g2/r11",
           "record": 11,
           "japanese": "じょーじ「こよーてだけじゃ むりだよ」",
-          "english": "George: Coyotes cannot.",
           "symbols": [
             {
               "kind": "dictionary",

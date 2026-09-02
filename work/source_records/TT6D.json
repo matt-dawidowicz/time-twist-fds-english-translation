@@ -12,7 +12,6 @@
           "id": "TT6D/g0/r0",
           "record": 0,
           "japanese": "おれ「うう…… ああ… あ……」",
-          "english": "Me: Ugh... Ah...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -76,7 +75,6 @@
           "id": "TT6D/g0/r1",
           "record": 1,
           "japanese": "おんなのこ「よかった…… わたし{CTRL:0} しんでるのかと……」{CTRL:2}おれ「ああ きみか…… ひさしぶりだなあ」{CTRL:6}おんなのこ「……！ あの どこかで{CTRL:4} おあいしました……！」{CTRL:3}おれ「あ そっか…… そうだよね」{CTRL:3}おんなのこ「ぷっ… おかしなひと」{CTRL:3}おれ「いやあ ははは」{CTRL:4}おんなのこ「ふふふ…」",
-          "english": "Girl: Thank goodness...{CTRL:0}I thought you were dead.{CTRL:2}Me: You... Long time.{CTRL:6}Girl: Huh? Have we met{CTRL:4}somewhere before...?{CTRL:3}Me: Oh... I suppose not.{CTRL:3}Girl: Heh. How strange.{CTRL:3}Me: Well... Ha ha ha.{CTRL:4}Girl: Hee hee...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -544,7 +542,6 @@
           "id": "TT6D/g0/r2",
           "record": 2,
           "japanese": "おれ「きみの なまえは！」{CTRL:0}おんなのこ「わたしは…」",
-          "english": "Me: What is your name?{CTRL:0}Girl: I am...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -628,7 +625,6 @@
           "id": "TT6D/g0/r3",
           "record": 3,
           "japanese": "おんなのこ「／」{CTRL:0}おれ「じしんだ／」",
-          "english": "Girl: !{CTRL:0}Me: An earthquake!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -680,7 +676,6 @@
           "id": "TT6D/g0/r4",
           "record": 4,
           "japanese": "おんなのこ「だいじょうぶ／ しんぱいないわ／」{CTRL:0}おれ「は はい／」{CTRL:2}おんなのこ「まらどぅる ばらお がらどぅーら…」{CTRL:0}おれ「／／」{CTRL:3}おんなのこ「わたしにまかせて／{CTRL:3} まらどぅる ばらお がらどぅーら／{CTRL:4} まらどぅる ばらお がらどぅーらーーーっ／」",
-          "english": "Girl: Do not worry!{CTRL:0}Me: Y-yes!{CTRL:2}Girl: Maradul Barao{CTRL:0}Garadura...{CTRL:3}Girl: Leave it to me!{CTRL:3}Maradul Barao Garadura!{CTRL:4}Maradul Barao Garadura!!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1108,7 +1103,6 @@
           "id": "TT6D/g0/r5",
           "record": 5,
           "japanese": "おんなのこ「けさね うらないできいたの{CTRL:0} \"すてきなだんせいとの であいあり\" って…」{CTRL:2}おれ「そそ そんなあ……」",
-          "english": "Girl: My fortune said{CTRL:0}\"A fine man awaits you.\"{CTRL:2}Me: N-no way...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1320,7 +1314,6 @@
           "id": "TT6D/g0/r6",
           "record": 6,
           "japanese": "……「ぐううう……」",
-          "english": "Voice: Grrrrrr...",
           "symbols": [
             {
               "kind": "extended",
@@ -1368,7 +1361,6 @@
           "id": "TT6D/g0/r7",
           "record": 7,
           "japanese": "おれ「げっ／」",
-          "english": "Me: Ack!",
           "symbols": [
             {
               "kind": "dictionary",

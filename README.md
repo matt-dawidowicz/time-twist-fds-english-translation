@@ -30,7 +30,7 @@ from those pages.
 
 ## Current status
 
-- All **2,052 extracted text records** are represented in the translation
+- All **2,058 text records** are represented in the translation
   workbook.
 - All **1,299 scenario records** have playable English entries.
 - All **721 fixed menu labels** in the canonical candidate decode to their
@@ -62,19 +62,13 @@ Do not edit generated ROMs or rebuilt banks as source material.
 | If you are looking at... | Start here |
 | --- | --- |
 | Dialogue, narration, or a scenario choice | `work/translations/<BANK>.json` and [translation contributor guide](CONTRIBUTING_TRANSLATION.md) |
-| A fixed menu, disk prompt, Save/Load label, or other shared UI | `work/time_twist/ui.py`, `ui_fixed_tables.py`, [full-word menu implementation](docs/FULL_WORD_MENU_IMPLEMENTATION.md), and [implementation notes](docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md) |
+| A fixed menu, disk prompt, Save/Load label, or other shared UI | `work/time_twist/ui.py`, `ui_fixed_tables.py`, and [full-word menu implementation](docs/FULL_WORD_MENU_IMPLEMENTATION.md) |
 | Font glyphs or the title sequence | `work/time_twist/font.py`, `work/time_twist/title.py`, and [title sequence](docs/TITLE_SEQUENCE.md) |
 | Candidate creation, source locks, or reproducibility | `work/time_twist/release.py`, `release_metadata.py`, and [release commands](docs/CLI_REFERENCE.md#release-commands) |
 | A problem seen while playing | [playtesting guide](PLAYTESTING.md) |
 | Binary/format concepts | [architecture](docs/ARCHITECTURE.md) and [format reference](docs/FORMATS.md) |
 
-For a source-level account of the verified game fixes, fixed-address records,
-font corrections, title-screen memory map, 6502 hooks, native swipe geometry,
-and validation evidence, read the
-[bug-fix and title-screen implementation guide](docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md).
-The [release risk assessment](docs/RELEASE_RISK_ASSESSMENT.md) records which
-non-playtest risks are closed, mitigated, accepted, or still dependent on the
-manual Zenpen-to-Kouhen playthrough.
+Historical implementation notes, retrospectives, and dated release-risk reports are preserved under [`docs/archive/`](docs/archive/). They are provenance records, not current operating instructions.
 
 ## Repository layout
 
@@ -85,7 +79,7 @@ manual Zenpen-to-Kouhen playthrough.
 | `work/tests/` | Fixture-free public unit tests |
 | `work/integration_tests/` | ROM-derived integration tests for maintainers |
 | `work/translations/` | Authoritative playable scenario maps |
-| `work/translated_scripts/` | Extracted/review-oriented scenario records |
+| `work/source_records/` | Decoded Japanese/source-structure records; no English authority |
 | `work/translation_workbook_banks/` | Per-bank linguistic review checkpoints |
 | `work/title_assets/` | Contributor-created English title reference art |
 | `outputs/` | Workbooks, glossary, reports, and previews |
@@ -121,7 +115,7 @@ python work/run_tests.py unit
 ```
 
 The public suite is fixture-free and permits no skips. Public
-CI runs source/style/type/unit checks on both Python 3.11 and 3.12. Python 3.12
+CI runs source/style/type/unit checks on both Python 3.11 and 3.14. Python 3.12
 also builds and force-installs the wheel, proves the smoke test imports the
 installed package rather than the checkout, and exercises the CLI.
 
@@ -227,7 +221,6 @@ Start with [`docs/README.md`](docs/README.md). Important guides:
 - [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)
 - [`docs/MODULE_MAP.md`](docs/MODULE_MAP.md)
 - [`docs/PRIVATE_FIXTURES.md`](docs/PRIVATE_FIXTURES.md)
-- [`docs/PROJECT_RETROSPECTIVE.md`](docs/PROJECT_RETROSPECTIVE.md)
 
 ## Translation constraints
 

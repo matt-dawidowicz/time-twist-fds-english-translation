@@ -17,8 +17,8 @@ from generate_translation_workbook import (
     make_rows,
     validate,
 )
-from time_twist.cli import PERSONALITY_QUESTION_IDS
 from time_twist.english import encode_english, validate_display_width
+from time_twist.project import PERSONALITY_QUESTION_IDS
 
 REQUIRED_FIELDS = (
     "original_record_id",

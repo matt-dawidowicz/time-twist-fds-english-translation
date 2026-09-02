@@ -20,10 +20,8 @@ from .cli_commands import (
     command_roundtrip,
     command_scenario_extract,
     command_scenario_footprint,
-    command_scenario_insert,
     command_scenario_merge,
     command_title_patch,
-    command_ui_patch,
 )
 from .title import DEFAULT_SUBTITLE
 
@@ -125,8 +123,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="decode a packed scenario bank to editable JSON",
         description=(
             "Decode group pointers, packed records, dictionary references, "
-            "Japanese text, and raw symbols. Existing English in the output "
-            "is retained only for matching stable record IDs."
+            "Japanese text, and raw symbols. The output is source-only; "
+            "English remains in the separate translation maps."
         ),
     )
     scenario_extract.add_argument(
@@ -156,53 +154,6 @@ def build_parser() -> argparse.ArgumentParser:
     )
     scenario_extract.set_defaults(function=command_scenario_extract)
 
-    scenario_insert = subparsers.add_parser(
-        "scenario-insert",
-        help="encode translated JSON into a scenario bank",
-        description=(
-            "Rebuild scenario groups and pointers while retaining code/data "
-            "outside the original text reservation. Fully translated banks "
-            "receive a compact English dictionary."
-        ),
-    )
-    scenario_insert.add_argument(
-        "bank", type=Path, help="clean extracted bank"
-    )
-    scenario_insert.add_argument(
-        "--bank-name",
-        choices=(
-            "TT1A",
-            "TT1B",
-            "TT2",
-            "T22",
-            "TT3A",
-            "TT3B",
-            "TT4",
-            "TT5",
-            "T25",
-            "TT6A",
-            "TT6B",
-            "TT6C",
-            "TT6D",
-        ),
-        help="explicit bank name when the filename is nonstandard",
-    )
-    scenario_insert.add_argument(
-        "translation",
-        type=Path,
-        help="merged scenario JSON containing English fields",
-    )
-    scenario_insert.add_argument("output", type=Path, help="rebuilt bank .bin")
-    scenario_insert.add_argument(
-        "--no-compress",
-        action="store_true",
-        help=(
-            "diagnostic: preserve the original dictionary on a complete bank; "
-            "unavailable for banks whose fixed UI requires 31 English entries"
-        ),
-    )
-    scenario_insert.set_defaults(function=command_scenario_insert)
-
     scenario_merge = subparsers.add_parser(
         "scenario-merge",
         help="validate and merge an ID-keyed English map",
@@ -224,7 +175,8 @@ def build_parser() -> argparse.ArgumentParser:
     scenario_merge.add_argument(
         "--output",
         type=Path,
-        help="destination scenario JSON (default: update SCENARIO)",
+        required=True,
+        help="destination merged review JSON; the source document is never modified",
     )
     scenario_merge.add_argument(
         "--allow-partial",
@@ -315,40 +267,6 @@ def build_parser() -> argparse.ArgumentParser:
         help=f"title subtitle (default: {DEFAULT_SUBTITLE!r})",
     )
     title_patch.set_defaults(function=command_title_patch)
-
-    ui_patch = subparsers.add_parser(
-        "ui-patch",
-        help="apply a verified fixed UI/text-table patch",
-        description=(
-            "Patch one extracted component's fixed prompts, menu labels, "
-            "commands, objects, quiz answers, or small input/program behavior."
-        ),
-    )
-    ui_patch.add_argument("source", type=Path, help="source component .bin")
-    ui_patch.add_argument("output", type=Path, help="patched component .bin")
-    ui_patch.add_argument(
-        "--component",
-        choices=(
-            "SON-KOUH",
-            "NOV2",
-            "NOV4",
-            "TT1A",
-            "TT1B",
-            "TT2",
-            "T22",
-            "TT3A",
-            "TT3B",
-            "TT4",
-            "TT5",
-            "T25",
-            "TT6A",
-            "TT6B",
-            "TT6C",
-        ),
-        default="NOV2",
-        help="owning FDS component (default: NOV2)",
-    )
-    ui_patch.set_defaults(function=command_ui_patch)
 
     replace_file = subparsers.add_parser(
         "replace-file",
