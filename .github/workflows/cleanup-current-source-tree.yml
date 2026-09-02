@@ -57,8 +57,11 @@ jobs:
           PY
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt
-      - name: Format maintained Python
-        run: python -m black work
+      - name: Organize and format maintained Python
+        shell: bash
+        run: |
+          python -m ruff check --fix work
+          python -m black work
       - name: Regenerate comparison corpus
         run: python work/generate_bilingual_comparison_ci.py
       - name: Regenerate translation workbook
