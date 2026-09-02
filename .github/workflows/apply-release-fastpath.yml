@@ -46,31 +46,31 @@ jobs:
                   f'expected 2 unconditional optimizer flags, found {optimize_count}'
               )
 
-          old_combined_tail = '''            maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+          combined_anchor = '            maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,\n'
+          if text.count(combined_anchor) != 1:
+              raise SystemExit(
+                  f'expected one combined maximum-entry anchor, found {text.count(combined_anchor)}'
+              )
+          text = text.replace(
+              combined_anchor,
+              combined_anchor
+              + '            compressor=compress_english_groups,\n'
+              + '            measure=packed_size,\n',
+              1,
           )
-          used = packed_size'''
-          new_combined_tail = '''            maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
-              compressor=compress_english_groups,
-              measure=packed_size,
-          )
-          used = packed_size'''
-          if text.count(old_combined_tail) != 1:
-              raise SystemExit('combined compression tail no longer matches expected source')
-          text = text.replace(old_combined_tail, new_combined_tail, 1)
 
-          old_standard_tail = '''        maximum_entries=maximum_dictionary_entries,
-              candidate_validator=fixed_ui_candidate_is_valid,
+          validator_anchor = '        candidate_validator=fixed_ui_candidate_is_valid,\n'
+          if text.count(validator_anchor) != 1:
+              raise SystemExit(
+                  f'expected one validator anchor, found {text.count(validator_anchor)}'
+              )
+          text = text.replace(
+              validator_anchor,
+              validator_anchor
+              + '        compressor=compress_english_groups,\n'
+              + '        measure=packed_size,\n',
+              1,
           )
-          rebuilt = rebuild_scenario_bank'''
-          new_standard_tail = '''        maximum_entries=maximum_dictionary_entries,
-              candidate_validator=fixed_ui_candidate_is_valid,
-              compressor=compress_english_groups,
-              measure=packed_size,
-          )
-          rebuilt = rebuild_scenario_bank'''
-          if text.count(old_standard_tail) != 1:
-              raise SystemExit('standard compression tail no longer matches expected source')
-          text = text.replace(old_standard_tail, new_standard_tail, 1)
           release_path.write_text(text, encoding='utf-8', newline='\n')
 
           module = '''"""Choose release compression without paying optimizer cost unnecessarily."""
