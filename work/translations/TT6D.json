@@ -1,10 +1,10 @@
 {
   "TT6D/g0/r0": "Me: Ugh... ah...",
-  "TT6D/g0/r1": "Girl: Thank goodness...{CTRL:0}I thought I had died.{CTRL:2}Me: You... been a while.{CTRL:6}Girl: Huh? Have we met{CTRL:4}somewhere before...?{CTRL:3}Me: Ah... right, yeah.{CTRL:3}Girl: Pfft... funny guy.{CTRL:3}Me: Well... ha ha ha.{CTRL:4}Girl: Hee hee...",
+  "TT6D/g0/r1": "Girl: Thank goodness...{CTRL:0}I thought I was dead.{CTRL:2}Me: Ah... been a while.{CTRL:6}Girl: Um... somewhere{CTRL:4}have we met before...?{CTRL:3}Me: Ah... right, yeah.{CTRL:3}Girl: What a funny guy.{CTRL:3}Me: Well... ha ha ha.{CTRL:4}Girl: Hee hee...",
   "TT6D/g0/r2": "Me: What is your name?{CTRL:0}Girl: I am...",
   "TT6D/g0/r3": "Girl: !{CTRL:0}Me: An earthquake!",
-  "TT6D/g0/r4": "Girl: Do not worry!{CTRL:0}Me: Y-yes!{CTRL:2}Girl: Maradul Barao{CTRL:0}Garadura... Me: !!{CTRL:3}Girl: Leave it to me!{CTRL:3}Maradul Barao Garadura!{CTRL:4}Maradul Barao Garadura!!",
-  "TT6D/g0/r5": "Girl: Morning fortune:{CTRL:0}\"A fine man awaits you.\"{CTRL:2}Me: N-no way...",
+  "TT6D/g0/r4": "Girl: Do not worry!{CTRL:0}Me: Y-yes!{CTRL:2}Maradul Barao Garadura.{CTRL:0}Me: !!{CTRL:3}Girl: Leave it to me!{CTRL:3}Maradul Barao Garadura{CTRL:4}Maradul Barao Garadura!",
+  "TT6D/g0/r5": "Girl: Morning fortune:{CTRL:0}\"You meet a great man.\"{CTRL:2}Me: N-no way...",
   "TT6D/g0/r6": "Voice: Grrrrrr...",
   "TT6D/g0/r7": "Me: Ack!"
 }
