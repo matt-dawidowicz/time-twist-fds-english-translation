@@ -1,0 +1,283 @@
+name: apply release fast-path
+
+on:
+  push:
+    branches:
+      - voice-prose-pass-tt1a-pilot
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.event.head_commit.message == 'Install release fast-path applicator'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: voice-prose-pass-tt1a-pilot
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - name: Apply capacity-aware release compression patch
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          release_path = Path('work/time_twist/release.py')
+          text = release_path.read_text(encoding='utf-8')
+
+          old_import = 'from .compression import compress_english_groups, packed_size\n'
+          new_import = (
+              'from .compression import packed_size\n'
+              'from .release_compression import compress_release_groups\n'
+          )
+          if text.count(old_import) != 1:
+              raise SystemExit('release compression import no longer matches expected source')
+          text = text.replace(old_import, new_import, 1)
+
+          old_combined = '''        compressed_combined, dictionary = compress_english_groups(
+              combined_groups,
+              max_bytes=capacity - structural_bytes,
+              optimize=True,
+              maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+          )
+          '''
+          new_combined = '''        compressed_combined, dictionary = compress_release_groups(
+              combined_groups,
+              max_bytes=capacity - structural_bytes,
+              maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+          )
+          '''
+          if text.count(old_combined) != 1:
+              raise SystemExit('combined release compression call no longer matches expected source')
+          text = text.replace(old_combined, new_combined, 1)
+
+          old_standard = '''    compressed, dictionary = compress_english_groups(
+              groups,
+              required_entries=required_dictionary_entries(bank_name),
+              max_bytes=capacity - pointer_bytes,
+              optimize=True,
+              maximum_entries=maximum_dictionary_entries,
+              candidate_validator=fixed_ui_candidate_is_valid,
+          )
+          '''
+          new_standard = '''    compressed, dictionary = compress_release_groups(
+              groups,
+              required_entries=required_dictionary_entries(bank_name),
+              max_bytes=capacity - pointer_bytes,
+              maximum_entries=maximum_dictionary_entries,
+              candidate_validator=fixed_ui_candidate_is_valid,
+          )
+          '''
+          if text.count(old_standard) != 1:
+              raise SystemExit('standard release compression call no longer matches expected source')
+          text = text.replace(old_standard, new_standard, 1)
+          release_path.write_text(text, encoding='utf-8', newline='\n')
+
+          module = '''"""Choose release compression without paying optimizer cost unnecessarily."""
+
+          from __future__ import annotations
+
+          from collections.abc import Callable
+
+          from .compression import compress_english_groups, packed_size
+          from .textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT, PackedSymbol
+
+          ScenarioGroups = tuple[tuple[tuple[PackedSymbol, ...], ...], ...]
+          ScenarioDictionary = tuple[tuple[PackedSymbol, ...], ...]
+          CandidateValidator = Callable[[ScenarioGroups, ScenarioDictionary], bool]
+
+
+          def compress_release_groups(
+              groups: ScenarioGroups,
+              *,
+              max_bytes: int,
+              required_entries: ScenarioDictionary = (),
+              maximum_entries: int = EXTENDED_DICTIONARY_ENTRY_COUNT,
+              candidate_validator: CandidateValidator | None = None,
+          ) -> tuple[ScenarioGroups, ScenarioDictionary]:
+              """Return a fast fitting result, escalating only when required.
+
+              The normal greedy compressor already widens to exhaustive candidate
+              evaluation when its first result exceeds ``max_bytes``. Release builds
+              therefore accept that deterministic result immediately when it fits and
+              satisfies any fixed-UI compatibility validator. The substantially more
+              expensive beam search and dictionary-order hill climb remain available as
+              a fallback for a genuinely tight or incompatible bank.
+
+              Args:
+                  groups: Encoded scenario groups to compress.
+                  max_bytes: Maximum packed groups-plus-dictionary footprint.
+                  required_entries: Fixed dictionary prefix required by external UI.
+                  maximum_entries: Dictionary slots supported by the target decoder.
+                  candidate_validator: Optional release compatibility predicate.
+
+              Returns:
+                  Compressed groups and their ordered flat dictionary.
+              """
+              fast = compress_english_groups(
+                  groups,
+                  required_entries=required_entries,
+                  max_bytes=max_bytes,
+                  optimize=False,
+                  maximum_entries=maximum_entries,
+              )
+              fast_is_valid = candidate_validator is None or candidate_validator(*fast)
+              if packed_size(*fast) <= max_bytes and fast_is_valid:
+                  return fast
+              return compress_english_groups(
+                  groups,
+                  required_entries=required_entries,
+                  max_bytes=max_bytes,
+                  optimize=True,
+                  maximum_entries=maximum_entries,
+                  candidate_validator=candidate_validator,
+              )
+          '''
+          Path('work/time_twist/release_compression.py').write_text(
+              module, encoding='utf-8', newline='\n'
+          )
+
+          tests = '''"""Regression tests for capacity-aware release compression selection."""
+
+          from __future__ import annotations
+
+          import unittest
+          from unittest import mock
+
+          from time_twist.release_compression import compress_release_groups
+
+
+          class ReleaseCompressionFastPathTests(unittest.TestCase):
+              """Lock the cheap-first release compression policy."""
+
+              def test_fitting_fast_candidate_skips_optimizer(self) -> None:
+                  """Accept a fitting fast candidate without expensive search."""
+                  fast = ((), ())
+                  with (
+                      mock.patch(
+                          'time_twist.release_compression.compress_english_groups',
+                          return_value=fast,
+                      ) as compressor,
+                      mock.patch(
+                          'time_twist.release_compression.packed_size',
+                          return_value=10,
+                      ),
+                  ):
+                      result = compress_release_groups((), max_bytes=10)
+
+                  self.assertEqual(result, fast)
+                  self.assertEqual(compressor.call_count, 1)
+                  self.assertFalse(compressor.call_args.kwargs['optimize'])
+
+              def test_over_capacity_fast_candidate_uses_optimizer(self) -> None:
+                  """Escalate when the fast result still exceeds capacity."""
+                  fast = ((), ())
+                  optimized = (((),), ())
+                  with (
+                      mock.patch(
+                          'time_twist.release_compression.compress_english_groups',
+                          side_effect=(fast, optimized),
+                      ) as compressor,
+                      mock.patch(
+                          'time_twist.release_compression.packed_size',
+                          return_value=11,
+                      ),
+                  ):
+                      result = compress_release_groups((), max_bytes=10)
+
+                  self.assertEqual(result, optimized)
+                  self.assertEqual(compressor.call_count, 2)
+                  self.assertFalse(compressor.call_args_list[0].kwargs['optimize'])
+                  self.assertTrue(compressor.call_args_list[1].kwargs['optimize'])
+
+              def test_incompatible_fast_candidate_uses_optimizer(self) -> None:
+                  """Escalate when fixed-UI validation rejects a fitting result."""
+                  fast = ((), ())
+                  optimized = (((),), ())
+                  validator = mock.Mock(return_value=False)
+                  with (
+                      mock.patch(
+                          'time_twist.release_compression.compress_english_groups',
+                          side_effect=(fast, optimized),
+                      ) as compressor,
+                      mock.patch(
+                          'time_twist.release_compression.packed_size',
+                          return_value=5,
+                      ),
+                  ):
+                      result = compress_release_groups(
+                          (), max_bytes=10, candidate_validator=validator
+                      )
+
+                  self.assertEqual(result, optimized)
+                  validator.assert_called_once_with(*fast)
+                  self.assertIs(
+                      compressor.call_args_list[1].kwargs['candidate_validator'],
+                      validator,
+                  )
+                  self.assertTrue(compressor.call_args_list[1].kwargs['optimize'])
+
+
+          if __name__ == '__main__':
+              unittest.main()
+          '''
+          Path('work/tests/test_release_compression_fastpath.py').write_text(
+              tests, encoding='utf-8', newline='\n'
+          )
+          PY
+      - name: Install development environment
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: Format and lint changed Python
+        run: |
+          python -m ruff check --fix work/time_twist/release.py work/time_twist/release_compression.py work/tests/test_release_compression_fastpath.py
+          python -m black work/time_twist/release.py work/time_twist/release_compression.py work/tests/test_release_compression_fastpath.py
+      - name: Regenerate review artifacts
+        run: |
+          python work/generate_bilingual_comparison_ci.py
+          python work/generate_translation_workbook.py
+      - name: Refresh public portions of release source lock
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          lock_path = Path('work/release_sources.json')
+          payload = json.loads(lock_path.read_text(encoding='utf-8'))
+          for relative, record in payload['files'].items():
+              path = Path(relative)
+              if not path.is_file():
+                  continue
+              data = path.read_bytes()
+              if record['normalization'] == 'lf':
+                  data = data.replace(b'\r\n', b'\n').replace(b'\r', b'\n')
+              record['sha256'] = hashlib.sha256(data).hexdigest().upper()
+              record['bytes'] = len(data)
+          lock_path.write_text(
+              json.dumps(payload, indent=2) + '\n',
+              encoding='utf-8',
+              newline='\n',
+          )
+          PY
+      - name: Run complete public validation
+        run: |
+          python work/tools/check_public_tree.py
+          python -m black --check work
+          python -m ruff check work
+          python -m pydocstyle --convention=pep257 work
+          python -m mypy
+          python work/run_tests.py unit
+      - name: Commit validated changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'Make release compression capacity-aware'
+          git push origin HEAD:voice-prose-pass-tt1a-pilot
