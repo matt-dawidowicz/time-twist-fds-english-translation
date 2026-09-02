@@ -24,6 +24,7 @@ from .project import (
     required_dictionary_entries,
     source_dictionary_reference_floor,
 )
+from .release_compression import compress_release_groups
 from .release_metadata import (
     BUILD_ENVIRONMENT_SCHEMA,
     CODE_LOGICAL_ROOT,
@@ -272,11 +273,12 @@ def build_scenario_bank(
         )
         page_pointer_bytes = fixed_record_table_page_pointer_bytes(bank_name)
         structural_bytes = pointer_bytes + page_pointer_bytes
-        compressed_combined, dictionary = compress_english_groups(
+        compressed_combined, dictionary = compress_release_groups(
             combined_groups,
             max_bytes=capacity - structural_bytes,
-            optimize=True,
             maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+            compressor=compress_english_groups,
+            measure=packed_size,
         )
         used = packed_size(compressed_combined, dictionary) + structural_bytes
         if used > capacity:
@@ -346,13 +348,14 @@ def build_scenario_bank(
             return False
         return True
 
-    compressed, dictionary = compress_english_groups(
+    compressed, dictionary = compress_release_groups(
         groups,
         required_entries=required_dictionary_entries(bank_name),
         max_bytes=capacity - pointer_bytes,
-        optimize=True,
         maximum_entries=maximum_dictionary_entries,
         candidate_validator=fixed_ui_candidate_is_valid,
+        compressor=compress_english_groups,
+        measure=packed_size,
     )
     rebuilt = rebuild_scenario_bank(
         bank,
