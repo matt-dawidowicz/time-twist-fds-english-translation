@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   apply:
-    if: github.event.head_commit.message == 'Install release fast-path applicator'
+    if: startsWith(github.event.head_commit.message, 'Install release fast-path applicator')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,6 +24,7 @@ jobs:
       - name: Apply capacity-aware release compression patch
         run: |
           python - <<'PY'
+          import re
           from pathlib import Path
 
           release_path = Path('work/time_twist/release.py')
@@ -38,43 +39,17 @@ jobs:
               raise SystemExit('release compression import no longer matches expected source')
           text = text.replace(old_import, new_import, 1)
 
-          old_combined = '''        compressed_combined, dictionary = compress_english_groups(
-              combined_groups,
-              max_bytes=capacity - structural_bytes,
-              optimize=True,
-              maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+          call_count = text.count('compress_english_groups(')
+          if call_count != 2:
+              raise SystemExit(f'expected 2 release compression calls, found {call_count}')
+          text = text.replace('compress_english_groups(', 'compress_release_groups(')
+          text, optimize_count = re.subn(
+              r'(?m)^\s*optimize=True,\n', '', text
           )
-          '''
-          new_combined = '''        compressed_combined, dictionary = compress_release_groups(
-              combined_groups,
-              max_bytes=capacity - structural_bytes,
-              maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
-          )
-          '''
-          if text.count(old_combined) != 1:
-              raise SystemExit('combined release compression call no longer matches expected source')
-          text = text.replace(old_combined, new_combined, 1)
-
-          old_standard = '''    compressed, dictionary = compress_english_groups(
-              groups,
-              required_entries=required_dictionary_entries(bank_name),
-              max_bytes=capacity - pointer_bytes,
-              optimize=True,
-              maximum_entries=maximum_dictionary_entries,
-              candidate_validator=fixed_ui_candidate_is_valid,
-          )
-          '''
-          new_standard = '''    compressed, dictionary = compress_release_groups(
-              groups,
-              required_entries=required_dictionary_entries(bank_name),
-              max_bytes=capacity - pointer_bytes,
-              maximum_entries=maximum_dictionary_entries,
-              candidate_validator=fixed_ui_candidate_is_valid,
-          )
-          '''
-          if text.count(old_standard) != 1:
-              raise SystemExit('standard release compression call no longer matches expected source')
-          text = text.replace(old_standard, new_standard, 1)
+          if optimize_count != 2:
+              raise SystemExit(
+                  f'expected 2 unconditional optimizer flags, found {optimize_count}'
+              )
           release_path.write_text(text, encoding='utf-8', newline='\n')
 
           module = '''"""Choose release compression without paying optimizer cost unnecessarily."""
