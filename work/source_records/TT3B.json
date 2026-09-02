@@ -12,7 +12,6 @@
           "id": "TT3B/g0/r0",
           "record": 0,
           "japanese": "のどかな でんえんちたい というかんじ",
-          "english": "Quiet countryside.",
           "symbols": [
             {
               "kind": "common",
@@ -96,7 +95,6 @@
           "id": "TT3B/g0/r1",
           "record": 1,
           "japanese": "むこうから くるまが……",
-          "english": "A car is coming...",
           "symbols": [
             {
               "kind": "common",
@@ -148,7 +146,6 @@
           "id": "TT3B/g0/r2",
           "record": 2,
           "japanese": "おんな「ほうこくします だっそうへい1めいと{CTRL:0} かがくしゃ1めいを たいほしました」{CTRL:2}しゅみっと「ごくろう あとはわたしがひきうける」{CTRL:6}おんな「はいる ひとらー／」{CTRL:4}しゅみっと「はいる ひとらー／」",
-          "english": "Woman: One escaped POW{CTRL:0}and a scientist caught.{CTRL:2}Schmidt: Good. My turn.{CTRL:6}Woman: Heil Hitler!{CTRL:4}Schmidt: Heil Hitler!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -396,7 +393,6 @@
           "id": "TT3B/g0/r3",
           "record": 3,
           "japanese": "いまは つかわれていないようだ",
-          "english": "It is unused now.",
           "symbols": [
             {
               "kind": "common",
@@ -464,7 +460,6 @@
           "id": "TT3B/g0/r4",
           "record": 4,
           "japanese": "ぶあついめがねを かけている",
-          "english": "He wears thick glasses.",
           "symbols": [
             {
               "kind": "extended",
@@ -520,7 +515,6 @@
           "id": "TT3B/g0/r5",
           "record": 5,
           "japanese": "ひきがねに てをかけている",
-          "english": "Her hand grips the gun.",
           "symbols": [
             {
               "kind": "common",
@@ -572,7 +566,6 @@
           "id": "TT3B/g0/r6",
           "record": 6,
           "japanese": "しもん「ときを もとにもどせたら……{CTRL:0} なんてことをね よくかんがえるんです{CTRL:0} このごろ」",
-          "english": "Simon: If time could be{CTRL:0}turned back... I often{CTRL:0}think of that lately.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -744,7 +737,6 @@
           "id": "TT3B/g0/r7",
           "record": 7,
           "japanese": "しもん「あいんしゅたいんは てんさいです{CTRL:0} いや かみのこ というべきか……{CTRL:0} だからこそ かれのりろんを{CTRL:0} ばくだんせいぞうなどに つかってはならない／」",
-          "english": "Einstein was a genius.{CTRL:0}No, a child of God...{CTRL:0}His work must never fuel{CTRL:0}making bombs!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1044,7 +1036,6 @@
           "id": "TT3B/g0/r8",
           "record": 8,
           "japanese": "……「きれいごとは たくさんよ」{CTRL:0}しもん「／」",
-          "english": "Voice: Spare me ideals.{CTRL:0}Simon: What?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1120,7 +1111,6 @@
           "id": "TT3B/g0/r9",
           "record": 9,
           "japanese": "おんな「ころすか ころされるか……{CTRL:0} それがせんそうだわ そうでしょ！」",
-          "english": "Woman: Kill or be killed{CTRL:0}That is war. Right?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1240,7 +1230,6 @@
           "id": "TT3B/g0/r10",
           "record": 10,
           "japanese": "しもん「やっぱり だめでしたか……」",
-          "english": "Simon: So it failed...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1300,7 +1289,6 @@
           "id": "TT3B/g0/r11",
           "record": 11,
           "japanese": "なにを！",
-          "english": "What?!",
           "symbols": [
             {
               "kind": "common",
@@ -1324,7 +1312,6 @@
           "id": "TT3B/g0/r12",
           "record": 12,
           "japanese": "そんなすきはない",
-          "english": "I have no opening.",
           "symbols": [
             {
               "kind": "common",
@@ -1364,7 +1351,6 @@
           "id": "TT3B/g0/r13",
           "record": 13,
           "japanese": "しっかりと にぎりしめた{CTRL:0}きのせいか ゆうきがわいてくる",
-          "english": "I grip it tightly.{CTRL:0}It gives me courage.",
           "symbols": [
             {
               "kind": "common",
@@ -1484,7 +1470,6 @@
           "id": "TT3B/g0/r14",
           "record": 14,
           "japanese": "しもん「おまもりですか！」{CTRL:1}おれ「まよけのじゅもんが かかれている{CTRL:0} らしいんですが さびていて よく{CTRL:0} みえないんです」{CTRL:3}しもん「へえー……」",
-          "english": "Simon: A charm?{CTRL:1}Me: It bears a warding{CTRL:0}spell, but rust makes it{CTRL:0}too hard to read.{CTRL:3}Simon: Hmm...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1728,7 +1713,6 @@
           "id": "TT3B/g0/r15",
           "record": 15,
           "japanese": "しもん「ここで まちましょう」",
-          "english": "Simon: Let us wait here.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1784,7 +1768,6 @@
           "id": "TT3B/g0/r16",
           "record": 16,
           "japanese": "おんな「もう にがさないわよ」",
-          "english": "Woman: No escape now.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1840,7 +1823,6 @@
           "id": "TT3B/g0/r17",
           "record": 17,
           "japanese": "やまみちを もうすぴーどでかけあがっている",
-          "english": "It races uphill.",
           "symbols": [
             {
               "kind": "common",
@@ -1924,7 +1906,6 @@
           "id": "TT3B/g0/r18",
           "record": 18,
           "japanese": "ほおぼねのつきでた あおじろいかおをしている",
-          "english": "Pale, high cheekbones",
           "symbols": [
             {
               "kind": "common",
@@ -2012,7 +1993,6 @@
           "id": "TT3B/g0/r19",
           "record": 19,
           "japanese": "ふあんげに おれをみつめている",
-          "english": "He watches me uneasily.",
           "symbols": [
             {
               "kind": "common",
@@ -2072,7 +2052,6 @@
           "id": "TT3B/g0/r20",
           "record": 20,
           "japanese": "しもん「いったい どういうことだ……！」",
-          "english": "Simon: What is this?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -2136,7 +2115,6 @@
           "id": "TT3B/g0/r21",
           "record": 21,
           "japanese": "しゅみっと「よく ここまでこれたな{CTRL:0} たいしたものだ」{CTRL:2}しもん「いっとくが わたしはこんりんざい{CTRL:0} ばくだんなど…」{CTRL:3}しゅみっと「だいじょうぶ あんしんしろ」{CTRL:4}しもん「！」",
-          "english": "Schmidt: You made it.{CTRL:0}Impressive.{CTRL:2}Simon: I won't build{CTRL:0}another bomb...{CTRL:3}Schmidt: Relax. All fine{CTRL:4}Simon: What?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -2416,7 +2394,6 @@
           "id": "TT3B/g0/r22",
           "record": 22,
           "japanese": "しゅみっと「くたばれ ひとらー／」{CTRL:1}しもん「／」",
-          "english": "Down with Hitler!{CTRL:1}Simon: What?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -2444,7 +2421,6 @@
           "id": "TT3B/g0/r23",
           "record": 23,
           "japanese": "てっかめんのようだった しゅみっとのかおが{CTRL:0}いたずらっぽく くずれた{CTRL:2}しゅみっと「なちすのなかにも{CTRL:0} \"れべっか\" は いるのさ」{CTRL:3}しもん「たすかった……」{CTRL:3}しゅみっと「このやまをこえれば こっきょうの{CTRL:4} みずうみにでる{CTRL:3} すいすへついたら あめりかたいしかんへ{CTRL:4} とびこんで…」",
-          "english": "Schmidt's iron face{CTRL:0}breaks into a sly grin.{CTRL:2}Schmidt: Nazis also have{CTRL:0}Rebecca members within.{CTRL:3}Simon: We are saved...{CTRL:3}Schmidt: Past this ridge{CTRL:4}lies the border lake.{CTRL:3}Once in Switzerland, go{CTRL:4}to the U.S. embassy...",
           "symbols": [
             {
               "kind": "common",
@@ -2948,7 +2924,6 @@
           "id": "TT3B/g0/r24",
           "record": 24,
           "japanese": "……「ばかめ… わがはいのてから{CTRL:0} のがれられるとおもっているのか」",
-          "english": "Voice: Fool... Think you{CTRL:0}can escape my grasp?",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3076,7 +3051,6 @@
           "id": "TT3B/g0/r25",
           "record": 25,
           "japanese": "おれ「ぎゃっ／」{CTRL:0}しもん「わあっ／」",
-          "english": "Me: Aagh!{CTRL:0}Simon: Aaah!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3128,7 +3102,6 @@
           "id": "TT3B/g0/r26",
           "record": 26,
           "japanese": "このすぴーどじゃ むりだ",
-          "english": "Not at this speed.",
           "symbols": [
             {
               "kind": "common",
@@ -3184,7 +3157,6 @@
           "id": "TT3B/g0/r27",
           "record": 27,
           "japanese": "しもん「あああ……／」{CTRL:0}しゅみっと「からだが……／」",
-          "english": "Simon: Aaaah!{CTRL:0}Schmidt: My body...!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3240,7 +3212,6 @@
           "id": "TT3B/g0/r28",
           "record": 28,
           "japanese": "ひとらー「わがはいのめは ごまかせんぞ{CTRL:0} しゅみっとたいさ……{CTRL:2} うらぎりもののまつろが どんなにあわれなものか{CTRL:6} おもいしらせてやる／」",
-          "english": "Hitler: You cannot fool{CTRL:0}my eyes, Col. Schmidt.{CTRL:2}See the wretched fate{CTRL:6}awaits a traitor!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3500,7 +3471,6 @@
           "id": "TT3B/g0/r29",
           "record": 29,
           "japanese": "{CTRL:0}しかし だめーじをあたえられない／",
-          "english": "{CTRL:0}But we do no damage!",
           "symbols": [
             {
               "kind": "control",
@@ -3580,7 +3550,6 @@
           "id": "TT3B/g0/r30",
           "record": 30,
           "japanese": "ひとらー「くくく… むだなていこうをしおって／」",
-          "english": "Hitler: Futile fools!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3664,7 +3633,6 @@
           "id": "TT3B/g0/r31",
           "record": 31,
           "japanese": "3にんは てひどいだめーじを うけた／",
-          "english": "All three are badly hurt",
           "symbols": [
             {
               "kind": "extended",
@@ -3754,7 +3722,6 @@
           "id": "TT3B/g1/r0",
           "record": 0,
           "japanese": "しゅみっとは けんじゅうを うった／",
-          "english": "Schmidt fires a pistol!",
           "symbols": [
             {
               "kind": "common",
@@ -3834,7 +3801,6 @@
           "id": "TT3B/g1/r1",
           "record": 1,
           "japanese": "しもんは くつをなげた／",
-          "english": "Simon throws his shoe!",
           "symbols": [
             {
               "kind": "common",
@@ -3890,7 +3856,6 @@
           "id": "TT3B/g1/r2",
           "record": 2,
           "japanese": "しもんは つばをとばした／",
-          "english": "Simon spits at him!",
           "symbols": [
             {
               "kind": "common",
@@ -3950,7 +3915,6 @@
           "id": "TT3B/g1/r3",
           "record": 3,
           "japanese": "しゅみっとは ないふを なげた／",
-          "english": "Schmidt throws a knife!",
           "symbols": [
             {
               "kind": "common",
@@ -4022,7 +3986,6 @@
           "id": "TT3B/g1/r4",
           "record": 4,
           "japanese": "3にんは みがまえて こうげきにそなえた／",
-          "english": "They brace for attack!",
           "symbols": [
             {
               "kind": "extended",
@@ -4114,7 +4077,6 @@
           "id": "TT3B/g1/r5",
           "record": 5,
           "japanese": "みうごきが とれない／",
-          "english": "I cannot move!",
           "symbols": [
             {
               "kind": "common",
@@ -4166,7 +4128,6 @@
           "id": "TT3B/g1/r6",
           "record": 6,
           "japanese": "ふるえるてで まもりふだをとり{CTRL:0}ひとらーのまえに つきだした{CTRL:2}ひとらー「／」",
-          "english": "I take the charm in fear{CTRL:0}and thrust it at Hitler{CTRL:2}Hitler: What?!",
           "symbols": [
             {
               "kind": "common",
@@ -4306,7 +4267,6 @@
           "id": "TT3B/g1/r7",
           "record": 7,
           "japanese": "まもりふだがとつぜん まばゆいひかりをはなち{CTRL:0}ひとらーのめを いぬいた{CTRL:2}ひとらー「ぐわあっ／」",
-          "english": "The charm flashes{CTRL:0}and sears Hitler's eyes!{CTRL:2}Hitler: Gwaaah!",
           "symbols": [
             {
               "kind": "common",
@@ -4482,7 +4442,6 @@
           "id": "TT3B/g1/r8",
           "record": 8,
           "japanese": "めだるのさびがとれて きざまれていた{CTRL:0}もじがうかびあがってくる／",
-          "english": "Rust falls off the medal{CTRL:0}and reveals its writing!",
           "symbols": [
             {
               "kind": "common",
@@ -4618,7 +4577,6 @@
           "id": "TT3B/g1/r9",
           "record": 9,
           "japanese": "おれ「ほうろうのたみに ただしき……{CTRL:0}{CTRL:0}が そのとき{CTRL:6}{CTRL:4}ひとらー「ぬおおおおーー／／」",
-          "english": "Me: Guide those who roam{CTRL:0}{CTRL:0}But then...{CTRL:6}{CTRL:4}Hitler: Nooooo!!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4766,7 +4724,6 @@
           "id": "TT3B/g1/r10",
           "record": 10,
           "japanese": "おれ「な… なんでこんなときに／」",
-          "english": "Me: Why now?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4830,7 +4787,6 @@
           "id": "TT3B/g1/r11",
           "record": 11,
           "japanese": "もがきくるしんでいる",
-          "english": "He writhes in agony.",
           "symbols": [
             {
               "kind": "common",
@@ -4878,7 +4834,6 @@
           "id": "TT3B/g1/r12",
           "record": 12,
           "japanese": "おれ「まもりふだの もじを……」",
-          "english": "Me: The charm's words...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4934,7 +4889,6 @@
           "id": "TT3B/g1/r13",
           "record": 13,
           "japanese": "おれ「まもりふだの もじをよめ／{CTRL:1} おおきなこえで よむんだ／{CTRL:2} くーがー／ くーがー／」",
-          "english": "Me: Read the charm!{CTRL:1}Read it out loud!{CTRL:2}Cougar! Cougar!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5086,7 +5040,6 @@
           "id": "TT3B/g1/r14",
           "record": 14,
           "japanese": "おれ「がんばれ／」",
-          "english": "Me: Hold on!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5118,7 +5071,6 @@
           "id": "TT3B/g1/r15",
           "record": 15,
           "japanese": "くーがー「わあああ……／」{CTRL:0}しもん「か かみよ／」{CTRL:0}しゅみっと「からだが… ちぎれそうだ……／」",
-          "english": "Cougar: Aaaaah!{CTRL:0}Simon: Oh, God!{CTRL:0}Schmidt: I'm torn apart!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5246,7 +5198,6 @@
           "id": "TT3B/g1/r16",
           "record": 16,
           "japanese": "くーがー「…… だれだ……／！{CTRL:1} …… まもりふだ……！」",
-          "english": "Cougar: Who is there?!{CTRL:1}The charm...!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5334,7 +5285,6 @@
           "id": "TT3B/g1/r17",
           "record": 17,
           "japanese": "くーがー「ま まもりふだのもじ……／」",
-          "english": "Cougar: Its words...!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5394,7 +5344,6 @@
           "id": "TT3B/g1/r18",
           "record": 18,
           "japanese": "おれ「よめ／ おおきなこえで よむんだ／」",
-          "english": "Me: Read them out loud!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5474,7 +5423,6 @@
           "id": "TT3B/g1/r19",
           "record": 19,
           "japanese": "くーがー「ほうろうのたみに ただしきみちを{CTRL:0} しめしたまえ／ どうちゅうのさいなんから{CTRL:0} わがみをまもりたまえ／{CTRL:6} われは かみのげぼくにして そのじひと{CTRL:4} めぐみを たたえるものなり／」",
-          "english": "Cougar: Guide wanderers{CTRL:0}to the righteous path!{CTRL:0}Guard me on my journey!{CTRL:6}I am God's servant,{CTRL:4}praising mercy and grace",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5842,7 +5790,6 @@
           "id": "TT3B/g1/r20",
           "record": 20,
           "japanese": "そんなばあいじゃない／",
-          "english": "No time for that!",
           "symbols": [
             {
               "kind": "common",
@@ -5894,7 +5841,6 @@
           "id": "TT3B/g1/r21",
           "record": 21,
           "japanese": "くーがー「だれも いない……」{CTRL:1}しゅみっと「げんかく か！」{CTRL:2}しもん「いや たしかに…」{CTRL:6}{CTRL:4}{CTRL:4}{CTRL:4}{CTRL:3}あくまのしわざだよ{CTRL:3}おれのからだをうばった あくまのね……{CTRL:3}{CTRL:4}{CTRL:4}{CTRL:4}{CTRL:3}しもん「ん！ いまなんかいった！」{CTRL:3}しゅみっと「いや……」{CTRL:3}くーがー「……」",
-          "english": "Cougar: Nobody here...{CTRL:1}Schmidt: A vision?{CTRL:2}Simon: No, I heard it...{CTRL:6}{CTRL:4}{CTRL:4}{CTRL:4}{CTRL:3}The Devil did this.{CTRL:3}The Devil stole my body{CTRL:3}{CTRL:4}{CTRL:4}{CTRL:4}{CTRL:3}Simon: Did someone talk?{CTRL:3}Schmidt: No...{CTRL:3}Cougar: ...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6258,7 +6204,6 @@
           "id": "TT3B/g1/r22",
           "record": 22,
           "japanese": "しゅみっと「もうすぐ こっきょうをこえるぞ」{CTRL:1}くーがー「なにも おもいだせない{CTRL:0} どうして こんなところにいるのか……」{CTRL:6}しもん「よっぽど うちどころが{CTRL:4} わるかったんだな」{CTRL:3}しゅみっと「しかし おそろしいものをみた」{CTRL:3}くーがー「ああ…… じんせいかんが{CTRL:4} かわりそうだよ」{CTRL:3}しもん「まったく……」",
-          "english": "Schmidt: Border ahead.{CTRL:1}Cougar: I recall none.{CTRL:0}Why am I here...?{CTRL:6}Simon: You must have hit{CTRL:4}your head very hard.{CTRL:3}Schmidt: What a horror.{CTRL:3}Cougar: It may change my{CTRL:4}whole view of life.{CTRL:3}Simon: Indeed...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6754,7 +6699,6 @@
           "id": "TT3B/g1/r23",
           "record": 23,
           "japanese": "ひとらー「おねがいだ／ わがはいも{CTRL:0} つれていってくれ／」{CTRL:2}あくま「そうはいかん きさまはまだまだ ここで{CTRL:0} あくじをくりかえすぎむが ある{CTRL:3} けいやくがきれる らいねんまで…」{CTRL:3}ひとらー「らいねん！」{CTRL:3}あくま「1945ねん 4がつ30にち{CTRL:3} それがきさまの めいにちだ よくおぼえておけ」{CTRL:3}ひとらー「……」{CTRL:4}あくま「では いつかじごくで……」",
-          "english": "Hitler: Please! Take me{CTRL:0}with you!{CTRL:2}Devil: No. You must stay{CTRL:0}and keep doing evil{CTRL:3}until next year.{CTRL:3}Hitler: Next year?!{CTRL:3}Devil: April 30, 1945.{CTRL:3}That is when you die.{CTRL:3}Hitler: ...{CTRL:4}Devil: See you in Hell.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7338,7 +7282,6 @@
           "id": "TT3B/g1/r24",
           "record": 24,
           "japanese": "こうしてまたおれは じげんのあなへ{CTRL:0}すいこまれていく{CTRL:2}こんどは どこへとばされるのか……{CTRL:6}だれのからだに のりうつるのか……{CTRL:3}ああ どうすりゃいいんだ／",
-          "english": "Again I am pulled into{CTRL:0}the rift between worlds.{CTRL:2}Where will I go now?{CTRL:6}Whom will I possess?{CTRL:3}What can I do?!",
           "symbols": [
             {
               "kind": "common",
@@ -7642,7 +7585,6 @@
           "id": "TT3B/g1/r25",
           "record": 25,
           "japanese": "こうへんへ つづく……",
-          "english": "TO BE CONTINUED...",
           "symbols": [
             {
               "kind": "common",

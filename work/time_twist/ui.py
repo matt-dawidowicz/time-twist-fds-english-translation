@@ -1188,7 +1188,7 @@ def _parse_fixed_label_fallbacks(
 
 
 # The full-word tuples are the canonical release target. These compact labels
-# remain only for the standalone, size-neutral ``ui-patch`` compatibility path,
+# remain only for the standalone, size-neutral fixed-slot compatibility helpers,
 # whose old two-to-six-byte record slots and native 31-entry dictionary cannot
 # represent every full label at once. The canonical release repacks the
 # recovered page-indexed tables and does not select these fallbacks.

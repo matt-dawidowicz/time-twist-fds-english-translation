@@ -86,7 +86,7 @@ the scenario group-pointer and menu page-pointer bytes before compression.
 
 The resulting dictionary is shared by dialogue and menu labels. The canonical
 release permits up to 68 entries, then verifies the exact packed size before
-writing. The standalone `scenario-insert` plus `ui-patch` workflow remains a
+writing. The standalone the retired standalone scenario builder plus the retired standalone fixed-UI command workflow remains a
 31-entry, exact-slot diagnostic path and may still use declared compact
 fallbacks. It is not the canonical full-word build path.
 

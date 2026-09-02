@@ -12,7 +12,6 @@
           "id": "TT6B/g0/r0",
           "record": 0,
           "japanese": "よせふ「だいじょうぶか まりあ」{CTRL:0}まりあ「ええ なんとか…{CTRL:0} それより かしむが つらそうよ」{CTRL:6}よせふ「なーに こいつはだいじょうぶさ{CTRL:3} みずでものませれば すぐげんきになるって／」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -344,7 +343,6 @@
           "id": "TT6B/g0/r1",
           "record": 1,
           "japanese": "ろばのきも しらないで……",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -400,7 +398,6 @@
           "id": "TT6B/g0/r2",
           "record": 2,
           "japanese": "こうりょうとしたけしきが つづいている",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -476,7 +473,6 @@
           "id": "TT6B/g0/r3",
           "record": 3,
           "japanese": "ひとり げんきだ",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -516,7 +512,6 @@
           "id": "TT6B/g0/r4",
           "record": 4,
           "japanese": "いがいと おもい",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -556,7 +551,6 @@
           "id": "TT6B/g0/r5",
           "record": 5,
           "japanese": "こまったかおで おれをみつめている",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -624,7 +618,6 @@
           "id": "TT6B/g0/r6",
           "record": 6,
           "japanese": "ふしぶしがいたい… はらがへった…{CTRL:1}のども からからだ……",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -744,7 +737,6 @@
           "id": "TT6B/g0/r7",
           "record": 7,
           "japanese": "おもい つかれた はらへった……{CTRL:0}もう いっぽも あるけない……",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -872,7 +864,6 @@
           "id": "TT6B/g0/r8",
           "record": 8,
           "japanese": "まりあ「かしむ／」{CTRL:0}よせふ「おい しっかりしろ／」{CTRL:0}おれ「ひひーん……」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -964,7 +955,6 @@
           "id": "TT6B/g0/r9",
           "record": 9,
           "japanese": "ろばのじんせいって かなしい……",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -1032,7 +1022,6 @@
           "id": "TT6B/g0/r10",
           "record": 10,
           "japanese": "よせふ「おかしいなあ……」{CTRL:0}まりあ「どうしたの！」{CTRL:2}よせふ「そろそろ まちが みえてくるはず{CTRL:0} なんだけど…… みちに まよったみたいだ」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1264,7 +1253,6 @@
           "id": "TT6B/g0/r11",
           "record": 11,
           "japanese": "まりあ「みずも しょくりょうも なくなったわ」{CTRL:0}よせふ「まいったな もうすぐひがくれる……」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1424,7 +1412,6 @@
           "id": "TT6B/g0/r12",
           "record": 12,
           "japanese": "すなぼこりが はなのあなにはいってくる{CTRL:0}おれ「ふがが…」",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -1524,7 +1511,6 @@
           "id": "TT6B/g0/r13",
           "record": 13,
           "japanese": "くんくん…… お！ くんくん……{CTRL:1}おお／ このこうばしいにおいは ほしくさだ／{CTRL:0}ちかくに いえがあるぞ",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -1728,7 +1714,6 @@
           "id": "TT6B/g0/r14",
           "record": 14,
           "japanese": "ほしくさのあまいかおりが はなをくすぐる",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -1816,7 +1801,6 @@
           "id": "TT6B/g0/r15",
           "record": 15,
           "japanese": "よせふ「どうした！ かしむ…」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1868,7 +1852,6 @@
           "id": "TT6B/g0/r16",
           "record": 16,
           "japanese": "よせふ「なに おこってるの！」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1920,7 +1903,6 @@
           "id": "TT6B/g0/r17",
           "record": 17,
           "japanese": "おれ「ひひーん／」{CTRL:1}よせふ「なに おこってるの！」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1988,7 +1970,6 @@
           "id": "TT6B/g0/r18",
           "record": 18,
           "japanese": "おれ「ひひーん／ ひひひーん／」{CTRL:1}よせふ「どうしたんだ かしむ／」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -2076,7 +2057,6 @@
           "id": "TT6B/g0/r19",
           "record": 19,
           "japanese": "おれ「はあっ はあっ」{CTRL:1}よせふ「あ… そうか みずをやるんだったな{CTRL:0} すまんすまん」{CTRL:6}こしにさげたすいとうの せんをぬいたが……{CTRL:3}おれ「あー もうなかったんだ」{CTRL:4}おれ「ひひーん／」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -2388,7 +2368,6 @@
           "id": "TT6B/g0/r20",
           "record": 20,
           "japanese": "よせふ「みずはないんだ がまんしろ」{CTRL:0}おれ「ぶるる…」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -2480,7 +2459,6 @@
           "id": "TT6B/g0/r21",
           "record": 21,
           "japanese": "よせふ「なんだ こいつ…」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -2524,7 +2502,6 @@
           "id": "TT6B/g0/r22",
           "record": 22,
           "japanese": "おれ「ひひーん／」{CTRL:1}いちもくさんにかけだした",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -2596,7 +2573,6 @@
           "id": "TT6B/g0/r23",
           "record": 23,
           "japanese": "よせふ「おい／ まて かしむ／」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -2652,7 +2628,6 @@
           "id": "TT6B/g0/r24",
           "record": 24,
           "japanese": "たすかった……／",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -2688,7 +2663,6 @@
           "id": "TT6B/g0/r25",
           "record": 25,
           "japanese": "ゆうぼくみんの いえだな",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -2744,7 +2718,6 @@
           "id": "TT6B/g0/r26",
           "record": 26,
           "japanese": "きのよさそうな おとこだ",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -2800,7 +2773,6 @@
           "id": "TT6B/g0/r27",
           "record": 27,
           "japanese": "こまったかおを している",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -2848,7 +2820,6 @@
           "id": "TT6B/g0/r28",
           "record": 28,
           "japanese": "みょうに おちついている",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -2896,7 +2867,6 @@
           "id": "TT6B/g0/r29",
           "record": 29,
           "japanese": "らくだ「なんだっぺ！」{CTRL:1}おれ「ほしくさ たべていい！」{CTRL:0}らくだ「ええよ なんぼでもくってけや」",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -3076,7 +3046,6 @@
           "id": "TT6B/g0/r30",
           "record": 30,
           "japanese": "らくだ「おら しょうじきだけがとりえだ」",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -3164,7 +3133,6 @@
           "id": "TT6B/g0/r31",
           "record": 31,
           "japanese": "らくだ「3にんのなかの ひとりは{CTRL:0} ぜったいうそをつかない しょうじきもの{CTRL:2} ひとりは うそしかつかない うそつき{CTRL:6} ひとりは たまにうそをつく{CTRL:4} ちゃらんぽらん だっぺ」",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -3522,7 +3490,6 @@
           "id": "TT6B/g1/r0",
           "record": 0,
           "japanese": "よせふ「どなたか いらっしゃいますかー！」{CTRL:0}{CTRL:2}……「なんか ごよう！」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3642,7 +3609,6 @@
           "id": "TT6B/g1/r1",
           "record": 1,
           "japanese": "よせふ「べつれへむへ いきたいのですが……」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3718,7 +3684,6 @@
           "id": "TT6B/g1/r2",
           "record": 2,
           "japanese": "みぎのおとこ「ひがしへ まっすぐいけ」{CTRL:1}まんなかのおとこ「きたへ まっすぐいけ」{CTRL:2}ひだりのおとこ「にしへ まっすぐいけ」",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -3930,7 +3895,6 @@
           "id": "TT6B/g1/r3",
           "record": 3,
           "japanese": "みぎのおとこ「まんなかのおとこは{CTRL:0} ちゃらんぽらん じゃない」{CTRL:2}まんなかのおとこ「むかってひだりの おとこは{CTRL:0} しょうじきもの じゃない」{CTRL:3}ひだりのおとこ「むかってみぎの おとこは{CTRL:4} うそつき じゃない」",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -4310,7 +4274,6 @@
           "id": "TT6B/g1/r4",
           "record": 4,
           "japanese": "おれ「おー でりしゃす／ ふがが…ふがふが／」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4390,7 +4353,6 @@
           "id": "TT6B/g1/r5",
           "record": 5,
           "japanese": "よせふ「ちょっとまて かしむ」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4446,7 +4408,6 @@
           "id": "TT6B/g1/r6",
           "record": 6,
           "japanese": "おれ「ひひーん／」{CTRL:1}よせふ「よし／ おまえをしんじよう」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4530,7 +4491,6 @@
           "id": "TT6B/g1/r7",
           "record": 7,
           "japanese": "うしろを ついてきている",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -4578,7 +4538,6 @@
           "id": "TT6B/g1/r8",
           "record": 8,
           "japanese": "なるべく ゆらさないようにしよう",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -4650,7 +4609,6 @@
           "id": "TT6B/g1/r9",
           "record": 9,
           "japanese": "よせふ「たよりになるな かしむは……」{CTRL:0}まりあ「ほんと」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4738,7 +4696,6 @@
           "id": "TT6B/g1/r10",
           "record": 10,
           "japanese": "「ここよりさき べつれへむのまち」{CTRL:0}{CTRL:2}よせふ「やった ついたぞ／」",
-          "english": "",
           "symbols": [
             {
               "kind": "extended",
@@ -4862,7 +4819,6 @@
           "id": "TT6B/g1/r11",
           "record": 11,
           "japanese": "いっぽうそのころ よぞらのほしにみちびかれて{CTRL:0}やはり べつれへむをめざす{CTRL:0}3にんの たびびとがいた",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -5066,7 +5022,6 @@
           "id": "TT6B/g1/r12",
           "record": 12,
           "japanese": "……「あそこだ いそごう」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5118,7 +5073,6 @@
           "id": "TT6B/g1/r13",
           "record": 13,
           "japanese": "やどや「へやはもう いっぱいだよ」{CTRL:0}よせふ「そこをなんとか…」{CTRL:2}やどや「ないものはないんだ みちばたに ねな」{CTRL:6}よせふ「おねがいです／{CTRL:4} こどもが うまれそうなんですよ」{CTRL:3}やどや「しょうがないなあ{CTRL:4} うまごやでよかったら かしてあげるよ」{CTRL:3}よせふ「ありがとうございます／」",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -5626,7 +5580,6 @@
           "id": "TT6B/g1/r14",
           "record": 14,
           "japanese": "……「ここのようですな」{CTRL:1}……「やっとついた……」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5710,7 +5663,6 @@
           "id": "TT6B/g1/r15",
           "record": 15,
           "japanese": "けっこうひろいが ふけつ／",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -5770,7 +5722,6 @@
           "id": "TT6B/g1/r16",
           "record": 16,
           "japanese": "まりあのかみを やさしくなでている",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -5838,7 +5789,6 @@
           "id": "TT6B/g1/r17",
           "record": 17,
           "japanese": "つきあかりをあびた そのかおは{CTRL:0}てんしのように うつくしい",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -5954,7 +5904,6 @@
           "id": "TT6B/g1/r18",
           "record": 18,
           "japanese": "ほしくさが やまもりになっている",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -6018,7 +5967,6 @@
           "id": "TT6B/g1/r19",
           "record": 19,
           "japanese": "ほしくさは もうない",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -6066,7 +6014,6 @@
           "id": "TT6B/g1/r20",
           "record": 20,
           "japanese": "めすうまだ…… けっこう ちゃーみんぐ／",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -6150,7 +6097,6 @@
           "id": "TT6B/g1/r21",
           "record": 21,
           "japanese": "めがきょろきょろして おちつきがない",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -6230,7 +6176,6 @@
           "id": "TT6B/g1/r22",
           "record": 22,
           "japanese": "とっつきにくそうな やつだな{CTRL:0}うし「あーーんだ もんくあっか」",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -6358,7 +6303,6 @@
           "id": "TT6B/g1/r23",
           "record": 23,
           "japanese": "うーーん これはまちがいなく……{CTRL:0}うし「くそは くそだべー」",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -6478,7 +6422,6 @@
           "id": "TT6B/g1/r24",
           "record": 24,
           "japanese": "おれ「ひひーん」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6498,7 +6441,6 @@
           "id": "TT6B/g1/r25",
           "record": 25,
           "japanese": "めすうま「ろーまがなにさ／ そのうちに{CTRL:0} おちぶれるときが きっとくるわ」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6638,7 +6580,6 @@
           "id": "TT6B/g1/r26",
           "record": 26,
           "japanese": "めすうま「なれなれしく しないでね{CTRL:0} あなたとは みぶんがちがうんだから」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6778,7 +6719,6 @@
           "id": "TT6B/g1/r27",
           "record": 27,
           "japanese": "ひつじ「とおい ひがしのくににはな……{CTRL:0} \"まふうじのつぼ\" というなの{CTRL:0} あくまをとじこめる うつわがあるそうじゃ」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6998,7 +6938,6 @@
           "id": "TT6B/g1/r28",
           "record": 28,
           "japanese": "ひつじ「ぎもんは あらゆるちえの かぎとなる{CTRL:0} ……あらぶの ふるいことわざじゃ」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7154,7 +7093,6 @@
           "id": "TT6B/g1/r29",
           "record": 29,
           "japanese": "ひつじ「あのな… こんなことしっちょるか！」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7234,7 +7172,6 @@
           "id": "TT6B/g1/r30",
           "record": 30,
           "japanese": "{CTRL:0}{CTRL:0}へびにそそのかされ えばが くちにしたものは！",
-          "english": "",
           "symbols": [
             {
               "kind": "control",
@@ -7342,7 +7279,6 @@
           "id": "TT6B/g1/r31",
           "record": 31,
           "japanese": "ひつじ「せいかいじゃ ならばこれはどうだ！」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7392,7 +7328,6 @@
           "id": "TT6B/g2/r0",
           "record": 0,
           "japanese": "{CTRL:0}{CTRL:0}ゆだやきょうがみとめる ただひとつのかみ とは！",
-          "english": "",
           "symbols": [
             {
               "kind": "control",
@@ -7504,7 +7439,6 @@
           "id": "TT6B/g2/r1",
           "record": 1,
           "japanese": "{CTRL:0}{CTRL:0}もーぜが いすらえるびとをひきつれて{CTRL:0}だっしゅつした くには！",
-          "english": "",
           "symbols": [
             {
               "kind": "control",
@@ -7644,7 +7578,6 @@
           "id": "TT6B/g2/r2",
           "record": 2,
           "japanese": "{CTRL:0}{CTRL:0}えるされむに けんらんごうかなしんでんを{CTRL:0}つくった ゆだやのおうは！",
-          "english": "",
           "symbols": [
             {
               "kind": "control",
@@ -7796,7 +7729,6 @@
           "id": "TT6B/g2/r3",
           "record": 3,
           "japanese": "{CTRL:0}{CTRL:0}すくいぬしを しめす「あぶらを そそがれたもの」{CTRL:0}という いみのことばは！",
-          "english": "",
           "symbols": [
             {
               "kind": "control",
@@ -7960,7 +7892,6 @@
           "id": "TT6B/g2/r4",
           "record": 4,
           "japanese": "ひつじ「せいかいじゃ{CTRL:1} ぜんもんせいかいとは やるもんじゃ」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8076,7 +8007,6 @@
           "id": "TT6B/g2/r5",
           "record": 5,
           "japanese": "ひつじ「あほ」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8100,7 +8030,6 @@
           "id": "TT6B/g2/r6",
           "record": 6,
           "japanese": "うし「むずかしいこたぁ わがんねーけどよーー{CTRL:0} なーんか とんでもねえことが おこりそうだなー{CTRL:2} やせいの かんってやつだべかなーー」",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -8368,7 +8297,6 @@
           "id": "TT6B/g2/r7",
           "record": 7,
           "japanese": "うし「なぁーーんちゅーか{CTRL:1} かぁーーんちゅーか{CTRL:2} はっきりいって{CTRL:6} はええはなしがよぉーー」",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -8548,7 +8476,6 @@
           "id": "TT6B/g2/r8",
           "record": 8,
           "japanese": "な なんてかったるいやつだ……",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -8612,7 +8539,6 @@
           "id": "TT6B/g2/r9",
           "record": 9,
           "japanese": "ただでさえ はらいっぱいで{CTRL:0}ねむたくなってるときに……",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -8724,7 +8650,6 @@
           "id": "TT6B/g2/r10",
           "record": 10,
           "japanese": "たくさんいるわりに しずかだ",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -8788,7 +8713,6 @@
           "id": "TT6B/g2/r11",
           "record": 11,
           "japanese": "よせふ「がんばれ まりあ」{CTRL:0}まりあ「ええ……」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8856,7 +8780,6 @@
           "id": "TT6B/g2/r12",
           "record": 12,
           "japanese": "よせふ「かみさま どうかぶじに……」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8916,7 +8839,6 @@
           "id": "TT6B/g2/r13",
           "record": 13,
           "japanese": "なにを！",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -8940,7 +8862,6 @@
           "id": "TT6B/g2/r14",
           "record": 14,
           "japanese": "めすうま「ちょっと／",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8972,7 +8893,6 @@
           "id": "TT6B/g2/r15",
           "record": 15,
           "japanese": "{CTRL:0} かってに たべないでくれる！」",
-          "english": "",
           "symbols": [
             {
               "kind": "control",
@@ -9044,7 +8964,6 @@
           "id": "TT6B/g2/r16",
           "record": 16,
           "japanese": "めすうま「いいわよ たべても」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9096,7 +9015,6 @@
           "id": "TT6B/g2/r17",
           "record": 17,
           "japanese": "{CTRL:0}おれ「おー でりしゃす／ ふがが…ふがふが／」",
-          "english": "",
           "symbols": [
             {
               "kind": "control",
@@ -9180,7 +9098,6 @@
           "id": "TT6B/g2/r18",
           "record": 18,
           "japanese": "めすうま「ちびちびたべてないで いっぺんに{CTRL:0} どーんといきなさいよ どーんと／」{CTRL:2}おれ「は はい…」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9356,7 +9273,6 @@
           "id": "TT6B/g2/r19",
           "record": 19,
           "japanese": "おれ「ががががっ／ はぐはぐっ／」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9420,7 +9336,6 @@
           "id": "TT6B/g2/r20",
           "record": 20,
           "japanese": "おれ「ごちそうさまでした」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9472,7 +9387,6 @@
           "id": "TT6B/g2/r21",
           "record": 21,
           "japanese": "はらいっぱいで もうくえない",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -9536,7 +9450,6 @@
           "id": "TT6B/g2/r22",
           "record": 22,
           "japanese": "うし「そりゃ くえねえど」",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -9596,7 +9509,6 @@
           "id": "TT6B/g2/r23",
           "record": 23,
           "japanese": "{CTRL:0}おれ「うむ たしかに…」",
-          "english": "",
           "symbols": [
             {
               "kind": "control",
@@ -9644,7 +9556,6 @@
           "id": "TT6B/g2/r24",
           "record": 24,
           "japanese": "めすうま「げんき いいのね」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9692,7 +9603,6 @@
           "id": "TT6B/g2/r25",
           "record": 25,
           "japanese": "あしが とどかない",
-          "english": "",
           "symbols": [
             {
               "kind": "common",
@@ -9736,7 +9646,6 @@
           "id": "TT6B/g2/r26",
           "record": 26,
           "japanese": "おれ「でへへへー」{CTRL:1}めすうま「……」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9784,7 +9693,6 @@
           "id": "TT6B/g2/r27",
           "record": 27,
           "japanese": "めすうま「ありがとう」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9820,7 +9728,6 @@
           "id": "TT6B/g2/r28",
           "record": 28,
           "japanese": "めすうま「あら わかる！ これ… えるされむで{CTRL:0} はやりの かっとなのよ ふふふ…」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9976,7 +9883,6 @@
           "id": "TT6B/g2/r29",
           "record": 29,
           "japanese": "おれ「ひひーん／」{CTRL:1}めすうま「……」",
-          "english": "",
           "symbols": [
             {
               "kind": "dictionary",

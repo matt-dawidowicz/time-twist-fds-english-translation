@@ -1,3 +1,8 @@
+> **Historical snapshot.** This document records an earlier implementation or
+> release-review state. It is preserved for provenance, not as an operational
+> guide. Use [`../README.md`](../README.md) for current documentation. Commands,
+> paths, status values, and relative links below may reflect the archived state.
+
 # Scenario translation pipeline hardening
 
 This note records the defensive changes added after the August 2026 code

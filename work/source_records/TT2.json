@@ -12,7 +12,6 @@
           "id": "TT2/g0/r0",
           "record": 0,
           "japanese": "ぴえーる「かみさま おねがいだ{CTRL:0} おれたちびんぼうにんに ちからをかしてくれ{CTRL:2} かみさまってばよー／」",
-          "english": "Pierre: God, help us!{CTRL:0}Give poor folk your aid.{CTRL:2}God, can you hear me?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -204,7 +203,6 @@
           "id": "TT2/g0/r1",
           "record": 1,
           "japanese": "ぴえーる「なんで あくまがでてくるんだよー／」{CTRL:0}{CTRL:2}おれ「……どうなってんだ……！」",
-          "english": "Pierre: Why a devil?!{CTRL:0}{CTRL:2}Me: What is happening?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -328,7 +326,6 @@
           "id": "TT2/g0/r2",
           "record": 2,
           "japanese": "なんだか…… きが…… とおくなってきた……",
-          "english": "I feel... faint...",
           "symbols": [
             {
               "kind": "common",
@@ -412,7 +409,6 @@
           "id": "TT2/g0/r3",
           "record": 3,
           "japanese": "こげくさいな……{CTRL:0}{CTRL:2}／ ろうそくのひが…／{CTRL:6}ぴえーる「ひゃああーーっ／」",
-          "english": "It smells burnt...{CTRL:0}{CTRL:2}The candle flame...!{CTRL:6}Pierre: Aaaah!!",
           "symbols": [
             {
               "kind": "common",
@@ -524,7 +520,6 @@
           "id": "TT2/g0/r4",
           "record": 4,
           "japanese": "おれ「あぢ… あぢぢぢぢ……／」",
-          "english": "Me: Hot... It burns!!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -580,7 +575,6 @@
           "id": "TT2/g0/r5",
           "record": 5,
           "japanese": "おれは…… しんだのか！{CTRL:1}いや からだはなくなったけど……{CTRL:0}まだ いきてる／",
-          "english": "Am I... dead?!{CTRL:1}My body is gone, but...{CTRL:0}I am still alive!",
           "symbols": [
             {
               "kind": "common",
@@ -732,7 +726,6 @@
           "id": "TT2/g0/r6",
           "record": 6,
           "japanese": "がらすのはへんが ちらかっている",
-          "english": "Glass shards lie here.",
           "symbols": [
             {
               "kind": "extended",
@@ -792,7 +785,6 @@
           "id": "TT2/g0/r7",
           "record": 7,
           "japanese": "こしを ぬかしている",
-          "english": "He is terrified.",
           "symbols": [
             {
               "kind": "common",
@@ -840,7 +832,6 @@
           "id": "TT2/g0/r8",
           "record": 8,
           "japanese": "きを うしなっている",
-          "english": "Unconscious.",
           "symbols": [
             {
               "kind": "common",
@@ -876,7 +867,6 @@
           "id": "TT2/g0/r9",
           "record": 9,
           "japanese": "どうなってんだ……！{CTRL:1}ひ ひとのからだに はいっちまった……／",
-          "english": "What is happening?!{CTRL:1}I entered another body!",
           "symbols": [
             {
               "kind": "extended",
@@ -1000,7 +990,6 @@
           "id": "TT2/g0/r10",
           "record": 10,
           "japanese": "かさかさにかわいて あちこちにひびが{CTRL:0}はいっている",
-          "english": "Dry skin,{CTRL:0}cracked all over.",
           "symbols": [
             {
               "kind": "common",
@@ -1096,7 +1085,6 @@
           "id": "TT2/g0/r11",
           "record": 11,
           "japanese": "さわると ひふがぼろぼろはげおちる{CTRL:1}なんか やばいぞ",
-          "english": "His skin flakes off.{CTRL:1}Something is very wrong.",
           "symbols": [
             {
               "kind": "common",
@@ -1208,7 +1196,6 @@
           "id": "TT2/g0/r12",
           "record": 12,
           "japanese": "ぴえーる「せんそうは まけそうだし{CTRL:0} けいきはわるいし…… こうなりゃかみさまにでも{CTRL:0} すがるしかねえって……{CTRL:6} だけどまさか あくまのだんながでてくるとは…」",
-          "english": "Pierre: War looks grim.{CTRL:0}Trade is bad too...{CTRL:0}So I prayed to God...{CTRL:6}But a devil came...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1504,7 +1491,6 @@
           "id": "TT2/g0/r13",
           "record": 13,
           "japanese": "ぴえーる「こ ころさないで／」",
-          "english": "Pierre: D-don't kill me!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1552,7 +1538,6 @@
           "id": "TT2/g0/r14",
           "record": 14,
           "japanese": "だれもいない",
-          "english": "Nobody here.",
           "symbols": [
             {
               "kind": "extended",
@@ -1576,7 +1561,6 @@
           "id": "TT2/g0/r15",
           "record": 15,
           "japanese": "なにを！",
-          "english": "What are you doing?!",
           "symbols": [
             {
               "kind": "common",
@@ -1600,7 +1584,6 @@
           "id": "TT2/g0/r16",
           "record": 16,
           "japanese": "けがするぞ",
-          "english": "You will get hurt.",
           "symbols": [
             {
               "kind": "common",
@@ -1628,7 +1611,6 @@
           "id": "TT2/g0/r17",
           "record": 17,
           "japanese": "むだだ",
-          "english": "No use.",
           "symbols": [
             {
               "kind": "common",
@@ -1648,7 +1630,6 @@
           "id": "TT2/g0/r18",
           "record": 18,
           "japanese": "ごくごくごく…… ぷはーーっ／",
-          "english": "Gulp, gulp... Ahhh!",
           "symbols": [
             {
               "kind": "extended",
@@ -1712,7 +1693,6 @@
           "id": "TT2/g0/r19",
           "record": 19,
           "japanese": "{CTRL:0}おれ「うーーい／」",
-          "english": "{CTRL:0}Me: Woohoo!",
           "symbols": [
             {
               "kind": "control",
@@ -1748,7 +1728,6 @@
           "id": "TT2/g0/r20",
           "record": 20,
           "japanese": "…………………………………………",
-          "english": "........................",
           "symbols": [
             {
               "kind": "dictionary",
@@ -1772,7 +1751,6 @@
           "id": "TT2/g0/r21",
           "record": 21,
           "japanese": "いま でるのはやばい",
-          "english": "Outside is too risky.",
           "symbols": [
             {
               "kind": "common",
@@ -1820,7 +1798,6 @@
           "id": "TT2/g0/r22",
           "record": 22,
           "japanese": "「さかやるごーのまごむすめ じゃんぬ・だるくを{CTRL:0} まじょとみとめ きょうかいのなにより{CTRL:0} しけいにしょす               」",
-          "english": "\"Jeanne d'Arc is Lugot's{CTRL:0}granddaughter, a witch.{CTRL:0}Church orders her death\"",
           "symbols": [
             {
               "kind": "extended",
@@ -2032,7 +2009,6 @@
           "id": "TT2/g0/r23",
           "record": 23,
           "japanese": "かぎが かかっている",
-          "english": "Locked.",
           "symbols": [
             {
               "kind": "common",
@@ -2068,7 +2044,6 @@
           "id": "TT2/g0/r24",
           "record": 24,
           "japanese": "しょくにんたちのみせが ならんでいる",
-          "english": "Craft shops line the way",
           "symbols": [
             {
               "kind": "common",
@@ -2148,7 +2123,6 @@
           "id": "TT2/g0/r25",
           "record": 25,
           "japanese": "「しんたいのどこかに きずをもつおんなを{CTRL:0} しっていたら ただちにきょうかいへ{CTRL:0} ほうこくすること{CTRL:6} じじつをかくしたものは げんばつにしょす{CTRL:3} 1428ねん 10がつ{CTRL:4}         ふらんすおうこく きょうかい」",
-          "english": "\"Women with any scar{CTRL:0}must be reported{CTRL:0}to the church.{CTRL:6}Hiding one is a crime.{CTRL:3}Oct. 1428{CTRL:4}French Church\"",
           "symbols": [
             {
               "kind": "extended",
@@ -2560,7 +2534,6 @@
           "id": "TT2/g0/r26",
           "record": 26,
           "japanese": "ああ めがまわる……",
-          "english": "My head spins...",
           "symbols": [
             {
               "kind": "common",
@@ -2604,7 +2577,6 @@
           "id": "TT2/g0/r27",
           "record": 27,
           "japanese": "わいんのあきびんが つんである",
-          "english": "Bottles are piled.",
           "symbols": [
             {
               "kind": "common",
@@ -2672,7 +2644,6 @@
           "id": "TT2/g0/r28",
           "record": 28,
           "japanese": "「いざかや」",
-          "english": "\"TAVERN\"",
           "symbols": [
             {
               "kind": "extended",
@@ -2704,7 +2675,6 @@
           "id": "TT2/g0/r29",
           "record": 29,
           "japanese": "「したてや」",
-          "english": "\"TAILOR\"",
           "symbols": [
             {
               "kind": "extended",
@@ -2736,7 +2706,6 @@
           "id": "TT2/g0/r30",
           "record": 30,
           "japanese": "「じょうまえや」",
-          "english": "\"LOCKSMITH\"",
           "symbols": [
             {
               "kind": "extended",
@@ -2776,7 +2745,6 @@
           "id": "TT2/g0/r31",
           "record": 31,
           "japanese": "「がらすや」",
-          "english": "\"GLASSMAKER\"",
           "symbols": [
             {
               "kind": "extended",
@@ -2814,7 +2782,6 @@
           "id": "TT2/g1/r0",
           "record": 0,
           "japanese": "「かじや」",
-          "english": "\"BLACKSMITH\"",
           "symbols": [
             {
               "kind": "extended",
@@ -2842,7 +2809,6 @@
           "id": "TT2/g1/r1",
           "record": 1,
           "japanese": "いちおう もらっとくか",
-          "english": "I may as well take it.",
           "symbols": [
             {
               "kind": "common",
@@ -2894,7 +2860,6 @@
           "id": "TT2/g1/r2",
           "record": 2,
           "japanese": "もういらない",
-          "english": "I do not need another.",
           "symbols": [
             {
               "kind": "common",
@@ -2926,7 +2891,6 @@
           "id": "TT2/g1/r3",
           "record": 3,
           "japanese": "もう なーんもしたくない",
-          "english": "I want to do nothing.",
           "symbols": [
             {
               "kind": "common",
@@ -2982,7 +2946,6 @@
           "id": "TT2/g1/r4",
           "record": 4,
           "japanese": "とき……1428ねん 10がつ{CTRL:0}ばしょ…ふらんすの じょうかまち",
-          "english": "Time: October 1428{CTRL:0}Place: French stronghold",
           "symbols": [
             {
               "kind": "common",
@@ -3114,7 +3077,6 @@
           "id": "TT2/g1/r5",
           "record": 5,
           "japanese": "{CTRL:0}{CTRL:0}なまえ……ぴえーる{CTRL:0}しょくぎょう……がらすしょくにん",
-          "english": "{CTRL:0}{CTRL:0}Name: Pierre{CTRL:0}Trade: glassmaker",
           "symbols": [
             {
               "kind": "control",
@@ -3226,7 +3188,6 @@
           "id": "TT2/g1/r6",
           "record": 6,
           "japanese": "{CTRL:0}{CTRL:0}なまえ……ちの{CTRL:0}しょくぎょう……じょうまえや",
-          "english": "{CTRL:0}{CTRL:0}Name: Chino{CTRL:0}Trade: locksmith",
           "symbols": [
             {
               "kind": "control",
@@ -3322,7 +3283,6 @@
           "id": "TT2/g1/r7",
           "record": 7,
           "japanese": "ことりが さえずっている",
-          "english": "Small birds chirp.",
           "symbols": [
             {
               "kind": "common",
@@ -3366,7 +3326,6 @@
           "id": "TT2/g1/r8",
           "record": 8,
           "japanese": "かじやだな",
-          "english": "A blacksmith shop.",
           "symbols": [
             {
               "kind": "common",
@@ -3394,7 +3353,6 @@
           "id": "TT2/g1/r9",
           "record": 9,
           "japanese": "いろんなどうぐが おいてある",
-          "english": "Many tools lie here.",
           "symbols": [
             {
               "kind": "common",
@@ -3458,7 +3416,6 @@
           "id": "TT2/g1/r10",
           "record": 10,
           "japanese": "めがきょろきょろして おちつきがない",
-          "english": "His eyes dart around.",
           "symbols": [
             {
               "kind": "common",
@@ -3538,7 +3495,6 @@
           "id": "TT2/g1/r11",
           "record": 11,
           "japanese": "おやじ「あのな… こんなことしっちょるか！」",
-          "english": "Old man: Know this one?",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3618,7 +3574,6 @@
           "id": "TT2/g1/r12",
           "record": 12,
           "japanese": "{CTRL:0}{CTRL:0}じゅうじぐんが うばいかえそうとした{CTRL:0}「せいち」とは！",
-          "english": "{CTRL:0}{CTRL:0}What land did Crusaders{CTRL:0}try to reclaim?",
           "symbols": [
             {
               "kind": "control",
@@ -3742,7 +3697,6 @@
           "id": "TT2/g1/r13",
           "record": 13,
           "japanese": "おやじ「あほ」",
-          "english": "Old man: Fool!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3766,7 +3720,6 @@
           "id": "TT2/g1/r14",
           "record": 14,
           "japanese": "おやじ「せいかいじゃ ならばこれはどうだ！」",
-          "english": "Old man: Correct! Next!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -3846,7 +3799,6 @@
           "id": "TT2/g1/r15",
           "record": 15,
           "japanese": "{CTRL:0}{CTRL:0}いぎりすとふらんすが たたかった{CTRL:0}ながいたたかいを なにせんそうという！",
-          "english": "{CTRL:0}{CTRL:0}England fought France in{CTRL:0}what long war?",
           "symbols": [
             {
               "kind": "control",
@@ -4006,7 +3958,6 @@
           "id": "TT2/g1/r16",
           "record": 16,
           "japanese": "{CTRL:0}{CTRL:0}ぎかいせいじの3ぶかい といえば{CTRL:0}そうと きぞくと！",
-          "english": "{CTRL:0}{CTRL:0}The three estates were{CTRL:0}clergy, nobles, and...?",
           "symbols": [
             {
               "kind": "control",
@@ -4126,7 +4077,6 @@
           "id": "TT2/g1/r17",
           "record": 17,
           "japanese": "{CTRL:0}{CTRL:0}しょうにんたちが あつまってできた{CTRL:0}どうぎょうくみあいは！",
-          "english": "{CTRL:0}{CTRL:0}A merchants' trade group{CTRL:0}was called a...?",
           "symbols": [
             {
               "kind": "control",
@@ -4258,7 +4208,6 @@
           "id": "TT2/g1/r18",
           "record": 18,
           "japanese": "{CTRL:0}{CTRL:0}「さいごのばんさん」を かいた{CTRL:0}てんさいげいじゅつかは！",
-          "english": "{CTRL:0}{CTRL:0}Who painted{CTRL:0}\"The Last Supper\"?",
           "symbols": [
             {
               "kind": "control",
@@ -4386,7 +4335,6 @@
           "id": "TT2/g1/r19",
           "record": 19,
           "japanese": "おやじ「せいかいじゃ」",
-          "english": "Old man: Correct!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4426,7 +4374,6 @@
           "id": "TT2/g1/r20",
           "record": 20,
           "japanese": "おやじ「ぜんもんせいかいとは やるもんじゃ{CTRL:0} あんたは えらい／{CTRL:2} なにか ほうびをやらんとな」",
-          "english": "Old man: All correct!{CTRL:0}Quite a scholar!{CTRL:2}Take your reward.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4614,7 +4561,6 @@
           "id": "TT2/g1/r21",
           "record": 21,
           "japanese": "おれ「おれんきれすかあ！ うひひ」",
-          "english": "Me: A reward? Heh!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4682,7 +4628,6 @@
           "id": "TT2/g1/r22",
           "record": 22,
           "japanese": "おやじ「しんじつと あぶらは かならず{CTRL:0} うかんでくる……{CTRL:0} ふらんすの ふるいことわざじゃ」",
-          "english": "Old man: Truth and oil{CTRL:0}always float to the top.{CTRL:0}A French proverb.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4862,7 +4807,6 @@
           "id": "TT2/g1/r23",
           "record": 23,
           "japanese": "おやじ「こら／」",
-          "english": "Old man: Stop!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4886,7 +4830,6 @@
           "id": "TT2/g1/r24",
           "record": 24,
           "japanese": "おやじ「しょうばいもんはだめじゃ」",
-          "english": "Old man: Not my wares!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4950,7 +4893,6 @@
           "id": "TT2/g1/r25",
           "record": 25,
           "japanese": "おやじ「なんじゃ！」",
-          "english": "Old man: What?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -4982,7 +4924,6 @@
           "id": "TT2/g1/r26",
           "record": 26,
           "japanese": "おやじ「そうか わいんがほしいのか{CTRL:1} ほうびじゃ ほれ」{CTRL:2}とく とく とく……",
-          "english": "Old man: Want wine?{CTRL:1}It is your reward.{CTRL:2}Glug, glug, glug...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5130,7 +5071,6 @@
           "id": "TT2/g1/r27",
           "record": 27,
           "japanese": "わいんを てにいれた",
-          "english": "Obtained wine.",
           "symbols": [
             {
               "kind": "common",
@@ -5178,7 +5118,6 @@
           "id": "TT2/g1/r28",
           "record": 28,
           "japanese": "おれ「いっぱい どう！」",
-          "english": "Me: Want a drink?",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5222,7 +5161,6 @@
           "id": "TT2/g1/r29",
           "record": 29,
           "japanese": "{CTRL:0}おやじ「いらん」",
-          "english": "{CTRL:0}Old man: No.",
           "symbols": [
             {
               "kind": "control",
@@ -5254,7 +5192,6 @@
           "id": "TT2/g1/r30",
           "record": 30,
           "japanese": "じょうまえやだ",
-          "english": "This is a locksmith.",
           "symbols": [
             {
               "kind": "extended",
@@ -5290,7 +5227,6 @@
           "id": "TT2/g1/r31",
           "record": 31,
           "japanese": "どうぐばこが おいてある",
-          "english": "A toolbox sits here.",
           "symbols": [
             {
               "kind": "extended",
@@ -5352,7 +5288,6 @@
           "id": "TT2/g2/r0",
           "record": 0,
           "japanese": "かぎが はいっている",
-          "english": "There is a key inside.",
           "symbols": [
             {
               "kind": "common",
@@ -5388,7 +5323,6 @@
           "id": "TT2/g2/r1",
           "record": 1,
           "japanese": "どうぐばこのそこに なにかかいてある",
-          "english": "There is writing below.",
           "symbols": [
             {
               "kind": "extended",
@@ -5468,7 +5402,6 @@
           "id": "TT2/g2/r2",
           "record": 2,
           "japanese": "「おぼえがき{CTRL:0} ごるどーに ぎんか2まい かしつけ」",
-          "english": "\"Memo:{CTRL:0}Lent Gordo two silvers.\"",
           "symbols": [
             {
               "kind": "extended",
@@ -5580,7 +5513,6 @@
           "id": "TT2/g2/r3",
           "record": 3,
           "japanese": "しごとに みがはいってないようだ",
-          "english": "He lacks focus at work.",
           "symbols": [
             {
               "kind": "common",
@@ -5652,7 +5584,6 @@
           "id": "TT2/g2/r4",
           "record": 4,
           "japanese": "ちの「まじょがりなんてなあ……{CTRL:0} まったく いやなよのなかだ」",
-          "english": "Chino: Witch hunts...{CTRL:0}What an awful age.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5764,7 +5695,6 @@
           "id": "TT2/g2/r5",
           "record": 5,
           "japanese": "{CTRL:0}ちの「……」",
-          "english": "{CTRL:0}Chino: ...",
           "symbols": [
             {
               "kind": "control",
@@ -5788,7 +5718,6 @@
           "id": "TT2/g2/r6",
           "record": 6,
           "japanese": "ちの「ちくしょー／ あの かわいいじゃんぬが{CTRL:0} ひあぶりに されちまうなんてよー」",
-          "english": "Chino: Damn it!{CTRL:0}Sweet Jeanne will burn!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5924,7 +5853,6 @@
           "id": "TT2/g2/r7",
           "record": 7,
           "japanese": "ちの「かってに さわるんじゃねー／」",
-          "english": "Chino: Hands off!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -5992,7 +5920,6 @@
           "id": "TT2/g2/r8",
           "record": 8,
           "japanese": "おもくて もてない",
-          "english": "It is too heavy to lift.",
           "symbols": [
             {
               "kind": "common",
@@ -6036,7 +5963,6 @@
           "id": "TT2/g2/r9",
           "record": 9,
           "japanese": "ちの「なんだ！」",
-          "english": "Chino: What?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6052,7 +5978,6 @@
           "id": "TT2/g2/r10",
           "record": 10,
           "japanese": "{CTRL:0}ちの「おう わるいな{CTRL:0} うぐうぐうぐ…… ぷはーーっ／」",
-          "english": "{CTRL:0}Chino: Thanks.{CTRL:0}Glug, glug... Ahhh!",
           "symbols": [
             {
               "kind": "control",
@@ -6148,7 +6073,6 @@
           "id": "TT2/g2/r11",
           "record": 11,
           "japanese": "ちの「しきょうの くそったれ／」",
-          "english": "Chino: Damn that bishop!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6196,7 +6120,6 @@
           "id": "TT2/g2/r12",
           "record": 12,
           "japanese": "したてやらしい",
-          "english": "This is a tailor shop.",
           "symbols": [
             {
               "kind": "common",
@@ -6232,7 +6155,6 @@
           "id": "TT2/g2/r13",
           "record": 13,
           "japanese": "かべに いろんなふくがかけられている",
-          "english": "Clothes cover the walls.",
           "symbols": [
             {
               "kind": "common",
@@ -6312,7 +6234,6 @@
           "id": "TT2/g2/r14",
           "record": 14,
           "japanese": "がんこなしょくにん ってかんじだな",
-          "english": "He looks stubborn.",
           "symbols": [
             {
               "kind": "extended",
@@ -6388,7 +6309,6 @@
           "id": "TT2/g2/r15",
           "record": 15,
           "japanese": "ごるどー「ぴえーるおめー しってるか！{CTRL:1} じょうまえやの ちのは じゃんぬに{CTRL:0} ひとめぼれしたって うわさだぜ」",
-          "english": "Gordo: Pierre, listen!{CTRL:1}Chino fell for Jeanne{CTRL:0}at first sight, they say",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6592,7 +6512,6 @@
           "id": "TT2/g2/r16",
           "record": 16,
           "japanese": "{CTRL:0}ごるどー「いいかげんに さけやめろよなー」",
-          "english": "{CTRL:0}Gordo: Enough drinking!",
           "symbols": [
             {
               "kind": "control",
@@ -6672,7 +6591,6 @@
           "id": "TT2/g2/r17",
           "record": 17,
           "japanese": "ごるどー「ちのおめー しってるか！{CTRL:1} しきょうは ひあぶりにしたむすめを{CTRL:0} くってるって うわさだ」",
-          "english": "Gordo: Chino, listen!{CTRL:1}They say the bishop eats{CTRL:0}girls he burns.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6832,7 +6750,6 @@
           "id": "TT2/g2/r18",
           "record": 18,
           "japanese": "ごるどー「……ああ しゃっきんか{CTRL:1} もうすこしまってくれねーか！」",
-          "english": "Gordo: Ah... The debt.{CTRL:1}Wait a little longer?",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6948,7 +6865,6 @@
           "id": "TT2/g2/r19",
           "record": 19,
           "japanese": "ごるどー「わるいな ちの」",
-          "english": "Gordo: Sorry, Chino.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -6992,7 +6908,6 @@
           "id": "TT2/g2/r20",
           "record": 20,
           "japanese": "ごるどー「ちぇ しょうがねえ…… かねのかわりに{CTRL:0} この しゅうどうふくを やるよ」",
-          "english": "Gordo: Fine... Instead,{CTRL:0}take this monk's robe.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7148,7 +7063,6 @@
           "id": "TT2/g2/r21",
           "record": 21,
           "japanese": "しゅうどうふくを てにいれた",
-          "english": "Obtained a monk's robe.",
           "symbols": [
             {
               "kind": "common",
@@ -7212,7 +7126,6 @@
           "id": "TT2/g2/r22",
           "record": 22,
           "japanese": "ごるどー「なにしやがる／」",
-          "english": "Gordo: What was that?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7252,7 +7165,6 @@
           "id": "TT2/g2/r23",
           "record": 23,
           "japanese": "ごるどー「さっき くれてやったじゃねえか」",
-          "english": "Gordo: I gave you one!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7328,7 +7240,6 @@
           "id": "TT2/g2/r24",
           "record": 24,
           "japanese": "ごるどー「なんだ！」",
-          "english": "Gordo: What?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7344,7 +7255,6 @@
           "id": "TT2/g2/r25",
           "record": 25,
           "japanese": "ごるどー「おらあ のめねえんだ」",
-          "english": "Gordo: I cannot drink.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7400,7 +7310,6 @@
           "id": "TT2/g2/r26",
           "record": 26,
           "japanese": "ごるどー「このままじゃ よめが{CTRL:0} もらえなくなるなあ……」",
-          "english": "Gordo: At this rate,{CTRL:0}I may never find a wife.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7504,7 +7413,6 @@
           "id": "TT2/g2/r27",
           "record": 27,
           "japanese": "いざかやみたいだ",
-          "english": "It looks like a tavern.",
           "symbols": [
             {
               "kind": "common",
@@ -7544,7 +7452,6 @@
           "id": "TT2/g2/r28",
           "record": 28,
           "japanese": "ちの「ば ばかいってんじゃねえ／{CTRL:0} そんなこと できるわけれーだろ／」{CTRL:2}ぴえーる「ちっ だらしねえやろうらなー{CTRL:0} てめーそれでも おとこか ひっく／」",
-          "english": "Chino: Don't be stupid!{CTRL:0}I could never do it!{CTRL:2}Pierre: Coward!{CTRL:0}Call yourself a man?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -7820,7 +7727,6 @@
           "id": "TT2/g2/r29",
           "record": 29,
           "japanese": "いろんなさけが ならんでいる",
-          "english": "Drinks line the bar.",
           "symbols": [
             {
               "kind": "common",
@@ -7884,7 +7790,6 @@
           "id": "TT2/g2/r30",
           "record": 30,
           "japanese": "なみだとはなみずで かおがぐしゃぐしゃだ",
-          "english": "Tears cover his face.",
           "symbols": [
             {
               "kind": "common",
@@ -7972,7 +7877,6 @@
           "id": "TT2/g2/r31",
           "record": 31,
           "japanese": "ぐいぐいと さけをあおっている",
-          "english": "He gulps down liquor.",
           "symbols": [
             {
               "kind": "extended",
@@ -8034,7 +7938,6 @@
           "id": "TT2/g3/r0",
           "record": 0,
           "japanese": "そうとう よっぱらっている",
-          "english": "He is extremely drunk.",
           "symbols": [
             {
               "kind": "common",
@@ -8082,7 +7985,6 @@
           "id": "TT2/g3/r1",
           "record": 1,
           "japanese": "ぴえーる「ばっかやろーめ ひっく／{CTRL:0} てめーこれほどたのんでも ことわるってか／」",
-          "english": "Pierre: You fool! Hic!{CTRL:0}Still refusing us?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8234,7 +8136,6 @@
           "id": "TT2/g3/r2",
           "record": 2,
           "japanese": "もう べろんべろんだ",
-          "english": "He is dead drunk.",
           "symbols": [
             {
               "kind": "common",
@@ -8282,7 +8183,6 @@
           "id": "TT2/g3/r3",
           "record": 3,
           "japanese": "ぴえーる「ちきしょー／ おれたちゃ{CTRL:0} むすめっこひとり たすけられねーのかよー／{CTRL:0} ぐおーーっ／」{CTRL:6}ちの「こ こらおちつけ ぴえーる／」{CTRL:4}ぴえーる「るせーーっ／」{CTRL:3}ぼっこ／",
-          "english": "Pierre: Damn! We cannot{CTRL:0}save one girl?!{CTRL:0}Raaagh!{CTRL:6}Chino: Calm down!{CTRL:4}Pierre: Shut up!{CTRL:3}Wham!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8546,7 +8446,6 @@
           "id": "TT2/g3/r4",
           "record": 4,
           "japanese": "ちの「うーーん……」",
-          "english": "Chino: Ugh...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8582,7 +8481,6 @@
           "id": "TT2/g3/r5",
           "record": 5,
           "japanese": "くだを まいている{CTRL:0}ぴえーる「うっせーばろーちくしょー／」",
-          "english": "He is ranting.{CTRL:0}Pierre: Shut up, fool!",
           "symbols": [
             {
               "kind": "common",
@@ -8686,7 +8584,6 @@
           "id": "TT2/g3/r6",
           "record": 6,
           "japanese": "へらへら わらっている{CTRL:0}ぴえーる「あーよいよい」",
-          "english": "He grins foolishly.{CTRL:0}Pierre: Tra-la-la!",
           "symbols": [
             {
               "kind": "common",
@@ -8762,7 +8659,6 @@
           "id": "TT2/g3/r7",
           "record": 7,
           "japanese": "しきりに ためいきをついている",
-          "english": "He keeps sighing.",
           "symbols": [
             {
               "kind": "common",
@@ -8830,7 +8726,6 @@
           "id": "TT2/g3/r8",
           "record": 8,
           "japanese": "きをうしなっている",
-          "english": "He is unconscious.",
           "symbols": [
             {
               "kind": "common",
@@ -8862,7 +8757,6 @@
           "id": "TT2/g3/r9",
           "record": 9,
           "japanese": "るごー「おお ちの／」",
-          "english": "Lugot: Chino!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -8898,7 +8792,6 @@
           "id": "TT2/g3/r10",
           "record": 10,
           "japanese": "るごー「まごのじゃんぬは{CTRL:0} とても きだてのいいこなんじゃ{CTRL:2} まじょだなんて とんでもないはなしじゃよ」",
-          "english": "Lugot: My Jeanne is{CTRL:0}a truly kind girl.{CTRL:2}She is no witch!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9082,7 +8975,6 @@
           "id": "TT2/g3/r11",
           "record": 11,
           "japanese": "{CTRL:0}るごー「おお じゃんぬ……」",
-          "english": "{CTRL:0}Lugot: Oh, Jeanne...",
           "symbols": [
             {
               "kind": "control",
@@ -9122,7 +9014,6 @@
           "id": "TT2/g3/r12",
           "record": 12,
           "japanese": "るごー「わしゃ ごらんのとおりのとしよりじゃ{CTRL:1} どうか わしのかわりに{CTRL:0} じゃんぬを たすけだしてくれないか！」",
-          "english": "Lugot: I am an old man.{CTRL:1}Please, in my place,{CTRL:0}save Jeanne for me!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9326,7 +9217,6 @@
           "id": "TT2/g3/r13",
           "record": 13,
           "japanese": "るごー「ありがとう／ ちの」{CTRL:0}ぴえーる「よーし／ それでこそおれの しんゆうだ{CTRL:2} よくいった／」",
-          "english": "Lugot: Thank you, Chino!{CTRL:0}Pierre: True friend!{CTRL:2}Well said!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9486,7 +9376,6 @@
           "id": "TT2/g3/r14",
           "record": 14,
           "japanese": "るごー「きょうかいの かんけいしゃなら{CTRL:0} けいむしょへ じゆうにでいりできるんじゃが…」{CTRL:2}ぴえーる「ごるどーんとこ いきゃあ{CTRL:0} しゅうどうふくが あるぜ」",
-          "english": "Lugot: Church staff{CTRL:0}may enter the jail.{CTRL:2}Pierre: Gordo has{CTRL:0}a monk's robe.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9774,7 +9663,6 @@
           "id": "TT2/g3/r15",
           "record": 15,
           "japanese": "るごー「じゃんぬは しんじんぶかいむすめでな{CTRL:0} いちにちたりとも おいのりをかかしたことは{CTRL:0} ないんじゃ」",
-          "english": "Lugot: Jeanne is devout.{CTRL:0}She never misses{CTRL:0}her daily prayers.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -9962,7 +9850,6 @@
           "id": "TT2/g3/r16",
           "record": 16,
           "japanese": "ぴえーる「ひっく／ おめーこれほどたのんでも{CTRL:0} ことわるってか このひとでなし／{CTRL:0} じいさんのきもちが わからねえか／」",
-          "english": "Pierre: Cold brute!{CTRL:0}Still refusing us?!{CTRL:0}Think of the old man!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10186,7 +10073,6 @@
           "id": "TT2/g3/r17",
           "record": 17,
           "japanese": "ぴえーる「めでたい めでたい あーめでたい」",
-          "english": "Pierre: What a joy!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10266,7 +10152,6 @@
           "id": "TT2/g3/r18",
           "record": 18,
           "japanese": "ぴえーる「けっこーにあうじゃねえか ちの」",
-          "english": "Pierre: Nice robe, Chino",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10342,7 +10227,6 @@
           "id": "TT2/g3/r19",
           "record": 19,
           "japanese": "るごー「きょうはもう へいてんじゃ」",
-          "english": "Lugot: We are closed.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10410,7 +10294,6 @@
           "id": "TT2/g3/r20",
           "record": 20,
           "japanese": "るごー「おまえは やめとけ」{CTRL:0}ぴえーる「そうそう」",
-          "english": "Lugot: You should not.{CTRL:0}Pierre: Right.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10490,7 +10373,6 @@
           "id": "TT2/g3/r21",
           "record": 21,
           "japanese": "{CTRL:0}るごー「さけなんぞ うるほどあるわい」",
-          "english": "{CTRL:0}Lugot: We have wine.",
           "symbols": [
             {
               "kind": "control",
@@ -10566,7 +10448,6 @@
           "id": "TT2/g3/r22",
           "record": 22,
           "japanese": "るごー「なんじゃ！」",
-          "english": "Lugot: What?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10598,7 +10479,6 @@
           "id": "TT2/g3/r23",
           "record": 23,
           "japanese": "ぴえーる「なんとかして じゃんぬを{CTRL:0} たすけるんらよ このいくじなし／」{CTRL:2}ちの「そーゆーおまえは どうなんだよー」{CTRL:6}ぴえーる「ばかやろー／ おれに そんなどきょうが{CTRL:4} あるわけねえらろ／」",
-          "english": "Pierre: Save Jeanne,{CTRL:0}coward!{CTRL:2}Chino: What about you?{CTRL:6}Pierre: I have no nerve!{CTRL:4}No courage at all!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -10918,7 +10798,6 @@
           "id": "TT2/g3/r24",
           "record": 24,
           "japanese": "ぴえーる「おめー じょうまえやだろー！{CTRL:0} ろうやのかぎなんざ ちょいちょい…って{CTRL:0} はずしちまえば かんたんだろーが ひっく／」{CTRL:6}ちの「むちゃくちゃ ゆうなよ」{CTRL:3}るごー「ああ かわいそうなじゃんぬ……」",
-          "english": "Pierre: Locksmith!{CTRL:0}Pick the cell lock.{CTRL:0}Easy! Hic!{CTRL:6}Chino: That is absurd.{CTRL:3}Lugot: Poor Jeanne...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -11274,7 +11153,6 @@
           "id": "TT2/g3/r25",
           "record": 25,
           "japanese": "るごー「おきてくれ ちの{CTRL:0} おまえだけが たよりなんじゃ」{CTRL:0}ぴえーる「どうせおれなんか だめですよーだ／」",
-          "english": "Lugot: Wake up, Chino.{CTRL:0}Only you can help.{CTRL:0}Pierre: I am useless...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -11462,7 +11340,6 @@
           "id": "TT2/g3/r26",
           "record": 26,
           "japanese": "るごー「おねがいですじゃ わしのまごむすめを{CTRL:0} たすけてやってくだされ／{CTRL:2} じゃんぬは まだ16になったばかりなんじゃ」{CTRL:6}やくにん「さいばんがおわるまで まて」",
-          "english": "Lugot: Please, Chino!{CTRL:0}Save my granddaughter!{CTRL:2}She is only sixteen.{CTRL:6}Guard: Await the trial.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -11742,7 +11619,6 @@
           "id": "TT2/g3/r27",
           "record": 27,
           "japanese": "くちを まいちもんじにむすんでいる",
-          "english": "His lips are shut tight.",
           "symbols": [
             {
               "kind": "common",
@@ -11818,7 +11694,6 @@
           "id": "TT2/g3/r28",
           "record": 28,
           "japanese": "めを まっかになきはらしている",
-          "english": "His eyes are red.",
           "symbols": [
             {
               "kind": "common",
@@ -11886,7 +11761,6 @@
           "id": "TT2/g3/r29",
           "record": 29,
           "japanese": "きのどくそうに のぞきこんでいる",
-          "english": "He watches with pity.",
           "symbols": [
             {
               "kind": "common",
@@ -11958,7 +11832,6 @@
           "id": "TT2/g3/r30",
           "record": 30,
           "japanese": "いしで できている",
-          "english": "It is made of stone.",
           "symbols": [
             {
               "kind": "common",
@@ -12002,7 +11875,6 @@
           "id": "TT2/g3/r31",
           "record": 31,
           "japanese": "やくにん「からだに きずをもつおんなは{CTRL:0} まじょのうたがいがある…… と{CTRL:0} きょうかいから おふれがあったのだ」",
-          "english": "Guard: Scarred women{CTRL:0}may be witches.{CTRL:0}Church gave the order.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -12204,7 +12076,6 @@
           "id": "TT2/g4/r0",
           "record": 0,
           "japanese": "やくにん「しきょうは いったいなにを{CTRL:0} かんがえているのか……」",
-          "english": "Guard: The bishop...{CTRL:0}What is he thinking?",
           "symbols": [
             {
               "kind": "dictionary",
@@ -12308,7 +12179,6 @@
           "id": "TT2/g4/r1",
           "record": 1,
           "japanese": "やくにん「ひあぶりが はじまるのですか！」",
-          "english": "Guard: Is she to burn?",
           "symbols": [
             {
               "kind": "dictionary",
@@ -12368,7 +12238,6 @@
           "id": "TT2/g4/r2",
           "record": 2,
           "japanese": "……「どうなっちまうのかねえ このくには…」{CTRL:0}……「まったく…」",
-          "english": "\"What will become of us?{CTRL:0}\"Indeed...\"",
           "symbols": [
             {
               "kind": "dictionary",
@@ -12496,7 +12365,6 @@
           "id": "TT2/g4/r3",
           "record": 3,
           "japanese": "やくにん「なんだ！」",
-          "english": "Guard: What?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -12512,7 +12380,6 @@
           "id": "TT2/g4/r4",
           "record": 4,
           "japanese": "やくにん「なんです！」",
-          "english": "Guard: Yes?",
           "symbols": [
             {
               "kind": "dictionary",
@@ -12544,7 +12411,6 @@
           "id": "TT2/g4/r5",
           "record": 5,
           "japanese": "{CTRL:0}るごー「おお ぴえーる きいてくれ…」",
-          "english": "{CTRL:0}Lugot: Pierre, listen...",
           "symbols": [
             {
               "kind": "control",
@@ -12620,7 +12486,6 @@
           "id": "TT2/g4/r6",
           "record": 6,
           "japanese": "{CTRL:0}やくにん「うっ…{CTRL:2} き きんむちゅうだ／」",
-          "english": "{CTRL:0}Guard: I...{CTRL:2}I am on duty!",
           "symbols": [
             {
               "kind": "control",
@@ -12696,7 +12561,6 @@
           "id": "TT2/g4/r7",
           "record": 7,
           "japanese": "やくにん「だれにも いうなよ{CTRL:0} んぐぐぐ…{CTRL:3} ぷはーっ／{CTRL:3}{CTRL:4}{CTRL:4} ここだけのはなしだがな……{CTRL:3} しきょうは きにいったむすめだけを ちかしつで{CTRL:4} ごうもんしているらしいんだ……{CTRL:4} なげかわしい／」",
-          "english": "Guard: Keep this secret.{CTRL:0}Glug...{CTRL:3}Ahhh!{CTRL:3}{CTRL:4}{CTRL:4}Listen...{CTRL:3}The bishop tortures{CTRL:4}girls he favors below.{CTRL:4}Shameful!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -13044,7 +12908,6 @@
           "id": "TT2/g4/r8",
           "record": 8,
           "japanese": "ここでは やばい",
-          "english": "Too risky to do here.",
           "symbols": [
             {
               "kind": "common",
@@ -13084,7 +12947,6 @@
           "id": "TT2/g4/r9",
           "record": 9,
           "japanese": "……「けいむしょは まじょようぎの{CTRL:0} おんなで いっぱいだそうだ…」{CTRL:2}……「このままじゃ くにじゅうのおんなが{CTRL:0} いなくなっちまうぞ…」",
-          "english": "Man: Jail is full of{CTRL:0}suspected witches.{CTRL:2}Soon France may have{CTRL:0}no women left.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -13332,7 +13194,6 @@
           "id": "TT2/g4/r10",
           "record": 10,
           "japanese": "……「ここで ひあぶりにされるのか」{CTRL:0}……「かわいそうに……」",
-          "english": "Man: Burned here?{CTRL:0}Man: Those poor women...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -13440,7 +13301,6 @@
           "id": "TT2/g4/r11",
           "record": 11,
           "japanese": "やくにん「だめだめ／ かんけいしゃいがいは{CTRL:0} たちいりきんしだ」",
-          "english": "Guard: No! Only church{CTRL:0}officials may enter.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -13556,7 +13416,6 @@
           "id": "TT2/g4/r12",
           "record": 12,
           "japanese": "……「るごーのじいさん そうとうまいっているな」{CTRL:0}……「かわいそうに」{CTRL:2}……「つれてかえるか」",
-          "english": "Lugot looks awful.{CTRL:0}Poor man.{CTRL:2}Should we carry him?",
           "symbols": [
             {
               "kind": "dictionary",
@@ -13728,7 +13587,6 @@
           "id": "TT2/g4/r13",
           "record": 13,
           "japanese": "どうやら けいむしょらしい",
-          "english": "This seems like a jail.",
           "symbols": [
             {
               "kind": "extended",
@@ -13788,7 +13646,6 @@
           "id": "TT2/g4/r14",
           "record": 14,
           "japanese": "かんしゅ「だめです／ しきょうさまの{CTRL:0} おゆるしがなければ そとへだすわけには{CTRL:0} いきません」{CTRL:6}おれ「でも…」{CTRL:4}かんしゅ「おきもちは よくわかりますが……{CTRL:4} おもどりください」",
-          "english": "Jailer: Bishop's consent{CTRL:0}is required.{CTRL:0}I cannot free her.{CTRL:6}Me: But...{CTRL:4}Jailer: I understand.{CTRL:4}Please leave.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -14068,7 +13925,6 @@
           "id": "TT2/g4/r15",
           "record": 15,
           "japanese": "わかいむすめは いないみたいだ",
-          "english": "No young women are here.",
           "symbols": [
             {
               "kind": "common",
@@ -14120,7 +13976,6 @@
           "id": "TT2/g4/r16",
           "record": 16,
           "japanese": "みんな やつれはてている",
-          "english": "Everyone looks worn out.",
           "symbols": [
             {
               "kind": "common",
@@ -14176,7 +14031,6 @@
           "id": "TT2/g4/r17",
           "record": 17,
           "japanese": "かんしゅ「しきょうさまは ちかしつに{CTRL:0} いらっしゃいます」",
-          "english": "Jailer: The bishop is{CTRL:0}in the cellar.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -14264,7 +14118,6 @@
           "id": "TT2/g4/r18",
           "record": 18,
           "japanese": "……「わたしは まじょじゃありません／{CTRL:0} だしてください／」{CTRL:2}……「うちで こどもがまっているんです{CTRL:0} どうか… しゅうどうしさま／」",
-          "english": "Woman: I am no witch!{CTRL:0}Please let me out!{CTRL:2}My child waits at home.{CTRL:0}Please, Brother...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -14492,7 +14345,6 @@
           "id": "TT2/g4/r19",
           "record": 19,
           "japanese": "かんしゅ「だめです／ しきょうさまの{CTRL:0} おゆるしがなければ そとへだすわけには{CTRL:0} いきません」",
-          "english": "Jailer: Bishop's consent{CTRL:0}is required.{CTRL:0}I cannot free them.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -14648,7 +14500,6 @@
           "id": "TT2/g4/r20",
           "record": 20,
           "japanese": "……「どうして わたしがまじょなの！{CTRL:0} あしのきずは ころんだときのものよ」{CTRL:0}……「あたしのは かにくわれたあとじゃ」",
-          "english": "Woman: Why am I a witch?{CTRL:0}I fell and got this scar{CTRL:0}Woman: A crab bit me.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -14876,7 +14727,6 @@
           "id": "TT2/g4/r21",
           "record": 21,
           "japanese": "ゆかしたから うめきごえがきこえる",
-          "english": "Groans come from below.",
           "symbols": [
             {
               "kind": "common",
@@ -14952,7 +14802,6 @@
           "id": "TT2/g4/r22",
           "record": 22,
           "japanese": "……「ひあぶりが はじまるのかしら」{CTRL:0}……「おお かみさま…」",
-          "english": "Woman: Will we burn?{CTRL:0}Woman: Oh, God...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -15064,7 +14913,6 @@
           "id": "TT2/g4/r23",
           "record": 23,
           "japanese": "しきょう「むすめ なをなんという！」{CTRL:1}むすめ「……じゃんぬ・だるく」{CTRL:2}しきょう「なに／ おまえがじゃんぬ・だるくか{CTRL:0} そうか うーむ おまえがか…」",
-          "english": "Bishop: Give your name!{CTRL:1}Girl: ...Jeanne d'Arc.{CTRL:2}Bishop: Jeanne d'Arc?!{CTRL:0}So... You are the one.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -15292,7 +15140,6 @@
           "id": "TT2/g4/r24",
           "record": 24,
           "japanese": "おれ「／」{CTRL:0}しきょう「なにをしておる／」",
-          "english": "Me: !{CTRL:0}Bishop: What is this?!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -15352,7 +15199,6 @@
           "id": "TT2/g4/r25",
           "record": 25,
           "japanese": "しきょう「まてぃ／／」",
-          "english": "Bishop: Stop!!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -15388,7 +15234,6 @@
           "id": "TT2/g4/r26",
           "record": 26,
           "japanese": "ごうもんべや らしい",
-          "english": "This is a torture room.",
           "symbols": [
             {
               "kind": "extended",
@@ -15436,7 +15281,6 @@
           "id": "TT2/g4/r27",
           "record": 27,
           "japanese": "じゃんぬのからだを ふといろーぷがつりあげている",
-          "english": "Jeanne hangs from ropes.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -15528,7 +15372,6 @@
           "id": "TT2/g4/r28",
           "record": 28,
           "japanese": "ろうそくのひかりで ほのかにあかるい",
-          "english": "Dim candlelight fills it",
           "symbols": [
             {
               "kind": "common",
@@ -15608,7 +15451,6 @@
           "id": "TT2/g4/r29",
           "record": 29,
           "japanese": "ゆらめいている",
-          "english": "It flickers.",
           "symbols": [
             {
               "kind": "common",
@@ -15644,7 +15486,6 @@
           "id": "TT2/g4/r30",
           "record": 30,
           "japanese": "はでな ふくだな",
-          "english": "Those clothes are gaudy.",
           "symbols": [
             {
               "kind": "common",
@@ -15684,7 +15525,6 @@
           "id": "TT2/g4/r31",
           "record": 31,
           "japanese": "まだあどけない しょうじょじゃないか",
-          "english": "She is only a young girl",
           "symbols": [
             {
               "kind": "common",
@@ -15770,7 +15610,6 @@
           "id": "TT2/g5/r0",
           "record": 0,
           "japanese": "どうにか ほどけそうだ",
-          "english": "I can probably untie it.",
           "symbols": [
             {
               "kind": "extended",
@@ -15822,7 +15661,6 @@
           "id": "TT2/g5/r1",
           "record": 1,
           "japanese": "じゃんぬ「おねがい… たすけて……」",
-          "english": "Jeanne: Please... Help!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -15886,7 +15724,6 @@
           "id": "TT2/g5/r2",
           "record": 2,
           "japanese": "じゃんぬ「はやく にげましょう……／」",
-          "english": "Jeanne: Hurry! Let's go!",
           "symbols": [
             {
               "kind": "dictionary",
@@ -15950,7 +15787,6 @@
           "id": "TT2/g5/r3",
           "record": 3,
           "japanese": "しきょう「わたしのすうはいする あるおかたが{CTRL:0} こう おっしゃったのだ{CTRL:2} \"じゃんぬ・だるくを ころせ／{CTRL:6}  やつをいかしておくと あとあとめんどうな{CTRL:4}  ことになる\" とな」{CTRL:3}じゃんぬ「……」{CTRL:3}しきょう「まじょがりを つづけていればいつか…{CTRL:4} と おもっておったが…… こんなにはやく{CTRL:4} あえるとはのう」",
-          "english": "Bishop: My lord declared{CTRL:0}these words:{CTRL:2}\"Kill Jeanne d'Arc!{CTRL:6}If she lives, she may{CTRL:4}cause trouble.\"{CTRL:3}Jeanne: ...{CTRL:3}Bishop: I hunted witches{CTRL:4}to find you.{CTRL:4}Here you are.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -16498,7 +16334,6 @@
           "id": "TT2/g5/r4",
           "record": 4,
           "japanese": "しきょう「ひあぶりのじゅんびが ととのうまで{CTRL:0} ここで おとなしくしていろ」",
-          "english": "Bishop: Stay here.{CTRL:0}until the pyre is ready.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -16634,7 +16469,6 @@
           "id": "TT2/g5/r5",
           "record": 5,
           "japanese": "じゃんぬ「わたし…… まじょじゃない」",
-          "english": "Jeanne: I am no witch.",
           "symbols": [
             {
               "kind": "dictionary",
@@ -16694,7 +16528,6 @@
           "id": "TT2/g5/r6",
           "record": 6,
           "japanese": "ろーぷをほどいて{CTRL:0}そーっと じゃんぬをおろした",
-          "english": "I untied the ropes and{CTRL:0}lowered Jeanne gently.",
           "symbols": [
             {
               "kind": "common",
@@ -16782,7 +16615,6 @@
           "id": "TT2/g5/r7",
           "record": 7,
           "japanese": "じゃんぬ「…ありがとう……」",
-          "english": "Jeanne: ...Thank you...",
           "symbols": [
             {
               "kind": "dictionary",
@@ -16830,7 +16662,6 @@
           "id": "TT2/g5/r8",
           "record": 8,
           "japanese": "もちはこぶには ながすぎる",
-          "english": "This rope is too long.",
           "symbols": [
             {
               "kind": "common",

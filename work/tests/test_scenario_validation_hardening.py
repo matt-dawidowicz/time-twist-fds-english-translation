@@ -9,7 +9,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from time_twist.cli import command_scenario_extract, command_scenario_insert
+from time_twist.cli_commands import command_scenario_extract
 from time_twist.compression import (
     _compress_english_groups_beam,
     _compress_english_groups_greedy,
@@ -197,85 +197,27 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
 
         self.assertEqual(packed_size(*constrained), greedy_size)
 
-    def test_extract_preserves_english_only_for_matching_stable_id(
-        self,
-    ) -> None:
-        """Verify the current contract described by this regression test."""
+    def test_extract_discards_stale_english_fields(self) -> None:
+        """Keep decoded source records independent of previous English output."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            first = root / "TT1A_source.bin"
-            second = root / "TT6D_source.bin"
+            bank = root / "TT1A_source.bin"
             output = root / "scenario.json"
-            _synthetic_bank(first)
-            _synthetic_bank(second)
+            _synthetic_bank(bank)
 
-            command_scenario_extract(
-                SimpleNamespace(bank=first, output=output)
-            )
+            command_scenario_extract(SimpleNamespace(bank=bank, output=output))
             document = json.loads(output.read_text(encoding="utf-8"))
-            document["groups"][0]["records"][0]["english"] = "KEEP"
+            document["groups"][0]["records"][0]["english"] = "STALE"
             output.write_text(
                 json.dumps(document, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )
 
-            command_scenario_extract(
-                SimpleNamespace(bank=second, output=output)
-            )
+            command_scenario_extract(SimpleNamespace(bank=bank, output=output))
             refreshed = json.loads(output.read_text(encoding="utf-8"))
             record = refreshed["groups"][0]["records"][0]
-            self.assertEqual(record["id"], "TT6D/g0/r0")
-            self.assertEqual(record["english"], "")
-
-    def test_insert_rejects_mismatched_record_id(self) -> None:
-        """Verify the current contract described by this regression test."""
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            bank = root / "TT1A_source.bin"
-            scenario = root / "scenario.json"
-            output = root / "rebuilt.bin"
-            _synthetic_bank(bank)
-            command_scenario_extract(
-                SimpleNamespace(bank=bank, output=scenario)
-            )
-            document = json.loads(scenario.read_text(encoding="utf-8"))
-            record = document["groups"][0]["records"][0]
-            record["id"] = "TT1A/g0/r99"
-            record["english"] = "A"
-            scenario.write_text(json.dumps(document), encoding="utf-8")
-
-            args = SimpleNamespace(
-                bank=bank,
-                translation=scenario,
-                output=output,
-                no_compress=True,
-            )
-            with self.assertRaisesRegex(SystemExit, "record ID mismatch"):
-                command_scenario_insert(args)
-
-    def test_insert_enforces_display_width(self) -> None:
-        """Verify the current contract described by this regression test."""
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            bank = root / "TT1A_source.bin"
-            scenario = root / "scenario.json"
-            output = root / "rebuilt.bin"
-            _synthetic_bank(bank)
-            command_scenario_extract(
-                SimpleNamespace(bank=bank, output=scenario)
-            )
-            document = json.loads(scenario.read_text(encoding="utf-8"))
-            document["groups"][0]["records"][0]["english"] = "A" * 25
-            scenario.write_text(json.dumps(document), encoding="utf-8")
-
-            args = SimpleNamespace(
-                bank=bank,
-                translation=scenario,
-                output=output,
-                no_compress=True,
-            )
-            with self.assertRaisesRegex(SystemExit, "invalid English text"):
-                command_scenario_insert(args)
+            self.assertEqual(record["id"], "TT1A/g0/r0")
+            self.assertNotIn("english", record)
 
     def test_dictionary_boundary_can_include_fixed_ui_only_entries(
         self,
@@ -319,50 +261,6 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
                 self.assertTrue(
                     set(map(encode_english, labels)).issubset(required)
                 )
-
-    def test_fixed_ui_insert_rejects_no_compress(self) -> None:
-        """Verify the current contract described by this regression test."""
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            bank_path = root / "bank.bin"
-            scenario = root / "scenario.json"
-            output = root / "rebuilt.bin"
-            _synthetic_bank(bank_path)
-            bank = parse_scenario_bank(bank_path)
-            scenario.write_text(
-                json.dumps(
-                    {
-                        "groups": [
-                            {
-                                "group": 0,
-                                "records": [
-                                    {
-                                        "id": "TT2/g0/r0",
-                                        "record": 0,
-                                        "english": "A",
-                                    }
-                                ],
-                            }
-                        ]
-                    }
-                ),
-                encoding="utf-8",
-            )
-            args = SimpleNamespace(
-                bank=bank_path,
-                translation=scenario,
-                output=output,
-                no_compress=True,
-            )
-            with (
-                patch(
-                    "time_twist.cli._parse_source_bank",
-                    return_value=("TT2", bank),
-                ),
-                self.assertRaisesRegex(SystemExit, "--no-compress"),
-            ):
-                command_scenario_insert(args)
-            self.assertFalse(output.exists())
 
     def test_rebuild_rejects_per_group_record_count_change(self) -> None:
         """Verify the current contract described by this regression test."""
