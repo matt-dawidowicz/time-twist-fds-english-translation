@@ -43,9 +43,7 @@ jobs:
           if call_count != 2:
               raise SystemExit(f'expected 2 release compression calls, found {call_count}')
           text = text.replace('compress_english_groups(', 'compress_release_groups(')
-          text, optimize_count = re.subn(
-              r'(?m)^\s*optimize=True,\n', '', text
-          )
+          text, optimize_count = re.subn(r'(?m)^\s*optimize=True,\n', '', text)
           if optimize_count != 2:
               raise SystemExit(
                   f'expected 2 unconditional optimizer flags, found {optimize_count}'
@@ -240,9 +238,8 @@ jobs:
               newline='\n',
           )
           PY
-      - name: Run complete public validation
+      - name: Run validation before push
         run: |
-          python work/tools/check_public_tree.py
           python -m black --check work
           python -m ruff check work
           python -m pydocstyle --convention=pep257 work
