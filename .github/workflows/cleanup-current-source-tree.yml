@@ -119,7 +119,7 @@ jobs:
       - name: Remove temporary workflow and build debris
         shell: bash
         run: |
-          git rm .github/workflows/cleanup-current-source-tree.yml .github/cleanup_current_source_tree.py
+          git rm -f .github/workflows/cleanup-current-source-tree.yml .github/cleanup_current_source_tree.py
           rm -rf build dist
           find . -type d \( -name '__pycache__' -o -name '*.egg-info' \) -prune -exec rm -rf {} +
       - name: Commit validated cleanup
