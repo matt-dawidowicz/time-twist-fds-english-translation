@@ -21,6 +21,19 @@ jobs:
         with:
           python-version: "3.14"
           cache: pip
+      - name: Patch staged-file deletion in one-shot migration
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/cleanup_current_source_tree.py')
+          text = path.read_text(encoding='utf-8')
+          old = 'run("git", "rm", path.relative_to(ROOT).as_posix())'
+          new = 'run("git", "rm", "-f", path.relative_to(ROOT).as_posix())'
+          if text.count(old) != 1:
+              raise SystemExit('expected stale-source removal call exactly once')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
       - name: Apply cleanup migration
         run: python .github/cleanup_current_source_tree.py
       - run: python -m pip install --upgrade pip
