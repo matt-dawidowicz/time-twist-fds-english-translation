@@ -66,7 +66,9 @@ def _source_bank(bank_name: str, *, paths: ReleasePaths) -> bytes:
     """Load one scenario component from its canonical Japanese FDS baseline."""
     image_name, side = SCENARIO_LOCATIONS[bank_name]
     baseline = (
-        paths.zenpen_baseline if image_name == "zenpen" else paths.kouhen_baseline
+        paths.zenpen_baseline
+        if image_name == "zenpen"
+        else paths.kouhen_baseline
     )
     image = FdsImage.from_bytes(baseline.read_bytes())
     return image.sides[side].find_file(bank_name).data
@@ -105,7 +107,9 @@ def audit_layouts(
     source = _source_bank(bank_name, paths=paths)
     translations = _translation_map(paths, bank_name)
     if record_id not in translations:
-        raise ValueError(f"{record_id} is absent from {bank_name} translations")
+        raise ValueError(
+            f"{record_id} is absent from {bank_name} translations"
+        )
     layouts = presentation_break_variants(natural_text)
 
     results: list[LayoutAuditResult] = []
@@ -178,7 +182,9 @@ def build_parser() -> argparse.ArgumentParser:
         description="Rank legal English row breaks by whole-bank packed size.",
     )
     parser.add_argument("--project-root", type=Path, default=Path.cwd())
-    parser.add_argument("--bank", required=True, choices=tuple(SCENARIO_LOCATIONS))
+    parser.add_argument(
+        "--bank", required=True, choices=tuple(SCENARIO_LOCATIONS)
+    )
     parser.add_argument("--record", required=True)
     parser.add_argument("--text", required=True)
     parser.add_argument("--json", action="store_true")
