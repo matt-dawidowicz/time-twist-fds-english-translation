@@ -6,8 +6,8 @@ canonical packed-text compressor. It deliberately does not require Japanese ROM
 baselines.
 
 For each bank it measures the normal fast release policy and the same corpus
-with the fast-accept shortcut disabled. The latter runs the strongest existing
-deterministic optimizer even when the greedy result already fits.
+with the fast-accept shortcut disabled. Deep search may use either the canonical
+Python optimizer or the optional Python-verified native Rust accelerator.
 
 A private ROM-backed candidate rebuild remains the final source-byte and
 fixed-address compatibility gate. This tool answers the build-side question:
@@ -30,7 +30,10 @@ from time_twist.project import (
     KNOWN_SCENARIO_BANKS,
     required_dictionary_entries,
 )
-from time_twist.release_compression import compress_release_groups
+from time_twist.release_compression import (
+    OPTIMIZATION_BACKENDS,
+    compress_release_groups,
+)
 from time_twist.textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT, PackedSymbol
 from time_twist.ui import (
     FIXED_RECORD_TABLE_SPECS,
@@ -47,6 +50,7 @@ class BankCompressionAudit:
     """One bank's fixed-capacity compression comparison."""
 
     bank: str
+    optimized_backend: str
     capacity_bytes: int
     fast_packed_bytes: int
     optimized_packed_bytes: int
@@ -107,6 +111,7 @@ def _compress_bank(
     bank_name: str,
     *,
     maximize_headroom: bool,
+    optimization_backend: str = "python",
 ) -> tuple[int, int, int, float]:
     """Return used bytes, capacity, dictionary count, and elapsed seconds."""
     capacity = playable_capacity(bank_name)
@@ -125,6 +130,9 @@ def _compress_bank(
             max_bytes=capacity - structural_bytes,
             maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
             maximize_headroom=maximize_headroom,
+            optimization_backend=(
+                optimization_backend if maximize_headroom else "python"
+            ),
         )
         used = packed_size(compressed, dictionary) + structural_bytes
     else:
@@ -134,6 +142,9 @@ def _compress_bank(
             max_bytes=capacity - pointer_bytes,
             maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
             maximize_headroom=maximize_headroom,
+            optimization_backend=(
+                optimization_backend if maximize_headroom else "python"
+            ),
         )
         used = packed_size(compressed, dictionary) + pointer_bytes
 
@@ -143,6 +154,8 @@ def _compress_bank(
 def audit_bank(
     translations_directory: Path,
     bank_name: str,
+    *,
+    optimization_backend: str = "python",
 ) -> BankCompressionAudit:
     """Compare normal and maximize-headroom compression for one bank."""
     groups = _load_groups(translations_directory, bank_name)
@@ -155,6 +168,7 @@ def audit_bank(
         groups,
         bank_name,
         maximize_headroom=True,
+        optimization_backend=optimization_backend,
     )
     if deep_capacity != capacity:
         raise ValueError(f"{bank_name} capacity changed between policies")
@@ -165,6 +179,7 @@ def audit_bank(
         )
     return BankCompressionAudit(
         bank=bank_name,
+        optimized_backend=optimization_backend,
         capacity_bytes=capacity,
         fast_packed_bytes=fast_used,
         optimized_packed_bytes=deep_used,
@@ -182,6 +197,7 @@ def audit_project(
     project_root: Path,
     *,
     banks: tuple[str, ...] | None = None,
+    optimization_backend: str = "python",
 ) -> tuple[BankCompressionAudit, ...]:
     """Audit selected banks, defaulting to the complete public scenario corpus."""
     translations = project_root.resolve() / "work" / "translations"
@@ -189,13 +205,20 @@ def audit_project(
     unknown = sorted(set(selected) - set(KNOWN_SCENARIO_BANKS))
     if unknown:
         raise ValueError(f"unknown scenario bank(s): {', '.join(unknown)}")
-    return tuple(audit_bank(translations, bank) for bank in selected)
+    return tuple(
+        audit_bank(
+            translations,
+            bank,
+            optimization_backend=optimization_backend,
+        )
+        for bank in selected
+    )
 
 
 def _print_table(results: tuple[BankCompressionAudit, ...]) -> None:
     """Print a compact human-readable headroom table."""
     header = (
-        "Bank   Capacity  Fast  Deep  FastFree  DeepFree  Saved  "
+        "Bank   Backend  Capacity  Fast  Deep  FastFree  DeepFree  Saved  "
         "Dict(F/D)  Time(F/D)s"
     )
     print(header)
@@ -203,6 +226,7 @@ def _print_table(results: tuple[BankCompressionAudit, ...]) -> None:
     for result in results:
         print(
             f"{result.bank:<6} "
+            f"{result.optimized_backend:<7} "
             f"{result.capacity_bytes:>8} "
             f"{result.fast_packed_bytes:>5} "
             f"{result.optimized_packed_bytes:>5} "
@@ -248,6 +272,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="audit only this bank; may be supplied more than once",
     )
     parser.add_argument(
+        "--backend",
+        choices=tuple(sorted(OPTIMIZATION_BACKENDS)),
+        default="python",
+        help="deep optimizer backend (default: python)",
+    )
+    parser.add_argument(
         "--json",
         action="store_true",
         help="emit machine-readable JSON instead of a table",
@@ -259,7 +289,11 @@ def main(argv: list[str] | None = None) -> None:
     """Run the compression audit without modifying project files."""
     args = build_parser().parse_args(argv)
     banks = tuple(args.banks) if args.banks else None
-    results = audit_project(args.project_root, banks=banks)
+    results = audit_project(
+        args.project_root,
+        banks=banks,
+        optimization_backend=args.backend,
+    )
     if args.json:
         print(json.dumps([asdict(result) for result in results], indent=2))
     else:
