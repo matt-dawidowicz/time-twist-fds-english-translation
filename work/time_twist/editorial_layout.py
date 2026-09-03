@@ -11,7 +11,7 @@ break changes dictionary opportunities on both sides of the control token.
 
 from __future__ import annotations
 
-from functools import lru_cache
+from functools import cache
 
 from .english import DISPLAY_COLUMNS, EnglishTextError, validate_display_width
 from .scenario_validation import PRESENTATION_LINE_CONTROL
@@ -77,7 +77,7 @@ def presentation_break_variants(
         )
     break_tag = _control_tag(control)
 
-    @lru_cache(maxsize=None)
+    @cache
     def layouts_from(index: int) -> tuple[tuple[str, ...], ...]:
         if index == len(words):
             return ((),)
