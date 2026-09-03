@@ -24,15 +24,22 @@ def compress_release_groups(
     candidate_validator: CandidateValidator | None = None,
     compressor: CompressionFunction | None = None,
     measure: MeasureFunction | None = None,
+    maximize_headroom: bool = False,
 ) -> CompressionResult:
-    """Return a fast fitting result, escalating only when required.
+    """Return a fitting result under either fast or editorial policy.
 
-    The normal greedy compressor already widens to exhaustive candidate
-    evaluation when its first result exceeds ``max_bytes``. Release builds
-    therefore accept that deterministic result immediately when it fits and
-    satisfies any fixed-UI compatibility validator. The substantially more
-    expensive beam search and dictionary-order hill climb remain available as
-    a fallback for a genuinely tight or incompatible bank.
+    Normal release builds favor turnaround time. The greedy compressor already
+    widens to exhaustive candidate evaluation when its first result exceeds
+    ``max_bytes``, so a fitting deterministic result is accepted immediately.
+    The substantially more expensive beam search and dictionary-order hill
+    climb remain a fallback for a genuinely tight or incompatible bank.
+
+    Editorial optimization has a different objective: recover as much spare
+    space as practical so natural English does not have to be shortened merely
+    because an earlier draft already happened to fit. With
+    ``maximize_headroom=True`` the fast-accept shortcut is disabled and the
+    strongest deterministic optimizer is run unconditionally. The same
+    ``max_bytes`` and compatibility predicates remain hard constraints.
 
     ``compressor`` and ``measure`` preserve the release facade's established
     test/embedding seams: callers can inject the facade-local functions while
@@ -46,6 +53,9 @@ def compress_release_groups(
         candidate_validator: Optional release compatibility predicate.
         compressor: Optional compression implementation supplied by the facade.
         measure: Optional packed-size implementation supplied by the facade.
+        maximize_headroom: Always run optimized search instead of accepting the
+            first fitting greedy result. Intended for editorial audits and
+            final prose optimization, not routine development builds.
 
     Returns:
         Compressed groups and their ordered flat dictionary.
@@ -54,6 +64,17 @@ def compress_release_groups(
         compressor if compressor is not None else compress_english_groups
     )
     size_of = measure if measure is not None else packed_size
+
+    if maximize_headroom:
+        return compress(
+            groups,
+            required_entries=required_entries,
+            max_bytes=max_bytes,
+            optimize=True,
+            maximum_entries=maximum_entries,
+            candidate_validator=candidate_validator,
+        )
+
     fast = compress(
         groups,
         required_entries=required_entries,
