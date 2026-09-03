@@ -14,10 +14,10 @@ import argparse
 import json
 import re
 import unicodedata
+from collections.abc import Iterable
 from dataclasses import asdict, dataclass
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Iterable
 
 BANK_ORDER = (
     "TT1A",
