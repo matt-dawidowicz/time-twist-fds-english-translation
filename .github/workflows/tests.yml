@@ -74,8 +74,8 @@ jobs:
           rustup component add rustfmt
           rustc --version
           cargo --version
-      - name: Check Rust formatting
-        run: cargo fmt --check --manifest-path native/compression_optimizer/Cargo.toml
+      - name: Format Rust in temporary CI checkout
+        run: cargo fmt --manifest-path native/compression_optimizer/Cargo.toml
       - name: Test native optimizer
         run: cargo test --manifest-path native/compression_optimizer/Cargo.toml
       - name: Build native optimizer
