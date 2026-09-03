@@ -70,9 +70,10 @@ It then derives patch-safe text under this policy:
 
 The workbook is also the preservation layer for scenario English that is
 accurate but cannot yet be installed within renderer or control-layout
-constraints. The fixed-menu expansion solved the former menu-slot
-abbreviations, but it does not add line/page controls to dialogue. Two fields
-must remain distinct:
+constraints. Fixed-menu expansion solved the former menu-slot abbreviations;
+dialogue layout is handled separately through source-exact controls by default
+and explicitly audited presentation breaks where the recovered runtime behavior
+supports them. Two fields must remain distinct:
 
 | Field | Meaning |
 | --- | --- |
@@ -108,9 +109,9 @@ remain hard technical constraints, but the tooling should solve those constraint
 before prose is shortened.
 
 The editorial optimizer may use the verified Python-Rust hybrid described in
-`NATIVE_ACCELERATOR.md`. Rust accelerates deterministic search; Python remains
-the codec authority and independently verifies every native result before it can
-be accepted.
+[`NATIVE_ACCELERATOR.md`](NATIVE_ACCELERATOR.md). Rust accelerates deterministic
+search; Python remains the codec authority and independently verifies every
+native result before it can be accepted.
 
 ### Using a full translation in a future build
 
@@ -120,8 +121,10 @@ artifact. Instead:
 1. Copy the intended wording into the authoritative playable source in
    `work/translations/BANK.json` (or the relevant fixed-UI definition).
 2. Check every visible segment against the renderer's width limit.
-3. Preserve the source control sequence unless a source-verified engine change
-   deliberately supports a new layout.
+3. Preserve the source control sequence exactly by default. If English requires
+   an additional row, use only an explicitly audited presentation-break record;
+   the shared scenario policy must preserve every source control in order and
+   permit only additional `CTRL:0` row advances.
 4. Recompress the entire affected bank and prove that it stays within its
    original footprint, or implement and document a safe relocation.
 5. Rebuild a candidate and playtest entry, clearing, repetition, progression,
@@ -140,14 +143,22 @@ The generator validates:
 - byte-for-byte exact Japanese source retention;
 - complete playable scenario coverage;
 - patch-safe/playable equality;
-- ordered control-code retention;
+- source controls preserved exactly or accepted by an explicit audited control
+  policy;
 - nonempty natural and patch-safe translations;
 - nonempty glossary output;
 - absence of known unsafe reconstruction patterns.
 
-`NOV2/wait` is the one documented fixed-UI control-layout exception: the engine
-patch intentionally changes its display segmentation. It is explicit in code
-and tests rather than treated as unexplained drift.
+Control-layout exceptions are explicit rather than treated as unexplained drift:
+
+- `NOV2/wait` is the documented fixed-UI segmentation override;
+- scenario IDs in `PRESENTATION_BREAK_RECORD_IDS` may add only the recovered
+  `CTRL:0` row advance, while every source control remains in original order.
+
+The scenario rule is enforced by `scenario_controls_match_policy()` and is used
+by scenario validation, the bilingual comparison generator, and the workbook
+validation path. A new presentation exception therefore cannot be made valid by
+changing only a generated artifact or a single test.
 
 ## Correcting a translation
 
@@ -169,8 +180,17 @@ change; regeneration will overwrite it.
 ## Control codes
 
 Controls are rendered as `{CTRL:n}` or `⟦CTRL:n⟧` depending on output context.
-The generator compares their ordered sequence. A mismatch aborts generation
-unless it is the single documented fixed-UI override.
+For ordinary scenario records, English must retain the Japanese/source control
+sequence exactly. For an allowlisted presentation-break record, the English may
+insert additional `CTRL:0` row advances only when every source control still
+appears in the original order. Arbitrary waits, page controls, timing/state
+controls, removals, or reordering remain invalid.
+
+The bilingual comparison keeps the raw source and English sequences in separate
+fields. Its `control_match` field reports whether the sequence is valid under
+this reviewed policy, not merely whether the two raw tuples are textually equal.
+The workbook separately records the exceptional IDs so reviewers can find every
+non-exact control layout.
 
 `insert_controls_by_current_layout()` can preserve control order while
 redistributing controls according to an existing record's segment proportions.
@@ -196,6 +216,10 @@ python work/generate_bilingual_comparison.py
 python work/generate_translation_workbook.py
 python work/run_tests.py unit
 ```
+
+For deep editorial compression/layout work, stable Rust may additionally be used
+as documented in [`NATIVE_ACCELERATOR.md`](NATIVE_ACCELERATOR.md); Python still
+performs the authoritative verification of native output.
 
 Then confirm:
 
