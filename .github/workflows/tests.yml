@@ -109,6 +109,14 @@ jobs:
           assert native_result['optimized_packed_bytes'] == python_result['optimized_packed_bytes']
           assert native_result['optimized_dictionary_entries'] == python_result['optimized_dictionary_entries']
           PY
+      - name: Rank natural TT1B blue-sky layouts
+        env:
+          TIME_TWIST_NATIVE_OPTIMIZER: ${{ github.workspace }}/native/compression_optimizer/target/release/time-twist-compression-optimizer
+        run: >-
+          python work/tools/editorial_layout_audit.py --project-root .
+          --bank TT1B --record TT1B/g0/r1
+          --text "When was the last time I saw a blue sky?"
+          --backend native
 
   compression-headroom:
     if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[compression-benchmark]') }}
