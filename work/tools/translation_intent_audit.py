@@ -93,8 +93,9 @@ def normalize_visible_text(text: str) -> str:
     """Normalize visible English for wording-divergence comparison.
 
     The comparison intentionally ignores presentation controls, Unicode-versus-
-    ASCII typography, and repeated whitespace. It does not remove lexical words
-    or punctuation wholesale, because those can carry tone and dramatic force.
+    ASCII typography, editorial speaker-label aliases, and repeated whitespace.
+    It does not remove lexical words or punctuation wholesale, because those can
+    carry tone and dramatic force.
     """
     text = unicodedata.normalize("NFKC", visible_text(text))
     text = text.translate(TYPOGRAPHY_TRANSLATION)
@@ -127,6 +128,14 @@ def _nontrivial(value: object, *, neutral: set[str]) -> str:
     return cleaned
 
 
+def _outstanding_problem(value: object) -> str:
+    """Return a current-English problem only when it is still unresolved."""
+    problem = _nontrivial(value, neutral=ACCURATE_LABELS)
+    if problem.casefold().startswith("resolved in the playable text:"):
+        return ""
+    return problem
+
+
 def score_row(row: dict[str, object]) -> IntentGap | None:
     """Convert one workbook scenario row into a ranked review candidate.
 
@@ -135,6 +144,12 @@ def score_row(row: dict[str, object]) -> IntentGap | None:
     possible gap between the reviewed natural reading and the playable line.
     Lines requiring gameplay/staging evidence stay visible but are explicitly
     flagged so an automated prose pass does not guess through ambiguity.
+
+    Register, dialect, voice, and sentiment metadata are multipliers on an
+    already-established gap; they do not create a gap by themselves. This keeps
+    a faithful line with interesting characterization out of the repair queue
+    while ensuring that the same characterization raises the priority of a line
+    whose wording or review metadata already indicates lost intent.
     """
     if row.get("record_type") != "scenario":
         return None
@@ -168,9 +183,7 @@ def score_row(row: dict[str, object]) -> IntentGap | None:
         score += 80
         reasons.append("workbook explicitly records lost nuance")
 
-    problems = _nontrivial(
-        row.get("problems_with_current_english"), neutral=ACCURATE_LABELS
-    )
+    problems = _outstanding_problem(row.get("problems_with_current_english"))
     if problems:
         score += 55
         reasons.append("current-English review records a problem")
@@ -186,13 +199,6 @@ def score_row(row: dict[str, object]) -> IntentGap | None:
         score += 55
         reasons.append("review marks technical expansion as useful/required")
 
-    register = _nontrivial(
-        row.get("dialect_or_register"), neutral=NEUTRAL_REGISTER_LABELS
-    )
-    if register:
-        score += 15
-        reasons.append("source has marked register/dialect/voice evidence")
-
     speaker = str(row.get("speaker_or_narration_identity", "")).strip()
     unresolved = _nontrivial(
         row.get("unresolved_ambiguity"), neutral={"", "None", "none"}
@@ -203,18 +209,18 @@ def score_row(row: dict[str, object]) -> IntentGap | None:
     if runtime_required:
         reasons.append("runtime/staging evidence required before rewriting")
 
-    # If the only difference is an audited presentation control or typography,
-    # and the workbook records no other concern, there is no intent gap to rank.
-    if not reasons or (
-        natural_norm == playable_norm
-        and not nuance_lost
-        and not problems
-        and not categories
-        and not _yes(row.get("requires_technical_expansion"))
-        and not register
-        and not runtime_required
-    ):
+    # Presentation controls, typography, interesting register, and resolved
+    # historical review notes are context, not evidence that the playable line
+    # still loses intent. Stop here unless a substantive gap is already present.
+    if not reasons:
         return None
+
+    register = _nontrivial(
+        row.get("dialect_or_register"), neutral=NEUTRAL_REGISTER_LABELS
+    )
+    if register:
+        score += 15
+        reasons.append("source has marked register/dialect/voice evidence")
 
     return IntentGap(
         bank=bank,
