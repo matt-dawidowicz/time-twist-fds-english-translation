@@ -32,9 +32,13 @@ class EditorialLayoutTests(unittest.TestCase):
 
     def test_single_row_sentence_is_retained(self) -> None:
         """Do not force a break when natural text already fits."""
-        self.assertEqual(presentation_break_variants("It is locked."), ("It is locked.",))
+        self.assertEqual(
+            presentation_break_variants("It is locked."), ("It is locked.",)
+        )
 
-    def test_existing_controls_are_not_repositioned_by_layout_helper(self) -> None:
+    def test_existing_controls_are_not_repositioned_by_layout_helper(
+        self,
+    ) -> None:
         """Keep semantic/control-aware composition outside this narrow helper."""
         with self.assertRaisesRegex(EnglishTextError, "existing controls"):
             presentation_break_variants("Hello{CTRL:4}world")
