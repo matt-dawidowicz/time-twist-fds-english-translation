@@ -1,0 +1,104 @@
+[
+  {
+    "bank": "TT6A",
+    "record_id": "TT6A/g0/r13",
+    "score": 142,
+    "wording_similarity": 0.218107,
+    "runtime_evidence_required": false,
+    "reasons": [
+      "natural/playable wording diverges (0.218 similarity)",
+      "workbook explicitly records lost nuance",
+      "source has marked register/dialect/voice evidence"
+    ],
+    "japanese": "よせふ「じつは…… いいなずけの まりあが{CTRL:0} その… こどもを みごもったらしいんだ{CTRL:2} でもな かみさまにちかってもいいが{CTRL:0} おれは かのじょのてすら にぎったことは{CTRL:4} ないんだ／{CTRL:3} まりあは みにおぼえがないと いっている……{CTRL:4} でも そんなばかなことって あるとおもうか！」{CTRL:3}おれ「ひひーん…」{CTRL:3}よせふ「もう なにもしんじられない／{CTRL:4} こんやくなんて かいしょうだ／」",
+    "literal": "Joseph: The truth is… my betrothed, Mary, seems to be with child. But I swear to God, I've never so much as held her hand! Mary says she has no idea how it happened… but can that possibly be true? / Protagonist: Hee-haw… / Joseph: I can't believe in anything anymore! The engagement is off!",
+    "natural": "Joseph: The truth is… my betrothed, Mary, seems to be with child. But I swear to God, I've never so much as held her hand! Mary says she has no idea how it happened… but can that possibly be true? / Protagonist: Hee-haw… / Joseph: I can't believe in anything anymore! The engagement is off!",
+    "playable": "Joseph: My fiancee Mary{CTRL:0}seems to be pregnant.{CTRL:2}I swear before God,{CTRL:0}I've never even touched{CTRL:4}her hand!{CTRL:3}Says she has no idea...{CTRL:4}Can that be true?{CTRL:3}Me: Hee-haw...{CTRL:3}Joseph: Nothing's true!{CTRL:4}The engagement is off!",
+    "speaker": "Joseph; Protagonist",
+    "register": "おれ: plain-to-rough masculine first person; ellipsis carries hesitation, silence, or timing; ／ functions as a strong display exclamation/beat",
+    "problems": "",
+    "nuance_lost": "The playable wording still differs from the reviewed natural reading. Re-evaluate it under the intent-first layout/compression workflow; earlier compact wording is not authoritative merely because it fit.",
+    "unresolved_ambiguity": ""
+  },
+  {
+    "bank": "TT3A",
+    "record_id": "TT3A/g2/r30",
+    "score": 90,
+    "wording_similarity": 0.863014,
+    "runtime_evidence_required": true,
+    "reasons": [
+      "natural/playable wording diverges (0.863 similarity)",
+      "workbook explicitly records lost nuance",
+      "runtime/staging evidence required before rewriting"
+    ],
+    "japanese": "  こ     な     い 4   ろ の{CTRL:0} ふ       い し ゃ   や  {CTRL:0}    え で   て{CTRL:0}                べ   か",
+    "literal": "One fragment of the note. / In blue ink: “…4 km southwest…” / “…Rebecca.”",
+    "natural": "One fragment of the note. / In blue ink: “…4 km southwest…” / “…Rebecca.”",
+    "playable": "A fragment of the note.{CTRL:0}Blue ink:{CTRL:0}'... 4 km southwest...'{CTRL:0}'... Rebecca'",
+    "speaker": "In blue ink",
+    "register": "",
+    "problems": "",
+    "nuance_lost": "The playable wording still differs from the reviewed natural reading. Re-evaluate it under the intent-first layout/compression workflow; earlier compact wording is not authoritative merely because it fit.",
+    "unresolved_ambiguity": "Spatial order of the torn-note characters needs a gameplay screenshot or nametable capture."
+  },
+  {
+    "bank": "TT3A",
+    "record_id": "TT3A/g2/r7",
+    "score": 15,
+    "wording_similarity": 1.0,
+    "runtime_evidence_required": true,
+    "reasons": [
+      "runtime/staging evidence required before rewriting",
+      "source has marked register/dialect/voice evidence"
+    ],
+    "japanese": "……「まて くーがー……」",
+    "literal": "Voice: Wait, Cougar…",
+    "natural": "Voice: Wait, Cougar…",
+    "playable": "Voice: Wait, Cougar...",
+    "speaker": "Off-screen voice, likely an ally",
+    "register": "ellipsis carries hesitation, silence, or timing",
+    "problems": "",
+    "nuance_lost": "",
+    "unresolved_ambiguity": "The off-screen voice is probably an ally, but the exact speaker needs the surrounding gameplay shot."
+  },
+  {
+    "bank": "TT3B",
+    "record_id": "TT3B/g0/r24",
+    "score": 15,
+    "wording_similarity": 1.0,
+    "runtime_evidence_required": true,
+    "reasons": [
+      "runtime/staging evidence required before rewriting",
+      "source has marked register/dialect/voice evidence"
+    ],
+    "japanese": "……「ばかめ… わがはいのてから{CTRL:0} のがれられるとおもっているのか」",
+    "literal": "Voice: Fool. You think you can escape from me?",
+    "natural": "Voice: Fool. You think you can escape from me?",
+    "playable": "Voice: Fool. You think{CTRL:0}you can escape from me?",
+    "speaker": "Hitler or the Devil speaking through him",
+    "register": "ellipsis carries hesitation, silence, or timing",
+    "problems": "",
+    "nuance_lost": "",
+    "unresolved_ambiguity": "The line may be Hitler himself or the Devil speaking through him; the visual staging determines the displayed identity."
+  },
+  {
+    "bank": "TT4",
+    "record_id": "TT4/g4/r14",
+    "score": 15,
+    "wording_similarity": 1.0,
+    "runtime_evidence_required": true,
+    "reasons": [
+      "runtime/staging evidence required before rewriting",
+      "source has marked register/dialect/voice evidence"
+    ],
+    "japanese": "よかった…… これでどうにか……{CTRL:0}{CTRL:2}……「まて」{CTRL:6}いやなよかん……／",
+    "literal": "Okay… we did it… … wait. I've got a bad feeling!",
+    "natural": "Okay… we did it… … wait. I've got a bad feeling!",
+    "playable": "Okay... we did it...{CTRL:0}{CTRL:2}... wait.{CTRL:6}I've got a bad feeling!",
+    "speaker": "Protagonist narration and unidentified warning voice",
+    "register": "ellipsis carries hesitation, silence, or timing; ／ functions as a strong display exclamation/beat",
+    "problems": "",
+    "nuance_lost": "",
+    "unresolved_ambiguity": "The command “Wait” is unlabeled; a gameplay shot is needed to identify the warning voice."
+  }
+]
