@@ -125,12 +125,14 @@ def audit_layouts(
                 json.dumps(candidate, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )
+            variant_directory = build_directory / f"variant-{index}"
+            variant_directory.mkdir()
             started = perf_counter()
             with _maximize_headroom_policy():
                 built = release_module.build_scenario_bank(
                     source,
                     bank_name,
-                    temporary_directory=build_directory / f"variant-{index}",
+                    temporary_directory=variant_directory,
                     translations_directory=translation_directory,
                 )
             seconds = perf_counter() - started
