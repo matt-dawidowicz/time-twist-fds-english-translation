@@ -1,0 +1,20 @@
+name: runner-diagnostic
+
+on:
+  pull_request:
+
+concurrency:
+  group: runner-diagnostic-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  ubuntu-24:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "ubuntu-24.04 runner assigned"
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - run: Write-Host "windows-latest runner assigned"
+        shell: pwsh
