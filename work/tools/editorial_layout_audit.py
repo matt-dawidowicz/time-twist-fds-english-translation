@@ -27,7 +27,10 @@ from time_twist.project import (
     KNOWN_SCENARIO_BANKS,
     required_dictionary_entries,
 )
-from time_twist.release_compression import compress_release_groups
+from time_twist.release_compression import (
+    OPTIMIZATION_BACKENDS,
+    compress_release_groups,
+)
 from time_twist.scenario_validation import (
     PRESENTATION_BREAK_RECORD_IDS,
     encode_validated_english,
@@ -105,6 +108,8 @@ def _groups_from_map(
 def _deep_measure(
     bank_name: str,
     groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
+    *,
+    optimization_backend: str,
 ) -> tuple[int, int, int, float]:
     """Return optimized used bytes, capacity, dictionary entries, and time."""
     capacity = playable_capacity(bank_name)
@@ -122,6 +127,7 @@ def _deep_measure(
             max_bytes=capacity - structural_bytes,
             maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
             maximize_headroom=True,
+            optimization_backend=optimization_backend,
         )
         used = packed_size(compressed, dictionary) + structural_bytes
     else:
@@ -131,6 +137,7 @@ def _deep_measure(
             max_bytes=capacity - pointer_bytes,
             maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
             maximize_headroom=True,
+            optimization_backend=optimization_backend,
         )
         used = packed_size(compressed, dictionary) + pointer_bytes
     return used, capacity, len(dictionary), perf_counter() - started
@@ -142,10 +149,15 @@ def audit_layouts(
     bank_name: str,
     record_id: str,
     natural_text: str,
+    optimization_backend: str = "python",
 ) -> tuple[LayoutAuditResult, ...]:
     """Deep-compress every legal layout of one reviewed natural sentence."""
     if bank_name not in KNOWN_SCENARIO_BANKS:
         raise ValueError(f"unknown scenario bank {bank_name}")
+    if optimization_backend not in OPTIMIZATION_BACKENDS:
+        raise ValueError(
+            f"unsupported compression backend {optimization_backend!r}"
+        )
     if not record_id.startswith(f"{bank_name}/"):
         raise ValueError(f"record {record_id} does not belong to {bank_name}")
     if record_id not in PRESENTATION_BREAK_RECORD_IDS:
@@ -170,7 +182,11 @@ def audit_layouts(
         candidate = dict(translations)
         candidate[record_id] = layout
         groups = _groups_from_map(bank_name, candidate)
-        used, capacity, entries, seconds = _deep_measure(bank_name, groups)
+        used, capacity, entries, seconds = _deep_measure(
+            bank_name,
+            groups,
+            optimization_backend=optimization_backend,
+        )
         results.append(
             LayoutAuditResult(
                 layout=layout,
@@ -218,6 +234,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--record", required=True)
     parser.add_argument("--text", required=True)
+    parser.add_argument(
+        "--backend",
+        choices=tuple(sorted(OPTIMIZATION_BACKENDS)),
+        default="python",
+        help="deep optimizer backend (default: python)",
+    )
     parser.add_argument("--json", action="store_true")
     return parser
 
@@ -230,6 +252,7 @@ def main(argv: list[str] | None = None) -> None:
         bank_name=args.bank,
         record_id=args.record,
         natural_text=args.text,
+        optimization_backend=args.backend,
     )
     if args.json:
         print(json.dumps([asdict(result) for result in results], indent=2))
