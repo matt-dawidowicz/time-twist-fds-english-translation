@@ -19,7 +19,9 @@ def find_active_sidecars(
 ) -> tuple[Path, ...]:
     """Return active Mesen IPS sidecars matching one FDS candidate filename."""
     if candidate_fds.suffix.casefold() != ".fds":
-        raise MesenFdsStateError(f"candidate must be an .fds image: {candidate_fds}")
+        raise MesenFdsStateError(
+            f"candidate must be an .fds image: {candidate_fds}"
+        )
     if not candidate_fds.is_file():
         raise MesenFdsStateError(f"candidate does not exist: {candidate_fds}")
     if not mesen_save_dir.is_dir():
