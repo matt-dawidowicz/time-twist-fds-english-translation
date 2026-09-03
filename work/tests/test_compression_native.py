@@ -38,7 +38,9 @@ class NativeCompressionEquivalenceTests(unittest.TestCase):
             maximum_entries=68,
         )
         self.assertEqual(native_result, python_result)
-        self.assertEqual(packed_size(*native_result), packed_size(*python_result))
+        self.assertEqual(
+            packed_size(*native_result), packed_size(*python_result)
+        )
 
     def test_repeated_words_match_reference_search(self) -> None:
         """Match Python on overlapping repeated English phrases."""

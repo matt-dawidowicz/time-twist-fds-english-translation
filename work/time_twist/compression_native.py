@@ -17,7 +17,11 @@ import subprocess
 from pathlib import Path
 
 from .compression import expand_dictionary_symbols, packed_size
-from .textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT, PackedSymbol, SymbolKind
+from .textcodec import (
+    EXTENDED_DICTIONARY_ENTRY_COUNT,
+    PackedSymbol,
+    SymbolKind,
+)
 
 PROTOCOL = "TIME_TWIST_COMPRESSION_V1"
 RESULT_PROTOCOL = "TIME_TWIST_COMPRESSION_RESULT_V1"
@@ -83,15 +87,21 @@ def _python_symbol(token: int) -> PackedSymbol:
             f"native optimizer returned unsupported token 0x{token:04X}"
         ) from error
     if kind is SymbolKind.COMMON and not 0 <= value <= 47:
-        raise NativeCompressionError("native optimizer returned invalid common glyph")
+        raise NativeCompressionError(
+            "native optimizer returned invalid common glyph"
+        )
     if kind is SymbolKind.EXTENDED and not 0 <= value <= 63:
-        raise NativeCompressionError("native optimizer returned invalid extended glyph")
+        raise NativeCompressionError(
+            "native optimizer returned invalid extended glyph"
+        )
     if kind is SymbolKind.DICTIONARY and not 1 <= value <= 68:
         raise NativeCompressionError(
             "native optimizer returned invalid dictionary reference"
         )
     if kind is SymbolKind.CONTROL and (not 0 <= value <= 7 or value == 5):
-        raise NativeCompressionError("native optimizer returned invalid control")
+        raise NativeCompressionError(
+            "native optimizer returned invalid control"
+        )
     return PackedSymbol(kind, value, 0, 0)
 
 
@@ -139,7 +149,9 @@ def _serialize_problem(
         f"REQUIRES_FULL {int(requires_full_dictionary)}",
         f"REQUIRED {len(required_entries)}",
     ]
-    lines.extend(f"ENTRY {_format_record(entry)}" for entry in required_entries)
+    lines.extend(
+        f"ENTRY {_format_record(entry)}" for entry in required_entries
+    )
     lines.append(f"GROUPS {len(groups)}")
     for group in groups:
         lines.append(f"GROUP {len(group)}")
@@ -175,9 +187,13 @@ class _ResultLines:
     def require_end(self) -> None:
         """Require the exact END marker and no trailing nonblank lines."""
         if self.next().strip() != "END":
-            raise NativeCompressionError("native optimizer output lacks END marker")
+            raise NativeCompressionError(
+                "native optimizer output lacks END marker"
+            )
         if any(line.strip() for line in self._lines):
-            raise NativeCompressionError("native optimizer output has trailing data")
+            raise NativeCompressionError(
+                "native optimizer output has trailing data"
+            )
 
 
 def _parse_count(value: str, label: str) -> int:
@@ -199,7 +215,9 @@ def _parse_result(text: str) -> tuple[CompressionResult, int]:
     """Parse native stdout and return the candidate plus claimed packed size."""
     lines = _ResultLines(text)
     if lines.next().strip() != RESULT_PROTOCOL:
-        raise NativeCompressionError("unsupported native optimizer result protocol")
+        raise NativeCompressionError(
+            "unsupported native optimizer result protocol"
+        )
     claimed_size = _parse_count(lines.value("PACKED_SIZE"), "PACKED_SIZE")
     dictionary_count = _parse_count(lines.value("DICTIONARY"), "DICTIONARY")
     dictionary = tuple(
@@ -210,7 +228,10 @@ def _parse_result(text: str) -> tuple[CompressionResult, int]:
     for _ in range(group_count):
         record_count = _parse_count(lines.value("GROUP"), "GROUP")
         groups.append(
-            tuple(_parse_record(lines.value("RECORD")) for _ in range(record_count))
+            tuple(
+                _parse_record(lines.value("RECORD"))
+                for _ in range(record_count)
+            )
         )
     lines.require_end()
     return (tuple(groups), dictionary), claimed_size
@@ -259,20 +280,28 @@ def _validate_native_result(
     if len(groups) != len(original_groups):
         raise NativeCompressionError("native optimizer changed group count")
     if len(dictionary) > maximum_entries:
-        raise NativeCompressionError("native optimizer exceeded dictionary limit")
+        raise NativeCompressionError(
+            "native optimizer exceeded dictionary limit"
+        )
     if requires_full_dictionary and len(dictionary) != maximum_entries:
         raise NativeCompressionError(
             "native optimizer did not satisfy full-dictionary requirement"
         )
     if len(dictionary) < len(required_entries):
-        raise NativeCompressionError("native optimizer dropped required entries")
+        raise NativeCompressionError(
+            "native optimizer dropped required entries"
+        )
     for expected, actual in zip(required_entries, dictionary, strict=False):
         if _record_identity(expected) != _record_identity(actual):
             raise NativeCompressionError(
                 "native optimizer changed the required dictionary prefix"
             )
-    if len({_record_identity(entry) for entry in dictionary}) != len(dictionary):
-        raise NativeCompressionError("native optimizer returned duplicate entries")
+    if len({_record_identity(entry) for entry in dictionary}) != len(
+        dictionary
+    ):
+        raise NativeCompressionError(
+            "native optimizer returned duplicate entries"
+        )
     if any(
         not entry
         or any(
@@ -289,7 +318,9 @@ def _validate_native_result(
         original_groups, groups, strict=True
     ):
         if len(original_group) != len(compressed_group):
-            raise NativeCompressionError("native optimizer changed record count")
+            raise NativeCompressionError(
+                "native optimizer changed record count"
+            )
         for original, compressed in zip(
             original_group, compressed_group, strict=True
         ):
@@ -343,11 +374,15 @@ def compress_english_groups_native(
             cannot independently prove equivalent to the input corpus.
     """
     if timeout_seconds < 1:
-        raise NativeCompressionError("native optimizer timeout must be positive")
+        raise NativeCompressionError(
+            "native optimizer timeout must be positive"
+        )
     if max_bytes is not None and max_bytes < 0:
         raise NativeCompressionError("max_bytes must be nonnegative")
     if not 1 <= maximum_entries <= EXTENDED_DICTIONARY_ENTRY_COUNT:
-        raise NativeCompressionError("maximum dictionary entries is out of range")
+        raise NativeCompressionError(
+            "maximum dictionary entries is out of range"
+        )
     executable = native_optimizer_path()
     if executable is None:
         raise NativeCompressionError(

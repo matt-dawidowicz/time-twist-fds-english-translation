@@ -84,7 +84,9 @@ def compress_release_groups(
             f"unsupported compression backend {optimization_backend!r}"
         )
     if optimization_backend == "native" and not maximize_headroom:
-        raise ValueError("native compression is an editorial optimization backend")
+        raise ValueError(
+            "native compression is an editorial optimization backend"
+        )
 
     compress = (
         compressor if compressor is not None else compress_english_groups
