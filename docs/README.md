@@ -19,10 +19,11 @@ extracted retail payloads, emulator states, or other private fixtures.
 
 1. [Translation workflow](TRANSLATION_WORKFLOW.md)
 2. [Workbook pipeline](WORKBOOK_PIPELINE.md)
-3. [English dialogue layout](ENGLISH_LAYOUT.md)
-4. [Compression optimizer](COMPRESSION_OPTIMIZER.md)
-5. [Native compression accelerator](NATIVE_ACCELERATOR.md)
-6. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
+3. [Translation intent-gap audit](TRANSLATION_INTENT_AUDIT.md)
+4. [English dialogue layout](ENGLISH_LAYOUT.md)
+5. [Compression optimizer](COMPRESSION_OPTIMIZER.md)
+6. [Native compression accelerator](NATIVE_ACCELERATOR.md)
+7. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
 
 `work/translations/*.json` is the only scenario-English authority.
 `work/source_records/*.json` contains decoded Japanese, stable record IDs, and
@@ -35,6 +36,12 @@ translation constraints. Renderer width and packed-bank capacity remain hard
 ROM constraints, but layout and compression are expected to solve those limits
 before natural English is shortened. Deep editorial search may use the optional
 Rust accelerator; Python remains the authoritative codec and verifier.
+
+`work/tools/translation_intent_audit.py` turns that policy into a review queue
+without pretending to translate Japanese automatically. It ranks records from
+the project's existing natural/playable divergence, nuance-loss, technical,
+register/voice, and gameplay-context metadata so source-grounded editorial work
+can be spent where it is most likely to recover intent.
 
 ## Binary and release architecture
 
