@@ -34,6 +34,23 @@ jobs:
       - run: python work/generate_translation_workbook.py
       - name: Verify generated translation review artifacts are current
         run: git diff --exit-code -- outputs work/translation_workbook_banks
+      - if: matrix.python-version == '3.11'
+        name: Smoke-test source-grounded translation intent audit
+        run: |
+          python work/tools/translation_intent_audit.py --project-root . --bank TT1B --json > /tmp/tt1b-intent-audit.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          rows = json.loads(Path('/tmp/tt1b-intent-audit.json').read_text())
+          assert isinstance(rows, list)
+          assert rows, 'TT1B intent audit unexpectedly returned no review candidates'
+          assert all(row['record_id'] != 'TT1B/g0/r1' for row in rows), (
+              'accepted blue-sky wording was incorrectly ranked as an intent gap'
+          )
+          assert all('score' in row and 'reasons' in row for row in rows)
+          print(f'TT1B intent audit: {len(rows)} ranked review candidates')
+          PY
       - run: python -m black --check work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
