@@ -37,7 +37,9 @@ def scenario_row(**overrides: object) -> dict[str, object]:
 class TranslationIntentAuditTests(unittest.TestCase):
     """Keep intent-gap triage conservative and evidence-driven."""
 
-    def test_presentation_control_only_difference_is_not_an_intent_gap(self) -> None:
+    def test_presentation_control_only_difference_is_not_an_intent_gap(
+        self,
+    ) -> None:
         """Ignore an audited row break when the visible wording is identical."""
         row = scenario_row(
             patch_safe_english_translation=(
@@ -55,7 +57,9 @@ class TranslationIntentAuditTests(unittest.TestCase):
         )
 
         self.assertEqual(
-            normalize_visible_text(str(row["final_natural_english_translation"])),
+            normalize_visible_text(
+                str(row["final_natural_english_translation"])
+            ),
             normalize_visible_text(str(row["patch_safe_english_translation"])),
         )
         self.assertIsNone(score_row(row))
@@ -76,7 +80,9 @@ class TranslationIntentAuditTests(unittest.TestCase):
         self.assertGreaterEqual(gap.score, 90)
         self.assertIn("workbook explicitly records lost nuance", gap.reasons)
 
-    def test_marked_register_can_trigger_review_without_length_bias(self) -> None:
+    def test_marked_register_can_trigger_review_without_length_bias(
+        self,
+    ) -> None:
         """Surface source-marked voice even when natural and playable match."""
         gap = score_row(
             scenario_row(
@@ -88,7 +94,9 @@ class TranslationIntentAuditTests(unittest.TestCase):
         self.assertIsNotNone(gap)
         assert gap is not None
         self.assertEqual(gap.score, 15)
-        self.assertIn("source has marked register/dialect/voice evidence", gap.reasons)
+        self.assertIn(
+            "source has marked register/dialect/voice evidence", gap.reasons
+        )
 
     def test_runtime_blockers_are_flagged_and_sorted_after_actionable_rows(
         self,

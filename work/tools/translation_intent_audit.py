@@ -151,7 +151,8 @@ def score_row(row: dict[str, object]) -> IntentGap | None:
         )
 
     nuance_lost = _nontrivial(
-        row.get("nuance_lost_in_patch_safe_version"), neutral={"", "None", "none"}
+        row.get("nuance_lost_in_patch_safe_version"),
+        neutral={"", "None", "none"},
     )
     if nuance_lost:
         score += 80
@@ -164,7 +165,9 @@ def score_row(row: dict[str, object]) -> IntentGap | None:
         score += 55
         reasons.append("current-English review records a problem")
 
-    categories = _nontrivial(row.get("problem_categories"), neutral=ACCURATE_LABELS)
+    categories = _nontrivial(
+        row.get("problem_categories"), neutral=ACCURATE_LABELS
+    )
     if categories:
         score += 25
         reasons.append("problem category is not marked accurate")
@@ -184,7 +187,9 @@ def score_row(row: dict[str, object]) -> IntentGap | None:
     unresolved = _nontrivial(
         row.get("unresolved_ambiguity"), neutral={"", "None", "none"}
     )
-    runtime_required = _yes(row.get("requires_gameplay_context")) or bool(unresolved)
+    runtime_required = _yes(row.get("requires_gameplay_context")) or bool(
+        unresolved
+    )
     if runtime_required:
         reasons.append("runtime/staging evidence required before rewriting")
 
@@ -220,11 +225,18 @@ def score_row(row: dict[str, object]) -> IntentGap | None:
     )
 
 
-def load_workbook_rows(project_root: Path, banks: Iterable[str]) -> list[dict[str, object]]:
+def load_workbook_rows(
+    project_root: Path, banks: Iterable[str]
+) -> list[dict[str, object]]:
     """Load generated per-bank workbook rows for the requested scenario banks."""
     rows: list[dict[str, object]] = []
     for bank in banks:
-        path = project_root / "work" / "translation_workbook_banks" / f"{bank}.json"
+        path = (
+            project_root
+            / "work"
+            / "translation_workbook_banks"
+            / f"{bank}.json"
+        )
         payload = json.loads(path.read_text(encoding="utf-8"))
         bank_rows = payload.get("rows")
         if not isinstance(bank_rows, list):
@@ -241,13 +253,19 @@ def rank_intent_gaps(rows: Iterable[dict[str, object]]) -> list[IntentGap]:
         key=lambda gap: (
             gap.runtime_evidence_required,
             -gap.score,
-            BANK_ORDER.index(gap.bank) if gap.bank in BANK_ORDER else len(BANK_ORDER),
+            (
+                BANK_ORDER.index(gap.bank)
+                if gap.bank in BANK_ORDER
+                else len(BANK_ORDER)
+            ),
             gap.record_id,
         ),
     )
 
 
-def render_markdown(gaps: Iterable[IntentGap], *, limit: int | None = None) -> str:
+def render_markdown(
+    gaps: Iterable[IntentGap], *, limit: int | None = None
+) -> str:
     """Render a compact source-grounded Markdown review queue."""
     selected = list(gaps)
     if limit is not None:
@@ -319,7 +337,11 @@ def main() -> int:
         gaps = gaps[: args.limit]
 
     if args.json:
-        print(json.dumps([asdict(gap) for gap in gaps], ensure_ascii=False, indent=2))
+        print(
+            json.dumps(
+                [asdict(gap) for gap in gaps], ensure_ascii=False, indent=2
+            )
+        )
     else:
         print(render_markdown(gaps), end="")
     return 0
