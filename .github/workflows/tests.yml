@@ -85,9 +85,6 @@ jobs:
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
       - run: python work/run_tests.py unit
-      - if: matrix.python-version == '3.11'
-        name: Measure whole-game compression headroom
-        run: python work/tools/compression_headroom.py --project-root .
       - if: matrix.python-version == '3.14'
         run: python -m build
       - if: matrix.python-version == '3.14'
@@ -106,6 +103,38 @@ jobs:
         run: time-twist --help
       - if: matrix.python-version == '3.14'
         run: time-twist release-build --help
+
+  compression-headroom:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        bank:
+          - TT1A
+          - TT1B
+          - TT2
+          - T22
+          - TT3A
+          - TT3B
+          - TT4
+          - TT5
+          - T25
+          - TT6A
+          - TT6B
+          - TT6C
+          - TT6D
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - name: Measure ${{ matrix.bank }} compression headroom
+        run: >-
+          python work/tools/compression_headroom.py
+          --project-root . --bank ${{ matrix.bank }}
 
   required-unit-tests:
     name: unit-tests
