@@ -309,7 +309,9 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
         with self.assertRaisesRegex(EnglishTextError, "control tags changed"):
             encode_validated_english("TT1B/g0/r2", text, "")
 
-    def test_audited_record_still_rejects_nonpresentation_controls(self) -> None:
+    def test_audited_record_still_rejects_nonpresentation_controls(
+        self,
+    ) -> None:
         """Do not let the presentation exception alter timing/state controls."""
         text = "When was the last time{CTRL:4}I saw a blue sky?"
 

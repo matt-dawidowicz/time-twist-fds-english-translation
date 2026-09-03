@@ -5,7 +5,14 @@ from __future__ import annotations
 import unittest
 
 from time_twist.english import encode_english
-from time_twist.textcodec import BitReader, BitWriter, PackedSymbol, SymbolKind, decode_symbol, encode_symbol
+from time_twist.textcodec import (
+    BitReader,
+    BitWriter,
+    PackedSymbol,
+    SymbolKind,
+    decode_symbol,
+    encode_symbol,
+)
 from time_twist.ui import NOV2_EXTENDED_DICTIONARY_PATCH
 
 
@@ -37,7 +44,9 @@ class ExtendedDictionaryRuntimeSemanticsTests(unittest.TestCase):
         if jump_target == 0x82BE:
             reader.read_bits(5)
         elif jump_target != 0x82C5:
-            self.fail(f"unexpected dictionary-expander target ${jump_target:04X}")
+            self.fail(
+                f"unexpected dictionary-expander target ${jump_target:04X}"
+            )
 
         decoded_following = decode_symbol(reader, extended_dictionary=True)
         self.assertEqual(decoded_following.kind, following.kind)
