@@ -11,15 +11,19 @@ from time_twist.english import EnglishTextError
 class EditorialLayoutTests(unittest.TestCase):
     """Keep natural prose intact while enumerating safe row layouts."""
 
-    def test_blue_sky_sentence_includes_natural_two_row_layout(self) -> None:
-        """Generate the intended 22/17-column presentation without shortening."""
+    def test_blue_sky_sentence_has_only_three_minimum_row_layouts(self) -> None:
+        """Enumerate only the three useful two-row presentations."""
         variants = presentation_break_variants(
             "When was the last time I saw a blue sky?"
         )
 
-        self.assertIn(
-            "When was the last time{CTRL:0}I saw a blue sky?",
+        self.assertEqual(
             variants,
+            (
+                "When was the last{CTRL:0}time I saw a blue sky?",
+                "When was the last time{CTRL:0}I saw a blue sky?",
+                "When was the last time I{CTRL:0}saw a blue sky?",
+            ),
         )
 
     def test_variants_preserve_visible_words_exactly(self) -> None:
@@ -48,8 +52,8 @@ class EditorialLayoutTests(unittest.TestCase):
         with self.assertRaisesRegex(EnglishTextError, "word is wider"):
             presentation_break_variants("X" * 25)
 
-    def test_variant_limit_prevents_combinatorial_runaway(self) -> None:
-        """Bound exhaustive layout generation for pathological text."""
+    def test_variant_limit_prevents_minimal_layout_runaway(self) -> None:
+        """Bound even the set of equally minimal layouts for pathological text."""
         with self.assertRaisesRegex(EnglishTextError, "variant limit"):
             presentation_break_variants(
                 "a b c d e f g h i j k l m n o p q r s t",
