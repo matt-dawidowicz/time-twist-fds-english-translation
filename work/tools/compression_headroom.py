@@ -1,38 +1,42 @@
 """Measure fast and deep compression headroom for every scenario bank.
 
-This diagnostic deliberately rebuilds real banks from the canonical Japanese
-baselines and reviewed English translation maps. It does not write ROMs or
-change release metadata. The normal release policy is measured first, then the
-same bank is rebuilt with the fast-accept shortcut disabled so the strongest
-existing deterministic optimizer is used even when the greedy result fits.
+This diagnostic uses only public, reproducible project data: reviewed English
+translation maps, recovered fixed-capacity facts, fixed-menu records, and the
+canonical packed-text compressor. It deliberately does not require Japanese ROM
+baselines.
 
-The report answers two separate questions:
+For each bank it measures the normal fast release policy and the same corpus
+with the fast-accept shortcut disabled. The latter runs the strongest existing
+deterministic optimizer even when the greedy result already fits.
 
-* how much fixed-capacity space is currently unused; and
-* how much additional space the existing optimizer can recover without any
-  codec change or prose shortening.
-
-Those measurements should precede any decision to add a native accelerator or
-change the runtime text format.
+A private ROM-backed candidate rebuild remains the final source-byte and
+fixed-address compatibility gate. This tool answers the build-side question:
+how much fixed-footprint text capacity is available before changing the codec?
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import tempfile
-from collections.abc import Iterator
-from contextlib import contextmanager
+import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from time import perf_counter
 
-from time_twist import release as release_module
-from time_twist.fds import FdsImage
-from time_twist.release_compression import (
-    compress_release_groups as compression_policy,
+from time_twist.capacity import playable_capacity
+from time_twist.compression import packed_size
+from time_twist.english import encode_english
+from time_twist.project import KNOWN_SCENARIO_BANKS, required_dictionary_entries
+from time_twist.release_compression import compress_release_groups
+from time_twist.textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT, PackedSymbol
+from time_twist.ui import (
+    FIXED_RECORD_TABLE_SPECS,
+    fixed_record_table_page_pointer_bytes,
 )
-from time_twist.release_metadata import SCENARIO_LOCATIONS, ReleasePaths
+
+RECORD_ID_RE = re.compile(
+    r"^(?P<bank>[A-Z0-9]+?)/g(?P<group>\d+)/r(?P<record>\d+)$"
+)
 
 
 @dataclass(frozen=True)
@@ -52,99 +56,122 @@ class BankCompressionAudit:
     optimized_seconds: float
 
 
-@contextmanager
-def _maximize_headroom_policy() -> Iterator[None]:
-    """Temporarily make the release facade use editorial compression policy."""
-    original = release_module.compress_release_groups
+def _load_groups(
+    translations_directory: Path,
+    bank_name: str,
+) -> tuple[tuple[tuple[PackedSymbol, ...], ...], ...]:
+    """Encode one public translation map into stable group/record order."""
+    path = translations_directory / f"{bank_name}.json"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"{path} must contain a JSON object")
 
-    def deep_policy(*args: object, **kwargs: object) -> object:
-        """Forward one release compression call with deep search forced on."""
-        kwargs["maximize_headroom"] = True
-        return compression_policy(*args, **kwargs)
+    indexed: dict[int, dict[int, tuple[PackedSymbol, ...]]] = {}
+    for record_id, text in payload.items():
+        if not isinstance(record_id, str) or not isinstance(text, str):
+            raise ValueError(f"{path} must map string IDs to string text")
+        match = RECORD_ID_RE.fullmatch(record_id)
+        if match is None or match.group("bank") != bank_name:
+            raise ValueError(f"invalid {bank_name} record ID: {record_id}")
+        group_index = int(match.group("group"))
+        record_index = int(match.group("record"))
+        records = indexed.setdefault(group_index, {})
+        if record_index in records:
+            raise ValueError(f"duplicate record ID: {record_id}")
+        records[record_index] = encode_english(text)
 
-    release_module.compress_release_groups = deep_policy  # type: ignore[assignment]
-    try:
-        yield
-    finally:
-        release_module.compress_release_groups = original
+    expected_groups = list(range(len(indexed)))
+    if sorted(indexed) != expected_groups:
+        raise ValueError(
+            f"{bank_name} groups are not contiguous: {sorted(indexed)}"
+        )
+
+    groups: list[tuple[tuple[PackedSymbol, ...], ...]] = []
+    for group_index in expected_groups:
+        records = indexed[group_index]
+        expected_records = list(range(len(records)))
+        if sorted(records) != expected_records:
+            raise ValueError(
+                f"{bank_name}/g{group_index} records are not contiguous: "
+                f"{sorted(records)}"
+            )
+        groups.append(tuple(records[index] for index in expected_records))
+    return tuple(groups)
 
 
-def _source_bank(
+def _compress_bank(
+    groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
     bank_name: str,
     *,
-    zenpen: FdsImage,
-    kouhen: FdsImage,
-) -> bytes:
-    """Return one scenario component from its canonical two-side baseline."""
-    image_name, side = SCENARIO_LOCATIONS[bank_name]
-    image = zenpen if image_name == "zenpen" else kouhen
-    return image.sides[side].find_file(bank_name).data
-
-
-def _build_once(
-    source: bytes,
-    bank_name: str,
-    *,
-    paths: ReleasePaths,
-    temporary_directory: Path,
-) -> tuple[release_module.ScenarioBuildResult, float]:
-    """Build one bank and return its result plus wall-clock seconds."""
+    maximize_headroom: bool,
+) -> tuple[int, int, int, float]:
+    """Return used bytes, capacity, dictionary count, and elapsed seconds."""
+    capacity = playable_capacity(bank_name)
+    pointer_bytes = 2 * (len(groups) - 1)
     started = perf_counter()
-    result = release_module.build_scenario_bank(
-        source,
-        bank_name,
-        temporary_directory=temporary_directory,
-        translations_directory=paths.translations,
-    )
-    return result, perf_counter() - started
+
+    if bank_name in FIXED_RECORD_TABLE_SPECS:
+        spec = FIXED_RECORD_TABLE_SPECS[bank_name]
+        menu_records = tuple(encode_english(text) for text in spec.records)
+        combined_groups = (*groups, menu_records)
+        structural_bytes = (
+            pointer_bytes + fixed_record_table_page_pointer_bytes(bank_name)
+        )
+        compressed, dictionary = compress_release_groups(
+            combined_groups,
+            max_bytes=capacity - structural_bytes,
+            maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+            maximize_headroom=maximize_headroom,
+        )
+        used = packed_size(compressed, dictionary) + structural_bytes
+    else:
+        compressed, dictionary = compress_release_groups(
+            groups,
+            required_entries=required_dictionary_entries(bank_name),
+            max_bytes=capacity - pointer_bytes,
+            maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+            maximize_headroom=maximize_headroom,
+        )
+        used = packed_size(compressed, dictionary) + pointer_bytes
+
+    return used, capacity, len(dictionary), perf_counter() - started
 
 
 def audit_bank(
+    translations_directory: Path,
     bank_name: str,
-    *,
-    paths: ReleasePaths,
-    zenpen: FdsImage,
-    kouhen: FdsImage,
-    temporary_directory: Path,
 ) -> BankCompressionAudit:
     """Compare normal and maximize-headroom compression for one bank."""
-    source = _source_bank(bank_name, zenpen=zenpen, kouhen=kouhen)
-    fast, fast_seconds = _build_once(
-        source,
+    groups = _load_groups(translations_directory, bank_name)
+    fast_used, capacity, fast_entries, fast_seconds = _compress_bank(
+        groups,
         bank_name,
-        paths=paths,
-        temporary_directory=temporary_directory,
+        maximize_headroom=False,
     )
-    with _maximize_headroom_policy():
-        optimized, optimized_seconds = _build_once(
-            source,
-            bank_name,
-            paths=paths,
-            temporary_directory=temporary_directory,
-        )
-
-    if optimized.capacity_bytes != fast.capacity_bytes:
+    deep_used, deep_capacity, deep_entries, deep_seconds = _compress_bank(
+        groups,
+        bank_name,
+        maximize_headroom=True,
+    )
+    if deep_capacity != capacity:
+        raise ValueError(f"{bank_name} capacity changed between policies")
+    if deep_used > fast_used:
         raise ValueError(
-            f"{bank_name} capacity changed between compression policies"
+            f"{bank_name} optimized result grew from {fast_used} to "
+            f"{deep_used} bytes"
         )
-    if optimized.packed_bytes > fast.packed_bytes:
-        raise ValueError(
-            f"{bank_name} optimized result grew from {fast.packed_bytes} to "
-            f"{optimized.packed_bytes} bytes"
-        )
-    capacity = fast.capacity_bytes
     return BankCompressionAudit(
         bank=bank_name,
         capacity_bytes=capacity,
-        fast_packed_bytes=fast.packed_bytes,
-        optimized_packed_bytes=optimized.packed_bytes,
-        fast_headroom_bytes=capacity - fast.packed_bytes,
-        optimized_headroom_bytes=capacity - optimized.packed_bytes,
-        recovered_bytes=fast.packed_bytes - optimized.packed_bytes,
-        fast_dictionary_entries=fast.dictionary_entries,
-        optimized_dictionary_entries=optimized.dictionary_entries,
+        fast_packed_bytes=fast_used,
+        optimized_packed_bytes=deep_used,
+        fast_headroom_bytes=capacity - fast_used,
+        optimized_headroom_bytes=capacity - deep_used,
+        recovered_bytes=fast_used - deep_used,
+        fast_dictionary_entries=fast_entries,
+        optimized_dictionary_entries=deep_entries,
         fast_seconds=fast_seconds,
-        optimized_seconds=optimized_seconds,
+        optimized_seconds=deep_seconds,
     )
 
 
@@ -153,29 +180,13 @@ def audit_project(
     *,
     banks: tuple[str, ...] | None = None,
 ) -> tuple[BankCompressionAudit, ...]:
-    """Audit selected banks, defaulting to the complete scenario corpus."""
-    paths = ReleasePaths.from_project_root(project_root)
-    zenpen = FdsImage.from_bytes(paths.zenpen_baseline.read_bytes())
-    kouhen = FdsImage.from_bytes(paths.kouhen_baseline.read_bytes())
-    selected = banks if banks is not None else tuple(SCENARIO_LOCATIONS)
-    unknown = sorted(set(selected) - set(SCENARIO_LOCATIONS))
+    """Audit selected banks, defaulting to the complete public scenario corpus."""
+    translations = project_root.resolve() / "work" / "translations"
+    selected = banks if banks is not None else tuple(KNOWN_SCENARIO_BANKS)
+    unknown = sorted(set(selected) - set(KNOWN_SCENARIO_BANKS))
     if unknown:
         raise ValueError(f"unknown scenario bank(s): {', '.join(unknown)}")
-
-    with tempfile.TemporaryDirectory(
-        prefix="time-twist-headroom-"
-    ) as directory:
-        temporary_directory = Path(directory)
-        return tuple(
-            audit_bank(
-                bank,
-                paths=paths,
-                zenpen=zenpen,
-                kouhen=kouhen,
-                temporary_directory=temporary_directory,
-            )
-            for bank in selected
-        )
+    return tuple(audit_bank(translations, bank) for bank in selected)
 
 
 def _print_table(results: tuple[BankCompressionAudit, ...]) -> None:
@@ -224,13 +235,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--project-root",
         type=Path,
         default=Path.cwd(),
-        help="repository checkout containing work/baseline and work/translations",
+        help="repository checkout containing work/translations",
     )
     parser.add_argument(
         "--bank",
         action="append",
         dest="banks",
-        choices=tuple(SCENARIO_LOCATIONS),
+        choices=tuple(KNOWN_SCENARIO_BANKS),
         help="audit only this bank; may be supplied more than once",
     )
     parser.add_argument(
