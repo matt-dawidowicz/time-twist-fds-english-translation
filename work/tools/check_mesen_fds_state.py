@@ -19,13 +19,9 @@ def find_active_sidecars(
 ) -> tuple[Path, ...]:
     """Return active Mesen IPS sidecars matching one FDS candidate filename."""
     if candidate_fds.suffix.casefold() != ".fds":
-        raise MesenFdsStateError(
-            f"candidate must be an .fds image: {candidate_fds}"
-        )
+        raise MesenFdsStateError(f"candidate must be an .fds image: {candidate_fds}")
     if not candidate_fds.is_file():
-        raise MesenFdsStateError(
-            f"candidate does not exist: {candidate_fds}"
-        )
+        raise MesenFdsStateError(f"candidate does not exist: {candidate_fds}")
     if not mesen_save_dir.is_dir():
         raise MesenFdsStateError(
             f"Mesen save directory does not exist: {mesen_save_dir}"
@@ -57,6 +53,7 @@ def check_clean_state(candidate_fds: Path, mesen_save_dir: Path) -> None:
 
 
 def _build_parser() -> argparse.ArgumentParser:
+    """Build the command-line parser for the Mesen clean-state preflight."""
     parser = argparse.ArgumentParser(
         description=(
             "Verify that Mesen has no filename-matched FDS .ips write overlay "
