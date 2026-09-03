@@ -79,12 +79,13 @@ bytes and produce a false runtime regression.
 
 Before the **first boot of each newly built candidate** in Mesen, close Mesen
 and run the read-only preflight against the actual candidate and Mesen save
-directory:
+directory. Replace `<MESEN-SAVES-DIRECTORY>` with the actual Mesen `Saves`
+directory on the test machine:
 
 ```powershell
 python work/tools/check_mesen_fds_state.py `
   --candidate-fds "build/candidate/Time Twist - reproducible English four-side playtest.fds" `
-  --mesen-save-dir "D:\Emulation\Mesen\Saves"
+  --mesen-save-dir "<MESEN-SAVES-DIRECTORY>"
 ```
 
 If the check fails, quarantine the reported `.ips` by moving or renaming it.
