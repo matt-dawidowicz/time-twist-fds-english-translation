@@ -105,7 +105,9 @@ def presentation_break_variants(
     # a deterministic enumeration order; compression scoring remains external.
     variants = tuple(
         break_tag.join(lines)
-        for lines in sorted(line_layouts, key=lambda lines: (len(lines), lines))
+        for lines in sorted(
+            line_layouts, key=lambda lines: (len(lines), lines)
+        )
     )
     for variant in variants:
         validate_display_width(variant, columns=columns)
