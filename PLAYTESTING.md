@@ -38,12 +38,13 @@ Before the **first cold boot of a newly built candidate** in Mesen:
 4. then launch the candidate and begin runtime certification.
 
 If you have a source checkout, the maintainer preflight is read-only and can
-perform this check:
+perform this check. Replace `<MESEN-SAVES-DIRECTORY>` with the actual Mesen
+`Saves` directory on the machine being used for testing:
 
 ```powershell
 python work/tools/check_mesen_fds_state.py `
   --candidate-fds "build/candidate/Time Twist - reproducible English four-side playtest.fds" `
-  --mesen-save-dir "D:\Emulation\Mesen\Saves"
+  --mesen-save-dir "<MESEN-SAVES-DIRECTORY>"
 ```
 
 Do **not** keep clearing the sidecar during the same candidate's save/load
