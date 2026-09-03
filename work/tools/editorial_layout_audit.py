@@ -23,7 +23,10 @@ from time_twist.capacity import playable_capacity
 from time_twist.compression import packed_size
 from time_twist.editorial_layout import presentation_break_variants
 from time_twist.english import encode_english
-from time_twist.project import KNOWN_SCENARIO_BANKS, required_dictionary_entries
+from time_twist.project import (
+    KNOWN_SCENARIO_BANKS,
+    required_dictionary_entries,
+)
 from time_twist.release_compression import compress_release_groups
 from time_twist.scenario_validation import (
     PRESENTATION_BREAK_RECORD_IDS,
@@ -153,7 +156,9 @@ def audit_layouts(
     root = project_root.resolve()
     translations = _translation_map(root, bank_name)
     if record_id not in translations:
-        raise ValueError(f"{record_id} is absent from {bank_name} translations")
+        raise ValueError(
+            f"{record_id} is absent from {bank_name} translations"
+        )
     layouts = presentation_break_variants(natural_text)
 
     results: list[LayoutAuditResult] = []
