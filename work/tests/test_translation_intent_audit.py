@@ -93,10 +93,8 @@ class TranslationIntentAuditTests(unittest.TestCase):
         self.assertGreaterEqual(gap.score, 90)
         self.assertIn("workbook explicitly records lost nuance", gap.reasons)
 
-    def test_marked_register_can_trigger_review_without_length_bias(
-        self,
-    ) -> None:
-        """Surface source-marked voice even when natural and playable match."""
+    def test_marked_register_alone_is_not_an_intent_gap(self) -> None:
+        """Keep interesting voice metadata out of the repair queue when preserved."""
         gap = score_row(
             scenario_row(
                 original_record_id="TT1B/g1/r0",
@@ -104,12 +102,42 @@ class TranslationIntentAuditTests(unittest.TestCase):
             )
         )
 
-        self.assertIsNotNone(gap)
-        assert gap is not None
-        self.assertEqual(gap.score, 15)
-        self.assertIn(
-            "source has marked register/dialect/voice evidence", gap.reasons
+        self.assertIsNone(gap)
+
+    def test_marked_register_raises_priority_of_a_real_gap(self) -> None:
+        """Use source voice as a multiplier once wording divergence is established."""
+        plain = score_row(
+            scenario_row(
+                patch_safe_english_translation="You mean it?",
+            )
         )
+        marked = score_row(
+            scenario_row(
+                patch_safe_english_translation="You mean it?",
+                dialect_or_register="ぞ: forceful assertion",
+            )
+        )
+
+        self.assertIsNotNone(plain)
+        self.assertIsNotNone(marked)
+        assert plain is not None and marked is not None
+        self.assertEqual(marked.score, plain.score + 15)
+        self.assertIn(
+            "source has marked register/dialect/voice evidence", marked.reasons
+        )
+
+    def test_resolved_problem_note_is_not_an_outstanding_gap(self) -> None:
+        """Do not requeue a line merely because its audit records the resolution."""
+        gap = score_row(
+            scenario_row(
+                problems_with_current_english=(
+                    "Resolved in the playable text: the reviewed nuance is retained."
+                ),
+                dialect_or_register="ぞ: forceful assertion",
+            )
+        )
+
+        self.assertIsNone(gap)
 
     def test_runtime_blockers_are_flagged_and_sorted_after_actionable_rows(
         self,
