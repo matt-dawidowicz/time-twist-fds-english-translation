@@ -46,7 +46,14 @@ The exception has three safeguards:
 - any additional control must be `CTRL:0`.
 
 An allowlisted record cannot insert `CTRL:4`, reorder a source wait, or otherwise
-use the presentation rule to change script semantics.
+use the presentation rule to change script semantics. The shared
+`scenario_controls_match_policy()` predicate is used by scenario validation and
+review tooling so the ROM builder, comparison corpus, and workbook do not carry
+separate definitions of a safe control sequence.
+
+The bilingual corpus still records `source_controls` and `english_controls`
+separately. Its `control_match` result means that the English sequence is valid
+under the reviewed policy; it does not hide an English-only presentation break.
 
 ## Why English-only breaks are cheap
 
@@ -78,7 +85,7 @@ When was the last time I saw a blue sky?
 ```
 
 The earlier playable draft shortened this to telegraphic English to remain under
-the row width. The intended pilot layout is:
+the row width. The accepted source layout is:
 
 ```text
 When was the last time{CTRL:0}I saw a blue sky?
@@ -94,7 +101,7 @@ I saw a blue sky?
 Both rows are below 24 columns. The prose itself is not rewritten to satisfy the
 renderer.
 
-## Deterministic layout generation
+## Deterministic minimum-row layout generation
 
 `work/time_twist/editorial_layout.py` implements
 `presentation_break_variants()`.
@@ -103,18 +110,23 @@ For control-free natural English it:
 
 1. validates single internal spaces and legal word widths;
 2. returns the unmodified sentence alone if it already fits one row;
-3. otherwise enumerates all word-boundary layouts whose rows are at most 24
-   visible characters;
-4. replaces selected spaces with the verified presentation control;
-5. validates every resulting layout through the normal display-width checker;
-6. returns variants in deterministic order.
+3. computes the minimum number of renderer rows required to preserve every word;
+4. enumerates only word-boundary layouts that use that minimum row count and
+   keep every row at or below 24 visible characters;
+5. replaces selected spaces with the verified presentation control;
+6. validates every resulting layout through the normal display-width checker;
+7. returns variants in deterministic order.
 
 It never changes a letter, word, punctuation mark, or word order. Existing
 controls are rejected by this narrow helper so semantic-control composition
 cannot be moved accidentally.
 
-A variant-count guard prevents pathological input from creating an unbounded
-combinatorial search.
+Layouts that use more rows than necessary are intentionally excluded. Once the
+sentence safely fits in *N* rows, an *N+1*-row version adds another control and
+another dictionary boundary without solving a display requirement. This
+minimum-row rule prevents combinatorial runaway and keeps compression scoring
+focused on editorially meaningful alternatives. A variant-count guard still
+bounds pathological sets of equally minimal layouts.
 
 ## Whole-bank layout scoring
 
@@ -125,7 +137,8 @@ larger bank globally.
 `work/tools/editorial_layout_audit.py` addresses this by:
 
 1. loading the real Japanese source bank and reviewed translation map;
-2. generating every legal presentation layout for the supplied natural prose;
+2. generating every minimum-row presentation layout for the supplied natural
+   prose;
 3. substituting one layout into a temporary translation map;
 4. rebuilding the complete bank with maximize-headroom compression;
 5. measuring exact packed bytes, remaining capacity, dictionary count, and
@@ -133,23 +146,24 @@ larger bank globally.
 6. ranking the layouts by complete-bank packed size.
 
 The tool is an audit, not an automatic source editor. Its result tells the editor
-which natural layouts are cheapest; the final wording and presentation remain a
-reviewed translation decision.
+which natural layouts are technically cheapest; the final wording and
+presentation remain a reviewed translation decision.
 
 ## Editorial priority
 
 The intended order of decisions is:
 
-1. exact Japanese meaning;
-2. natural English;
-3. character voice and dramatic rhythm;
-4. safe on-screen layout;
-5. fixed-bank compressed fit.
+1. exact Japanese meaning and implication;
+2. emotional valence and sentiment;
+3. speaker stance, register, characterization, and subtext;
+4. natural English and dramatic rhythm;
+5. safe on-screen layout;
+6. fixed-bank compressed fit.
 
 When a natural sentence does not initially fit, the first response should be to
 measure wrapping and compression options. Deleting articles, pronouns,
-conjunctions, or emotional rhythm is a last resort after the engineering options
-have been exhausted.
+conjunctions, humor, hesitation, emphasis, or emotional rhythm is a last resort
+after the engineering options have been exhausted.
 
 ## Expanding the presentation-break allowlist
 
@@ -190,8 +204,8 @@ blue-sky pilot, whole-bank optimization measured all three minimum-row layouts:
 The project deliberately selects `When was the last time` / `I saw a blue sky?`.
 It is four bytes larger than the compressor-optimal break but better preserves
 English phrasing and reflective rhythm, while still leaving 332 bytes free in
-the audited bank. Editorial quality therefore dominates byte minimization once
-the hard ROM constraints are satisfied.
+the deep-audit result. Editorial quality therefore dominates byte minimization
+once the hard ROM constraints are satisfied.
 
 ## Python-Rust editorial path
 
@@ -200,5 +214,11 @@ real TT1A benchmark reduced deep-search time from about 17.3 seconds in Python
 to about 0.43 seconds in Rust while producing the same 1,594-byte result and the
 same 26-entry dictionary. The speedup makes it practical to evaluate natural
 prose and multiple legal layouts rather than pre-shortening text to avoid search
-cost. Python independently expands and repacks every native result, so native
-speed cannot override codec correctness. See `NATIVE_ACCELERATOR.md`.
+cost.
+
+Rust is not allowed to define what the ROM means or accepts. Python supplies the
+canonical symbols, independently expands every native result, repacks it through
+the canonical codec, rechecks the exact byte count, and rejects any structural,
+semantic, dictionary, or capacity disagreement. See
+[`NATIVE_ACCELERATOR.md`](NATIVE_ACCELERATOR.md) for the complete boundary and
+build protocol.
