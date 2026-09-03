@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - engineering/editorial-compression-20260902
   pull_request:
 
 concurrency:
