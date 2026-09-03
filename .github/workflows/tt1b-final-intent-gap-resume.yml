@@ -47,7 +47,7 @@ jobs:
               assert text.count(anchor) == 1
               addition = (
                   anchor
-                  + '        # てんじひん ぜんぶみました！ / いえ……\n'
+                  + '        # Exhibit question followed by an immediate negative reply.\n'
                   + '        # The following "No" establishes the interrogative reading; retain\n'
                   + '        # the complete question across one additional presentation row.\n'
                   + '        "TT1B/g0/r28",\n'
