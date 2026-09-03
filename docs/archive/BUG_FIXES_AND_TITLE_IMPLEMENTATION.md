@@ -105,12 +105,12 @@ The complete decoder change is one exact-size, source-verified replacement:
 
 | File | CPU | Expected bytes | Replacement bytes | Purpose |
 | ---: | ---: | --- | --- | --- |
-| `$21D3` | `$81D3` | `A5 3A C9 04 90 07 C9 20 B0 09 4C ED 81` | `A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82` | Route values 0-36 to dictionary entries 32-68; retain values 37-63 as extended glyphs |
+| `$21D3` | `$81D3` | `A5 3A C9 04 90 07 C9 20 B0 09 4C ED 81` | `A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82` | Route values 0-36 to dictionary entries 32-68; retain values 37-63 as extended glyphs |
 
 The replacement is 13 bytes, exactly the size of NOV2's original extended
-glyph branch. Values below `$25` reach the existing dictionary expander at
-`$82BE` after adding 32; values `$25` and above branch to the existing glyph
-path at `$8226`. `CMP #$25` clears carry for the add path, so the compact
+glyph branch. Values below `$25` add 32 and jump to `$82C5`, the dictionary-expansion
+entry after the native five-bit index reader; values `$25` and above branch to
+the existing glyph path at `$8226`. `CMP #$25` clears carry for the add path, so the compact
 sequence does not require a separate `CLC`.
 
 ## NOV2 one-choice B-button engine fix

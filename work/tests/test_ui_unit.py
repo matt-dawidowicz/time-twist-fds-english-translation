@@ -127,7 +127,7 @@ class SourceVerifiedPatchTests(unittest.TestCase):
         self.assertEqual(len(patch.replacement), 13)
         self.assertEqual(
             patch.replacement,
-            bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82"),
+            bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
         )
 
 

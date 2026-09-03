@@ -476,7 +476,7 @@ NOV2_EXTENDED_DICTIONARY_PATCH = SourceVerifiedPatch(
     file_offset=0x21D3,
     cpu_address=0x81D3,
     expected=bytes.fromhex("A5 3A C9 04 90 07 C9 20 B0 09 4C ED 81"),
-    replacement=bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82"),
+    replacement=bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
     label="extended English dictionary decoder",
 )
 
