@@ -58,6 +58,7 @@ def _maximize_headroom_policy() -> Iterator[None]:
     original = release_module.compress_release_groups
 
     def deep_policy(*args: object, **kwargs: object) -> object:
+        """Forward one release compression call with deep search forced on."""
         kwargs["maximize_headroom"] = True
         return compression_policy(*args, **kwargs)
 
