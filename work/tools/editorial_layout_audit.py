@@ -1,36 +1,43 @@
 """Rank natural-English line layouts by exact whole-bank compression cost.
 
-The tool preserves the supplied prose verbatim and varies only presentation
-row breaks. Each legal layout is written into a temporary translation map and
-rebuilt through the canonical scenario-bank path with maximize-headroom
-compression enabled. This measures the real interaction between wrapping,
-record alignment, dictionary selection, fixed UI requirements, and the bank's
-unchanged capacity.
+The tool preserves supplied prose verbatim and varies only presentation row
+breaks. Each legal layout is substituted into an in-memory copy of the public
+translation map, validated against the audited presentation-control policy, and
+compressed as part of the complete bank.
 
-It is intentionally an audit tool rather than an automatic source editor. A
-maintainer can review the ranked variants and then choose the natural layout to
-promote into the translation map.
+It requires no proprietary ROM. Recovered public capacity facts and fixed-menu
+records reproduce the build-side packing problem; a later private ROM-backed
+candidate remains the final fixed-address/source-byte gate.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import tempfile
-from collections.abc import Iterator
-from contextlib import contextmanager
+import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from time import perf_counter
 
-from time_twist import release as release_module
+from time_twist.capacity import playable_capacity
+from time_twist.compression import packed_size
 from time_twist.editorial_layout import presentation_break_variants
-from time_twist.fds import FdsImage
-from time_twist.release_compression import (
-    compress_release_groups as compression_policy,
+from time_twist.english import encode_english
+from time_twist.project import KNOWN_SCENARIO_BANKS, required_dictionary_entries
+from time_twist.release_compression import compress_release_groups
+from time_twist.scenario_validation import (
+    PRESENTATION_BREAK_RECORD_IDS,
+    encode_validated_english,
 )
-from time_twist.release_metadata import SCENARIO_LOCATIONS, ReleasePaths
-from time_twist.scenario_validation import PRESENTATION_BREAK_RECORD_IDS
+from time_twist.textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT, PackedSymbol
+from time_twist.ui import (
+    FIXED_RECORD_TABLE_SPECS,
+    fixed_record_table_page_pointer_bytes,
+)
+
+RECORD_ID_RE = re.compile(
+    r"^(?P<bank>[A-Z0-9]+?)/g(?P<group>\d+)/r(?P<record>\d+)$"
+)
 
 
 @dataclass(frozen=True)
@@ -45,38 +52,9 @@ class LayoutAuditResult:
     seconds: float
 
 
-@contextmanager
-def _maximize_headroom_policy() -> Iterator[None]:
-    """Temporarily force the release facade to use editorial compression."""
-    original = release_module.compress_release_groups
-
-    def deep_policy(*args: object, **kwargs: object) -> object:
-        """Forward one compression call with the fast-accept shortcut disabled."""
-        kwargs["maximize_headroom"] = True
-        return compression_policy(*args, **kwargs)
-
-    release_module.compress_release_groups = deep_policy  # type: ignore[assignment]
-    try:
-        yield
-    finally:
-        release_module.compress_release_groups = original
-
-
-def _source_bank(bank_name: str, *, paths: ReleasePaths) -> bytes:
-    """Load one scenario component from its canonical Japanese FDS baseline."""
-    image_name, side = SCENARIO_LOCATIONS[bank_name]
-    baseline = (
-        paths.zenpen_baseline
-        if image_name == "zenpen"
-        else paths.kouhen_baseline
-    )
-    image = FdsImage.from_bytes(baseline.read_bytes())
-    return image.sides[side].find_file(bank_name).data
-
-
-def _translation_map(paths: ReleasePaths, bank_name: str) -> dict[str, str]:
+def _translation_map(project_root: Path, bank_name: str) -> dict[str, str]:
     """Load one reviewed bank translation map with string-only validation."""
-    path = paths.translations / f"{bank_name}.json"
+    path = project_root / "work" / "translations" / f"{bank_name}.json"
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict) or any(
         not isinstance(key, str) or not isinstance(value, str)
@@ -84,6 +62,75 @@ def _translation_map(paths: ReleasePaths, bank_name: str) -> dict[str, str]:
     ):
         raise ValueError(f"{path} must map string record IDs to strings")
     return payload
+
+
+def _groups_from_map(
+    bank_name: str,
+    translations: dict[str, str],
+) -> tuple[tuple[tuple[PackedSymbol, ...], ...], ...]:
+    """Encode one translation map into stable group/record order."""
+    indexed: dict[int, dict[int, tuple[PackedSymbol, ...]]] = {}
+    for record_id, text in translations.items():
+        match = RECORD_ID_RE.fullmatch(record_id)
+        if match is None or match.group("bank") != bank_name:
+            raise ValueError(f"invalid {bank_name} record ID: {record_id}")
+        group_index = int(match.group("group"))
+        record_index = int(match.group("record"))
+        records = indexed.setdefault(group_index, {})
+        if record_index in records:
+            raise ValueError(f"duplicate record ID: {record_id}")
+        records[record_index] = encode_english(text)
+
+    expected_groups = list(range(len(indexed)))
+    if sorted(indexed) != expected_groups:
+        raise ValueError(
+            f"{bank_name} groups are not contiguous: {sorted(indexed)}"
+        )
+    groups: list[tuple[tuple[PackedSymbol, ...], ...]] = []
+    for group_index in expected_groups:
+        records = indexed[group_index]
+        expected_records = list(range(len(records)))
+        if sorted(records) != expected_records:
+            raise ValueError(
+                f"{bank_name}/g{group_index} records are not contiguous: "
+                f"{sorted(records)}"
+            )
+        groups.append(tuple(records[index] for index in expected_records))
+    return tuple(groups)
+
+
+def _deep_measure(
+    bank_name: str,
+    groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
+) -> tuple[int, int, int, float]:
+    """Return optimized used bytes, capacity, dictionary entries, and time."""
+    capacity = playable_capacity(bank_name)
+    pointer_bytes = 2 * (len(groups) - 1)
+    started = perf_counter()
+    if bank_name in FIXED_RECORD_TABLE_SPECS:
+        spec = FIXED_RECORD_TABLE_SPECS[bank_name]
+        menu_records = tuple(encode_english(text) for text in spec.records)
+        combined = (*groups, menu_records)
+        structural_bytes = (
+            pointer_bytes + fixed_record_table_page_pointer_bytes(bank_name)
+        )
+        compressed, dictionary = compress_release_groups(
+            combined,
+            max_bytes=capacity - structural_bytes,
+            maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+            maximize_headroom=True,
+        )
+        used = packed_size(compressed, dictionary) + structural_bytes
+    else:
+        compressed, dictionary = compress_release_groups(
+            groups,
+            required_entries=required_dictionary_entries(bank_name),
+            max_bytes=capacity - pointer_bytes,
+            maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+            maximize_headroom=True,
+        )
+        used = packed_size(compressed, dictionary) + pointer_bytes
+    return used, capacity, len(dictionary), perf_counter() - started
 
 
 def audit_layouts(
@@ -94,7 +141,7 @@ def audit_layouts(
     natural_text: str,
 ) -> tuple[LayoutAuditResult, ...]:
     """Deep-compress every legal layout of one reviewed natural sentence."""
-    if bank_name not in SCENARIO_LOCATIONS:
+    if bank_name not in KNOWN_SCENARIO_BANKS:
         raise ValueError(f"unknown scenario bank {bank_name}")
     if not record_id.startswith(f"{bank_name}/"):
         raise ValueError(f"record {record_id} does not belong to {bank_name}")
@@ -103,53 +150,32 @@ def audit_layouts(
             f"{record_id} is not allowlisted for English presentation breaks"
         )
 
-    paths = ReleasePaths.from_project_root(project_root)
-    source = _source_bank(bank_name, paths=paths)
-    translations = _translation_map(paths, bank_name)
+    root = project_root.resolve()
+    translations = _translation_map(root, bank_name)
     if record_id not in translations:
-        raise ValueError(
-            f"{record_id} is absent from {bank_name} translations"
-        )
+        raise ValueError(f"{record_id} is absent from {bank_name} translations")
     layouts = presentation_break_variants(natural_text)
 
     results: list[LayoutAuditResult] = []
-    with tempfile.TemporaryDirectory(
-        prefix="time-twist-layout-audit-"
-    ) as directory:
-        root = Path(directory)
-        translation_directory = root / "translations"
-        translation_directory.mkdir()
-        build_directory = root / "build"
-        build_directory.mkdir()
-
-        for index, layout in enumerate(layouts):
-            candidate = dict(translations)
-            candidate[record_id] = layout
-            (translation_directory / f"{bank_name}.json").write_text(
-                json.dumps(candidate, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
+    for layout in layouts:
+        # The current pilot has no source control codes. Passing an empty source
+        # sequence exercises the same validator rule that permits only additional
+        # CTRL:0 presentation advances on this reviewed record.
+        encode_validated_english(record_id, layout, "")
+        candidate = dict(translations)
+        candidate[record_id] = layout
+        groups = _groups_from_map(bank_name, candidate)
+        used, capacity, entries, seconds = _deep_measure(bank_name, groups)
+        results.append(
+            LayoutAuditResult(
+                layout=layout,
+                packed_bytes=used,
+                capacity_bytes=capacity,
+                headroom_bytes=capacity - used,
+                dictionary_entries=entries,
+                seconds=seconds,
             )
-            variant_directory = build_directory / f"variant-{index}"
-            variant_directory.mkdir()
-            started = perf_counter()
-            with _maximize_headroom_policy():
-                built = release_module.build_scenario_bank(
-                    source,
-                    bank_name,
-                    temporary_directory=variant_directory,
-                    translations_directory=translation_directory,
-                )
-            seconds = perf_counter() - started
-            results.append(
-                LayoutAuditResult(
-                    layout=layout,
-                    packed_bytes=built.packed_bytes,
-                    capacity_bytes=built.capacity_bytes,
-                    headroom_bytes=built.capacity_bytes - built.packed_bytes,
-                    dictionary_entries=built.dictionary_entries,
-                    seconds=seconds,
-                )
-            )
+        )
 
     return tuple(
         sorted(
@@ -183,7 +209,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--project-root", type=Path, default=Path.cwd())
     parser.add_argument(
-        "--bank", required=True, choices=tuple(SCENARIO_LOCATIONS)
+        "--bank", required=True, choices=tuple(KNOWN_SCENARIO_BANKS)
     )
     parser.add_argument("--record", required=True)
     parser.add_argument("--text", required=True)
