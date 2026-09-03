@@ -35,14 +35,49 @@ jobs:
       - name: Verify generated translation review artifacts are current
         run: git diff --exit-code -- outputs work/translation_workbook_banks
       - if: matrix.python-version == '3.11'
-        name: Apply Black formatting on engineering branch
+        name: Apply confirmed decoder correction and formatting
         run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              file = Path(path)
+              text = file.read_text(encoding="utf-8")
+              if old in text:
+                  if text.count(old) != 1:
+                      raise SystemExit(f"{path}: expected one old occurrence")
+                  file.write_text(text.replace(old, new), encoding="utf-8")
+                  return
+              if new not in text:
+                  raise SystemExit(f"{path}: neither old nor corrected text found")
+
+          old_hex = "A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82"
+          new_hex = "A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"
+          replace_once("work/time_twist/ui.py", old_hex, new_hex)
+          replace_once("work/tests/test_ui_unit.py", old_hex, new_hex)
+          replace_once("docs/FULL_WORD_MENU_IMPLEMENTATION.md", old_hex, new_hex)
+          replace_once(
+              "docs/FULL_WORD_MENU_IMPLEMENTATION.md",
+              "Values below 37 add 32 and enter the existing dictionary expander at `$82BE`.",
+              "Values below 37 add 32 and enter dictionary expansion at `$82C5`, after the native five-bit dictionary reader.",
+          )
+          replace_once(
+              "docs/archive/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md",
+              old_hex,
+              new_hex,
+          )
+          replace_once(
+              "docs/archive/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md",
+              "Values below `$25` reach the existing dictionary expander at\n`$82BE` after adding 32; values `$25` and above branch to the existing glyph\npath at `$8226`.",
+              "Values below `$25` add 32 and jump to `$82C5`, the dictionary-expansion\nentry after the native five-bit index reader; values `$25` and above branch to\nthe existing glyph path at `$8226`.",
+          )
+          PY
           python -m black work
-          if ! git diff --quiet -- work; then
+          if ! git diff --quiet -- work docs; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add work
-            git commit -m "Apply Black formatting"
+            git add work docs
+            git commit -m "Fix extended dictionary decoder entry point"
             git push origin HEAD:engineering/editorial-compression-20260902
           fi
       - run: python -m black --check work
