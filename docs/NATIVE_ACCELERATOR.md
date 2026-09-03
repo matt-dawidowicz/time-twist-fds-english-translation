@@ -1,178 +1,109 @@
 # Native compression accelerator
 
-The optional native optimizer accelerates the expensive **offline** dictionary
-search used by editorial compression audits. It does not run on the Famicom,
-does not change the packed-text format, and is not required to install or use
-the normal Python tooling.
+## Purpose
 
-The canonical format model remains `work/time_twist/textcodec.py`. The canonical
-reference search remains `work/time_twist/compression.py`. Rust is an accelerator
-for the same deterministic search policy, not a second definition of correctness.
+Time Twist keeps Python as the canonical implementation of the packed-text
+format, release validation, ROM construction, and translation workflow. The
+optional Rust program in `native/compression_optimizer` accelerates only the
+expensive deterministic dictionary/search stage used by editorial optimization.
 
-## Why Rust is justified
+The reason for the hybrid is translation quality. The project should preserve as
+much of the Japanese as English can carry: denotation, implication, sentiment,
+speaker stance, register, humor, hesitation, emphasis, characterization, and
+dramatic rhythm. Fixed FDS memory and renderer limits remain non-negotiable, but
+they should be attacked with better packing and layout search before natural
+English is shortened.
 
-Real-bank profiling showed that the deeper Python search can take tens of
-seconds for one bank evaluation. Early measurements on the engineering branch
-included:
+## Authority boundary
 
-| Bank | Fast | Deep Python | Extra bytes recovered |
-| --- | ---: | ---: | ---: |
-| TT1A | 0.934 s | 17.327 s | 4 |
-| TT3B | 1.292 s | 52.949 s | 4 |
-| T25 | 1.219 s | 29.549 s | 5 |
-| TT6D | 0.065 s | 0.677 s | 0 |
+Rust is an optimizer, not a codec authority. `work/time_twist/textcodec.py` and
+the Python compression/validation code remain the executable specification.
+`work/time_twist/compression_native.py` serializes one complete optimization
+problem, runs the native helper, parses its answer, and verifies it independently.
 
-A compression-aware layout audit may evaluate several legal wraps of the same
-sentence, so a 30-50 second whole-bank search quickly becomes too slow for
-iterative prose work.
+Python rejects a native result unless all of the following hold:
 
-## Architecture
+- group and record counts are unchanged;
+- dictionary size is within the recovered decoder limit;
+- any required dictionary prefix is byte-for-byte semantically preserved;
+- dictionary entries are unique, nonempty, flat glyph strings;
+- every dictionary reference expands legally;
+- every expanded record is symbol-for-symbol identical to the intended English;
+- canonical Python `packed_size()` agrees with the native claimed size;
+- the fixed bank byte limit is not exceeded.
 
-The native component is a standalone Rust binary:
-
-```text
-native/compression_optimizer/
-    Cargo.toml
-    src/main.rs
-```
-
-It intentionally has no third-party Rust runtime dependencies. Python invokes
-one process per **complete bank optimization problem**, so process startup is
-negligible relative to the combinatorial search and no Python extension ABI is
-introduced.
-
-Normal setuptools packaging is unchanged. A contributor without Rust simply
-uses the Python backend.
-
-## Building
-
-From the repository root:
-
-```text
-cargo build --release --manifest-path native/compression_optimizer/Cargo.toml
-```
-
-The executable is then located at:
-
-```text
-native/compression_optimizer/target/release/time-twist-compression-optimizer
-```
-
-or, on Windows:
-
-```text
-native\compression_optimizer\target\release\time-twist-compression-optimizer.exe
-```
-
-The Python bridge also honors the explicit environment variable:
-
-```text
-TIME_TWIST_NATIVE_OPTIMIZER=/absolute/path/to/executable
-```
-
-No native executable is auto-downloaded.
+This makes native failure fail-closed: an unavailable, crashing, malformed, or
+incorrect helper cannot silently change the ROM text.
 
 ## Protocol
 
-The process boundary uses a small versioned line protocol rather than Python
-objects or an FFI ABI. Each symbol is represented as a collision-free 16-bit
-hex token:
+The bridge uses a versioned plain-text whole-bank protocol:
 
-| High byte | Meaning |
-| ---: | --- |
-| `00` | common glyph |
-| `01` | extended glyph |
-| `02` | dictionary reference |
-| `03` | control |
+- request magic: `TIME_TWIST_COMPRESSION_V1`;
+- result magic: `TIME_TWIST_COMPRESSION_RESULT_V1`;
+- each packed symbol becomes a collision-free 16-bit token containing symbol
+  kind and value;
+- the request carries the maximum dictionary count, byte limit, full-dictionary
+  requirement, required prefix, and every group/record;
+- the result returns the claimed packed size, complete ordered dictionary, and
+  compressed groups.
 
-The low byte is the native value. This is deliberately different from the
-internal one-byte search key in `compression.py`; dictionary references 64-68
-would otherwise overlap control-key values.
+A whole-bank process boundary is intentional. It avoids per-candidate FFI
+overhead and keeps the normal Python package independent of CPython ABI or PyO3
+wheel concerns.
 
-A request contains:
+## Discovery and build
 
-- protocol version;
-- maximum dictionary entries;
-- optional packed-byte limit;
-- whether the caller requires a full dictionary;
-- fixed required dictionary prefix;
-- every group and record in order.
+Normal Python use does not require Rust. Editorial/native mode discovers the
+helper in this order:
 
-The result contains:
+1. `TIME_TWIST_NATIVE_OPTIMIZER`;
+2. the checkout release target under
+   `native/compression_optimizer/target/release`;
+3. `time-twist-compression-optimizer` on `PATH`.
 
-- protocol version;
-- claimed packed size;
-- ordered flat dictionary;
-- compressed groups and records.
-
-The protocol is an internal accelerator boundary, not a ROM format.
-
-## Python verification
-
-`work/time_twist/compression_native.py` treats native output as untrusted until
-it is independently proved correct.
-
-Before returning a native candidate, Python verifies all of the following:
-
-1. group and record counts are unchanged;
-2. dictionary size is within the decoder limit;
-3. required dictionary entries remain the exact prefix;
-4. full-dictionary requirements are satisfied when applicable;
-5. every dictionary entry is nonempty, unique, and contains only literal glyphs;
-6. every compressed record expands through the returned dictionary to the exact
-   original Python symbol stream;
-7. canonical Python `packed_size()` equals the native claimed size;
-8. the result remains within the requested packed-byte limit.
-
-Any disagreement raises `NativeCompressionError`; there is no permissive or
-best-effort acceptance path.
-
-## Search equivalence
-
-The Rust implementation mirrors the current Python optimizer policy:
-
-- required-prefix installation;
-- pruned greedy search;
-- exhaustive greedy fallback when required;
-- default bounded beam search;
-- fixed-prefix-safe dictionary-order hill climb;
-- wider beam when the baseline is within 16 bytes of capacity;
-- exact byte-aligned scoring;
-- deterministic tie ordering.
-
-CI builds the Rust binary and runs synthetic cross-language equivalence tests.
-It also compares a real TT1A deep result against the Python reference before the
-native backend is accepted for editorial benchmarking.
-
-## Using the backend
-
-The normal release path remains Python. Native search is opt-in for editorial
-tools:
+Build from the repository root with stable Rust:
 
 ```text
-python work/tools/compression_headroom.py --bank TT1A --backend native
+cargo fmt --check --manifest-path native/compression_optimizer/Cargo.toml
+cargo test --manifest-path native/compression_optimizer/Cargo.toml
+cargo build --release --manifest-path native/compression_optimizer/Cargo.toml
 ```
 
-and:
+Windows uses the standard stable `x86_64-pc-windows-msvc` toolchain. No nightly
+features are required.
 
-```text
-python work/tools/editorial_layout_audit.py \
-  --bank TT1B \
-  --record TT1B/g0/r1 \
-  --text "When was the last time I saw a blue sky?" \
-  --backend native
-```
+## Determinism and equivalence
 
-This separation prevents release output from silently depending on whether a
-particular machine happens to have Rust installed.
+The native search must use explicit deterministic ordering for ties. Hash-map
+iteration order, thread scheduling, platform-specific integer behavior, or random
+seeds must not affect selected dictionaries or streams. CI cross-checks the Rust
+optimizer against the Python reference on representative corpora, and a real
+bank benchmark requires equal optimized size and dictionary count.
 
-## Determinism
+The editorial path still prefers English quality over a tiny size difference
+once every candidate fits. Compression ranking chooses technically efficient
+layouts; the editor may select a slightly larger layout when it better preserves
+phrasing, sentiment, voice, or dramatic cadence and the bank retains safe
+headroom.
 
-Speed is not allowed to weaken reproducibility. Both implementations define
-deterministic ordering for candidate ranking, beam successors, dictionary
-identity, and final result selection. CI equivalence tests are intended to catch
-any platform or implementation divergence before the accelerator is used for
-translation decisions.
+## Measured result
 
-The native backend may later use internal parallelism only if the final ordering
-remains explicitly deterministic and cross-platform equivalent.
+On GitHub Actions, TT1A measured approximately:
+
+| Backend | Optimized bytes | Dictionary | Deep-search time |
+| --- | ---: | ---: | ---: |
+| Python reference | 1594 | 26 | 17.3 s |
+| Rust accelerator | 1594 | 26 | 0.43 s |
+
+That roughly 40x acceleration is large enough to change the editorial workflow:
+natural prose and legal line layouts can be explored directly instead of being
+shortened pre-emptively to keep optimization time manageable.
+
+## Release policy
+
+Routine builds may continue to use the fast Python path. Native mode is intended
+for editorial/headroom optimization and final translation engineering. Any
+release candidate produced from native search must still pass the same Python
+codec validation, source locks, tests, fixed-bank capacity checks, and runtime
+playtest gates as any other candidate.

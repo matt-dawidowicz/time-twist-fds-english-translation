@@ -184,3 +184,30 @@ implementations must not let hash iteration order, thread scheduling, platform
 integer behavior, or randomized seeds affect output.
 
 Performance is valuable only if reproducibility is preserved.
+
+## Measured hybrid backend
+
+The profiling threshold for a native accelerator has been met. On the real TT1A
+bank, the reference Python deep optimizer produced a 1,594-byte result with 26
+dictionary entries in about 17.3 seconds. The Rust backend produced the same
+size and dictionary count in about 0.43 seconds, roughly a 40x speedup on the
+GitHub Actions runner. Synthetic cross-language equivalence tests also require
+the ordered dictionary and compressed streams to agree.
+
+The hybrid is therefore a supported editorial optimization path:
+
+1. Python parses authoritative English and encodes canonical symbols.
+2. Rust performs the expensive deterministic dictionary/search work.
+3. Rust returns an ordered dictionary, compressed group streams, and claimed
+   packed size through the versioned text protocol.
+4. Python rejects malformed, non-flat, out-of-range, duplicate, over-capacity,
+   or required-prefix-incompatible dictionaries.
+5. Python expands every dictionary reference and proves the resulting symbol
+   stream is identical to the intended English.
+6. Python repacks the candidate with the canonical codec and independently
+   verifies the exact byte count.
+
+The purpose of the speedup is editorial: search time should not pressure the
+translation toward shorter, flatter English. Deeper compression and layout
+search are tools for retaining Japanese intent, register, sentiment, character
+voice, and dramatic rhythm inside the unchanged ROM footprint.

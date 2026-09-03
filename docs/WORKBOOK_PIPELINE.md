@@ -84,20 +84,33 @@ compressed space, or relocate data without having to translate the Japanese
 again. It also prevents a compact gameplay line from becoming the only
 surviving record of the intended meaning.
 
-For example, record `TT1B/g0/r1` preserves:
+For example, record `TT1B/g0/r1` is now the reference case for the
+intent-first workflow:
 
 ```text
 Japanese:     さいごにあおぞらをみたのは いつだっけ
-Full English: When was the last time I saw a blue sky?
-ROM-safe:     Blue sky--how long gone?
+Natural:      When was the last time I saw a blue sky?
+Playable:     When was the last time{CTRL:0}I saw a blue sky?
+Rendered:     When was the last time
+              I saw a blue sky?
 ```
 
-The optimized compact wording is now `Blue sky--how long gone?`. The full
-English is 40 visible characters, but this source record has no line or page
-control and the renderer limits its single segment to 24 columns. Compression
-headroom cannot solve that display-layout constraint by itself. Inserting a new
-control is not merely punctuation, so that larger change would require testing
-the object's rendering, clearing, and repeat-inspection behavior.
+The earlier playable wording compressed the sentence into telegraphic English.
+That compromise is no longer accepted merely because it is short. A recovered,
+audited `CTRL:0` presentation break makes the complete natural reading safe in
+two rows, and whole-bank optimization proves it fits the fixed ROM allocation.
+
+This is the governing editorial rule: preserve the Japanese record's denotation,
+emotional valence, speaker attitude, register, subtext, and dramatic rhythm as
+recorded in the exact-Japanese, literal, linguistic, speaker, voice, sentiment,
+and natural-translation review layers. Renderer width and packed-bank capacity
+remain hard technical constraints, but the tooling should solve those constraints
+before prose is shortened.
+
+The editorial optimizer may use the verified Python-Rust hybrid described in
+`NATIVE_ACCELERATOR.md`. Rust accelerates deterministic search; Python remains
+the codec authority and independently verifies every native result before it can
+be accepted.
 
 ### Using a full translation in a future build
 

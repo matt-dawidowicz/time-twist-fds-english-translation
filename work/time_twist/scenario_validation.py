@@ -62,6 +62,28 @@ def _controls_preserve_source_with_presentation_breaks(
     return source_index == len(source_controls)
 
 
+def scenario_controls_match_policy(
+    record_id: str,
+    english: str,
+    japanese: str,
+) -> bool:
+    """Return whether one English control sequence obeys reviewed policy.
+
+    Ordinary records must preserve the source control sequence exactly.
+    Explicitly audited presentation-break records may insert additional
+    ``CTRL:0`` row advances while preserving every source control in order.
+    The raw source and English sequences remain separately available to review
+    tools, so policy acceptance never hides that a presentation break was added.
+    """
+    english_controls = control_values(english)
+    source_controls = control_values(japanese)
+    if record_id in PRESENTATION_BREAK_RECORD_IDS:
+        return _controls_preserve_source_with_presentation_breaks(
+            english_controls, source_controls
+        )
+    return english_controls == source_controls
+
+
 def encode_validated_english(
     record_id: str,
     english: object,
@@ -77,17 +99,11 @@ def encode_validated_english(
     """
     if not isinstance(english, str) or not english:
         raise EnglishTextError("English translation must be a nonempty string")
-    english_controls = control_values(english)
-    source_controls = control_values(japanese)
-    if record_id in PRESENTATION_BREAK_RECORD_IDS:
-        if not _controls_preserve_source_with_presentation_breaks(
-            english_controls,
-            source_controls,
-        ):
+    if not scenario_controls_match_policy(record_id, english, japanese):
+        if record_id in PRESENTATION_BREAK_RECORD_IDS:
             raise EnglishTextError(
                 "control tags changed beyond audited presentation breaks"
             )
-    elif english_controls != source_controls:
         raise EnglishTextError("control tags changed")
     validate_display_width(
         english,

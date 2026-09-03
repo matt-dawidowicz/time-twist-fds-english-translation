@@ -18,6 +18,7 @@ from pathlib import Path
 
 from time_twist import ui
 from time_twist.scenario import render_symbols
+from time_twist.scenario_validation import scenario_controls_match_policy
 from time_twist.textcodec import split_records
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -773,7 +774,11 @@ def _make_row(
         current_english_readable=_readable(english),
         source_controls=",".join(source_controls),
         english_controls=",".join(english_controls),
-        control_match="yes" if source_controls == english_controls else "NO",
+        control_match=(
+            "yes"
+            if scenario_controls_match_policy(text_id, english, japanese)
+            else "NO"
+        ),
         script_profile=_script_profile(japanese),
         voice_dialect_register=" | ".join(voice),
         orthography_kanji_katakana=" | ".join(orthography),

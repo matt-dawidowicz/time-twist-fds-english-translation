@@ -169,3 +169,36 @@ For each new allowlisted record:
 
 This keeps the exception auditable instead of gradually turning control
 validation into an unrestricted rewrite facility.
+
+## Intent and sentiment are editorial constraints
+
+Line layout is not allowed to flatten the source. The preferred English must be
+chosen from the translation review evidence first: exact Japanese, literal
+meaning, speaker identity, linguistic/register notes, established character
+voice, scene context, emotional/sentiment analysis, and the reviewed natural
+English reading. Compression is evaluated only after that target exists.
+
+This means a layout that saves a few bytes does not automatically win. For the
+blue-sky pilot, whole-bank optimization measured all three minimum-row layouts:
+
+| Layout | Packed TT1B | Free bytes |
+| --- | ---: | ---: |
+| `When was the last` / `time I saw a blue sky?` | 3898 | 336 |
+| `When was the last time I` / `saw a blue sky?` | 3900 | 334 |
+| `When was the last time` / `I saw a blue sky?` | 3902 | 332 |
+
+The project deliberately selects `When was the last time` / `I saw a blue sky?`.
+It is four bytes larger than the compressor-optimal break but better preserves
+English phrasing and reflective rhythm, while still leaving 332 bytes free in
+the audited bank. Editorial quality therefore dominates byte minimization once
+the hard ROM constraints are satisfied.
+
+## Python-Rust editorial path
+
+Compression-aware layout scoring may use the optional Rust optimizer because a
+real TT1A benchmark reduced deep-search time from about 17.3 seconds in Python
+to about 0.43 seconds in Rust while producing the same 1,594-byte result and the
+same 26-entry dictionary. The speedup makes it practical to evaluate natural
+prose and multiple legal layouts rather than pre-shortening text to avoid search
+cost. Python independently expands and repacks every native result, so native
+speed cannot override codec correctness. See `NATIVE_ACCELERATOR.md`.

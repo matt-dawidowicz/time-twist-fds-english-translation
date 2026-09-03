@@ -11,7 +11,9 @@ from time_twist.english import EnglishTextError
 class EditorialLayoutTests(unittest.TestCase):
     """Keep natural prose intact while enumerating safe row layouts."""
 
-    def test_blue_sky_sentence_has_only_three_minimum_row_layouts(self) -> None:
+    def test_blue_sky_sentence_has_only_three_minimum_row_layouts(
+        self,
+    ) -> None:
         """Enumerate only the three useful two-row presentations."""
         variants = presentation_break_variants(
             "When was the last time I saw a blue sky?"
@@ -56,8 +58,8 @@ class EditorialLayoutTests(unittest.TestCase):
         """Bound even the set of equally minimal layouts for pathological text."""
         with self.assertRaisesRegex(EnglishTextError, "variant limit"):
             presentation_break_variants(
-                "a b c d e f g h i j k l m n o p q r s t",
-                columns=10,
+                "a b c d e f g h i j",
+                columns=7,
                 max_variants=2,
             )
 

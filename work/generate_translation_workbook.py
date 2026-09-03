@@ -23,13 +23,18 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from generate_bilingual_comparison import _romanize
+from time_twist.scenario_validation import (
+    PRESENTATION_BREAK_RECORD_IDS,
+    scenario_controls_match_policy,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 WORK = ROOT / "work"
 OUTPUTS = ROOT / "outputs"
 SOURCE_JSON = OUTPUTS / "Time Twist Japanese-English script comparison.json"
 TRANSLATIONS = WORK / "translations"
-CONTROL_OVERRIDE_IDS = frozenset({"NOV2/wait"})
+UI_CONTROL_OVERRIDE_IDS = frozenset({"NOV2/wait"})
+CONTROL_OVERRIDE_IDS = UI_CONTROL_OVERRIDE_IDS | PRESENTATION_BREAK_RECORD_IDS
 REVIEW_CANDIDATES: tuple[Path, ...] = ()
 
 CONTROL_RE = re.compile(r"\{CTRL:(\d+)\}")
@@ -2803,6 +2808,15 @@ def patch_safe(
     else:
         patch = source_row["current_english_exact"]
     patch = patch_charset_safe(patch)
+    if (
+        text_id in PRESENTATION_BREAK_RECORD_IDS
+        and not scenario_controls_match_policy(
+            text_id, patch, source_row["japanese_exact"]
+        )
+    ):
+        raise ValueError(
+            f"{text_id}: control tags changed beyond audited presentation breaks"
+        )
     if (
         controls(patch) != controls(source_row["japanese_exact"])
         and text_id not in CONTROL_OVERRIDE_IDS

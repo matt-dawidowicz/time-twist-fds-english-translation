@@ -85,6 +85,14 @@ class BilingualComparisonTests(unittest.TestCase):
                 row["text_id"],
             )
 
+    def test_audited_presentation_break_remains_visible_but_policy_safe(
+        self,
+    ) -> None:
+        """Expose the extra row control while recording reviewed policy success."""
+        row = next(row for row in self.rows if row["text_id"] == "TT1B/g0/r1")
+        self.assertNotEqual(row["source_controls"], row["english_controls"])
+        self.assertEqual(row["control_match"], "yes")
+
     def test_comparison_ids_are_unique_and_complete(self) -> None:
         """Verify the current contract described by this regression test."""
         self.assertEqual(len(self.rows), 2058)
