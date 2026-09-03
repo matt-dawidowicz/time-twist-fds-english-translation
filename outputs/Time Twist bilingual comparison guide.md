@@ -14,7 +14,7 @@ This package is designed for a second-pass localization review, not merely a pro
 - 756 fixed-address command, object, quiz, personality-menu, and engine-interface records.
 - 3 recovered graphics-text entries for the title and Kouhen direct-boot warning.
 - 416 entries carry at least one detected voice, dialect, honorific, or register marker.
-- Review queue: 51 high, 1,778 medium, 229 low.
+- Review queue: 52 high, 1,777 medium, 229 low.
 - Control-sequence mismatches: 1 (NOV2/wait).
 
 ## How to interpret the Japanese

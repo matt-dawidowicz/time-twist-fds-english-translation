@@ -26,6 +26,10 @@ PRESENTATION_BREAK_RECORD_IDS = frozenset(
         # Natural English needs two rows: "When was the last time" /
         # "I saw a blue sky?"
         "TT1B/g0/r1",
+        # Exhibit question followed by an immediate negative reply.
+        # The following "No" establishes the interrogative reading; retain
+        # the complete question across one additional presentation row.
+        "TT1B/g0/r28",
         # まさか あんた…… / いわゆるひとつの あくまだ
         # Preserve the protagonist's disbelief and the Devil's intentionally
         # roundabout comic self-identification across safe English rows.

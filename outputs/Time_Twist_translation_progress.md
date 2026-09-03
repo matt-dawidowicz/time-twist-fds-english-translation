@@ -6,12 +6,12 @@
 - Completed banks/components: **TT1A, TT1B, TT2, T22, TT3A, TT3B, TT4, TT5, T25, TT6A, TT6B, TT6C, TT6D, NOV2, NOV4, TITLE, SON-KOUH**
 - Current bank: **Complete — cross-bank consistency and QC finished**
 - Glossary entries: **67**
-- Records requiring gameplay/visual context: **6**
+- Records requiring gameplay/visual context: **5**
 - Records requiring technical expansion/recompression review: **0**
 
 ## Source fingerprints
 
-- `Time Twist Japanese-English script comparison.json` — SHA-256 `CA2BC95994987EC663CA5FCAD08655195AA571CE0459297DF372124B0BB2FF8B`
+- `Time Twist Japanese-English script comparison.json` — SHA-256 `F23E7118B35C28579FBC67356E9DDB209ACE3C9614115DAD5DBA0E4AB27A0103`
 - Diagnostic review: not supplied (neutral diagnostics used)
 
 ## Bank coverage
@@ -54,7 +54,6 @@ Every patch-safe scenario line passed the ROM character encoder and 24-column di
 
 ## Records requiring gameplay screenshots or visual verification
 
-- `TT1B/g0/r28` — Punctuation alone permits statement/question readings, but the reply いえ strongly favors a question.
 - `TT3A/g2/r7` — The off-screen voice is probably an ally, but the exact speaker needs the surrounding gameplay shot.
 - `TT3A/g2/r30` — Spatial order of the torn-note characters needs a gameplay screenshot or nametable capture.
 - `TT3B/g0/r24` — The line may be Hitler himself or the Devil speaking through him; the visual staging determines the displayed identity.
@@ -75,7 +74,6 @@ Every patch-safe scenario line passed the ROM character encoder and 24-column di
 
 ## Remaining genuinely uncertain lines
 
-- `TT1B/g0/r28` (Medium) — Punctuation alone permits statement/question readings, but the reply いえ strongly favors a question.
 - `TT3A/g2/r7` (Requires gameplay context) — The off-screen voice is probably an ally, but the exact speaker needs the surrounding gameplay shot.
 - `TT3A/g2/r30` (Requires ROM or visual verification) — Spatial order of the torn-note characters needs a gameplay screenshot or nametable capture.
 - `TT3B/g0/r24` (Requires gameplay context) — The line may be Hitler himself or the Devil speaking through him; the visual staging determines the displayed identity.

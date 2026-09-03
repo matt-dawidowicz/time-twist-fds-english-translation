@@ -103,6 +103,9 @@ This pass extends the source-first voice/prose pilot into TT1B: the Devil Museum
 The first ranked intent-gap pass restores three records whose workbook already
 recorded compression-driven nuance loss:
 
+- `TT1B/g0/r28`: restores “Have you seen all the exhibits?” rather than the
+  compressed “Seen everything?” The following いえ (“No…”) resolves the line as
+  a question; the added `CTRL:0` remains a presentation/runtime gate.
 - `TT1B/g0/r31`: restores the protagonist's disbelief, the Devil's roundabout
   `いわゆるひとつの` cadence, and `しんぼうづよく` patient persistence in the
   telepathy payoff.

@@ -36,7 +36,7 @@ TRANSLATIONS = WORK / "translations"
 UI_CONTROL_OVERRIDE_IDS = frozenset({"NOV2/wait"})
 CONTROL_OVERRIDE_IDS = UI_CONTROL_OVERRIDE_IDS | PRESENTATION_BREAK_RECORD_IDS
 INTENT_RESTORED_IDS = frozenset(
-    {"TT1B/g0/r1", "TT1B/g0/r31", "TT1B/g1/r14", "TT1B/g2/r5"}
+    {"TT1B/g0/r1", "TT1B/g0/r28", "TT1B/g0/r31", "TT1B/g1/r14", "TT1B/g2/r5"}
 )
 REVIEW_CANDIDATES: tuple[Path, ...] = ()
 
@@ -1254,7 +1254,8 @@ MANUAL_PATCH = {
         "from sacrifices."
     ),
     "TT1B/g0/r28": (
-        "Me: Um...{CTRL:1}Girl: Seen everything?{CTRL:0}Me: No..."
+        "Me: Um...{CTRL:1}Girl: Have you seen all{CTRL:0}"
+        "the exhibits?{CTRL:0}Me: No..."
     ),
     "TT1B/g0/r31": (
         "Me: No way... You mean{CTRL:0}you're...{CTRL:0}"
@@ -2477,9 +2478,10 @@ def linguistic_notes(source_row: dict, review: dict, register: str) -> str:
     if source_row["text_id"] == "TT1B/g0/r28":
         notes.append(
             "ぜんぶみました is formally compatible with a statement or a question "
-            "because the ROM text lacks a normal question mark. The protagonist's "
-            "reply いえ ('no') makes 'Have you seen all the exhibits?' the strongest "
-            "contextual reading."
+            "without modern question punctuation. The protagonist's immediate reply "
+            "いえ ('no') resolves the exchange as 'Have you seen all the exhibits?' "
+            "The remaining verification requirement is the added English presentation "
+            "row, not the semantic reading."
         )
     if source_row["text_id"] == "TT1B/g0/r17":
         notes.append("ブロンズの像 explicitly means a bronze statue/figure.")
@@ -2912,12 +2914,7 @@ def ambiguity_and_confidence(
             True,
         )
     if text_id == "TT1B/g0/r28":
-        return (
-            "Punctuation alone permits statement/question readings, but the reply "
-            "いえ strongly favors a question.",
-            "Medium",
-            True,
-        )
+        return ("", "High", False)
     if text_id == "NOV2/wait":
         return (
             "Source control preservation conflicts with the existing one-line "
