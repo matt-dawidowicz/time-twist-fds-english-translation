@@ -22,6 +22,34 @@ Use a clean cold boot for a continuity run. Emulator save states are welcome
 for reproducing an issue, but they do not prove the game's own save/load
 behavior.
 
+### Mesen FDS state must also be clean
+
+Mesen can persist FDS disk writes in a filename-matched `.ips` file in its
+`Saves` directory. If a candidate is rebuilt later under the same filename,
+that older sidecar can be applied to the new image and create a false runtime
+regression even when the candidate bytes are correct.
+
+Before the **first cold boot of a newly built candidate** in Mesen:
+
+1. close Mesen;
+2. check its `Saves` directory for `<candidate stem>.ips`;
+3. if one exists, move or rename it as evidence instead of deleting it
+   blindly;
+4. then launch the candidate and begin runtime certification.
+
+If you have a source checkout, the maintainer preflight is read-only and can
+perform this check:
+
+```powershell
+python work/tools/check_mesen_fds_state.py `
+  --candidate-fds "build/candidate/Time Twist - reproducible English four-side playtest.fds" `
+  --mesen-save-dir "D:\Emulation\Mesen\Saves"
+```
+
+Do **not** keep clearing the sidecar during the same candidate's save/load
+testing. Once the first boot starts from clean state, any new persistence made
+by that exact candidate is part of the behavior being tested.
+
 ## What to test first
 
 Start with the four-side candidate unless the maintainer asks for a focused
