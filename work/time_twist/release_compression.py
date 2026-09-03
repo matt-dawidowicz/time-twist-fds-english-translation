@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from .compression import compress_english_groups, packed_size
+from .compression_native import compress_english_groups_native
 from .textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT, PackedSymbol
 
 ScenarioGroups = tuple[tuple[tuple[PackedSymbol, ...], ...], ...]
@@ -13,6 +14,8 @@ CompressionResult = tuple[ScenarioGroups, ScenarioDictionary]
 CompressionFunction = Callable[..., CompressionResult]
 MeasureFunction = Callable[[ScenarioGroups, ScenarioDictionary], int]
 CandidateValidator = Callable[[ScenarioGroups, ScenarioDictionary], bool]
+
+OPTIMIZATION_BACKENDS = frozenset({"python", "native"})
 
 
 def compress_release_groups(
@@ -25,6 +28,7 @@ def compress_release_groups(
     compressor: CompressionFunction | None = None,
     measure: MeasureFunction | None = None,
     maximize_headroom: bool = False,
+    optimization_backend: str = "python",
 ) -> CompressionResult:
     """Return a fitting result under either fast or editorial policy.
 
@@ -39,7 +43,13 @@ def compress_release_groups(
     because an earlier draft already happened to fit. With
     ``maximize_headroom=True`` the fast-accept shortcut is disabled and the
     strongest deterministic optimizer is run unconditionally. The same
-    ``max_bytes`` and compatibility predicates remain hard constraints.
+    ``max_bytes`` remains a hard constraint.
+
+    The optional ``native`` editorial backend delegates only the expensive
+    deterministic search. The canonical Python bridge independently expands
+    every returned dictionary reference and repacks the result before accepting
+    it. Normal release builds continue to use Python so installing Rust never
+    becomes a release prerequisite or an environment-dependent output choice.
 
     ``compressor`` and ``measure`` preserve the release facade's established
     test/embedding seams: callers can inject the facade-local functions while
@@ -56,14 +66,46 @@ def compress_release_groups(
         maximize_headroom: Always run optimized search instead of accepting the
             first fitting greedy result. Intended for editorial audits and
             final prose optimization, not routine development builds.
+        optimization_backend: ``python`` for the reference optimizer or
+            ``native`` for the explicitly built, Python-verified Rust helper.
+            Native mode is available only for editorial calls without injected
+            compressor/measure seams or a release-only candidate validator.
 
     Returns:
         Compressed groups and their ordered flat dictionary.
+
+    Raises:
+        ValueError: If an unsupported backend is requested or native mode is
+            requested across a boundary that only the Python release path can
+            validate.
     """
+    if optimization_backend not in OPTIMIZATION_BACKENDS:
+        raise ValueError(
+            f"unsupported compression backend {optimization_backend!r}"
+        )
+    if optimization_backend == "native" and not maximize_headroom:
+        raise ValueError("native compression is an editorial optimization backend")
+
     compress = (
         compressor if compressor is not None else compress_english_groups
     )
     size_of = measure if measure is not None else packed_size
+
+    if maximize_headroom and optimization_backend == "native":
+        if compressor is not None or measure is not None:
+            raise ValueError(
+                "native compression cannot bypass injected compressor/measure seams"
+            )
+        if candidate_validator is not None:
+            raise ValueError(
+                "native compression is unavailable across release candidate validators"
+            )
+        return compress_english_groups_native(
+            groups,
+            required_entries=required_entries,
+            max_bytes=max_bytes,
+            maximum_entries=maximum_entries,
+        )
 
     if maximize_headroom:
         return compress(
