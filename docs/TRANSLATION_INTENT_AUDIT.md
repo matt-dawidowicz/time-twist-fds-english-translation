@@ -52,27 +52,38 @@ Japanese, scene, sentiment, and established character voice.
 
 ## What counts as a gap
 
-The audit normalizes presentation controls, typographic variants, and whitespace
-before comparing the natural and playable English. Therefore these are *not*
-ranked merely because they differ mechanically:
+The audit normalizes presentation controls, typographic variants, review-only
+speaker-label aliases, slash separators, ellipsis encoding, and whitespace before
+comparing the natural and playable English. Therefore these are *not* ranked
+merely because they differ mechanically:
 
 ```text
 When was the last time I saw a blue sky?
 When was the last time{CTRL:0}I saw a blue sky?
 ```
 
-Likewise, curly quotes or an ellipsis glyph versus three periods do not create an
-intent gap by themselves.
+Likewise, `Protagonist:` versus the ROM's `Me:`, curly quotes, or an ellipsis
+glyph versus three periods do not create an intent gap by themselves.
 
-A record gains review priority when the project evidence contains one or more of
-the following:
+A record enters the repair queue when the project evidence contains a substantive
+unresolved signal such as:
 
 - visible natural/playable wording actually differs;
 - the workbook explicitly records nuance lost in the patch-safe version;
-- the current-English review records a problem;
+- the current-English review records an outstanding problem;
 - the problem category is not simply `Accurate`;
 - technical expansion is marked useful or required;
-- the Japanese has marked register/dialect/voice evidence.
+- gameplay/staging evidence or an unresolved ambiguity still blocks confidence.
+
+A `problems_with_current_english` entry beginning with
+`Resolved in the playable text:` is historical resolution evidence, not an
+outstanding problem, and does not by itself requeue the record.
+
+Marked register, dialect, voice, or sentiment is **context that increases the
+priority of a real gap**. It does not create an intent gap when the reviewed
+natural and playable lines already agree and no other unresolved evidence exists.
+This distinction prevents faithful but stylistically interesting lines from
+crowding out genuinely compressed or semantically damaged ones.
 
 The score is only a deterministic queue-ordering heuristic. **It must never be
 used as an automatic accept/reject threshold for prose.**
