@@ -65,7 +65,9 @@ class ReleaseCompressionFastPathTests(unittest.TestCase):
         )
         self.assertTrue(compressor.call_args_list[1].kwargs["optimize"])
 
-    def test_maximize_headroom_runs_optimizer_without_fast_accept(self) -> None:
+    def test_maximize_headroom_runs_optimizer_without_fast_accept(
+        self,
+    ) -> None:
         """Use the strongest search even when a greedy result would fit."""
         optimized = (((),), ())
         compressor = mock.Mock(return_value=optimized)
