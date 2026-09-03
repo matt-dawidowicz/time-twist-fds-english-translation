@@ -69,11 +69,42 @@ python work/tools/audit_fixed_menu_labels.py `
 Promotion review requires `full-word=721`, `blocked=0`, and `failures=0` for
 the current menu inventory.
 
+## Establish clean emulator state before runtime review
+
+A clean boot is not sufficient if the emulator still has persistent disk state
+for an older build. Mesen can keep FDS writes in a filename-matched `.ips`
+sidecar under its `Saves` directory. Rebuilding a candidate under the same
+filename can therefore cause stale disk writes to be overlaid on new candidate
+bytes and produce a false runtime regression.
+
+Before the **first boot of each newly built candidate** in Mesen, close Mesen
+and run the read-only preflight against the actual candidate and Mesen save
+directory:
+
+```powershell
+python work/tools/check_mesen_fds_state.py `
+  --candidate-fds "build/candidate/Time Twist - reproducible English four-side playtest.fds" `
+  --mesen-save-dir "D:\Emulation\Mesen\Saves"
+```
+
+If the check fails, quarantine the reported `.ips` by moving or renaming it.
+Do not delete it blindly; it can be useful evidence when diagnosing a false
+regression. Re-run the preflight until it passes, then begin the cold-boot
+runtime review.
+
+This preflight is intentionally local and read-only. It must not be added to
+CI, because CI neither has nor should have access to a maintainer's emulator
+state.
+
+Once the newly built candidate has started from clean state, do **not** clear
+new persistence created by that same candidate during its save/load tests.
+That state is part of the behavior being certified.
+
 ## Review and playtest
 
-Run the candidate from a clean boot and record the candidate hash, emulator
-version, FDS BIOS hash, disk/side, inputs, and observations. The minimum
-runtime gates are:
+Run the candidate from a clean boot and clean pre-existing emulator disk state,
+and record the candidate hash, emulator version, FDS BIOS hash, disk/side,
+inputs, and observations. The minimum runtime gates are:
 
 - title sequence and `Start`/`B` behavior;
 - normal disk requests and one wrong-side recovery;
@@ -85,6 +116,11 @@ runtime gates are:
 
 Use the [runtime playtest matrix](PLAYTEST_MATRIX.md) for complete coverage.
 Automated tests and static previews do not replace this step.
+
+If a runtime defect disappears when the exact same candidate bytes are opened
+under a new filename, suspect emulator persistence before changing ROM code or
+graphics. Check for the original filename's active `.ips` sidecar and preserve
+it for diagnosis.
 
 ## Promote only a reviewed candidate
 
@@ -105,6 +141,6 @@ committing. Never stage the candidate images or any private fixture.
 ## If anything fails
 
 Stop before promotion. Preserve the failure output, candidate hash, exact
-command, and changed-file summary. For a runtime issue, add the reproduction
-route and media location to the report template in the
-[playtesting guide](../PLAYTESTING.md).
+command, changed-file summary, and relevant emulator persistence state. For a
+runtime issue, add the reproduction route and media location to the report
+template in the [playtesting guide](../PLAYTESTING.md).
