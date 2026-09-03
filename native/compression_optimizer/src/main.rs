@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
-use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::collections::hash_map::Entry;
 use std::io::{self, Read};
 use std::process;
 
@@ -133,9 +133,10 @@ fn symbol_bit_length(token: Token) -> Result<usize, String> {
 }
 
 fn record_payload_bits(record: &[Token]) -> Result<usize, String> {
-    record.iter().try_fold(0usize, |total, &token| {
-        Ok(total + symbol_bit_length(token)?)
-    })
+    record.iter().try_fold(
+        0usize,
+        |total, &token| Ok(total + symbol_bit_length(token)?),
+    )
 }
 
 fn record_packed_size(record: &[Token]) -> Result<usize, String> {
@@ -145,7 +146,7 @@ fn record_packed_size(record: &[Token]) -> Result<usize, String> {
 fn packed_size(groups: &Groups, dictionary: &Dictionary) -> Result<usize, String> {
     let group_bytes = groups.iter().try_fold(0usize, |total, group| {
         group.iter().try_fold(total, |subtotal, record| {
-            Ok(subtotal + record_packed_size(record)?)
+            Ok::<usize, String>(subtotal + record_packed_size(record)?)
         })
     })?;
     dictionary.iter().try_fold(group_bytes, |total, entry| {
@@ -162,11 +163,17 @@ fn literal_token_key(token: Token) -> Result<u8, String> {
 }
 
 fn candidate_key(candidate: &[Token]) -> Result<Vec<u8>, String> {
-    candidate.iter().map(|&token| literal_token_key(token)).collect()
+    candidate
+        .iter()
+        .map(|&token| literal_token_key(token))
+        .collect()
 }
 
 fn dictionary_key(dictionary: &Dictionary) -> Result<Vec<Vec<u8>>, String> {
-    dictionary.iter().map(|entry| candidate_key(entry)).collect()
+    dictionary
+        .iter()
+        .map(|entry| candidate_key(entry))
+        .collect()
 }
 
 fn result_key(state: &ResultState) -> Result<(usize, usize, Vec<Vec<u8>>), String> {
@@ -374,11 +381,8 @@ fn greedy(
         let mut best_size = current_size;
         let take = candidate_limit.unwrap_or(usize::MAX);
         for ranked_candidate in ranked.iter().take(take) {
-            let size = candidate_packed_size(
-                &prepared,
-                dictionary_size,
-                &ranked_candidate.candidate,
-            )?;
+            let size =
+                candidate_packed_size(&prepared, dictionary_size, &ranked_candidate.candidate)?;
             if size < best_size {
                 best_size = size;
                 best_candidate = Some(ranked_candidate.candidate.clone());
@@ -409,7 +413,11 @@ fn compress_without_optimization(problem: &Problem) -> Result<ResultState, Strin
     let primary_size = packed_size(&primary.groups, &primary.dictionary)?;
     let primary_complete =
         !problem.requires_full_dictionary || primary.dictionary.len() == problem.max_entries;
-    if problem.max_bytes.map_or(true, |limit| primary_size <= limit) && primary_complete {
+    if problem
+        .max_bytes
+        .map_or(true, |limit| primary_size <= limit)
+        && primary_complete
+    {
         return Ok(primary);
     }
 
@@ -468,11 +476,8 @@ fn beam_search(
             let mut evaluated: Vec<(usize, Vec<u8>, Record)> = Vec::new();
             let take = candidate_limit.unwrap_or(usize::MAX);
             for ranked_candidate in ranked.iter().take(take) {
-                let candidate_size = candidate_packed_size(
-                    &prepared,
-                    dictionary_size,
-                    &ranked_candidate.candidate,
-                )?;
+                let candidate_size =
+                    candidate_packed_size(&prepared, dictionary_size, &ranked_candidate.candidate)?;
                 if candidate_size < state.size {
                     evaluated.push((
                         candidate_size,
@@ -481,9 +486,8 @@ fn beam_search(
                     ));
                 }
             }
-            evaluated.sort_by(|left, right| {
-                left.0.cmp(&right.0).then_with(|| left.1.cmp(&right.1))
-            });
+            evaluated
+                .sort_by(|left, right| left.0.cmp(&right.0).then_with(|| left.1.cmp(&right.1)));
             let reference = dictionary_token(state.dictionary.len() + 1)?;
             for (candidate_size, _, candidate) in evaluated.into_iter().take(branch_factor) {
                 let mut dictionary = state.dictionary.clone();
@@ -516,9 +520,7 @@ fn beam_search(
         beam = unique.into_values().collect();
         beam.sort_by(|left, right| {
             beam_key(left)
-                .and_then(|left_key| {
-                    beam_key(right).map(|right_key| left_key.cmp(&right_key))
-                })
+                .and_then(|left_key| beam_key(right).map(|right_key| left_key.cmp(&right_key)))
                 .unwrap_or(Ordering::Equal)
         });
         beam.truncate(beam_width);
@@ -804,8 +806,10 @@ mod tests {
         ]];
         let result = greedy(&groups, &Vec::new(), Some(200), 68).expect("greedy");
         assert!(!result.dictionary.is_empty());
-        assert!(packed_size(&result.groups, &result.dictionary).expect("size")
-            < packed_size(&groups, &Vec::new()).expect("literal size"));
+        assert!(
+            packed_size(&result.groups, &result.dictionary).expect("size")
+                < packed_size(&groups, &Vec::new()).expect("literal size")
+        );
     }
 
     #[test]

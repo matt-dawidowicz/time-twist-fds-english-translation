@@ -164,6 +164,7 @@ class _ResultLines:
     """Small strict reader for the native stdout protocol."""
 
     def __init__(self, text: str) -> None:
+        """Initialize a strict line reader over one native result payload."""
         self._lines = iter(text.splitlines())
 
     def next(self) -> str:
