@@ -294,6 +294,31 @@ class ScenarioValidationHardeningTests(unittest.TestCase):
         encoded = encode_validated_english("TT1A/g0/r6", text, "")
         self.assertTrue(encoded)
 
+    def test_blue_sky_record_allows_audited_presentation_break(self) -> None:
+        """Permit a natural two-row translation only on the reviewed record."""
+        text = "When was the last time{CTRL:0}I saw a blue sky?"
+
+        encoded = encode_validated_english("TT1B/g0/r1", text, "")
+
+        self.assertTrue(encoded)
+
+    def test_unreviewed_record_rejects_extra_presentation_break(self) -> None:
+        """Keep English-only row advances opt-in rather than globally permissive."""
+        text = "When was the last time{CTRL:0}I saw a blue sky?"
+
+        with self.assertRaisesRegex(EnglishTextError, "control tags changed"):
+            encode_validated_english("TT1B/g0/r2", text, "")
+
+    def test_audited_record_still_rejects_nonpresentation_controls(self) -> None:
+        """Do not let the presentation exception alter timing/state controls."""
+        text = "When was the last time{CTRL:4}I saw a blue sky?"
+
+        with self.assertRaisesRegex(
+            EnglishTextError,
+            "beyond audited presentation breaks",
+        ):
+            encode_validated_english("TT1B/g0/r1", text, "")
+
     def test_capacity_fallback_retries_without_candidate_pruning(self) -> None:
         """Verify the current contract described by this regression test."""
         record = encode_english("AB" * 16)
