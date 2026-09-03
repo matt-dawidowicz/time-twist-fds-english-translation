@@ -1,0 +1,118 @@
+name: audit-policy-sync
+
+on:
+  push:
+    branches:
+      - engineering/editorial-compression-20260902
+    paths:
+      - .github/workflows/audit-policy-sync.yml
+
+permissions:
+  contents: write
+
+jobs:
+  sync-audit-policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Mark old capacity-first audit rules as superseded
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          pilot_paths = [
+              Path('work/audits/T22_voice_and_prose_pilot.md'),
+              Path('work/audits/T25_voice_and_prose_pilot.md'),
+              Path('work/audits/TT1A_voice_and_prose_pilot.md'),
+              Path('work/audits/TT1B_voice_and_prose_pilot.md'),
+              Path('work/audits/TT2_voice_and_prose_pilot.md'),
+              Path('work/audits/TT3A_voice_and_prose_pilot.md'),
+              Path('work/audits/TT3B_voice_and_prose_pilot.md'),
+              Path('work/audits/TT4_voice_and_prose_pilot.md'),
+              Path('work/audits/TT5_voice_and_prose_pilot.md'),
+              Path('work/audits/TT6A_voice_and_prose_pilot.md'),
+              Path('work/audits/TT6B_voice_and_prose_pilot.md'),
+              Path('work/audits/TT6C_voice_and_prose_pilot.md'),
+              Path('work/audits/TT6D_voice_and_prose_pilot.md'),
+          ]
+          notice = '''\n> **Editorial-compression supersession — 2026-09-03.** The exact-Japanese,\n> semantic, speaker, register, dialect, sentiment, characterization, and voice\n> findings in this pilot remain review evidence. Any statement below that uses\n> visible-character reduction as a reason to shorten otherwise better English,\n> or treats source-exact controls as an absolute prohibition on an explicitly\n> audited English-only `CTRL:0` presentation break, reflects the earlier fit\n> strategy and is superseded by `docs/ENGLISH_LAYOUT.md`,\n> `docs/COMPRESSION_OPTIMIZER.md`, and `docs/NATIVE_ACCELERATOR.md`. Natural\n> source-faithful English is now chosen first; layout and verified compression\n> are used to fit it into the unchanged ROM footprint.\n'''
+
+          for path in pilot_paths:
+              text = path.read_text(encoding='utf-8')
+              if 'Editorial-compression supersession — 2026-09-03' in text:
+                  continue
+              first_newline = text.index('\n')
+              text = text[: first_newline + 1] + notice + text[first_newline + 1 :]
+              path.write_text(text, encoding='utf-8')
+
+          # TT1B contains the clearest obsolete compression example; make the\n          # current accepted wording explicit without discarding its voice notes.
+          path = Path('work/audits/TT1B_voice_and_prose_pilot.md')
+          text = path.read_text(encoding='utf-8')
+          old = '- `Blue sky... when was it?` -> `Blue sky... how long ago`'
+          new = '- `Last saw blue sky when?` -> `When was the last time{CTRL:0}I saw a blue sky?` (natural meaning restored; audited two-row presentation)'
+          assert old in text
+          text = text.replace(old, new, 1)
+          old = '''## Capacity discipline\n\nTT1B is an unusually tight bank. The pass therefore favors sharper wording over expansion. Relative to the current branch text before this pass, the revised 137-record TT1B map is 28 visible characters shorter overall.\n\nA local structural validation of all 87 changed records found:\n\n- exact Japanese/source control-event sequence preserved for every changed record;\n- no control-delimited English segment longer than 24 visible characters;\n- maximum changed-segment width: 24 characters.\n\nThis does not substitute for the repository's actual compression/release-build fit gate. Packed dictionary cost is not proportional to visible character count, so a canonical build/test remains required before release approval.'''
+          new = '''## Historical capacity discipline — superseded\n\nThe original TT1B pass treated the bank as unusually tight and intentionally\nfavored shorter visible wording. That policy produced useful compression data\nbut also encouraged telegraphic English. It is no longer the editorial rule.\n\nCurrent live-fit validation leaves substantial room in TT1B, and the deep\nPython-Rust layout audit demonstrates that the complete blue-sky sentence fits\nwith hundreds of bytes free. The current workflow therefore starts with the\nbest source-faithful English supported by this audit's semantic/voice findings,\nuses the minimum-row presentation solver when required, and runs whole-bank\ncompression before considering any loss of wording.\n\nThe earlier visible-character deltas remain historical measurements only. They\ndo not justify preserving a shorter line when a more faithful or natural line\npasses renderer, control-policy, packed-capacity, and runtime gates.'''
+          assert old in text
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          # Reopen the old cross-bank "freeze" as a linguistic baseline while\n          # retaining its valuable consistency and character-voice conclusions.
+          path = Path('work/audits/final_cross_bank_consistency.md')
+          text = path.read_text(encoding='utf-8')
+          if 'Editorial-compression reopening — 2026-09-03' not in text:
+              first_newline = text.index('\n')
+              notice = '''\n> **Editorial-compression reopening — 2026-09-03.** This document remains the\n> cross-bank authority for terminology, source-grounded voice, register,\n> callbacks, puzzle facts, and other linguistic consistency decisions. It is no\n> longer a freeze on sentence length. Its former 23-cell shortening policy is a\n> historical display-safety phase, not an instruction to preserve compressed\n> prose when the current layout/compression system can fit fuller English. See\n> `docs/ENGLISH_LAYOUT.md`, `docs/COMPRESSION_OPTIMIZER.md`, and\n> `docs/NATIVE_ACCELERATOR.md` for the current intent-first policy.\n'''
+              text = text[: first_newline + 1] + notice + text[first_newline + 1 :]
+          text = text.replace(
+              '- Exact control-event order is preserved.',
+              '- Source control-event order is preserved exactly by default; explicitly audited scenario records may add only presentation `CTRL:0` advances while retaining every source control in order.',
+              1,
+          )
+          text = text.replace(
+              '- Scenario text uses a practical maximum of **23 visible characters per control-delimited segment**. The engine\'s nominal validator may allow 24, but runtime/visual evidence showed that exact-width lines can look clipped or lose right-edge punctuation.',
+              '- A practical **23-character display margin** remains useful when choosing row breaks because exact-width lines can look clipped or lose right-edge punctuation. It is a row-layout target, not a sentence-length target: natural English may span additional audited rows rather than being shortened to one segment.',
+              1,
+          )
+          text = text.replace(
+              '## Early-bank 23-cell retrofit',
+              '## Historical early-bank 23-cell retrofit',
+              1,
+          )
+          text = text.replace(
+              'This final audit supersedes those older display-width statements.',
+              'This pass superseded those older display-width statements at the time. The 2026-09-03 editorial-compression policy now supersedes the use of visible-character reduction as a prose objective while retaining the underlying display-safety evidence.',
+              1,
+          )
+          old = '''## Compression/build gate is still open\n\nThe previous public compression figures predate the completed voice/prose/final-consistency branch. They must not be cited as proof that the current text fits.\n\nA fresh post-freeze compression/release validation is required. The maintainer workflow remains:\n'''
+          new = '''## Compression and release gate\n\nThe repository now has a fresh live-fit path and a maximize-headroom editorial\noptimizer. The optional Rust backend has been cross-checked against the Python\nreference and makes deep whole-bank search practical without changing codec\nauthority. These results replace visible-character savings as the relevant\npacking evidence.\n\nThey still do not turn an editorial branch into a release. A fresh candidate\nbuild, source-lock validation, and runtime playtest remain required. The\nmaintainer workflow remains:\n'''
+          assert old in text
+          text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Remove migration workflow before public-tree check
+        run: rm .github/workflows/audit-policy-sync.yml
+      - name: Verify maintained audit policy text
+        run: |
+          python work/tools/check_public_tree.py
+          python - <<'PY'
+          from pathlib import Path
+          pilots = list(Path('work/audits').glob('*_voice_and_prose_pilot.md'))
+          assert len(pilots) == 13, len(pilots)
+          for path in pilots:
+              text = path.read_text(encoding='utf-8')
+              assert 'Editorial-compression supersession — 2026-09-03' in text, path
+          cross = Path('work/audits/final_cross_bank_consistency.md').read_text(encoding='utf-8')
+          assert 'Editorial-compression reopening — 2026-09-03' in cross
+          tt1b = Path('work/audits/TT1B_voice_and_prose_pilot.md').read_text(encoding='utf-8')
+          assert 'When was the last time{CTRL:0}I saw a blue sky?' in tt1b
+          PY
+      - name: Commit audit-policy synchronization
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Supersede capacity-first prose audit guidance"
+          git push origin HEAD:engineering/editorial-compression-20260902
