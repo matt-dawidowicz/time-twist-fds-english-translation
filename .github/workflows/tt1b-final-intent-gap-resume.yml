@@ -80,10 +80,10 @@ jobs:
           assert text.count(old) == 1, 'unexpected legacy r28 proposal state'
           text = text.replace(old, new, 1)
 
-          # Replace the ambiguity case by structural boundaries rather than by
-          # fragile formatting. The next case is a stable function-level marker.
+          # Replace the ambiguity case by structural function boundaries. The
+          # next case in ambiguity_note() is NOV2/wait.
           start_marker = '    if text_id == "TT1B/g0/r28":\n'
-          end_marker = '    if text_id == "T22/g0/r0":\n'
+          end_marker = '    if text_id == "NOV2/wait":\n'
           start = text.index(start_marker)
           end = text.index(end_marker, start)
           text = (
@@ -93,18 +93,20 @@ jobs:
               + text[end:]
           )
 
-          # Update the linguistic note without making it a runtime blocker.
-          old_note = (
-              "The protagonist's reply いえ ('no') makes 'Have you seen all the exhibits?' "
-              "the strongest contextual reading."
+          # Preserve the now-resolved semantic reasoning in the linguistic note.
+          old_note_lines = (
+              '            "because the ROM text lacks a normal question mark. The protagonist\'s "\n'
+              '            "reply いえ (\'no\') makes \'Have you seen all the exhibits?\' the strongest "\n'
+              '            "contextual reading."\n'
           )
-          new_note = (
-              "The protagonist's immediate reply いえ ('no') resolves the exchange as "
-              "'Have you seen all the exhibits?' The remaining verification requirement "
-              "is the added English presentation row, not the semantic reading."
+          new_note_lines = (
+              '            "without modern question punctuation. The protagonist\'s immediate reply "\n'
+              '            "いえ (\'no\') resolves the exchange as \'Have you seen all the exhibits?\' "\n'
+              '            "The remaining verification requirement is the added English presentation "\n'
+              '            "row, not the semantic reading."\n'
           )
-          if old_note in text:
-              text = text.replace(old_note, new_note, 1)
+          if old_note_lines in text:
+              text = text.replace(old_note_lines, new_note_lines, 1)
 
           path.write_text(text, encoding='utf-8')
 
