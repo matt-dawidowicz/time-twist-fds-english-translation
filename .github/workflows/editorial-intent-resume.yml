@@ -1,0 +1,82 @@
+name: editorial-intent-resume
+
+on:
+  push:
+    branches:
+      - engineering/editorial-compression-20260902
+    paths:
+      - .github/workflows/editorial-intent-resume.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install Python tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: Reuse the reviewed intent-policy migration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/editorial-intent-sync.yml').read_text(encoding='utf-8')
+          marker = "          python - <<'PY'\n"
+          block = workflow.split(marker, 1)[1].split("\n          PY", 1)[0]
+          code = "\n".join(
+              line[10:] if line.startswith("          ") else line
+              for line in block.splitlines()
+          )
+          exec(compile(code, 'editorial-intent-migration', 'exec'))
+          PY
+      - name: Format and regenerate review artifacts
+        run: |
+          python -m black work/tests/test_editorial_layout.py work/generate_translation_workbook.py
+          python work/generate_bilingual_comparison_ci.py
+          python work/generate_translation_workbook.py
+      - name: Restore a clean public-tree view
+        run: |
+          rm -rf work/__pycache__ work/time_twist/__pycache__ work/time_twist_fds_tools.egg-info
+          rm -f .github/workflows/editorial-intent-sync.yml .github/workflows/editorial-intent-resume.yml
+      - name: Validate Python quality gates
+        run: |
+          python work/tools/check_public_tree.py
+          python -m black --check work
+          python -m ruff check work
+          python -m pydocstyle --convention=pep257 work
+          python -m mypy
+          python work/run_tests.py unit
+      - name: Validate native optimizer
+        run: |
+          rustup default stable
+          rustup component add rustfmt
+          cargo fmt --check --manifest-path native/compression_optimizer/Cargo.toml
+          cargo test --manifest-path native/compression_optimizer/Cargo.toml
+          cargo build --release --manifest-path native/compression_optimizer/Cargo.toml
+          TIME_TWIST_NATIVE_OPTIMIZER="$PWD/native/compression_optimizer/target/release/time-twist-compression-optimizer" \
+            python -m unittest discover -s work/tests -p 'test_compression_native.py'
+      - name: Verify natural blue-sky layout still fits
+        env:
+          TIME_TWIST_NATIVE_OPTIMIZER: ${{ github.workspace }}/native/compression_optimizer/target/release/time-twist-compression-optimizer
+        run: >-
+          python work/tools/editorial_layout_audit.py --project-root .
+          --bank TT1B --record TT1B/g0/r1
+          --text "When was the last time I saw a blue sky?" --backend native
+      - name: Commit synchronized editorial sources
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --stat
+          git commit -m "Adopt intent-first Python-Rust editorial compression"
+          git push origin HEAD:engineering/editorial-compression-20260902
