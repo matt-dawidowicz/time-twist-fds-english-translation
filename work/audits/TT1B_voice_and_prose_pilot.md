@@ -1,5 +1,16 @@
 # TT1B voice and prose pilot
 
+> **Editorial-compression supersession — 2026-09-03.** The exact-Japanese,
+> semantic, speaker, register, dialect, sentiment, characterization, and voice
+> findings in this pilot remain review evidence. Any statement below that uses
+> visible-character reduction as a reason to shorten otherwise better English,
+> or treats source-exact controls as an absolute prohibition on an explicitly
+> audited English-only `CTRL:0` presentation break, reflects the earlier fit
+> strategy and is superseded by `docs/ENGLISH_LAYOUT.md`,
+> `docs/COMPRESSION_OPTIMIZER.md`, and `docs/NATIVE_ACCELERATOR.md`. Natural
+> source-faithful English is now chosen first; layout and verified compression
+> are used to fit it into the unchanged ROM footprint.
+
 This pass extends the source-first voice/prose pilot into TT1B: the Devil Museum, the protagonist's first meeting with the girl and Devil, the Nagoya/Owari-coded businessman, Kuga's house, Dr. Simon, and the church sequence before the first time warp.
 
 ## Editorial rules
@@ -78,7 +89,7 @@ This pass extends the source-first voice/prose pilot into TT1B: the Devil Museum
 
 ## Prose examples
 
-- `Blue sky... when was it?` -> `Blue sky... how long ago`
+- `Last saw blue sky when?` -> `When was the last time{CTRL:0}I saw a blue sky?` (natural meaning restored; audited two-row presentation)
 - `My body's falling apart!` -> `My body's crumbling!`
 - `Her ponytail is so cute.` -> `That ponytail's so cute.`
 - `She is unconscious.` -> `She's out cold.`
@@ -87,14 +98,19 @@ This pass extends the source-first voice/prose pilot into TT1B: the Devil Museum
 - `A church, way out / in the country? Strange.` -> `A church this far out? / Strange.`
 - `Honestly, it looks lame.` -> `Honestly... pretty lame.`
 
-## Capacity discipline
+## Historical capacity discipline — superseded
 
-TT1B is an unusually tight bank. The pass therefore favors sharper wording over expansion. Relative to the current branch text before this pass, the revised 137-record TT1B map is 28 visible characters shorter overall.
+The original TT1B pass treated the bank as unusually tight and intentionally
+favored shorter visible wording. That policy produced useful compression data
+but also encouraged telegraphic English. It is no longer the editorial rule.
 
-A local structural validation of all 87 changed records found:
+Current live-fit validation leaves substantial room in TT1B, and the deep
+Python-Rust layout audit demonstrates that the complete blue-sky sentence fits
+with hundreds of bytes free. The current workflow therefore starts with the
+best source-faithful English supported by this audit's semantic/voice findings,
+uses the minimum-row presentation solver when required, and runs whole-bank
+compression before considering any loss of wording.
 
-- exact Japanese/source control-event sequence preserved for every changed record;
-- no control-delimited English segment longer than 24 visible characters;
-- maximum changed-segment width: 24 characters.
-
-This does not substitute for the repository's actual compression/release-build fit gate. Packed dictionary cost is not proportional to visible character count, so a canonical build/test remains required before release approval.
+The earlier visible-character deltas remain historical measurements only. They
+do not justify preserving a shorter line when a more faithful or natural line
+passes renderer, control-policy, packed-capacity, and runtime gates.

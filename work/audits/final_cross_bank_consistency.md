@@ -1,5 +1,14 @@
 # Final cross-bank consistency and editorial freeze
 
+> **Editorial-compression reopening — 2026-09-03.** This document remains the
+> cross-bank authority for terminology, source-grounded voice, register,
+> callbacks, puzzle facts, and other linguistic consistency decisions. It is no
+> longer a freeze on sentence length. Its former 23-cell shortening policy is a
+> historical display-safety phase, not an instruction to preserve compressed
+> prose when the current layout/compression system can fit fuller English. See
+> `docs/ENGLISH_LAYOUT.md`, `docs/COMPRESSION_OPTIMIZER.md`, and
+> `docs/NATIVE_ACCELERATOR.md` for the current intent-first policy.
+
 This audit closes the repository-wide source-first voice/prose pass after completing every scenario bank from TT1A through TT6D. It does not replace runtime evidence, compression/build validation, or the six remaining staging-dependent questions; it freezes the editorial direction so those later gates can evaluate one coherent script.
 
 ## Scope
@@ -27,8 +36,8 @@ Non-scenario components remain translated and complete, but this freeze did not 
 The completed script uses these rules consistently:
 
 - Japanese source meaning is authoritative; natural English is preferred only when it preserves the proposition, force, referents, causality, implication, and source register.
-- Exact control-event order is preserved.
-- Scenario text uses a practical maximum of **23 visible characters per control-delimited segment**. The engine's nominal validator may allow 24, but runtime/visual evidence showed that exact-width lines can look clipped or lose right-edge punctuation.
+- Source control-event order is preserved exactly by default; explicitly audited scenario records may add only presentation `CTRL:0` advances while retaining every source control in order.
+- A practical **23-character display margin** remains useful when choosing row breaks because exact-width lines can look clipped or lose right-edge punctuation. It is a row-layout target, not a sentence-length target: natural English may span additional audited rows rather than being shortened to one segment.
 - Source-explicit stutters, pauses, profanity, threats, brutality, racist/dated language, religious claims, and other ugly material are preserved without sanitization.
 - The translation does not invent stronger material that is absent from the Japanese.
 - Stylized Japanese dialect or role-language is represented through English register, rhythm, contractions, and diction rather than fabricated geographic eye-dialect unless the fiction itself requires one.
@@ -36,9 +45,9 @@ The completed script uses these rules consistently:
 - Gameplay-critical quantities, directions, truth/lie roles, puzzle relations, and recap-question facts are treated as requirements-sensitive text.
 - Wording is never borrowed from the removed external translation.
 
-## Early-bank 23-cell retrofit
+## Historical early-bank 23-cell retrofit
 
-TT1A through TT3A were originally edited before the stricter runtime-derived 23-cell policy existed. Their initial per-bank audits therefore describe a historical pilot state with a nominal 24-column ceiling. This final audit supersedes those older display-width statements.
+TT1A through TT3A were originally edited before the stricter runtime-derived 23-cell policy existed. Their initial per-bank audits therefore describe a historical pilot state with a nominal 24-column ceiling. This pass superseded those older display-width statements at the time. The 2026-09-03 editorial-compression policy now supersedes the use of visible-character reduction as a prose objective while retaining the underlying display-safety evidence.
 
 The freeze retrofitted all five early scenario banks:
 
@@ -182,11 +191,17 @@ The final editorial state establishes:
 
 These are editorial/structural results only.
 
-## Compression/build gate is still open
+## Compression and release gate
 
-The previous public compression figures predate the completed voice/prose/final-consistency branch. They must not be cited as proof that the current text fits.
+The repository now has a fresh live-fit path and a maximize-headroom editorial
+optimizer. The optional Rust backend has been cross-checked against the Python
+reference and makes deep whole-bank search practical without changing codec
+authority. These results replace visible-character savings as the relevant
+packing evidence.
 
-A fresh post-freeze compression/release validation is required. The maintainer workflow remains:
+They still do not turn an editorial branch into a release. A fresh candidate
+build, source-lock validation, and runtime playtest remain required. The
+maintainer workflow remains:
 
 ```powershell
 time-twist release-lock

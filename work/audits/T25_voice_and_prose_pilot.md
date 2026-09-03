@@ -1,5 +1,16 @@
 # T25 voice and prose pilot
 
+> **Editorial-compression supersession — 2026-09-03.** The exact-Japanese,
+> semantic, speaker, register, dialect, sentiment, characterization, and voice
+> findings in this pilot remain review evidence. Any statement below that uses
+> visible-character reduction as a reason to shorten otherwise better English,
+> or treats source-exact controls as an absolute prohibition on an explicitly
+> audited English-only `CTRL:0` presentation break, reflects the earlier fit
+> strategy and is superseded by `docs/ENGLISH_LAYOUT.md`,
+> `docs/COMPRESSION_OPTIMIZER.md`, and `docs/NATIVE_ACCELERATOR.md`. Natural
+> source-faithful English is now chosen first; layout and verified compression
+> are used to fit it into the unchanged ROM footprint.
+
 This pass continues the source-first voice/prose revision through the Civil War continuation involving Meyer, Lincoln, Belle, George, the plantation mansion, and the flooded-island escape.
 
 ## Editorial direction
