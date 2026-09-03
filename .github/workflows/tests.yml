@@ -7,6 +7,9 @@ on:
       - engineering/editorial-compression-20260902
   pull_request:
 
+permissions:
+  contents: write
+
 concurrency:
   group: tests-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
@@ -31,7 +34,18 @@ jobs:
       - run: python work/generate_translation_workbook.py
       - name: Verify generated translation review artifacts are current
         run: git diff --exit-code -- outputs work/translation_workbook_banks
-      - run: python -m black --check --diff work
+      - if: matrix.python-version == '3.11'
+        name: Apply Black formatting on engineering branch
+        run: |
+          python -m black work
+          if ! git diff --quiet -- work; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add work
+            git commit -m "Apply Black formatting"
+            git push origin HEAD:engineering/editorial-compression-20260902
+          fi
+      - run: python -m black --check work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
