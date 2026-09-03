@@ -161,7 +161,9 @@ def audit_project(
     if unknown:
         raise ValueError(f"unknown scenario bank(s): {', '.join(unknown)}")
 
-    with tempfile.TemporaryDirectory(prefix="time-twist-headroom-") as directory:
+    with tempfile.TemporaryDirectory(
+        prefix="time-twist-headroom-"
+    ) as directory:
         temporary_directory = Path(directory)
         return tuple(
             audit_bank(
