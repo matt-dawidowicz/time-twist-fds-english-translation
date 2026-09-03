@@ -49,6 +49,19 @@ class TranslationIntentAuditTests(unittest.TestCase):
 
         self.assertIsNone(score_row(row))
 
+    def test_editorial_speaker_labels_do_not_create_false_gap(self) -> None:
+        """Treat Protagonist/Me and review slashes as metadata, not wording."""
+        row = scenario_row(
+            final_natural_english_translation=(
+                "Protagonist: H-hello. / Girl: Hello…"
+            ),
+            patch_safe_english_translation=(
+                "Me: H-hello.{CTRL:1}Girl: Hello..."
+            ),
+        )
+
+        self.assertIsNone(score_row(row))
+
     def test_typography_only_difference_is_not_an_intent_gap(self) -> None:
         """Do not rank curly-versus-straight punctuation as lost wording."""
         row = scenario_row(

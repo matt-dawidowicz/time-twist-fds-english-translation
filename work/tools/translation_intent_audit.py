@@ -35,6 +35,12 @@ BANK_ORDER = (
     "TT6D",
 )
 CONTROL_RE = re.compile(r"\{CTRL:\d+\}")
+DOT_RUN_RE = re.compile(r"\.{3,}")
+SPEAKER_LABEL_EQUIVALENTS = {
+    "Protagonist:": "Me:",
+    "Resident:": "...:",
+    "Elder:": "...:",
+}
 NEUTRAL_REGISTER_LABELS = {
     "",
     "Unmarked / neutral or context-dependent",
@@ -92,6 +98,10 @@ def normalize_visible_text(text: str) -> str:
     """
     text = unicodedata.normalize("NFKC", visible_text(text))
     text = text.translate(TYPOGRAPHY_TRANSLATION)
+    text = text.replace(" / ", " ")
+    for editorial, playable in SPEAKER_LABEL_EQUIVALENTS.items():
+        text = text.replace(editorial, playable)
+    text = DOT_RUN_RE.sub("...", text)
     return " ".join(text.split()).strip()
 
 

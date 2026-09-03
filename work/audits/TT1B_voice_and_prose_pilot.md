@@ -93,10 +93,29 @@ This pass extends the source-first voice/prose pilot into TT1B: the Devil Museum
 - `My body's falling apart!` -> `My body's crumbling!`
 - `Her ponytail is so cute.` -> `That ponytail's so cute.`
 - `She is unconscious.` -> `She's out cold.`
-- `Devil: You might say so.` -> `Devil: Call me a devil.`
+- `Devil: Call me a devil.` -> `Devil: I am what you / might call... a devil.` (restores the source's Nagashima-like comic verbal padding)
 - `...: What do you want?` -> `...: Can I help you?` (a semantic/register correction, not merely style)
 - `A church, way out / in the country? Strange.` -> `A church this far out? / Strange.`
 - `Honestly, it looks lame.` -> `Honestly... pretty lame.`
+
+## Intent-restoration pass 1 — 2026-09-03
+
+The first ranked intent-gap pass restores three records whose workbook already
+recorded compression-driven nuance loss:
+
+- `TT1B/g0/r31`: restores the protagonist's disbelief, the Devil's roundabout
+  `いわゆるひとつの` cadence, and `しんぼうづよく` patient persistence in the
+  telepathy payoff.
+- `TT1B/g1/r14`: restores the full dated/objectifying `ボイン` gag as “You've got
+  quite a pair... heh-heh,” including the leering laugh and the girl's protest.
+- `TT1B/g2/r5`: restores the resident's “this house / 40 years / can't just leave
+  now” indignation and his flustered polite apology; `land shark` remains the
+  social-effect localization of bubble-era `地上げ屋`.
+
+All added controls in these records are `CTRL:0` presentation rows; source
+controls remain in order. Every visible segment is at or below the project's
+23-character practical row target. These new English-only presentation contexts
+remain runtime-playtest gates before release promotion.
 
 ## Historical capacity discipline — superseded
 

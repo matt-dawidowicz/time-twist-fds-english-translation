@@ -35,6 +35,9 @@ SOURCE_JSON = OUTPUTS / "Time Twist Japanese-English script comparison.json"
 TRANSLATIONS = WORK / "translations"
 UI_CONTROL_OVERRIDE_IDS = frozenset({"NOV2/wait"})
 CONTROL_OVERRIDE_IDS = UI_CONTROL_OVERRIDE_IDS | PRESENTATION_BREAK_RECORD_IDS
+INTENT_RESTORED_IDS = frozenset(
+    {"TT1B/g0/r1", "TT1B/g0/r31", "TT1B/g1/r14", "TT1B/g2/r5"}
+)
 REVIEW_CANDIDATES: tuple[Path, ...] = ()
 
 CONTROL_RE = re.compile(r"\{CTRL:(\d+)\}")
@@ -1188,9 +1191,8 @@ MANUAL_FINAL = {
         "Protagonist: You've got quite a pair… heh-heh. / Girl: Eek!"
     ),
     "TT1B/g2/r5": (
-        "Resident: I've lived in this house for forty years! I'm not leaving now! "
-        "/ Protagonist: I'm not one of those developers trying to force you out. "
-        "/ Resident: Oh! I-I'm terribly sorry."
+        "Resident: I've lived in this house for 40 years! I can't just leave now! "
+        "/ Protagonist: I'm no land shark. / Resident: Oh! I-I'm terribly sorry."
     ),
     "TT3A/g2/r30": (
         "One fragment of the note. / In blue ink: “…4 km southwest…” / “…Rebecca.”"
@@ -1255,11 +1257,14 @@ MANUAL_PATCH = {
         "Me: Um...{CTRL:1}Girl: Seen everything?{CTRL:0}Me: No..."
     ),
     "TT1B/g0/r31": (
-        "Me: You mean you're...{CTRL:0}Devil: You might say so.{CTRL:0}"
-        "Me: G-g-g-gah!{CTRL:6}Devil: My telepathy{CTRL:4}"
-        "finally paid off.{CTRL:4}Me: ........"
+        "Me: No way... You mean{CTRL:0}you're...{CTRL:0}"
+        "Devil: I am what you{CTRL:0}might call... a devil.{CTRL:0}"
+        "Me: G-g-g-gah!{CTRL:6}Devil: All that patient{CTRL:4}"
+        "telepathy has finally{CTRL:0}paid off.{CTRL:4}Me: ........"
     ),
-    "TT1B/g1/r14": "Me: You're busty. Heh...{CTRL:1}Girl: Eek!",
+    "TT1B/g1/r14": (
+        "Me: You've got quite a{CTRL:0}pair... heh-heh.{CTRL:1}Girl: Eek!"
+    ),
     "TT1B/g1/r26": "Man: Shut up! Move!",
     "TT1B/g1/r27": (
         "Man: Big resort comin'{CTRL:0}right here!{CTRL:2}"
@@ -1267,8 +1272,9 @@ MANUAL_PATCH = {
     ),
     "TT1B/g1/r28": "Money rules! For cash,{CTRL:0}I'd sell my soul!",
     "TT1B/g2/r5": (
-        "...: I've lived here{CTRL:0}40 years! I won't leave!{CTRL:2}"
-        "Me: I'm no land shark.{CTRL:6}...: Oh! Sorry."
+        "...: I've lived in this{CTRL:0}house for 40 years!{CTRL:0}"
+        "I can't just leave now!{CTRL:2}Me: I'm no land shark.{CTRL:6}"
+        "...: Oh! I-I'm terribly{CTRL:0}sorry."
     ),
     "TT1B/g2/r14": "Wh-what?! That's me!",
     "TT3A/g2/r30": (
@@ -2580,6 +2586,7 @@ def problem_categories(
     resolved_playable_ids = {
         "TT1B/g0/r31",
         "TT1B/g1/r14",
+        "TT1B/g2/r5",
         "TT6A/g0/r13",
     }
     if source_row["text_id"] in resolved_playable_ids:
@@ -2611,13 +2618,19 @@ def current_problems(
     qa = review["qa"]
     manual = {
         "TT1B/g0/r31": (
-            "Resolved in the playable text: the unfinished recognition, the "
-            "Devil's roundabout comic reply, and the delayed payoff in his "
-            "telepathy boast are all retained."
+            "Resolved in the playable text: the protagonist's disbelief, the "
+            "Devil's Nagashima-like roundabout comic reply, and the patient "
+            "telepathy payoff are restored across audited presentation rows."
         ),
         "TT1B/g1/r14": (
-            "Resolved in the playable text: 'busty' directly preserves the dated, "
-            "leering ボイン joke, while the girl's embarrassed protest remains."
+            "Resolved in the playable text: the dated, leering ボイン joke keeps "
+            "both the 'quite a pair' wording and the heh-heh laugh, while the "
+            "girl's embarrassed protest remains."
+        ),
+        "TT1B/g2/r5": (
+            "Resolved in the playable text: the resident's forty-year attachment "
+            "to this house, disbelief at leaving now, and flustered polite apology "
+            "are restored; 'land shark' retains the 地上げ屋 social meaning."
         ),
         "TT6A/g0/r13": (
             "Resolved in the playable text: Joseph identifies Mary as his "
@@ -2852,13 +2865,15 @@ def patch_safe(
         # recompression after the patch-safe wording was finalized.
         expansion = False
     nuance = ""
-    if patch == source_row[
-        "current_english_exact"
-    ] and final != naturalize_current(patch):
+    if (
+        source_row["text_id"] not in INTENT_RESTORED_IDS
+        and patch == source_row["current_english_exact"]
+        and final != naturalize_current(patch)
+    ):
         nuance = (
-            "The verified current slot-sized wording is retained as the shortest "
-            "available basis; the fuller natural translation must be tested during "
-            "bank recompression."
+            "The playable wording still differs from the reviewed natural reading. "
+            "Re-evaluate it under the intent-first layout/compression workflow; "
+            "earlier compact wording is not authoritative merely because it fit."
         )
     elif expansion:
         nuance = (

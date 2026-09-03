@@ -26,6 +26,17 @@ PRESENTATION_BREAK_RECORD_IDS = frozenset(
         # Natural English needs two rows: "When was the last time" /
         # "I saw a blue sky?"
         "TT1B/g0/r1",
+        # まさか あんた…… / いわゆるひとつの あくまだ
+        # Preserve the protagonist's disbelief and the Devil's intentionally
+        # roundabout comic self-identification across safe English rows.
+        "TT1B/g0/r31",
+        # けっこう ぼいんですね ひひ…
+        # Preserve both the dated leering joke and its embarrassed response.
+        "TT1B/g1/r14",
+        # このいえにすんで もう40ねん / いまさら でていけるものか
+        # Preserve the resident's house/forty-years indignation and flustered
+        # apology rather than the earlier telegraphic fit wording.
+        "TT1B/g2/r5",
     }
 )
 
