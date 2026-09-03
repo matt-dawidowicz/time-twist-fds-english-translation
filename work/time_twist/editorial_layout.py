@@ -31,7 +31,7 @@ def presentation_break_variants(
     control: int = PRESENTATION_LINE_CONTROL,
     max_variants: int = DEFAULT_MAX_LAYOUT_VARIANTS,
 ) -> tuple[str, ...]:
-    """Return all bounded word-wrap layouts for one control-free sentence.
+    """Return all necessary bounded word-wrap layouts for one sentence.
 
     Args:
         text: Natural English containing visible characters and spaces only;
@@ -43,19 +43,19 @@ def presentation_break_variants(
         max_variants: Safety cap for pathological long records.
 
     Returns:
-        Deterministically ordered layouts. Each layout preserves every visible
-        character and word exactly; selected single spaces are replaced by the
-        presentation control. The unmodified sentence is included when it fits
-        in one row.
+        The unmodified sentence alone when it already fits one row. Otherwise,
+        deterministically ordered layouts that preserve every visible word and
+        replace selected single spaces with the presentation control.
 
     Raises:
         EnglishTextError: If input already contains a control tag, contains
             repeated/leading/trailing spaces, or no legal wrapping exists.
         ValueError: If ``columns`` or ``max_variants`` is not positive.
 
-    This routine does not choose the cheapest layout. Compression-aware callers
-    should score the alternatives after inserting the record into its complete
-    bank so record alignment and dictionary interactions are measured exactly.
+    This routine does not choose the cheapest required layout. Compression-aware
+    callers should score the alternatives after inserting the record into its
+    complete bank so record alignment and dictionary interactions are measured
+    exactly.
     """
     if columns < 1:
         raise ValueError("columns must be positive")
@@ -69,6 +69,9 @@ def presentation_break_variants(
         raise EnglishTextError(
             "presentation layout input must use single internal spaces"
         )
+    if len(text) <= columns:
+        validate_display_width(text, columns=columns)
+        return (text,)
 
     words = tuple(text.split(" "))
     if any(len(word) > columns for word in words):
@@ -79,6 +82,7 @@ def presentation_break_variants(
 
     @cache
     def layouts_from(index: int) -> tuple[tuple[str, ...], ...]:
+        """Return every legal line tuple beginning at one word index."""
         if index == len(words):
             return ((),)
         layouts: list[tuple[str, ...]] = []
