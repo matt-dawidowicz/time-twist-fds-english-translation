@@ -85,6 +85,9 @@ jobs:
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
       - run: python work/run_tests.py unit
+      - if: matrix.python-version == '3.11'
+        name: Measure whole-game compression headroom
+        run: python work/tools/compression_headroom.py --project-root .
       - if: matrix.python-version == '3.14'
         run: python -m build
       - if: matrix.python-version == '3.14'
