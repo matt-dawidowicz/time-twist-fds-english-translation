@@ -26,7 +26,10 @@ from time import perf_counter
 from time_twist.capacity import playable_capacity
 from time_twist.compression import packed_size
 from time_twist.english import encode_english
-from time_twist.project import KNOWN_SCENARIO_BANKS, required_dictionary_entries
+from time_twist.project import (
+    KNOWN_SCENARIO_BANKS,
+    required_dictionary_entries,
+)
 from time_twist.release_compression import compress_release_groups
 from time_twist.textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT, PackedSymbol
 from time_twist.ui import (

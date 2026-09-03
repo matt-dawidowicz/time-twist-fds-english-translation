@@ -53,7 +53,9 @@ RELOCATED_FIXED_TABLE_PREFIX_BYTES = MappingProxyType(
 )
 
 
-def playable_capacity(bank_name: str, scenario_capacity: int | None = None) -> int:
+def playable_capacity(
+    bank_name: str, scenario_capacity: int | None = None
+) -> int:
     """Return canonical English text/menu capacity for one scenario bank.
 
     Args:
