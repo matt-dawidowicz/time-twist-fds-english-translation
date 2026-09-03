@@ -31,7 +31,7 @@ jobs:
       - run: python work/generate_translation_workbook.py
       - name: Verify generated translation review artifacts are current
         run: git diff --exit-code -- outputs work/translation_workbook_banks
-      - run: python -m black --check work
+      - run: python -m black --check --diff work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
