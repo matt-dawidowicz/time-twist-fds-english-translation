@@ -8,7 +8,7 @@ on:
   pull_request:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: tests-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
@@ -34,52 +34,6 @@ jobs:
       - run: python work/generate_translation_workbook.py
       - name: Verify generated translation review artifacts are current
         run: git diff --exit-code -- outputs work/translation_workbook_banks
-      - if: matrix.python-version == '3.11'
-        name: Apply confirmed decoder correction and formatting
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          def replace_once(path: str, old: str, new: str) -> None:
-              file = Path(path)
-              text = file.read_text(encoding="utf-8")
-              if old in text:
-                  if text.count(old) != 1:
-                      raise SystemExit(f"{path}: expected one old occurrence")
-                  file.write_text(text.replace(old, new), encoding="utf-8")
-                  return
-              if new not in text:
-                  raise SystemExit(f"{path}: neither old nor corrected text found")
-
-          old_hex = "A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82"
-          new_hex = "A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"
-          replace_once("work/time_twist/ui.py", old_hex, new_hex)
-          replace_once("work/tests/test_ui_unit.py", old_hex, new_hex)
-          replace_once("docs/FULL_WORD_MENU_IMPLEMENTATION.md", old_hex, new_hex)
-          replace_once(
-              "docs/FULL_WORD_MENU_IMPLEMENTATION.md",
-              "Values below 37 add 32 and enter the existing dictionary expander at `$82BE`.",
-              "Values below 37 add 32 and enter dictionary expansion at `$82C5`, after the native five-bit dictionary reader.",
-          )
-          replace_once(
-              "docs/archive/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md",
-              old_hex,
-              new_hex,
-          )
-          replace_once(
-              "docs/archive/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md",
-              "Values below `$25` reach the existing dictionary expander at\n`$82BE` after adding 32; values `$25` and above branch to the existing glyph\npath at `$8226`.",
-              "Values below `$25` add 32 and jump to `$82C5`, the dictionary-expansion\nentry after the native five-bit index reader; values `$25` and above branch to\nthe existing glyph path at `$8226`.",
-          )
-          PY
-          python -m black work
-          if ! git diff --quiet -- work docs; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add work docs
-            git commit -m "Fix extended dictionary decoder entry point"
-            git push origin HEAD:engineering/editorial-compression-20260902
-          fi
       - run: python -m black --check work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
@@ -104,7 +58,60 @@ jobs:
       - if: matrix.python-version == '3.14'
         run: time-twist release-build --help
 
+  native-compression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - name: Prepare stable Rust
+        run: |
+          rustup default stable
+          rustup component add rustfmt
+          rustc --version
+          cargo --version
+      - name: Check Rust formatting
+        run: cargo fmt --check --manifest-path native/compression_optimizer/Cargo.toml
+      - name: Test native optimizer
+        run: cargo test --manifest-path native/compression_optimizer/Cargo.toml
+      - name: Build native optimizer
+        run: cargo build --release --manifest-path native/compression_optimizer/Cargo.toml
+      - name: Cross-check native optimizer against Python
+        env:
+          TIME_TWIST_NATIVE_OPTIMIZER: ${{ github.workspace }}/native/compression_optimizer/target/release/time-twist-compression-optimizer
+        run: >-
+          python -m unittest discover -s work/tests
+          -p 'test_compression_native.py'
+      - name: Benchmark TT1A Python reference
+        run: >-
+          python work/tools/compression_headroom.py --project-root .
+          --bank TT1A --backend python --json > /tmp/tt1a-python.json
+      - name: Benchmark TT1A native optimizer
+        env:
+          TIME_TWIST_NATIVE_OPTIMIZER: ${{ github.workspace }}/native/compression_optimizer/target/release/time-twist-compression-optimizer
+        run: >-
+          python work/tools/compression_headroom.py --project-root .
+          --bank TT1A --backend native --json > /tmp/tt1a-native.json
+      - name: Require identical TT1A optimized size
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          python_result = json.loads(Path('/tmp/tt1a-python.json').read_text())[0]
+          native_result = json.loads(Path('/tmp/tt1a-native.json').read_text())[0]
+          print('Python:', python_result)
+          print('Native:', native_result)
+          assert native_result['optimized_packed_bytes'] == python_result['optimized_packed_bytes']
+          assert native_result['optimized_dictionary_entries'] == python_result['optimized_dictionary_entries']
+          PY
+
   compression-headroom:
+    if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[compression-benchmark]') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
