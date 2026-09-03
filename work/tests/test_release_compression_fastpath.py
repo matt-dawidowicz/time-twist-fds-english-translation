@@ -9,7 +9,7 @@ from time_twist.release_compression import compress_release_groups
 
 
 class ReleaseCompressionFastPathTests(unittest.TestCase):
-    """Lock the cheap-first release compression policy."""
+    """Lock the cheap-first and editorial release compression policies."""
 
     def test_fitting_fast_candidate_skips_optimizer(self) -> None:
         """Accept a fitting fast candidate without expensive search."""
@@ -64,6 +64,34 @@ class ReleaseCompressionFastPathTests(unittest.TestCase):
             validator,
         )
         self.assertTrue(compressor.call_args_list[1].kwargs["optimize"])
+
+    def test_maximize_headroom_runs_optimizer_without_fast_accept(self) -> None:
+        """Use the strongest search even when a greedy result would fit."""
+        optimized = (((),), ())
+        compressor = mock.Mock(return_value=optimized)
+        measure = mock.Mock()
+        validator = mock.Mock()
+
+        result = compress_release_groups(
+            (),
+            max_bytes=10,
+            candidate_validator=validator,
+            compressor=compressor,
+            measure=measure,
+            maximize_headroom=True,
+        )
+
+        self.assertEqual(result, optimized)
+        compressor.assert_called_once_with(
+            (),
+            required_entries=(),
+            max_bytes=10,
+            optimize=True,
+            maximum_entries=68,
+            candidate_validator=validator,
+        )
+        measure.assert_not_called()
+        validator.assert_not_called()
 
 
 if __name__ == "__main__":
