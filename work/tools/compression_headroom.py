@@ -21,18 +21,18 @@ from __future__ import annotations
 import argparse
 import json
 import tempfile
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from time import perf_counter
-from typing import Iterator
 
 from time_twist import release as release_module
 from time_twist.fds import FdsImage
 from time_twist.release_compression import (
     compress_release_groups as compression_policy,
 )
-from time_twist.release_metadata import ReleasePaths, SCENARIO_LOCATIONS
+from time_twist.release_metadata import SCENARIO_LOCATIONS, ReleasePaths
 
 
 @dataclass(frozen=True)
