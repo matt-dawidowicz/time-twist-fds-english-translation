@@ -17,7 +17,7 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: python -m pip install -r requirements.txt
-      - name: Measure optimized TT1A footprint
+      - name: Measure TT1A footprints
         run: |
           python - <<'PY'
           import sys
@@ -36,16 +36,20 @@ jobs:
               bank, PATCH_FOOTPRINT_RESULTS[bank]["capacity"]
           )
           pointer_bytes = 2 * (len(groups) - 1)
-          compressed, dictionary = compress_english_groups(
-              groups,
+          kwargs = dict(
               required_entries=required_dictionary_entries(bank),
               max_bytes=capacity - pointer_bytes,
-              optimize=True,
               maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
           )
-          used = packed_size(compressed, dictionary) + pointer_bytes
-          print(
-              f"OPTIMIZED TT1A: {used}/{capacity} "
-              f"({capacity - used} bytes free; {len(dictionary)} entries)"
-          )
+          for label, optimize in (("GREEDY", False), ("OPTIMIZED", True)):
+              compressed, dictionary = compress_english_groups(
+                  groups,
+                  optimize=optimize,
+                  **kwargs,
+              )
+              used = packed_size(compressed, dictionary) + pointer_bytes
+              print(
+                  f"{label} TT1A: {used}/{capacity} "
+                  f"({capacity - used} bytes free; {len(dictionary)} entries)"
+              )
           PY
