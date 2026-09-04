@@ -1,13 +1,18 @@
 """Reject private ROM fixtures, machine-local state, and build debris.
 
-Run this against the source tree before packaging or publishing it. The private
-integration overlay is intentionally expected to fail this check.
+Run this against the source tree before packaging or publishing it. In a Git
+checkout, only tracked files and non-ignored untracked files are audited so
+ignored maintainer state remains private by construction. The private
+integration overlay is intentionally expected to fail this check if exposed to
+the public file set.
 """
 
 from __future__ import annotations
 
 import argparse
+import os
 import re
+import subprocess
 from pathlib import Path
 
 FORBIDDEN_SUFFIXES = {
@@ -36,6 +41,51 @@ REQUIRED_PUBLIC_MARKERS = (
     Path("work/title_assets"),
     Path("work/integration_fixtures.json"),
 )
+CHECKER_RELATIVE_PATH = Path("work/tools/check_public_tree.py")
+
+
+def _git_visible_files(root: Path) -> list[Path] | None:
+    """Return files Git considers publishable, or ``None`` outside a checkout."""
+    try:
+        result = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(root),
+                "ls-files",
+                "--cached",
+                "--others",
+                "--exclude-standard",
+                "-z",
+            ],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return None
+    return [
+        root / Path(os.fsdecode(raw_path))
+        for raw_path in result.stdout.split(b"\0")
+        if raw_path
+    ]
+
+
+def _candidate_paths(root: Path):
+    """Yield the public candidate paths, falling back to a raw tree walk."""
+    git_visible = _git_visible_files(root)
+    if git_visible is not None:
+        yield from git_visible
+        return
+    yield from root.rglob("*")
+
+
+def _forbidden_parent(relative: Path) -> Path | None:
+    """Return the first forbidden parent directory represented by ``relative``."""
+    for index, part in enumerate(relative.parts[:-1]):
+        if part in FORBIDDEN_DIRECTORY_NAMES or part.endswith(".egg-info"):
+            return Path(*relative.parts[: index + 1])
+    return None
 
 
 def check_public_tree(root: Path) -> list[str]:
@@ -47,13 +97,22 @@ def check_public_tree(root: Path) -> list[str]:
         if not (root / marker).exists()
     ]
 
-    for path in root.rglob("*"):
+    for path in _candidate_paths(root):
         try:
             relative = path.relative_to(root)
         except ValueError:
             continue
         if ".git" in relative.parts:
             continue
+
+        forbidden_parent = _forbidden_parent(relative)
+        if forbidden_parent is not None:
+            problems.append(
+                "generated/private directory present: "
+                f"{forbidden_parent.as_posix()}"
+            )
+            continue
+
         if path.is_dir():
             if path.name in FORBIDDEN_DIRECTORY_NAMES or path.name.endswith(
                 ".egg-info"
@@ -64,8 +123,6 @@ def check_public_tree(root: Path) -> list[str]:
             continue
         if not path.is_file():
             continue
-        if path.resolve() == Path(__file__).resolve():
-            continue
         if path.suffix.lower() in FORBIDDEN_SUFFIXES:
             problems.append(
                 f"private/generated file present: {relative.as_posix()}"
@@ -75,6 +132,8 @@ def check_public_tree(root: Path) -> list[str]:
             problems.append(
                 f"machine-local emulator settings present: {relative.as_posix()}"
             )
+            continue
+        if relative == CHECKER_RELATIVE_PATH:
             continue
         if path.stat().st_size > 8_000_000:
             continue

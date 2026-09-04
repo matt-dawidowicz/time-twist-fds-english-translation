@@ -5,6 +5,7 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from tools.check_public_tree import check_public_tree
 
@@ -69,6 +70,33 @@ class PublicTreePolicyTests(unittest.TestCase):
                     for problem in problems
                 )
             )
+
+    def test_git_visible_boundary_ignores_local_state(self) -> None:
+        """Ignore local state and avoid self-matching the checker regex."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.make_public_skeleton(root)
+
+            checker = root / "work" / "tools" / "check_public_tree.py"
+            checker.parent.mkdir(parents=True)
+            drive_pattern = 'PATTERN = r"' + "D:" + "\\\\" + '"\n'
+            checker.write_text(drive_pattern, encoding="utf-8")
+
+            private = root / ".venv" / "private.fds"
+            private.parent.mkdir()
+            private.write_bytes(b"ignored local fixture")
+
+            visible = (
+                "pyproject.toml",
+                "work/integration_fixtures.json",
+                "work/tools/check_public_tree.py",
+            )
+            encoded_visible = [item.encode("utf-8") for item in visible]
+            git_stdout = b"\0".join(encoded_visible) + b"\0"
+
+            with patch("tools.check_public_tree.subprocess.run") as run:
+                run.return_value.stdout = git_stdout
+                self.assertEqual(check_public_tree(root), [])
 
 
 if __name__ == "__main__":
