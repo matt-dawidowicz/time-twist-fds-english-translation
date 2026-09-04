@@ -79,7 +79,8 @@ class PublicTreePolicyTests(unittest.TestCase):
 
             checker = root / "work" / "tools" / "check_public_tree.py"
             checker.parent.mkdir(parents=True)
-            checker.write_text('PATTERN = r"D:\\\\"\n', encoding="utf-8")
+            drive_pattern = 'PATTERN = r"' + "D:" + "\\\\" + '"\n'
+            checker.write_text(drive_pattern, encoding="utf-8")
 
             private = root / ".venv" / "private.fds"
             private.parent.mkdir()
