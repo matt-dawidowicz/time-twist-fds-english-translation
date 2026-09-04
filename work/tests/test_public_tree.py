@@ -71,8 +71,8 @@ class PublicTreePolicyTests(unittest.TestCase):
                 )
             )
 
-    def test_git_visible_boundary_ignores_local_state_and_checker_literal(self) -> None:
-        """Audit only publishable files without flagging the checker's own regex."""
+    def test_git_visible_boundary_ignores_local_state(self) -> None:
+        """Ignore local state and avoid self-matching the checker regex."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             self.make_public_skeleton(root)
@@ -91,9 +91,8 @@ class PublicTreePolicyTests(unittest.TestCase):
                 "work/integration_fixtures.json",
                 "work/tools/check_public_tree.py",
             )
-            git_stdout = b"\0".join(
-                item.encode("utf-8") for item in visible
-            ) + b"\0"
+            encoded_visible = [item.encode("utf-8") for item in visible]
+            git_stdout = b"\0".join(encoded_visible) + b"\0"
 
             with patch("tools.check_public_tree.subprocess.run") as run:
                 run.return_value.stdout = git_stdout
