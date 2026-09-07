@@ -2081,6 +2081,16 @@ def sha256(path: Path) -> str:
     return digest.hexdigest().upper()
 
 
+def source_text_sha256(path: Path) -> str:
+    """Hash text-source provenance consistently across LF and CRLF checkouts.
+
+    Normalize only line endings, preserving all other source bytes. Generated
+    artifact and optional diagnostic-file hashes still use byte-exact sha256.
+    """
+    data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest().upper()
+
+
 def collapse(text: str) -> str:
     """Normalize arbitrary whitespace for a single-line editorial field.
 
@@ -3460,7 +3470,7 @@ th{{position:sticky;top:0;background:#292c40;z-index:2;text-align:left}} tbody t
 <div class="card"><b>{gameplay_count:,}</b>gameplay/visual checks</div>
 <div class="card"><b>{technical_count:,}</b>storage overflows / expansion checks</div>
 </div>
-<p class="small">Authoritative source: {escape_cell(SOURCE_JSON.name)} (SHA-256 {sha256(SOURCE_JSON)}).{review_provenance} Exact/source order: {escape_cell(source_payload['source_of_truth'])}</p>
+<p class="small">Authoritative source: {escape_cell(SOURCE_JSON.name)} (LF-normalized SHA-256 {source_text_sha256(SOURCE_JSON)}).{review_provenance} Exact/source order: {escape_cell(source_payload['source_of_truth'])}</p>
 <details open><summary><b>Method and field interpretation</b></summary>
 <div class="summary"><p>All {len(rows):,} records have a proposed final and patch-safe English field. Short simple lines may have identical literal and natural translations. Fixed-address natural meanings are expanded for analysis; their patch-safe forms retain the verified compact slot text. Every scenario patch passed the ROM character encoder and 24-column display validator. Current conservative fit checks recompress dialogue and configured full-word menus with the 68-entry greedy baseline, including structural pointers and recovered movable capacity: {escape_cell(footprint_summary)}. These public measurements are separate from historical scenario-only snapshots. Actual release usage, including any optimizer fallback, comes from a fresh ROM-backed candidate manifest; runtime playtesting remains required.</p>
 <p>The supplied diagnostic review was consulted for line-specific corrections, but its unsafe substring-based Japanese reconstruction was not copied. Speaker identity is derived from explicit labels, neighboring English speaker turns, and scene grouping. Ambiguity is recorded without leaving the line untranslated.</p></div></details>
@@ -3582,7 +3592,7 @@ def write_progress(
         "",
         "## Source fingerprints",
         "",
-        f"- `{SOURCE_JSON.name}` — SHA-256 `{sha256(SOURCE_JSON)}`",
+        f"- `{SOURCE_JSON.name}` — LF-normalized SHA-256 `{source_text_sha256(SOURCE_JSON)}`",
         *(
             [f"- `{review_path.name}` — SHA-256 `{sha256(review_path)}`"]
             if review_path is not None
@@ -3906,7 +3916,8 @@ def main() -> None:
                 "schema": "Time Twist complete translation workbook v1",
                 "source_of_truth": source_payload["source_of_truth"],
                 "source_file": SOURCE_JSON.name,
-                "source_sha256": sha256(SOURCE_JSON),
+                "source_sha256": source_text_sha256(SOURCE_JSON),
+                "source_hash_normalization": "lf",
                 "diagnostic_review_file": (
                     review_path.name if review_path is not None else None
                 ),

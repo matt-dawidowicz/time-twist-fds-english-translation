@@ -25,6 +25,13 @@ The exact-Japanese column is copied from decoded source records and is never
 normalized in place. Romaji, reconstructed Japanese, linguistic labels,
 literal readings, and natural English are editorial layers.
 
+The workbook's comparison-corpus fingerprint uses LF-normalized SHA-256, so
+Windows CRLF checkouts and Unix LF checkouts report the same text-source
+identity. JSON metadata records `source_hash_normalization: "lf"`. This changes
+only fingerprint calculation; source files and Japanese record data are not
+rewritten. Generated-artifact and optional diagnostic-file hashes remain
+byte-exact.
+
 ## Source locations
 
 | Path | Role |

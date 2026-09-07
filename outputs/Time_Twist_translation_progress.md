@@ -11,7 +11,7 @@
 
 ## Source fingerprints
 
-- `Time Twist Japanese-English script comparison.json` — SHA-256 `D7A2F76EF0E83DB5EF09DF161D0C5134E347A6DC5BF6E807AFDE8BFA432EFE2B`
+- `Time Twist Japanese-English script comparison.json` — LF-normalized SHA-256 `4EAFE4EA80A2545CF4786E56E55AA2A391571753FD51A7638692C4FB955F371D`
 - Diagnostic review: not supplied (neutral diagnostics used)
 
 ## Bank coverage
