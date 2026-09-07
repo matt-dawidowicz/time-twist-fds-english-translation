@@ -128,7 +128,7 @@ copy of the release pipeline:
 | --- | --- |
 | `check_public_tree.py` | Rejecting ROMs, FDS candidates, retail extracts, captures, caches, and personal paths before a public commit. |
 | `audit_fixed_menu_labels.py` | Comparing the playable fixed-menu copy with the canonical full-word targets. |
-| `audit_full_word_menu_targets.py` | Reporting whether a label fits its current packed slot and display width. |
+| `audit_full_word_menu_targets.py` | Reporting each label's literal packed size, encoding validity, and display width. |
 | `report_full_word_menu_candidate.py` | Binding a menu audit to an actual candidate manifest and scenario-bank hashes. |
 | `validate_translation_patch_fragments.py` | Checking the small public patch fragments without requiring private full-bank maps. |
 | `disassemble_6502.py` | Inspecting a recovered code range before declaring a native engine patch safe. |

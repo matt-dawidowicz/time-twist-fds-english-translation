@@ -1,8 +1,7 @@
 # Documentation index
 
 The maintained documentation describes the current source-only translation and
-release pipeline. Historical implementation snapshots live in [`archive/`](archive/README.md)
-and must not be treated as operating instructions.
+release pipeline. Retired implementation snapshots and commands remain in Git history.
 
 ## Start here
 
@@ -19,7 +18,8 @@ extracted retail payloads, emulator states, or other private fixtures.
 
 1. [Translation workflow](TRANSLATION_WORKFLOW.md)
 2. [Workbook pipeline](WORKBOOK_PIPELINE.md)
-3. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
+3. [Cross-bank editorial decisions](../work/audits/final_cross_bank_consistency.md)
+4. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
 
 `work/translations/*.json` is the only scenario-English authority.
 `work/source_records/*.json` contains decoded Japanese, stable record IDs, and
@@ -67,8 +67,6 @@ archived or generated English string as the playable source.
 
 ## Historical records
 
-- [`archive/`](archive/README.md): retired implementation, hardening, retrospective,
-  and dated release-review documents.
 - [`../audit/third_party/`](../audit/third_party/README.md): completed third-party
   comparison evidence.
 - Git history: exact deleted code, old command implementations, and prior file states.

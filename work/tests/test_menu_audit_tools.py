@@ -78,7 +78,6 @@ class CandidateReportTests(unittest.TestCase):
             "slot_bytes": "4",
             "representation": "literal",
             "proposed_full_label": "Look",
-            "fallback_label": "",
             "status": "full-word",
             "width_ok": "True",
             "width_error": "",
@@ -143,12 +142,64 @@ class CandidateReportTests(unittest.TestCase):
                 (output_dir / "fixed_menu_label_summary.json").is_file()
             )
 
+    def test_report_removes_only_retired_files_after_validating_inputs(
+        self,
+    ) -> None:
+        """Clear stale generated reports while preserving failed-run evidence."""
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            output_dir = directory / "report"
+            output_dir.mkdir()
+            previous_files = {
+                "fixed_menu_label_blockers.csv": b"old blockers",
+                "fixed_menu_label_mismatches.csv": b"old mismatches",
+                "review-notes.txt": b"keep these notes",
+            }
+            for name, content in previous_files.items():
+                (output_dir / name).write_bytes(content)
+            invalid_row = self._row()
+            invalid_row["status"] = "mismatch"
+            audit_path, manifest_path = self._write_inputs(
+                directory, [invalid_row], self._manifest()
+            )
+            with self.assertRaises(
+                report_full_word_menu_candidate.CandidateAuditError
+            ):
+                report_full_word_menu_candidate.report(
+                    audit_path, manifest_path, output_dir
+                )
+            for name, content in previous_files.items():
+                self.assertEqual((output_dir / name).read_bytes(), content)
+
+            audit_path, manifest_path = self._write_inputs(
+                directory, [self._row()], self._manifest()
+            )
+            report_full_word_menu_candidate.report(
+                audit_path, manifest_path, output_dir
+            )
+            self.assertEqual(
+                {path.name for path in output_dir.iterdir()},
+                {
+                    "fixed_menu_full_word_literal.csv",
+                    "fixed_menu_full_word_dictionary.csv",
+                    "fixed_menu_label_summary.json",
+                    "compression_report_by_bank.csv",
+                    "review-notes.txt",
+                },
+            )
+            self.assertEqual(
+                (output_dir / "review-notes.txt").read_bytes(),
+                previous_files["review-notes.txt"],
+            )
+
     def test_report_rejects_source_only_and_width_failures_before_output(
         self,
     ) -> None:
         """Do not label source-only or overflowing rows as candidate evidence."""
         for status, width_ok, expected in (
             ("source-only", "True", "non-reportable statuses"),
+            ("blocked", "True", "non-reportable statuses"),
+            ("mismatch", "True", "non-reportable statuses"),
             ("full-word", "False", "display-width failure"),
         ):
             with (

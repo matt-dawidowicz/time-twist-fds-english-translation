@@ -1,6 +1,6 @@
 """Public capacity facts for rebuilt English scenario banks.
 
-The historical footprint table records the native scenario reservation from
+NATIVE_SCENARIO_CAPACITY_BYTES records the native scenario reservation from
 scenario group zero through the last source dictionary entry required by that
 bank.  Canonical full-word menu releases reclaim a second, disjoint region:
 from the original fixed-table base through the first following pointer-addressed
@@ -17,6 +17,24 @@ the canonical release builder.
 from __future__ import annotations
 
 from types import MappingProxyType
+
+NATIVE_SCENARIO_CAPACITY_BYTES = MappingProxyType(
+    {
+        "TT1A": 1669,
+        "TT1B": 4026,
+        "TT2": 3847,
+        "T22": 1812,
+        "TT3A": 3741,
+        "TT3B": 1840,
+        "TT4": 4741,
+        "TT5": 3702,
+        "T25": 2374,
+        "TT6A": 2833,
+        "TT6B": 2336,
+        "TT6C": 3536,
+        "TT6D": 332,
+    }
+)
 
 RELOCATED_FIXED_TABLE_PREFIX_BYTES = MappingProxyType(
     {

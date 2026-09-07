@@ -102,11 +102,7 @@ The region must not extend past `dictionary_end_offset` when
 
 ### Fixed-record table patch
 
-Legacy standalone UI patching retains every source record boundary.
-`_encode_at_exact_record_size()` uses dictionary references and invisible
-trailing common-space tiles to fill each original slot exactly.
-
-The canonical release uses the more precise recovered menu addressing model:
+Scenario menus use the recovered menu addressing model:
 one base pointer plus page pointers for records 32, 64, and 96. It repacks
 those records at variable lengths, regenerates the page index, updates the
 verified secondary-table pointers, and shares the recovered bytes with the

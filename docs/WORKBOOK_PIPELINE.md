@@ -1,6 +1,6 @@
 # Translation workbook pipeline
 
-The workbook is the complete review surface for 2,052 extracted records. It is
+The workbook is the complete review surface for 2,058 extracted records. It is
 not the packed byte stream inserted into the game, but its patch-safe field is
 generated from and must mirror the playable sources.
 
@@ -13,7 +13,7 @@ decoded Japanese records             playable English sources
                                     |
                  generate_bilingual_comparison.py
                                     |
-                    ordered 2,052-record corpus
+                    ordered 2,058-record corpus
                                     |
                  generate_translation_workbook.py
                                     |
@@ -130,7 +130,7 @@ not an incomplete translation.
 
 The generator validates:
 
-- exactly 2,052 unique rows;
+- exactly 2,058 unique rows;
 - byte-for-byte exact Japanese source retention;
 - complete playable scenario coverage;
 - patch-safe/playable equality;
@@ -153,9 +153,9 @@ stops generation before workbook outputs are written.
 
 The HTML workbook, Markdown progress report, and JSON
 `patch_validation.revised_bank_footprints` all carry those same fresh results.
-`footprint_method` identifies the method. Historical scenario-only measurements
-remain explicitly labeled under `historical_scenario_footprints`; they describe
-older text and packing and must not be read as current free-space budgets.
+`footprint_method` identifies the method. Recovered native capacities and movable
+menu reservations live in `work/time_twist/capacity.py`; usage is recomputed
+from current text rather than copied from a historical candidate.
 
 Actual release measurements, including any optimizer fallback, belong to a
 fresh ROM-backed candidate manifest. Public fit checks do not replace source
@@ -211,7 +211,7 @@ python work/run_tests.py unit
 
 Then confirm:
 
-- 2,052 rows were emitted;
+- 2,058 rows were emitted;
 - no source fingerprint changed unexpectedly;
 - the affected checkpoint contains the intended natural and patch-safe text;
 - every scenario patch-safe field equals its playable map;

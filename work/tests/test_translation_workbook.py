@@ -12,7 +12,6 @@ from pathlib import Path
 from generate_translation_workbook import (
     CONTROL_OVERRIDE_IDS,
     OUTPUTS,
-    PATCH_FOOTPRINT_RESULTS,
     SOURCE_JSON,
     controls,
     load_playable_scenario_text,
@@ -176,10 +175,6 @@ class TranslationWorkbookTests(unittest.TestCase):
         self.assertEqual(payload["source_hash_normalization"], "lf")
         self.assertEqual(
             payload["source_sha256"], source_text_sha256(SOURCE_JSON)
-        )
-        self.assertEqual(
-            payload["patch_validation"]["historical_scenario_footprints"],
-            PATCH_FOOTPRINT_RESULTS,
         )
         with csv_path.open(encoding="utf-8-sig", newline="") as handle:
             csv_rows = list(csv.DictReader(handle))

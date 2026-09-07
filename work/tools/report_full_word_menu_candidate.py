@@ -17,7 +17,6 @@ AUDIT_FIELDNAMES = (
     "slot_bytes",
     "representation",
     "proposed_full_label",
-    "fallback_label",
     "status",
     "width_ok",
     "width_error",
@@ -33,7 +32,7 @@ COMPRESSION_FIELDNAMES = (
     "remaining_bytes",
     "sha256",
 )
-REPORTABLE_STATUSES = frozenset({"full-word", "blocked"})
+REPORTABLE_STATUSES = frozenset({"full-word"})
 
 
 class CandidateAuditError(ValueError):
@@ -171,6 +170,14 @@ def report(
     manifest = _read_manifest(manifest_json)
     candidate_sha256 = _validate_audit(rows, manifest)
 
+    # A reused output directory must not retain obsolete candidate evidence.
+    # Validate inputs first and remove only the two retired generated reports.
+    for filename in (
+        "fixed_menu_label_blockers.csv",
+        "fixed_menu_label_mismatches.csv",
+    ):
+        (output_dir / filename).unlink(missing_ok=True)
+
     literal = [
         row
         for row in rows
@@ -182,8 +189,6 @@ def report(
         if row["status"] == "full-word"
         and row["representation"] == "dictionary"
     ]
-    blocked = [row for row in rows if row["status"] == "blocked"]
-    mismatches: list[dict[str, str]] = []
     _write_csv(
         output_dir / "fixed_menu_full_word_literal.csv",
         AUDIT_FIELDNAMES,
@@ -194,35 +199,21 @@ def report(
         AUDIT_FIELDNAMES,
         dictionary,
     )
-    _write_csv(
-        output_dir / "fixed_menu_label_blockers.csv", AUDIT_FIELDNAMES, blocked
-    )
-    _write_csv(
-        output_dir / "fixed_menu_label_mismatches.csv",
-        AUDIT_FIELDNAMES,
-        mismatches,
-    )
 
     by_bank: dict[str, dict[str, int]] = defaultdict(
         lambda: {
             "full_word_literal": 0,
             "full_word_dictionary": 0,
-            "blocked": 0,
         }
     )
     for row in rows:
-        if row["status"] == "blocked":
-            by_bank[row["bank"]]["blocked"] += 1
-        elif row["status"] == "full-word":
-            key = f"full_word_{row['representation']}"
-            by_bank[row["bank"]][key] += 1
+        key = f"full_word_{row['representation']}"
+        by_bank[row["bank"]][key] += 1
     summary: dict[str, object] = {
         "candidate_fds_sha256": candidate_sha256,
         "records": len(rows),
         "full_word_literal": len(literal),
         "full_word_dictionary": len(dictionary),
-        "blocked": len(blocked),
-        "mismatches": len(mismatches),
         "by_bank": dict(sorted(by_bank.items())),
     }
     (output_dir / "fixed_menu_label_summary.json").write_text(
@@ -254,7 +245,7 @@ def report(
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Create full-word, dictionary, and explicit-blocker CSV reports."""
+    """Create reports from a manifest-matched, complete full-word audit."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--audit-csv", type=Path, required=True)
     parser.add_argument("--manifest-json", type=Path, required=True)
@@ -267,8 +258,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     print(
         f"full-word literal={summary['full_word_literal']} "
-        f"dictionary={summary['full_word_dictionary']} "
-        f"blocked={summary['blocked']} mismatches={summary['mismatches']}"
+        f"dictionary={summary['full_word_dictionary']}"
     )
     return 0
 

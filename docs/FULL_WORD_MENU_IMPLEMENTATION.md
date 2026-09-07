@@ -86,49 +86,20 @@ the scenario group-pointer and menu page-pointer bytes before compression.
 
 The resulting dictionary is shared by dialogue and menu labels. The canonical
 release permits up to 68 entries, then verifies the exact packed size before
-writing. The standalone the retired standalone scenario builder plus the retired standalone fixed-UI command workflow remains a
-31-entry, exact-slot diagnostic path and may still use declared compact
-fallbacks. It is not the canonical full-word build path.
+writing. There is no abbreviated fallback in the release path.
 
-## Verified candidate result
+## Current measurements
 
-The August 25, 2026 candidate produced these exact bank results:
+The [generated progress report](../outputs/Time_Twist_translation_progress.md)
+recomputes conservative fits for the current text. Exact optimized sizes and
+output SHA-256 identities belong to the freshly built candidate's
+`release_manifest.json`, as described in the
+[maintainer release process](MAINTAINER_RELEASE_PROCESS.md).
 
-| Bank | Dictionary entries | Used bytes | Capacity | Remaining |
-| --- | ---: | ---: | ---: | ---: |
-| TT3A | 68 | 4,013 | 4,169 | 156 |
-| TT3B | 37 | 1,901 | 1,927 | 26 |
-| TT1B | 68 | 3,777 | 4,234 | 457 |
-| TT1A | 31 | 1,656 | 1,669 | 13 |
-| TT2 | 68 | 3,984 | 4,141 | 157 |
-| T22 | 50 | 1,894 | 1,939 | 45 |
-| TT6C | 68 | 3,852 | 3,947 | 95 |
-| TT6B | 54 | 2,542 | 2,601 | 59 |
-| TT6A | 68 | 2,800 | 3,000 | 200 |
-| TT6D | 6 | 323 | 332 | 9 |
-| TT4 | 68 | 5,146 | 5,187 | 41 |
-| TT5 | 68 | 4,141 | 4,201 | 60 |
-| T25 | 53 | 2,440 | 2,561 | 121 |
-
-The fixed-menu audit decoded 721 installed labels from the finished four-side
-image against their canonical source strings:
-
-- 721 full-word matches;
-- 0 fallback/abbreviated labels;
-- 0 mismatches or width failures;
-- 443 records using at least one dictionary reference; and
-- 278 literal-only records.
-
-The candidate output identities are:
-
-| Output | Bytes | SHA-256 |
-| --- | ---: | --- |
-| Zenpen | 131,000 | `19A3ABDAFCCC4A15D3082D7EBE653C996EC0C65BDF331F0E885B1CFF7AA49D17` |
-| Kouhen | 131,000 | `5BF9FA9B773DA2E9B503761CC0843AE39BCD61B9B8D1BDF1EEAF166037A1AC50` |
-| Four-side | 262,000 | `E8FBF9B39278170278F22D2A1C6558DE04DD0F7711570737E584A7A37DA149F3` |
-
-These are candidate identities, not a promoted release target. The repository
-remains source-only and does not contain the generated images.
+The source defines 721 menu labels. The candidate audit must decode every label
+back to its canonical full text with no mismatches or width failures. A shortened
+label is a mismatch; retired fallback labels are not accepted. Reports reject
+nonmatching audits before writing candidate summaries.
 
 ## Verification and remaining gate
 

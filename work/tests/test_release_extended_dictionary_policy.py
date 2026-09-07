@@ -8,12 +8,22 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from time_twist.release import build_scenario_bank
+from time_twist.release import SCENARIO_UI_PATCHERS, build_scenario_bank
 from time_twist.textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT
+from time_twist.ui import FIXED_RECORD_TABLE_SPECS, patched_tt1a_ui
 
 
 class ReleaseExtendedDictionaryPolicyTests(unittest.TestCase):
     """Keep non-relocated playable banks free of the old 31-entry ceiling."""
+
+    def test_only_separate_tt1a_ui_uses_a_post_compression_patcher(
+        self,
+    ) -> None:
+        """Keep relocated menus on the joint full-word packing path."""
+        self.assertEqual(SCENARIO_UI_PATCHERS, {"TT1A": patched_tt1a_ui})
+        self.assertTrue(
+            set(SCENARIO_UI_PATCHERS).isdisjoint(FIXED_RECORD_TABLE_SPECS)
+        )
 
     def test_tt6d_accepts_dictionary_entry_32(self) -> None:
         """Prove the canonical non-relocated path permits more than 31 entries."""
@@ -43,10 +53,6 @@ class ReleaseExtendedDictionaryPolicyTests(unittest.TestCase):
                 ),
                 patch(
                     "time_twist.release._encoded_groups", return_value=groups
-                ),
-                patch(
-                    "time_twist.release.required_dictionary_entries",
-                    return_value=(),
                 ),
                 patch(
                     "time_twist.release.compress_english_groups",

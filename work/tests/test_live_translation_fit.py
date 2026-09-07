@@ -10,10 +10,10 @@ from unittest.mock import patch
 
 from generate_translation_workbook import (
     OUTPUTS,
-    PATCH_FOOTPRINT_RESULTS,
     measure_translation_footprint,
 )
 from time_twist.capacity import (
+    NATIVE_SCENARIO_CAPACITY_BYTES,
     RELOCATED_FIXED_TABLE_PREFIX_BYTES,
     playable_capacity,
 )
@@ -36,8 +36,8 @@ class LiveTranslationFitTests(unittest.TestCase):
     def test_current_translation_maps_fit(self) -> None:
         """Recompress every bank and fail only when current text exceeds capacity.
 
-        ``PATCH_FOOTPRINT_RESULTS[*][\"used\"]`` and its ``capacity`` field are
-        historical scenario-region evidence. Relocated full-word menu banks add
+        Recovered native capacities describe the scenario region.
+        Relocated full-word menu banks add
         a source-verified movable prefix to that scenario reservation; current
         usage is recomputed from scenario plus menu with the same 68-entry
         greedy baseline used by the canonical release builder. The release
@@ -45,7 +45,7 @@ class LiveTranslationFitTests(unittest.TestCase):
         baseline that fits proves every selected optimized result fits as well.
         """
         self.assertEqual(
-            set(PATCH_FOOTPRINT_RESULTS), set(KNOWN_SCENARIO_BANKS)
+            set(NATIVE_SCENARIO_CAPACITY_BYTES), set(KNOWN_SCENARIO_BANKS)
         )
         payload = json.loads(
             (
@@ -60,9 +60,8 @@ class LiveTranslationFitTests(unittest.TestCase):
             OUTPUTS / "Time_Twist_complete_translation_workbook.html"
         ).read_text(encoding="utf-8")
         for bank_name in KNOWN_SCENARIO_BANKS:
-            recorded = PATCH_FOOTPRINT_RESULTS[bank_name]
             used = measure_translation_footprint(bank_name)
-            scenario_capacity = recorded["capacity"]
+            scenario_capacity = NATIVE_SCENARIO_CAPACITY_BYTES[bank_name]
             capacity = playable_capacity(bank_name, scenario_capacity)
             self.assertEqual(
                 published[bank_name],
@@ -76,13 +75,9 @@ class LiveTranslationFitTests(unittest.TestCase):
                 f"- {bank_name}: {used}/{capacity} bytes used;", progress
             )
             self.assertIn(f"{bank_name} {used}/{capacity} bytes", html)
-            delta = used - recorded["used"]
-            evidence = (
-                "current" if delta == 0 else f"recorded delta {delta:+d}"
-            )
             print(
                 f"FIT {bank_name}: {used}/{capacity} "
-                f"({capacity - used} bytes free; {evidence})"
+                f"({capacity - used} bytes free)"
             )
             self.assertLessEqual(
                 used,

@@ -22,7 +22,6 @@ from .project import (
 )
 from .project import (
     infer_bank_name,
-    required_dictionary_entries,
     source_dictionary_reference_floor,
 )
 from .release import (
@@ -403,7 +402,6 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
     pointer_bytes = 2 * (len(groups) - 1)
     compressed_groups, dictionary = compress_english_groups(
         groups,
-        required_entries=required_dictionary_entries(bank_name),
         max_bytes=capacity - pointer_bytes,
         optimize=True,
     )

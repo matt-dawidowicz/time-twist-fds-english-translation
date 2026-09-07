@@ -53,11 +53,11 @@ required. It validates controls, glyph support, and display width.
 ### `scenario-footprint BANK [--translations PATH]`
 
 Reports the fixed text reservation and, with a complete translation map,
-compressed use and remaining bytes. For banks with fixed-address UI text, the
-source reservation includes dictionary entries referenced by those verified
-source tables as well as ordinary scenario dialogue. Banks whose translated
-fixed UI consumes the English dictionary must also produce all 31 dictionary
-entries or the footprint check fails closed.
+scenario-only compressed use and remaining bytes using the native 31-entry
+format. The source reservation includes dictionary entries referenced only by
+Japanese menus as well as dialogue. This inspection does not include relocated
+English menus or the extended decoder; use the workbook for a current combined
+fit check and `release-build --candidate` for actual release measurements.
 
 
 ## Asset and UI commands
@@ -104,9 +104,8 @@ Zenpen and Kouhen, combines four sides, and writes `release_manifest.json`.
 For the 11 banks with scenario menu tables, this canonical path packs the
 unabbreviated labels together with dialogue, uses the guarded 68-entry English
 dictionary decoder, regenerates the menu page pointers, and preserves the
-overlay's original fixed suffix. The standalone `scenario-insert` and
-`ui-patch` commands retain the older 31-entry, fixed-slot diagnostic workflow;
-use `release-build` for the full-word playable result.
+overlay's original fixed suffix. Use `release-build` for the full-word playable
+result; inspection commands do not produce release candidates.
 
 Release manifest schema v4 is a complete audit record. It includes source-lock
 and release-code provenance, Python/Pillow environment versions, all
@@ -179,7 +178,3 @@ candidate review and promotion.
 Known command errors are rendered as concise `time-twist: error: ...` messages
 without a Python traceback. Treat them as violated invariants; do not suppress
 them in a production build.
-
-## Historical command surface
-
-Earlier revisions exposed standalone bank/UI construction commands in addition to the release builder. Those compatibility commands were removed after the source-locked release path became authoritative. Their implementation and documentation remain available in Git history and `docs/archive/`.

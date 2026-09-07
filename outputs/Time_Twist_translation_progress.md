@@ -54,8 +54,6 @@ Recomputed from the current playable scenario maps and configured full-word menu
 
 Actual release usage, including any optimizer fallback, must come from a fresh ROM-backed candidate manifest. These conservative measurements do not certify a built image or runtime behavior.
 
-Historical scenario-only measurements are retained in the JSON workbook under `historical_scenario_footprints`. Their used/free counts describe earlier text and packing; relocated menu banks also have different capacity boundaries, so the snapshots are not current release budgets.
-
 ## Records requiring gameplay screenshots or visual verification
 
 - `TT1B/g0/r28` — Punctuation alone permits statement/question readings, but the reply いえ strongly favors a question.

@@ -135,5 +135,6 @@ private fixture files.
 - [Architecture](docs/ARCHITECTURE.md)
 - [Format reference](docs/FORMATS.md)
 - [CLI reference](docs/CLI_REFERENCE.md)
-- [Technical implementation notes](docs/BUG_FIXES_AND_TITLE_IMPLEMENTATION.md)
+- [Title sequence](docs/TITLE_SEQUENCE.md)
+- [Font-source and disk-retry evidence](docs/NOV4_FONT_SOURCE_SAFETY.md)
 - [Maintainer release process](docs/MAINTAINER_RELEASE_PROCESS.md)
