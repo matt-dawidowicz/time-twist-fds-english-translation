@@ -18,16 +18,20 @@ Candidate manifest SHA-256: `PENDING FRESH CANDIDATE BUILD`.
 
 Release-code tree SHA-256: `PENDING FRESH CANDIDATE BUILD`.
 
-Source-lock SHA-256: `238E98039F1D6FDD2E8A287766106C1C4F456B88DD25D9190E2CB32B98E7BD44`.
-The approved non-code inputs are unchanged by the final hardening; the fresh
-candidate is required because the release-code provenance changed.
+Source-lock SHA-256: `PENDING FRESH CANDIDATE BUILD`.
+
+Copy the candidate output identities, release-code tree hash, and source-lock
+hash from the fresh candidate's `release_manifest.json`; hash that manifest
+separately for the manifest identity above. Translation and source-lock updates
+can invalidate older references even when the game still fits. Do not carry
+hashes forward from an earlier checklist or candidate.
 
 ## Test protocol
 
 1. Record emulator name/version, FDS BIOS hash, platform, controller mapping, and whether automatic FDS disk switching is disabled.
 2. For the continuity run, cold-boot the four-side candidate and do not reset or open Kouhen as a new game. Save states may be used only for isolated reproduction after a clean continuity pass has reached the same scene.
 3. At `PART 1 / SIDE B`, select the second side (`TT1` Side B). At `PART 2 / SIDE A`, select the third side (`TT2` Side A). Record every later side request and follow the in-game prompt; never substitute a reset.
-4. Exercise the wrong-disk path once, confirm `WRONG DISK! / TRY ANOTHER SIDE`, then recover through the disk menu without resetting.
+4. Test the disk-error paths separately: reselect the currently mounted side for the same-side retry, and deliberately select an incorrect disk/side for wrong-disk recovery. The compact same-side heading is `Bad side.` followed by `Try again.`; the distinct wrong-disk path uses `Wrong disk!` / `Try another side`. A disk-number error can instead show `Wrong side.`. Record which path actually appeared, then select the requested side and recover without resetting.
 5. Capture a screenshot before advancing every changed line listed in `audit/EDITORIAL_CHANGELOG.json`, prioritizing the high-risk records named in the integration regression test.
 6. For each text box, watch separately for wrapping/clipping, stale right-edge tiles, accidental blank lines, and typewriter/audio continuing over blank output.
 7. Save and reload through the game's own save system. Do not count emulator save states as save/load validation.
@@ -46,7 +50,8 @@ candidate is required because the release-code provenance changed.
 | Z-06 | `TT1B` | Girl, exhibits, Devil reveal, priest, Dr. Simon, Time Belt | Museum question remains a question; stammer/telepathy timing; father’s collection; Time Belt meaning; speaker voice | Changed-record screenshots | Pending |
 | Z-07 | `TT1B` | Forest, church, television, city narration | `When did I last see it?`; `AROUND / GROUND`; `ROOM / PRIEST / MEMBER`; complete chant; `Wars still rage abroad,`; no audio/text mismatch | Screenshots + audio observation | Pending |
 | DISK-01 | TT1 A→B | In-game `PART 1 / SIDE B` request | Correct English prompt; select second side; resume without reset or state loss | Before/after screenshots | Pending |
-| DISK-02 | Disk error path | Intentionally select a wrong side once | `WRONG DISK! / TRY ANOTHER SIDE`; choose correct side and recover without reset | Screenshot + recovery steps | Pending |
+| DISK-02 | Wrong-disk recovery | At a genuine disk request, insert an incorrect disk/side and record the error path reached | Distinct wrong-disk path: `Wrong disk!` / `Try another side`; disk-number path may say `Wrong side.`. All text readable; correct side resumes without reset or state loss | Before/error/after screenshots + selected side and recovery steps | Pending |
+| DISK-04 | Same-side retry | At a genuine request for another side, reselect the side already mounted; repeat the retry, then select the requested side | `Bad side.` / `Try again.`; no gibberish or cramped glyphs; repeated retry remains usable; correct side resumes without reset or state loss | Before/error/after screenshots + mounted/requested side and recovery steps | Pending |
 | Z-08 | `TT2` | 1428 France arrival, Pierre, town, commands, quizzes | Location/date; medieval register; all command/object labels; memo and drink lines; quiz answers and failure paths | Scene screenshots | Pending |
 | Z-09 | `TT2` / `T22` | Jeanne, Bishop, witch hunt, prison and execution-ground flow | Bishop commands; pyre line; all puzzle requirements unchanged; no branch dead ends | Record IDs + progression notes | Pending |
 | Z-10 | `T22` | Pact discovery and Jeanne rescue | Pact grammar and blasphemous reversal; candle; armor instruction; scene transition; controls/timing | Changed-record screenshots | Pending |

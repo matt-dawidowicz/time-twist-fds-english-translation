@@ -25,6 +25,13 @@ The exact-Japanese column is copied from decoded source records and is never
 normalized in place. Romaji, reconstructed Japanese, linguistic labels,
 literal readings, and natural English are editorial layers.
 
+The workbook's comparison-corpus fingerprint uses LF-normalized SHA-256, so
+Windows CRLF checkouts and Unix LF checkouts report the same text-source
+identity. JSON metadata records `source_hash_normalization: "lf"`. This changes
+only fingerprint calculation; source files and Japanese record data are not
+rewritten. Generated-artifact and optional diagnostic-file hashes remain
+byte-exact.
+
 ## Source locations
 
 | Path | Role |
@@ -135,6 +142,24 @@ The generator validates:
 `NOV2/wait` is the one documented fixed-UI control-layout exception: the engine
 patch intentionally changes its display segmentation. It is explicit in code
 and tests rather than treated as unexplained drift.
+
+## Compression evidence
+
+Generation recomputes conservative fit measurements from the current playable
+scenario maps and configured full-word menu labels. It uses the 68-entry greedy
+baseline, includes structural pointers, and counts the recovered movable menu
+reservation in relocated banks. A bank that exceeds this conservative capacity
+stops generation before workbook outputs are written.
+
+The HTML workbook, Markdown progress report, and JSON
+`patch_validation.revised_bank_footprints` all carry those same fresh results.
+`footprint_method` identifies the method. Historical scenario-only measurements
+remain explicitly labeled under `historical_scenario_footprints`; they describe
+older text and packing and must not be read as current free-space budgets.
+
+Actual release measurements, including any optimizer fallback, belong to a
+fresh ROM-backed candidate manifest. Public fit checks do not replace source
+layout validation, private integration tests, or emulator playtesting.
 
 ## Correcting a translation
 

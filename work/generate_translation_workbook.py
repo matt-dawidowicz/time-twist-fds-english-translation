@@ -23,6 +23,18 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from generate_bilingual_comparison import _romanize
+from time_twist.capacity import playable_capacity
+from time_twist.compression import compress_english_groups, packed_size
+from time_twist.english import encode_english
+from time_twist.project import (
+    KNOWN_SCENARIO_BANKS,
+    required_dictionary_entries,
+)
+from time_twist.textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT, PackedSymbol
+from time_twist.ui import (
+    FIXED_RECORD_TABLE_SPECS,
+    fixed_record_table_page_pointer_bytes,
+)
 
 ROOT = Path(__file__).resolve().parent.parent
 WORK = ROOT / "work"
@@ -57,10 +69,10 @@ BANK_ORDER = (
     "SON-KOUH",
 )
 
-# Measured from the complete public scenario maps with the native encoder,
-# exact packed-size model, optimized dictionary search, and recorded fixed-tail
-# capacities. A private ROM-backed candidate rebuild remains a separate release
-# and playtest gate.
+# Historical scenario-only measurements. The capacity fields remain recovered
+# native reservations; used/remaining are snapshots, not current release results.
+# Current public fit checks add the relocated menu reservation where applicable
+# and recompute usage from playable source maps and configured full-word menus.
 PATCH_FOOTPRINT_RESULTS = {
     "TT1A": {"used": 1656, "capacity": 1669, "remaining": 13},
     "TT1B": {"used": 4022, "capacity": 4026, "remaining": 4},
@@ -76,6 +88,108 @@ PATCH_FOOTPRINT_RESULTS = {
     "TT6C": {"used": 3520, "capacity": 3536, "remaining": 16},
     "TT6D": {"used": 323, "capacity": 332, "remaining": 9},
 }
+
+RECORD_ID_RE = re.compile(
+    r"^(?P<bank>[A-Z0-9]+?)/g(?P<group>\d+)/r(?P<record>\d+)$"
+)
+
+
+def _load_translation_groups(
+    bank_name: str,
+) -> tuple[tuple[tuple[PackedSymbol, ...], ...], ...]:
+    """Encode one public translation map into stable group/record order."""
+    payload = json.loads(
+        (TRANSLATIONS / f"{bank_name}.json").read_text(encoding="utf-8")
+    )
+    indexed: dict[int, dict[int, tuple[PackedSymbol, ...]]] = {}
+    for record_id, text in payload.items():
+        match = RECORD_ID_RE.fullmatch(record_id)
+        if match is None or match.group("bank") != bank_name:
+            raise AssertionError(f"invalid {bank_name} record ID: {record_id}")
+        group_index = int(match.group("group"))
+        record_index = int(match.group("record"))
+        group = indexed.setdefault(group_index, {})
+        if record_index in group:
+            raise AssertionError(f"duplicate record ID: {record_id}")
+        group[record_index] = encode_english(text)
+
+    expected_groups = list(range(len(indexed)))
+    if sorted(indexed) != expected_groups:
+        raise AssertionError(
+            f"{bank_name} groups are not contiguous: {sorted(indexed)}"
+        )
+
+    groups: list[tuple[tuple[PackedSymbol, ...], ...]] = []
+    for group_index in expected_groups:
+        records = indexed[group_index]
+        expected_records = list(range(len(records)))
+        if sorted(records) != expected_records:
+            raise AssertionError(
+                f"{bank_name}/g{group_index} records are not contiguous: "
+                f"{sorted(records)}"
+            )
+        groups.append(tuple(records[index] for index in expected_records))
+    return tuple(groups)
+
+
+def measure_translation_footprint(bank_name: str) -> int:
+    """Compute a conservative release-fit upper bound from public sources.
+
+    Measure current dialogue and full-word menus with the 68-entry greedy
+    baseline, including structural pointers and recovered movable capacity.
+    A ROM-backed release additionally validates the source layout and may
+    invoke optimization when needed; its manifest owns actual build results.
+    """
+    groups = _load_translation_groups(bank_name)
+    scenario_capacity = PATCH_FOOTPRINT_RESULTS[bank_name]["capacity"]
+    capacity = playable_capacity(bank_name, scenario_capacity)
+    pointer_bytes = 2 * (len(groups) - 1)
+
+    if bank_name in FIXED_RECORD_TABLE_SPECS:
+        spec = FIXED_RECORD_TABLE_SPECS[bank_name]
+        menu_records = tuple(encode_english(text) for text in spec.records)
+        combined_groups = (*groups, menu_records)
+        structural_bytes = (
+            pointer_bytes + fixed_record_table_page_pointer_bytes(bank_name)
+        )
+        compressed, dictionary = compress_english_groups(
+            combined_groups,
+            max_bytes=capacity - structural_bytes,
+            optimize=False,
+            maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+        )
+        return packed_size(compressed, dictionary) + structural_bytes
+
+    compressed, dictionary = compress_english_groups(
+        groups,
+        required_entries=required_dictionary_entries(bank_name),
+        max_bytes=capacity - pointer_bytes,
+        optimize=False,
+        maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+    )
+    return packed_size(compressed, dictionary) + pointer_bytes
+
+
+def measure_current_footprints() -> dict[str, dict[str, int]]:
+    """Recompute all public fit results and reject overflow before report writes."""
+    results = {}
+    for bank in KNOWN_SCENARIO_BANKS:
+        used = measure_translation_footprint(bank)
+        capacity = playable_capacity(
+            bank, PATCH_FOOTPRINT_RESULTS[bank]["capacity"]
+        )
+        if used > capacity:
+            raise ValueError(
+                f"{bank} exceeds its conservative fit capacity by "
+                f"{used - capacity} bytes"
+            )
+        results[bank] = {
+            "used": used,
+            "capacity": capacity,
+            "remaining": capacity - used,
+        }
+    return results
+
 
 SCENES = {
     "TT1A": {
@@ -1967,6 +2081,16 @@ def sha256(path: Path) -> str:
     return digest.hexdigest().upper()
 
 
+def source_text_sha256(path: Path) -> str:
+    """Hash text-source provenance consistently across LF and CRLF checkouts.
+
+    Normalize only line endings, preserving all other source bytes. Generated
+    artifact and optional diagnostic-file hashes still use byte-exact sha256.
+    """
+    data = path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(data).hexdigest().upper()
+
+
 def collapse(text: str) -> str:
     """Normalize arbitrary whitespace for a single-line editorial field.
 
@@ -3107,6 +3231,7 @@ def render_html(
     glossary: list[dict],
     source_payload: dict,
     review_path: Path | None,
+    footprints: dict[str, dict[str, int]],
 ) -> str:
     """Render the complete searchable workbook as a self-contained HTML page.
 
@@ -3115,6 +3240,7 @@ def render_html(
         glossary: Materialized global glossary.
         source_payload: Source corpus metadata used for provenance.
         review_path: Diagnostic review file used during generation.
+        footprints: Fresh conservative fit measurements for all scenario banks.
 
     Returns:
         A UTF-8-compatible HTML document containing methodology, scene summaries,
@@ -3135,7 +3261,7 @@ def render_html(
     footprint_summary = "; ".join(
         f"{bank} {result['used']}/{result['capacity']} bytes "
         f"({result['remaining']} free)"
-        for bank, result in PATCH_FOOTPRINT_RESULTS.items()
+        for bank, result in footprints.items()
     )
     review_provenance = (
         f" Diagnostic review: {escape_cell(review_path.name)} "
@@ -3344,9 +3470,9 @@ th{{position:sticky;top:0;background:#292c40;z-index:2;text-align:left}} tbody t
 <div class="card"><b>{gameplay_count:,}</b>gameplay/visual checks</div>
 <div class="card"><b>{technical_count:,}</b>storage overflows / expansion checks</div>
 </div>
-<p class="small">Authoritative source: {escape_cell(SOURCE_JSON.name)} (SHA-256 {sha256(SOURCE_JSON)}).{review_provenance} Exact/source order: {escape_cell(source_payload['source_of_truth'])}</p>
+<p class="small">Authoritative source: {escape_cell(SOURCE_JSON.name)} (LF-normalized SHA-256 {source_text_sha256(SOURCE_JSON)}).{review_provenance} Exact/source order: {escape_cell(source_payload['source_of_truth'])}</p>
 <details open><summary><b>Method and field interpretation</b></summary>
-<div class="summary"><p>All 2,052 records have a proposed final and patch-safe English field. Short simple lines may have identical literal and natural translations. Fixed-address natural meanings are expanded for analysis; their patch-safe forms retain the verified compact slot text. Every scenario patch passed the ROM character encoder and 24-column display validator. The materially revised banks passed native dictionary recompression: {escape_cell(footprint_summary)}. Unchanged banks retain the already-tested installed English maps.</p>
+<div class="summary"><p>All {len(rows):,} records have a proposed final and patch-safe English field. Short simple lines may have identical literal and natural translations. Fixed-address natural meanings are expanded for analysis; their patch-safe forms retain the verified compact slot text. Every scenario patch passed the ROM character encoder and 24-column display validator. Current conservative fit checks recompress dialogue and configured full-word menus with the 68-entry greedy baseline, including structural pointers and recovered movable capacity: {escape_cell(footprint_summary)}. These public measurements are separate from historical scenario-only snapshots. Actual release usage, including any optimizer fallback, comes from a fresh ROM-backed candidate manifest; runtime playtesting remains required.</p>
 <p>The supplied diagnostic review was consulted for line-specific corrections, but its unsafe substring-based Japanese reconstruction was not copied. Speaker identity is derived from explicit labels, neighboring English speaker turns, and scene grouping. Ambiguity is recorded without leaving the line untranslated.</p></div></details>
 <details><summary><b>Scene summaries ({len(SCENES)})</b></summary><div class="scene-grid">{scene_cards}</div></details>
 <details><summary><b>Control-code evidence</b></summary><div class="summary"><p>These functions are empirical summaries, not universal opcode names. Patch-safe text preserves the exact ordered tag sequence for every record.</p><table><thead><tr><th>Tag</th><th>Observed role</th></tr></thead><tbody>{control_rows}</tbody></table></div></details>
@@ -3427,6 +3553,7 @@ def write_progress(
     rows: list[WorkbookRow],
     glossary: list[dict],
     review_path: Path | None,
+    footprints: dict[str, dict[str, int]],
 ) -> None:
     """Write a human-readable project completion and exception report.
 
@@ -3434,6 +3561,7 @@ def write_progress(
         rows: Completed workbook rows.
         glossary: Materialized glossary, used for the entry count.
         review_path: Diagnostic input used for provenance fingerprinting.
+        footprints: Fresh conservative fit measurements for all scenario banks.
 
     Raises:
         OSError: If a source fingerprint cannot be read or the progress file
@@ -3464,7 +3592,7 @@ def write_progress(
         "",
         "## Source fingerprints",
         "",
-        f"- `{SOURCE_JSON.name}` — SHA-256 `{sha256(SOURCE_JSON)}`",
+        f"- `{SOURCE_JSON.name}` — LF-normalized SHA-256 `{source_text_sha256(SOURCE_JSON)}`",
         *(
             [f"- `{review_path.name}` — SHA-256 `{sha256(review_path)}`"]
             if review_path is not None
@@ -3483,17 +3611,16 @@ def write_progress(
     progress.extend(
         [
             "",
-            "## Native compression validation",
+            "## Current conservative fit checks",
             "",
-            "Every patch-safe scenario line passed the ROM character encoder and "
-            "24-column display validator. All 13 complete public scenario maps "
-            "also passed exact optimized dictionary recompression against their "
-            "recorded fixed-tail capacities. A private ROM-backed candidate build "
-            "and playtest remain separate gates:",
+            "Recomputed from the current playable scenario maps and configured "
+            "full-word menus using the 68-entry greedy baseline. Measurements "
+            "include structural pointers and the recovered movable menu "
+            "reservation where applicable. All 13 banks fit this public model:",
             "",
         ]
     )
-    for bank, result in PATCH_FOOTPRINT_RESULTS.items():
+    for bank, result in footprints.items():
         byte_word = "byte" if result["remaining"] == 1 else "bytes"
         progress.append(
             f"- {bank}: {result['used']}/{result['capacity']} bytes used; "
@@ -3501,6 +3628,16 @@ def write_progress(
         )
     progress.extend(
         [
+            "",
+            "Actual release usage, including any optimizer fallback, must come "
+            "from a fresh ROM-backed candidate manifest. These conservative "
+            "measurements do not certify a built image or runtime behavior.",
+            "",
+            "Historical scenario-only measurements are retained in the JSON "
+            "workbook under `historical_scenario_footprints`. Their used/free "
+            "counts describe earlier text and packing; relocated menu banks "
+            "also have different capacity boundaries, so the snapshots are "
+            "not current release budgets.",
             "",
             "## Records requiring gameplay screenshots or visual verification",
             "",
@@ -3762,13 +3899,14 @@ def main() -> None:
     rows, source_payload, review_path = make_rows(args.review_file)
     glossary = make_glossary(rows)
     validate(rows, source_payload, glossary)
+    footprints = measure_current_footprints()
     write_checkpoints(rows)
     row_dicts = [asdict(row) for row in rows]
     html_path = OUTPUTS / "Time_Twist_complete_translation_workbook.html"
     csv_path = OUTPUTS / "Time_Twist_complete_translation_workbook.csv"
     json_path = OUTPUTS / "Time_Twist_complete_translation_workbook.json"
     html_path.write_text(
-        render_html(rows, glossary, source_payload, review_path),
+        render_html(rows, glossary, source_payload, review_path, footprints),
         encoding="utf-8",
     )
     write_csv(csv_path, row_dicts)
@@ -3778,7 +3916,8 @@ def main() -> None:
                 "schema": "Time Twist complete translation workbook v1",
                 "source_of_truth": source_payload["source_of_truth"],
                 "source_file": SOURCE_JSON.name,
-                "source_sha256": sha256(SOURCE_JSON),
+                "source_sha256": source_text_sha256(SOURCE_JSON),
+                "source_hash_normalization": "lf",
                 "diagnostic_review_file": (
                     review_path.name if review_path is not None else None
                 ),
@@ -3793,7 +3932,13 @@ def main() -> None:
                 "patch_validation": {
                     "rom_font_encoder": "all scenario records passed",
                     "display_width": "all scenario records passed",
-                    "revised_bank_footprints": PATCH_FOOTPRINT_RESULTS,
+                    "revised_bank_footprints": footprints,
+                    "footprint_method": "current conservative greedy fit",
+                    "historical_scenario_footprints": PATCH_FOOTPRINT_RESULTS,
+                    "release_measurements": (
+                        "Not measured by this workbook. Use a fresh ROM-backed "
+                        "candidate manifest for actual release/optimizer results."
+                    ),
                 },
                 "scenes": SCENES,
                 "speaker_reference": list(SPEAKER_REFERENCES),
@@ -3813,7 +3958,7 @@ def main() -> None:
         encoding="utf-8",
     )
     write_voice_guide(glossary)
-    write_progress(rows, glossary, review_path)
+    write_progress(rows, glossary, review_path, footprints)
     for path in (
         html_path,
         csv_path,
