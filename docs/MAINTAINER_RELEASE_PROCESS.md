@@ -66,8 +66,9 @@ python work/tools/audit_fixed_menu_labels.py `
   --output-csv build/candidate/fixed_menu_label_audit.csv
 ```
 
-Promotion review requires `full-word=721`, `blocked=0`, and `failures=0` for
-the current menu inventory.
+Promotion review requires `full-word=721` and `failures=0` for the current
+menu inventory. Failures include mismatched or abbreviated labels and display-width
+errors; no separate `blocked` result is produced.
 
 ## Establish clean emulator state before runtime review
 

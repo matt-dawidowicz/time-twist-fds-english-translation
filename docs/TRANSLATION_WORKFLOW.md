@@ -110,8 +110,8 @@ python work/tools/audit_fixed_menu_labels.py `
   --output-csv build/candidate/fixed_menu_label_audit.csv
 ```
 
-The expected canonical inventory is 721 full-word labels with zero blocked or
-failed entries.
+Require `full-word=721` and `failures=0` for the current menu inventory.
+Mismatched or abbreviated labels and display-width errors count as failures.
 
 ## 7. Run private integration tests and playtest
 

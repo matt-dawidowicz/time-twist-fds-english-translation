@@ -170,6 +170,14 @@ def report(
     manifest = _read_manifest(manifest_json)
     candidate_sha256 = _validate_audit(rows, manifest)
 
+    # A reused output directory must not retain obsolete candidate evidence.
+    # Validate inputs first and remove only the two retired generated reports.
+    for filename in (
+        "fixed_menu_label_blockers.csv",
+        "fixed_menu_label_mismatches.csv",
+    ):
+        (output_dir / filename).unlink(missing_ok=True)
+
     literal = [
         row
         for row in rows
