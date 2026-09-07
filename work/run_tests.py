@@ -106,7 +106,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("-q", "--quiet", action="store_true")
     args = parser.parse_args(argv)
 
-    # Tests and legacy helper scripts may open project-relative resources.
+    # Tests and helper scripts may open project-relative resources.
     # Normalize execution so invoking this runner from any directory uses
     # the checkout that contains the runner itself.
     os.chdir(PROJECT_ROOT)

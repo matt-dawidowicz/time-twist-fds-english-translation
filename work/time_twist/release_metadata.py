@@ -994,19 +994,6 @@ def validate_code_provenance(
     return expected
 
 
-def _validate_release_code_stable(
-    initial: Mapping[str, object], project_root: Path
-) -> None:
-    """Fail if release-critical source changed during one operation."""
-    current = build_code_provenance(project_root)
-    for field in ("tree_sha256", "file_count"):
-        if current[field] != initial[field]:
-            raise ReleaseBuildError(
-                "release-critical code changed while the release operation "
-                "was running; discard the result and retry from a stable tree"
-            )
-
-
 def validate_release_target(
     path: Path,
     *,

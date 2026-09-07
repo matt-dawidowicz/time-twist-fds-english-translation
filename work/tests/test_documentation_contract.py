@@ -24,7 +24,7 @@ class DocumentationContractTests(unittest.TestCase):
         """Parse every maintained Python source file without importing it.
 
         Static parsing keeps this policy fixture-free: checking a docstring must
-        never require a ROM, title asset, emulator, or private translation map.
+        never require a ROM, title asset, emulator, or translation map.
         """
         return [
             (

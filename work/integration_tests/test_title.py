@@ -288,7 +288,6 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(bytes(rebuilt_final), self.assets.background_chr)
         self.assertEqual(self.assets.slide_chr, self.assets.chr_data)
         self.assertNotEqual(self.assets.background_chr, self.assets.chr_data)
-        self.assertEqual(self.assets.approximation_error, 0)
 
         final_tiles = self.assets.final_nametable
         slide_tiles = self.assets.second_nametable

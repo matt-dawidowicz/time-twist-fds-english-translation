@@ -130,7 +130,7 @@ copy of the release pipeline:
 | `audit_fixed_menu_labels.py` | Comparing the playable fixed-menu copy with the canonical full-word targets. |
 | `audit_full_word_menu_targets.py` | Reporting each label's literal packed size, encoding validity, and display width. |
 | `report_full_word_menu_candidate.py` | Binding a menu audit to an actual candidate manifest and scenario-bank hashes. |
-| `validate_translation_patch_fragments.py` | Checking the small public patch fragments without requiring private full-bank maps. |
+| `check_mesen_fds_state.py` | Detecting candidate-specific FDS write overlays that would invalidate a clean playtest. |
 | `disassemble_6502.py` | Inspecting a recovered code range before declaring a native engine patch safe. |
 
 Tools should explain an existing recovered constraint. They must not create new

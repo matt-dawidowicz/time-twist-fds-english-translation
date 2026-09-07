@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "scenario comparison plus recovered fixed-UI baseline; NOV2/NOV4 external system-text alignment remains separate",
+  "scope": "Completed scenario and fixed-UI comparison of the recorded input hashes; counts describe those reviewed inputs. Current release validation is documented in docs/MAINTAINER_RELEASE_PROCESS.md.",
   "policy": {
     "competitor_role": "diagnostic comparison only",
     "translation_source": "original Japanese",
@@ -19,12 +19,12 @@
       "sha256": "b9424dd29ee195a9fa9ac4f844f058c380e30f7aca741218789fa8611f741916"
     },
     {
-      "role": "current_english_kouhen",
+      "role": "reviewed_english_kouhen",
       "size": 131000,
       "sha256": "cb66e4fd8c64cf4e1e9c68e34a4d4ddbeb263f8414a9d86d2e77325a82e266c5"
     },
     {
-      "role": "current_english_zenpen",
+      "role": "reviewed_english_zenpen",
       "size": 131000,
       "sha256": "3e82bcd2fdf1e4aff67ff90d97a03554ccf06a794a8f854c482dd86470f52e89"
     },
@@ -125,7 +125,7 @@
       "source_verified_missing_records_found": 6,
       "source_verified_missing_records_translated": 6,
       "canonical_corpus_rows_after_integration": 2058,
-      "note": "NOV2 external layout is repacked and is not folded into the 740-record external alignment yet."
+      "note": "NOV2 system records are counted separately from the 740 menu and selector records. See external_fixed_ui_baseline.json for recovered external NOV2/NOV4 locations and the two unaligned Japanese disk-error records."
     },
     "source_records_reviewed": 740,
     "source_reviewed_banks": [
@@ -273,137 +273,5 @@
       "exact": 5,
       "different": 71
     }
-  ],
-  "current_live_fit": {
-    "measurement": "canonical test_live_translation_fit.py after 1,299/1,299 scenario review and 740/740 fixed-UI source review",
-    "banks": [
-      {
-        "bank": "TT1A",
-        "used": 1666,
-        "capacity": 1669,
-        "free": 3
-      },
-      {
-        "bank": "TT6D",
-        "used": 327,
-        "capacity": 332,
-        "free": 5
-      },
-      {
-        "bank": "TT5",
-        "used": 4186,
-        "capacity": 4201,
-        "free": 15
-      },
-      {
-        "bank": "TT3B",
-        "used": 1917,
-        "capacity": 1927,
-        "free": 10
-      },
-      {
-        "bank": "TT4",
-        "used": 5179,
-        "capacity": 5187,
-        "free": 8
-      },
-      {
-        "bank": "T22",
-        "used": 1898,
-        "capacity": 1939,
-        "free": 41
-      },
-      {
-        "bank": "TT2",
-        "used": 4125,
-        "capacity": 4141,
-        "free": 16
-      },
-      {
-        "bank": "TT6B",
-        "used": 2554,
-        "capacity": 2601,
-        "free": 47
-      },
-      {
-        "bank": "TT3A",
-        "used": 4119,
-        "capacity": 4169,
-        "free": 50
-      },
-      {
-        "bank": "TT6C",
-        "used": 3854,
-        "capacity": 3947,
-        "free": 93
-      },
-      {
-        "bank": "T25",
-        "used": 2441,
-        "capacity": 2561,
-        "free": 120
-      },
-      {
-        "bank": "TT6A",
-        "used": 2829,
-        "capacity": 3000,
-        "free": 171
-      },
-      {
-        "bank": "TT1B",
-        "used": 3922,
-        "capacity": 4234,
-        "free": 312
-      }
-    ],
-    "tightest_banks": [
-      "TT1A",
-      "TT6D",
-      "TT5",
-      "TT3B",
-      "TT4"
-    ],
-    "tt3a_free_before_previous_three_edits": 79,
-    "tt3a_free_after_five_revisions": 65,
-    "tt3a_previous_three_edits_packed_cost": 14,
-    "tt3a_latest_two_visible_character_delta": 24,
-    "tt3a_latest_two_edits_packed_cost": 9,
-    "tt3a_free_after_seven_revisions": 56,
-    "tt3a_final_two_visible_character_delta": 1,
-    "tt3a_final_two_edits_packed_cost": 5,
-    "tt3a_free_after_nine_revisions": 51,
-    "tt3b_free_after_two_revisions": 10,
-    "tt1b_free_after_three_revisions": 312,
-    "tt1a_free_after_full_review": 3,
-    "tt2_free_after_full_review": 49,
-    "t22_free_after_five_revisions": 60,
-    "tt6c_free_after_one_revision": 96,
-    "tt6b_free_after_full_review": 53,
-    "tt6a_free_after_full_review": 172,
-    "tt6d_free_after_full_review": 5,
-    "tt4_free_after_seven_revisions": 4,
-    "tt5_free_after_full_review": 17,
-    "t25_free_after_full_review": 121,
-    "tt2_free_after_fixed_ui_review": 16
-  },
-  "validation": {
-    "clean_branch_workflow_run": 33289092641,
-    "python_3_11": "success",
-    "python_3_12": "success",
-    "generated_artifacts_current": true,
-    "black": "success",
-    "ruff": "success",
-    "pydocstyle": "success",
-    "mypy": "success",
-    "unit_tests": "success",
-    "python_3_12_build_wheel_cli_smoke": "success",
-    "latest_targeted_workflow_run": 33290609436,
-    "latest_targeted_unit_tests": 167,
-    "latest_targeted_corpus_rows": 2058
-  },
-  "pending": [
-    "complete external NOV2/NOV4 system-text alignment without assuming source offsets",
-    "review fixed-label differences against Japanese and gameplay context",
-    "perform final rebuilt-ROM and emulator validation after editorial and fixed-UI review"
   ]
 }
