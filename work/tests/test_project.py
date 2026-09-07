@@ -1,12 +1,11 @@
-"""Regression tests for current project configuration and dictionary reservations."""
+"""Regression tests for current project bank-name configuration."""
 
 from __future__ import annotations
 
 import unittest
 from pathlib import Path
 
-from time_twist.english import encode_english
-from time_twist.project import infer_bank_name, required_dictionary_entries
+from time_twist.project import infer_bank_name
 
 
 class ProjectConfigurationTests(unittest.TestCase):
@@ -37,31 +36,6 @@ class ProjectConfigurationTests(unittest.TestCase):
         self.assertEqual(infer_bank_name(Path("anything.bin"), "TT6D"), "TT6D")
         with self.assertRaises(ValueError):
             infer_bank_name(Path("anything.bin"), "UNKNOWN")
-
-    def test_deep_menu_pass_reserves_proven_dictionary_tokens(
-        self,
-    ) -> None:
-        """Verify the current contract described by this regression test."""
-        self.assertEqual(
-            required_dictionary_entries("TT6C"),
-            (encode_english("Cougar"), encode_english("Look")),
-        )
-        self.assertEqual(
-            required_dictionary_entries("T22"),
-            (
-                encode_english("Baron"),
-                encode_english("Bishop"),
-                encode_english("Jailer"),
-                encode_english("Lugot"),
-                encode_english("Jeanne"),
-                encode_english("Chino"),
-                encode_english("Look"),
-                encode_english("Crowd"),
-                encode_english("Ask"),
-                encode_english("Take"),
-                encode_english("Woman"),
-            ),
-        )
 
 
 if __name__ == "__main__":

@@ -23,12 +23,14 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 from generate_bilingual_comparison import _romanize
-from time_twist.capacity import playable_capacity
+from time_twist.capacity import (
+    NATIVE_SCENARIO_CAPACITY_BYTES,
+    playable_capacity,
+)
 from time_twist.compression import compress_english_groups, packed_size
 from time_twist.english import encode_english
 from time_twist.project import (
     KNOWN_SCENARIO_BANKS,
-    required_dictionary_entries,
 )
 from time_twist.textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT, PackedSymbol
 from time_twist.ui import (
@@ -69,25 +71,6 @@ BANK_ORDER = (
     "SON-KOUH",
 )
 
-# Historical scenario-only measurements. The capacity fields remain recovered
-# native reservations; used/remaining are snapshots, not current release results.
-# Current public fit checks add the relocated menu reservation where applicable
-# and recompute usage from playable source maps and configured full-word menus.
-PATCH_FOOTPRINT_RESULTS = {
-    "TT1A": {"used": 1656, "capacity": 1669, "remaining": 13},
-    "TT1B": {"used": 4022, "capacity": 4026, "remaining": 4},
-    "TT2": {"used": 3834, "capacity": 3847, "remaining": 13},
-    "T22": {"used": 1801, "capacity": 1812, "remaining": 11},
-    "TT3A": {"used": 3733, "capacity": 3741, "remaining": 8},
-    "TT3B": {"used": 1837, "capacity": 1840, "remaining": 3},
-    "TT4": {"used": 4738, "capacity": 4741, "remaining": 3},
-    "TT5": {"used": 3693, "capacity": 3702, "remaining": 9},
-    "T25": {"used": 2363, "capacity": 2374, "remaining": 11},
-    "TT6A": {"used": 2823, "capacity": 2833, "remaining": 10},
-    "TT6B": {"used": 2298, "capacity": 2336, "remaining": 38},
-    "TT6C": {"used": 3520, "capacity": 3536, "remaining": 16},
-    "TT6D": {"used": 323, "capacity": 332, "remaining": 9},
-}
 
 RECORD_ID_RE = re.compile(
     r"^(?P<bank>[A-Z0-9]+?)/g(?P<group>\d+)/r(?P<record>\d+)$"
@@ -141,7 +124,7 @@ def measure_translation_footprint(bank_name: str) -> int:
     invoke optimization when needed; its manifest owns actual build results.
     """
     groups = _load_translation_groups(bank_name)
-    scenario_capacity = PATCH_FOOTPRINT_RESULTS[bank_name]["capacity"]
+    scenario_capacity = NATIVE_SCENARIO_CAPACITY_BYTES[bank_name]
     capacity = playable_capacity(bank_name, scenario_capacity)
     pointer_bytes = 2 * (len(groups) - 1)
 
@@ -162,7 +145,6 @@ def measure_translation_footprint(bank_name: str) -> int:
 
     compressed, dictionary = compress_english_groups(
         groups,
-        required_entries=required_dictionary_entries(bank_name),
         max_bytes=capacity - pointer_bytes,
         optimize=False,
         maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
@@ -176,7 +158,7 @@ def measure_current_footprints() -> dict[str, dict[str, int]]:
     for bank in KNOWN_SCENARIO_BANKS:
         used = measure_translation_footprint(bank)
         capacity = playable_capacity(
-            bank, PATCH_FOOTPRINT_RESULTS[bank]["capacity"]
+            bank, NATIVE_SCENARIO_CAPACITY_BYTES[bank]
         )
         if used > capacity:
             raise ValueError(
@@ -2901,8 +2883,8 @@ def patch_safe(
         retain their installed forms, and editorial alternatives remain in the
         natural-translation field.
         Visible-length and 24-column checks are conservative warnings.  A bank
-        listed in :data:`PATCH_FOOTPRINT_RESULTS` overrides that estimate because
-        its finalized map passed native encoding, display, and recompression.
+        in :data:`KNOWN_SCENARIO_BANKS` uses bank-level recompression instead;
+        generation validates fresh footprints before publishing the workbook.
     """
     text_id = source_row["text_id"]
     if source_row["kind"] == "scenario":
@@ -2957,9 +2939,9 @@ def patch_safe(
     )
     segment_overflow = patch_segment_max > max(24, current_segment_max)
     expansion = patch_visible > current_visible or segment_overflow
-    if source_row["bank"] in PATCH_FOOTPRINT_RESULTS:
-        # These revised bank-wide maps passed both display validation and native
-        # recompression after the patch-safe wording was finalized.
+    if source_row["bank"] in KNOWN_SCENARIO_BANKS:
+        # Scenario storage is validated by the fresh bank-level fit check,
+        # which includes menus and structural pointers before output writes.
         expansion = False
     nuance = ""
     if patch == source_row[
@@ -3058,7 +3040,7 @@ def make_rows(
     Raises:
         OSError: If source or review files cannot be read.
         json.JSONDecodeError: If the source corpus is not valid JSON.
-        ValueError: If the source count is not exactly 2,052, review alignment
+        ValueError: If the source count is not exactly 2,058, review alignment
             fails, or a proposed patch changes control codes.
         KeyError: If required corpus fields, bank scene metadata, or aligned
             review annotations are missing.
@@ -3633,12 +3615,6 @@ def write_progress(
             "from a fresh ROM-backed candidate manifest. These conservative "
             "measurements do not certify a built image or runtime behavior.",
             "",
-            "Historical scenario-only measurements are retained in the JSON "
-            "workbook under `historical_scenario_footprints`. Their used/free "
-            "counts describe earlier text and packing; relocated menu banks "
-            "also have different capacity boundaries, so the snapshots are "
-            "not current release budgets.",
-            "",
             "## Records requiring gameplay screenshots or visual verification",
             "",
         ]
@@ -3765,7 +3741,7 @@ def validate(
         glossary: Materialized terminology table.
 
     Raises:
-        AssertionError: If record count is not 2,052; IDs are duplicated; exact
+        AssertionError: If record count is not 2,058; IDs are duplicated; exact
             Japanese differs from source; control order drifts; either English
             field is empty; a known unsafe reconstruction reappears; or the
             glossary is empty.
@@ -3934,7 +3910,6 @@ def main() -> None:
                     "display_width": "all scenario records passed",
                     "revised_bank_footprints": footprints,
                     "footprint_method": "current conservative greedy fit",
-                    "historical_scenario_footprints": PATCH_FOOTPRINT_RESULTS,
                     "release_measurements": (
                         "Not measured by this workbook. Use a fresh ROM-backed "
                         "candidate manifest for actual release/optimizer results."

@@ -1,6 +1,6 @@
-# Final cross-bank consistency and editorial freeze
+# Cross-bank editorial decisions
 
-This audit closes the repository-wide source-first voice/prose pass after completing every scenario bank from TT1A through TT6D. It does not replace runtime evidence, compression/build validation, or the six remaining staging-dependent questions; it freezes the editorial direction so those later gates can evaluate one coherent script.
+These maintained decisions cover the source-first voice/prose review across TT1A through TT6D. Playable wording comes from `work/translations/*.json`; the generated workbook and voice guide describe the current script. Superseded per-bank pilot reports remain in Git history. Runtime evidence is still required for the six staging-dependent questions below.
 
 ## Scope
 
@@ -35,31 +35,6 @@ The completed script uses these rules consistently:
 - Recurring characters maintain recognizable voices across chapters rather than being re-invented scene by scene.
 - Gameplay-critical quantities, directions, truth/lie roles, puzzle relations, and recap-question facts are treated as requirements-sensitive text.
 - Wording is never borrowed from the removed external translation.
-
-## Early-bank 23-cell retrofit
-
-TT1A through TT3A were originally edited before the stricter runtime-derived 23-cell policy existed. Their initial per-bank audits therefore describe a historical pilot state with a nominal 24-column ceiling. This final audit supersedes those older display-width statements.
-
-The freeze retrofitted all five early scenario banks:
-
-| Bank | Scenario records | Records changed in freeze | Former >=24 boundary records revised | Final max segment | Visible-text delta |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| TT1A | 35 | 20 | 19 | 23 | -72 |
-| TT1B | 137 | 26 | 26 | 23 | -64 |
-| TT2 | 169 | 35 | 35 | 23 | -71 |
-| T22 | 58 | 25 | 25 | 23 | -52 |
-| TT3A | 152 | 36 | 36 | 23 | -91 |
-| **Total** | **551** | **142** | **141** | **23** | **-350** |
-
-For every freeze change in those banks, the source control-event sequence was preserved and no new English character repertoire was introduced.
-
-The 142 changed records are one greater than the 141 display-boundary records because TT1A also received one source-methodology calibration that was not required for width.
-
-### TT1A methodology calibration
-
-The earliest pilot used a few freer questionnaire idioms than the conservative source-first methodology established later in the project. The freeze therefore tightened those without making the questionnaire stiff. Most notably, source `ふとくみじかく いきたい` is now rendered as `Live boldly, not long?` rather than the culturally loaded stock phrase `Live fast, die young?`.
-
-Other questionnaire items were compacted directly from the Japanese proposition rather than by preserving earlier English cleverness solely for its own sake. The personality-result prose and prologue narration were likewise tightened to 23 cells while retaining their commercial/fortune-service voice.
 
 ## Cross-bank terminology decisions
 
@@ -168,46 +143,11 @@ Six items remain deliberately unresolved because text-only editorial work cannot
 
 The freeze intentionally leaves these as runtime/visual verification tasks rather than manufacturing certainty.
 
-## Validation status
+## Validation and runtime evidence
 
-The final editorial state establishes:
-
-- all 2,058 translation-workbook records remain complete;
-- every scenario bank has undergone its source-first voice/prose pass;
-- TT1A through TT3A now use the same practical 23-cell target as TT3B onward;
-- the early-bank retrofit alone revised **141** former >=24 boundary records and produced **350** fewer visible characters while preserving controls;
-- later-bank audits had already revised their own exact-24 boundary cases under the same runtime-derived policy;
-- canonical recurring terms and deliberate callbacks described above are now aligned;
-- genuine source variants remain preserved rather than normalized away.
-
-These are editorial/structural results only.
-
-## Compression/build gate is still open
-
-The previous public compression figures predate the completed voice/prose/final-consistency branch. They must not be cited as proof that the current text fits.
-
-A fresh post-freeze compression/release validation is required. The maintainer workflow remains:
-
-```powershell
-time-twist release-lock
-time-twist release-build --candidate --output-dir build/candidate
-```
-
-with the documented public/static checks and private integration checks where the legal fixture overlay is available.
-
-Only a freshly built candidate can establish packed fit for the current script. Visible-character savings do not establish dictionary-compressed fit.
-
-## Runtime gate after build
-
-After a successful fresh candidate build, the remaining editorial/runtime evidence should be gathered in a clean-boot playtest, including:
-
-- title sequence and Start/B behavior;
-- correct and incorrect disk-side handling;
-- Zenpen-to-Kouhen continuity without reset;
-- save and reload;
-- menu/page-boundary rendering;
-- the six evidence-dependent records above;
-- high-risk and heavily revised dialogue;
-- clipping, progression, input, and audio-timing regressions.
-
-PR history cleanup, PR metadata finalization, promotion, and merge should occur only after those validation gates pass.
+The [generated progress report](../../outputs/Time_Twist_translation_progress.md)
+contains fresh public fit measurements. A built candidate still needs the
+[maintainer release checks](../../docs/MAINTAINER_RELEASE_PROCESS.md) and
+[runtime playtest matrix](../../docs/PLAYTEST_MATRIX.md), including the six
+records above. Editorial review and public compression checks do not certify
+gameplay, disk recovery, or save/load behavior.

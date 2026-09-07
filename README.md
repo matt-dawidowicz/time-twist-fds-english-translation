@@ -68,7 +68,7 @@ Do not edit generated ROMs or rebuilt banks as source material.
 | A problem seen while playing | [playtesting guide](PLAYTESTING.md) |
 | Binary/format concepts | [architecture](docs/ARCHITECTURE.md) and [format reference](docs/FORMATS.md) |
 
-Historical implementation notes, retrospectives, and dated release-risk reports are preserved under [`docs/archive/`](docs/archive/). They are provenance records, not current operating instructions.
+Git history preserves retired implementation notes, commands, and candidate snapshots.
 
 ## Repository layout
 
@@ -115,7 +115,7 @@ python work/run_tests.py unit
 ```
 
 The public suite is fixture-free and permits no skips. Public
-CI runs source/style/type/unit checks on both Python 3.11 and 3.14. Python 3.12
+CI runs source/style/type/unit checks on both Python 3.11 and 3.14. Python 3.14
 also builds and force-installs the wheel, proves the smoke test imports the
 installed package rather than the checkout, and exercises the CLI.
 

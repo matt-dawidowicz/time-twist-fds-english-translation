@@ -78,7 +78,6 @@ class CandidateReportTests(unittest.TestCase):
             "slot_bytes": "4",
             "representation": "literal",
             "proposed_full_label": "Look",
-            "fallback_label": "",
             "status": "full-word",
             "width_ok": "True",
             "width_error": "",
@@ -149,6 +148,8 @@ class CandidateReportTests(unittest.TestCase):
         """Do not label source-only or overflowing rows as candidate evidence."""
         for status, width_ok, expected in (
             ("source-only", "True", "non-reportable statuses"),
+            ("blocked", "True", "non-reportable statuses"),
+            ("mismatch", "True", "non-reportable statuses"),
             ("full-word", "False", "display-width failure"),
         ):
             with (

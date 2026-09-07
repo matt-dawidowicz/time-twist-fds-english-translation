@@ -21,7 +21,6 @@ from .english import EnglishTextError, encode_english
 from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
 from .project import (
-    required_dictionary_entries,
     source_dictionary_reference_floor,
 )
 from .release_compression import compress_release_groups
@@ -350,7 +349,6 @@ def build_scenario_bank(
 
     compressed, dictionary = compress_release_groups(
         groups,
-        required_entries=required_dictionary_entries(bank_name),
         max_bytes=capacity - pointer_bytes,
         maximum_entries=maximum_dictionary_entries,
         candidate_validator=fixed_ui_candidate_is_valid,

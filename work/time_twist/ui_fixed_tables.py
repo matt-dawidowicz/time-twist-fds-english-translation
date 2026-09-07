@@ -10,11 +10,10 @@ from __future__ import annotations
 # Bank-specific fixed-address record tables
 # ---------------------------------------------------------------------------
 
-# Experimental all-full-word target note:
-# The fixed-table tuples below intentionally name the desired full English
-# menu/choice labels. Some labels may not fit the current byte-for-byte fixed
-# slots until a follow-up compression/repacking pass reserves dictionary
-# entries, changes packing strategy, or otherwise proves a safe fit.
+# These are the canonical full-word menu labels. The release builder jointly
+# packs the 11 large menu tables with dialogue, regenerates page pointers, and
+# preserves each overlay's fixed suffix. TT1A's direct-address records below
+# retain their individual byte lengths.
 
 # TT1A keeps the blood-type choices in a fixed-address record table before
 # its normal scenario groups.  NOV2 directly references the fourth record at
@@ -54,40 +53,13 @@ TT1A_CONFIRMATION_PATCHES = (
     (0x02A8, bytes.fromhex("63 71 F4"), "No"),
 )
 
-# TT1B begins the museum investigation and keeps its command, object, and
-# interaction labels in a fixed-address table before the normal scenario
-# groups.  Several two-byte records can only hold readable English through a
-# dictionary reference, so the scenario rebuild reserves the entries below.
-# All 53 replacement records retain their original individual byte lengths.
+# TT1B's 53 museum command, object, and interaction labels precede the
+# scenario groups. These source offsets/hash guard the original table; the
+# English release repacks its records and updates the recovered page pointers.
 TT1B_FIXED_TEXT_START_OFFSET = 0x09F7
 TT1B_FIXED_TEXT_END_OFFSET = 0x0AC5
 TT1B_FIXED_TEXT_SOURCE_SHA256 = (
     "AF6969B469081B6992DF4893FCE6308ABB51896B5D2DAAD49AF0B23500E5FD4F"
-)
-TT1B_REQUIRED_DICTIONARY_TEXT = (
-    "Look",
-    "Museum",
-    "Body",
-    "Eyes",
-    "Picture",
-    "Simon",
-    "Ask",
-    "Member",
-    "Devil",
-    "Nose",
-    "Ears",
-    "Sky",
-    "Sign",
-    "Chest",
-    "House",
-    "Church",
-    "Priest",
-    "Back",
-    "West",
-    "Pot",
-    "Praise",
-    "Map",
-    "North",
 )
 TT1B_FIXED_TEXT_RECORDS = (
     "Look",
@@ -145,10 +117,9 @@ TT1B_FIXED_TEXT_RECORDS = (
     "Run",
 )
 
-# TT2 has a second packed-text table outside its scenario groups.  It contains
-# the command menu, inventory/object labels, choice verbs, and the twenty
-# history-quiz answers.  The game references individual records by absolute
-# address, so every replacement must retain its own original byte length.
+# TT2's menu table contains commands, inventory/object labels, choice verbs,
+# and twenty history-quiz answers. Records are selected by page plus index;
+# English records may change length when the page pointers are regenerated.
 TT2_FIXED_TEXT_START_OFFSET = 0x0BB6
 TT2_FIXED_TEXT_END_OFFSET = 0x0CD8
 TT2_FIXED_TEXT_SOURCE_SHA256 = (
@@ -231,25 +202,12 @@ TT2_FIXED_TEXT_RECORDS = (
     "Cell",
 )
 
-# T22 uses the same fixed-table mechanism for its command and object names.
-# Unlike TT2, its 125-byte reservation is tight enough that the scenario
-# compressor must reserve a few shared dictionary entries.  The resulting
-# dialogue still has 36 bytes of headroom, while this table remains exactly
-# at its original $A929-$A9A6 addresses.
+# T22's command and object-name table uses the same page-indexed relocation
+# as TT2. Source offsets and the hash below guard the Japanese input table.
 T22_FIXED_TEXT_START_OFFSET = 0x0729
 T22_FIXED_TEXT_END_OFFSET = 0x07A6
 T22_FIXED_TEXT_SOURCE_SHA256 = (
     "AF59D34E1084B43CC754BB24582D85FE7B085C0C478E65A2DD21F0ACA1D7D44F"
-)
-T22_REQUIRED_DICTIONARY_TEXT = (
-    "Baron",
-    "Bishop",
-    "Jailer",
-    "Lugot",
-    "Jeanne",
-    "Chino",
-    "Look",
-    "Crowd",
 )
 T22_FIXED_TEXT_RECORDS = (
     "Look",
@@ -287,10 +245,7 @@ T22_FIXED_TEXT_RECORDS = (
     "Walk",
 )
 
-# TT3A's fixed table combines normal commands and objects with the answer
-# choices for its wartime-history identity check.  This experimental branch
-# records the desired full labels first; the compression branch must prove
-# whether they can still fit the exact 424-byte reservation.
+# TT3A's menu table contains POW-camp, town, resistance, and quiz labels.
 TT3A_FIXED_TEXT_START_OFFSET = 0x0A04
 TT3A_FIXED_TEXT_END_OFFSET = 0x0BAC
 TT3A_FIXED_TEXT_SOURCE_SHA256 = (
@@ -394,8 +349,7 @@ TT3A_FIXED_TEXT_RECORDS = (
     "Woman",
 )
 
-# TT3B's compact action/object table fits its original 87 bytes with one
-# natural five-letter battle verb (GUARD) in place of the longer DEFEND.
+# TT3B's menu table contains action, object, and battle labels.
 TT3B_FIXED_TEXT_START_OFFSET = 0x0420
 TT3B_FIXED_TEXT_END_OFFSET = 0x0477
 TT3B_FIXED_TEXT_SOURCE_SHA256 = (
@@ -425,10 +379,8 @@ TT3B_FIXED_TEXT_RECORDS = (
     "Cougar",
 )
 
-# TT4's fixed-address table contains its command menu, medical-treatment
-# choices, characters and objects, the five-sages logic puzzle, and the Greek
-# history quiz.  As in the corrected Zenpen tables, every one of the 97
-# records must keep its own original byte allocation.
+# TT4's menu table contains commands, medical-treatment choices, characters,
+# objects, the five-sages logic puzzle, and Greek history-quiz answers.
 TT4_FIXED_TEXT_START_OFFSET = 0x0CD3
 TT4_FIXED_TEXT_END_OFFSET = 0x0E8B
 TT4_FIXED_TEXT_SOURCE_SHA256 = (
@@ -534,10 +486,9 @@ TT4_FIXED_TEXT_RECORDS = (
     "Coffee",
 )
 
-# TT5's fixed-address table contains its action menu, plantation task and
-# quantity choices, American-history quiz answers, livestock puzzle digits,
-# bottle controls, and late-chapter locations.  This branch expands the target
-# text even when the current fixed allocations will need later compression work.
+# TT5's menu table contains actions, plantation tasks and quantities,
+# American-history quiz answers, livestock puzzle digits, bottle controls,
+# and late-chapter locations.
 TT5_FIXED_TEXT_START_OFFSET = 0x0AA5
 TT5_FIXED_TEXT_END_OFFSET = 0x0C92
 TT5_FIXED_TEXT_SOURCE_SHA256 = (
@@ -659,8 +610,7 @@ TT5_FIXED_TEXT_RECORDS = (
     "In",
 )
 
-# T25's fixed table contains the mansion investigation and flooded-island
-# action/object labels.  Each of its 42 records is referenced independently.
+# T25's 42 menu records contain mansion and flooded-island actions/objects.
 T25_FIXED_TEXT_START_OFFSET = 0x098A
 T25_FIXED_TEXT_END_OFFSET = 0x0A43
 T25_FIXED_TEXT_SOURCE_SHA256 = (
@@ -762,9 +712,8 @@ TT6A_FIXED_TEXT_RECORDS = (
     "Kids",
 )
 
-# TT6B's fixed table contains travel, stable-animal, history-quiz, and animal
-# interaction labels.  The quiz answers are written as full target labels here
-# so the next branch can judge compression rather than preserve abbreviations.
+# TT6B's menu table contains travel, stable-animal, history-quiz, and animal
+# interaction labels.
 TT6B_FIXED_TEXT_START_OFFSET = 0x0580
 TT6B_FIXED_TEXT_END_OFFSET = 0x0687
 TT6B_FIXED_TEXT_SOURCE_SHA256 = (
@@ -835,9 +784,8 @@ TT6B_FIXED_TEXT_RECORDS = (
     "Mane",
 )
 
-# TT6C's fixed table contains finale actions plus answer choices drawn from
-# every earlier chapter.  Full target labels are recorded here; preserving the
-# absolute record addresses is left to the follow-up compression/repacking pass.
+# TT6C's menu table contains finale actions and answer choices from earlier
+# chapters. The release rebuilds its page pointers after joint compression.
 TT6C_FIXED_TEXT_START_OFFSET = 0x08B8
 TT6C_FIXED_TEXT_END_OFFSET = 0x0A4F
 TT6C_FIXED_TEXT_SOURCE_SHA256 = (

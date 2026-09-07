@@ -64,15 +64,18 @@ test. These checks are especially valuable:
    go Back/Cancel.
 3. Follow the in-game disk prompts without resetting. At `PART 1 / SIDE B`,
    choose the second side; at `PART 2 / SIDE A`, choose the third side.
-4. Try one wrong side deliberately, then recover through the in-game disk
-   flow. The short retry copy should be readable: `Bad side.` / `Try again.`
+4. At a request for another side, reselect the mounted side. The primary
+   retry says `Wrong side.` / `Try again.`; alternate headings can say
+   `Bad side.`. Repeat once, then select the requested side and confirm recovery.
+   Separately exercise the wrong-disk path (`Wrong disk!` / `Try another side`)
+   and record the disk/side selected and the message reached.
 5. Save through the game's own Save command, power-cycle or reopen as the game
    requires, then Load through the normal flow.
 6. Exercise command, object, topic, answer, and quiz menus. Report clipped,
    garbled, abbreviated, stale, or untranslated labels.
 
-The current candidate's static audit decodes all 721 configured menu labels as
-full-word matches. Runtime testing should concentrate on what static decoding
+The source configures 721 full-word menu labels. Each fresh candidate must pass
+its own static decode audit. Runtime testing should cover what static decoding
 cannot prove: opening menus on both sides of records 32, 64, and 96, moving the
 cursor across those page boundaries, selecting each kind of entry, and using
 Back/Cancel without stale or misaddressed text.

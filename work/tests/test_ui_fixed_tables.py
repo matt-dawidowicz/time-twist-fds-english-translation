@@ -12,27 +12,6 @@ from time_twist.textcodec import SymbolKind, pack_records, split_records
 class FixedMenuCopyTests(unittest.TestCase):
     """Keep the proven full command labels consistent across scenario banks."""
 
-    def test_tt3b_fight_suffix_fits_the_fixed_record(self) -> None:
-        """Spell Fight in full within its four-byte native menu slot."""
-        dictionary = (encode_english("ight"),)
-        packed = ui._encode_at_exact_record_size("Fight", dictionary, 4)
-        record = split_records(packed, limit=1)[0][0]
-        expanded = tuple(
-            (
-                dictionary[symbol.value - 1]
-                if symbol.kind is SymbolKind.DICTIONARY
-                else (symbol,)
-            )
-            for symbol in record
-        )
-
-        self.assertEqual(
-            render_english(
-                tuple(symbol for part in expanded for symbol in part)
-            ).rstrip(),
-            "Fight",
-        )
-
     def test_proven_full_command_labels_use_title_case(self) -> None:
         """Protect the size-neutral replacements for cramped menu verbs."""
         expected = (
@@ -574,10 +553,10 @@ class FixedMenuCopyTests(unittest.TestCase):
                 with self.subTest(bank=bank_name, index=index):
                     self.assertEqual(records[index], label)
 
-    def test_full_word_target_branch_removes_known_placeholder_abbreviations(
+    def test_full_word_targets_exclude_known_placeholder_abbreviations(
         self,
     ) -> None:
-        """The compression branch should target readable labels, not codes."""
+        """The release tables must contain readable labels."""
         self.assertEqual(ui.TT5_FIXED_TEXT_RECORDS[23], "Yes")
         self.assertEqual(ui.TT6C_FIXED_TEXT_RECORDS[25], "Yes")
         self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[9], "Body")
@@ -590,13 +569,10 @@ class FixedMenuCopyTests(unittest.TestCase):
             ui.TT6C_FIXED_TEXT_RECORDS[91:94], ("Left", "Up", "Right")
         )
 
-    def test_full_word_blockers_are_explicit_and_source_reviewed(self) -> None:
-        """Never turn an unavailable full-word target into a hidden success."""
+    def test_full_word_targets_preserve_complete_labels(self) -> None:
+        """Keep the source-reviewed labels complete across the repacked tables."""
         self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[28], "Crimea")
         self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[34], "Criminals")
         self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[4], "Silver coin")
         self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[19], "Olive")
         self.assertEqual(ui.T25_FIXED_TEXT_RECORDS[29], "Picture")
-        self.assertEqual(ui.FIXED_TEXT_BLOCKED_FALLBACKS["TT2"][28], "CRI")
-        self.assertEqual(ui.FIXED_TEXT_BLOCKED_FALLBACKS["TT4"][4], "S")
-        self.assertEqual(ui.FIXED_TEXT_BLOCKED_FALLBACKS["T25"][29], "P")

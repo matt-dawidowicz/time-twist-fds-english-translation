@@ -604,13 +604,12 @@ def compress_english_groups(
     tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
     tuple[tuple[PackedSymbol, ...], ...],
 ]:
-    """Compress groups, widening search on capacity or dictionary-count failure.
+    """Compress groups, widening search when the initial result exceeds capacity.
 
     Args:
         groups: Fully encoded English scenario groups with no separators.
-        required_entries: Literal entries reserved for fixed-address text. A
-            project-supplied tuple may additionally require all 31 slots so a
-            fixed-address UI patch never decodes beyond the generated dictionary.
+        required_entries: Optional literal entries reserved at the beginning
+            of the dictionary; optimization preserves their order.
         max_bytes: Optional packed groups-plus-dictionary byte reservation.
         optimize: Compare the established greedy result with deterministic
             beam search and fixed-prefix-safe dictionary-order hill climbing.
@@ -628,15 +627,11 @@ def compress_english_groups(
 
     Raises:
         ValueError: If ``max_bytes`` is negative, required entries are invalid,
-            or a full-dictionary caller cannot populate ``maximum_entries``.
+            or ``maximum_entries`` exceeds the supported decoder range.
 
     The normal pass evaluates only the top estimated candidates for each greedy
-    step. If that result exceeds ``max_bytes`` or a fixed-UI caller requires
-    every requested entry but the fast pass stops early, a deterministic
-    fallback reruns greedy selection while evaluating every positive-saving
-    candidate. For a full-dictionary request the exhaustive result must contain
-    every requested entry; otherwise the build fails closed instead of letting
-    a later UI patch read following code/data as dictionary records.
+    step. If that result exceeds ``max_bytes``, a deterministic fallback reruns
+    greedy selection while evaluating every positive-saving candidate.
 
     With ``optimize=True``, the valid greedy result is also compared against a
     bounded beam and dictionary-order hill climb. Tight reservations receive a
@@ -647,9 +642,6 @@ def compress_english_groups(
         raise ValueError("max_bytes must be nonnegative")
     if not 1 <= maximum_entries <= EXTENDED_DICTIONARY_ENTRY_COUNT:
         raise ValueError("maximum dictionary entries is out of range")
-    requires_full_dictionary = bool(
-        getattr(required_entries, "requires_full_dictionary", False)
-    )
     if optimize:
         baseline = compress_english_groups(
             groups,
@@ -684,12 +676,6 @@ def compress_english_groups(
                     maximum_entries=maximum_entries,
                 )
             )
-        if requires_full_dictionary:
-            candidates = [
-                result
-                for result in candidates
-                if len(result[1]) == maximum_entries
-            ]
         if candidate_validator is not None:
             candidates = [
                 result for result in candidates if candidate_validator(*result)
@@ -707,10 +693,7 @@ def compress_english_groups(
         maximum_entries=maximum_entries,
     )
     primary_size = packed_size(*primary)
-    primary_complete = (
-        not requires_full_dictionary or len(primary[1]) == maximum_entries
-    )
-    if (max_bytes is None or primary_size <= max_bytes) and primary_complete:
+    if max_bytes is None or primary_size <= max_bytes:
         return primary
 
     fallback = _compress_english_groups_greedy(
@@ -720,14 +703,6 @@ def compress_english_groups(
         maximum_entries=maximum_entries,
     )
     fallback_size = packed_size(*fallback)
-    if requires_full_dictionary:
-        if len(fallback[1]) != maximum_entries:
-            raise ValueError(
-                f"fixed-address UI requires exactly {maximum_entries} "
-                "dictionary entries; "
-                f"compressor produced {len(fallback[1])}"
-            )
-        return fallback
     if fallback_size < primary_size:
         return fallback
     return primary
