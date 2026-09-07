@@ -136,6 +136,24 @@ The generator validates:
 patch intentionally changes its display segmentation. It is explicit in code
 and tests rather than treated as unexplained drift.
 
+## Compression evidence
+
+Generation recomputes conservative fit measurements from the current playable
+scenario maps and configured full-word menu labels. It uses the 68-entry greedy
+baseline, includes structural pointers, and counts the recovered movable menu
+reservation in relocated banks. A bank that exceeds this conservative capacity
+stops generation before workbook outputs are written.
+
+The HTML workbook, Markdown progress report, and JSON
+`patch_validation.revised_bank_footprints` all carry those same fresh results.
+`footprint_method` identifies the method. Historical scenario-only measurements
+remain explicitly labeled under `historical_scenario_footprints`; they describe
+older text and packing and must not be read as current free-space budgets.
+
+Actual release measurements, including any optimizer fallback, belong to a
+fresh ROM-backed candidate manifest. Public fit checks do not replace source
+layout validation, private integration tests, or emulator playtesting.
+
 ## Correcting a translation
 
 Choose the true source layer:

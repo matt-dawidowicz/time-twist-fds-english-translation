@@ -156,7 +156,7 @@ class TranslationWorkbookTests(unittest.TestCase):
         payload = json.loads(json_path.read_text(encoding="utf-8"))
         self.assertEqual(len(payload["rows"]), 2058)
         self.assertEqual(
-            payload["patch_validation"]["revised_bank_footprints"],
+            payload["patch_validation"]["historical_scenario_footprints"],
             PATCH_FOOTPRINT_RESULTS,
         )
         with csv_path.open(encoding="utf-8-sig", newline="") as handle:
