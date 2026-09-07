@@ -2086,20 +2086,6 @@ def collapse(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def without_controls(text: str, separator: str = " ") -> str:
-    """Remove control tags without accidentally joining adjacent words.
-
-    Args:
-        text: Decoded text containing zero or more ``{CTRL:n}`` markers.
-        separator: Text inserted for each removed marker before whitespace is
-            collapsed.
-
-    Returns:
-        Control-free, whitespace-normalized visible text.
-    """
-    return collapse(CONTROL_RE.sub(separator, text))
-
-
 def naturalize_current(text: str) -> str:
     """Convert patch typography into readable editorial prose.
 
@@ -3454,7 +3440,7 @@ th{{position:sticky;top:0;background:#292c40;z-index:2;text-align:left}} tbody t
 </div>
 <p class="small">Authoritative source: {escape_cell(SOURCE_JSON.name)} (LF-normalized SHA-256 {source_text_sha256(SOURCE_JSON)}).{review_provenance} Exact/source order: {escape_cell(source_payload['source_of_truth'])}</p>
 <details open><summary><b>Method and field interpretation</b></summary>
-<div class="summary"><p>All {len(rows):,} records have a proposed final and patch-safe English field. Short simple lines may have identical literal and natural translations. Fixed-address natural meanings are expanded for analysis; their patch-safe forms retain the verified compact slot text. Every scenario patch passed the ROM character encoder and 24-column display validator. Current conservative fit checks recompress dialogue and configured full-word menus with the 68-entry greedy baseline, including structural pointers and recovered movable capacity: {escape_cell(footprint_summary)}. These public measurements are separate from historical scenario-only snapshots. Actual release usage, including any optimizer fallback, comes from a fresh ROM-backed candidate manifest; runtime playtesting remains required.</p>
+<div class="summary"><p>All {len(rows):,} records have a proposed final and patch-safe English field. Short simple lines may have identical literal and natural translations. Fixed-address natural meanings are expanded for analysis; patch-safe text follows the configured menu labels and system-record constraints. Every scenario patch passed the ROM character encoder and 24-column display validator. Current conservative fit checks recompress dialogue and configured full-word menus with the 68-entry greedy baseline, including structural pointers and recovered movable capacity: {escape_cell(footprint_summary)}. Actual release usage, including any optimizer fallback, comes from a fresh ROM-backed candidate manifest; runtime playtesting remains required.</p>
 <p>The supplied diagnostic review was consulted for line-specific corrections, but its unsafe substring-based Japanese reconstruction was not copied. Speaker identity is derived from explicit labels, neighboring English speaker turns, and scene grouping. Ambiguity is recorded without leaving the line untranslated.</p></div></details>
 <details><summary><b>Scene summaries ({len(SCENES)})</b></summary><div class="scene-grid">{scene_cards}</div></details>
 <details><summary><b>Control-code evidence</b></summary><div class="summary"><p>These functions are empirical summaries, not universal opcode names. Patch-safe text preserves the exact ordered tag sequence for every record.</p><table><thead><tr><th>Tag</th><th>Observed role</th></tr></thead><tbody>{control_rows}</tbody></table></div></details>

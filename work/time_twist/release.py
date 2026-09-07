@@ -165,7 +165,7 @@ def _load_translation_map(
 
     Release construction never invents or infers translations from packed ROM
     bytes. This boundary accepts only the reviewed ``ID -> English`` mapping
-    from the private source overlay; later validation proves that its IDs match
+    from ``work/translations``; later validation proves that its IDs match
     the recovered scenario records exactly.
     """
     path = translations_directory / f"{bank_name}.json"

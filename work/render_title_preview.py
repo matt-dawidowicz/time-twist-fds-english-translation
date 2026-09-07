@@ -87,7 +87,7 @@ def main() -> None:
     sheet.resize((2048, 960), Image.Resampling.NEAREST).save(
         SLIDE_CONTACT_SHEET
     )
-    print(f"{OUTPUT} (exact background error: {assets.approximation_error})")
+    print(OUTPUT)
     print(f"{SLIDE_OUTPUT_DIR} ({len(slide_frames)} native slide frames)")
     print(SLIDE_CONTACT_SHEET)
 

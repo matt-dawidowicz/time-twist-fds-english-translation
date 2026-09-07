@@ -1107,10 +1107,10 @@ def patched_tt1a_ui(data: bytes) -> bytes:
 
 
 def _tt2_dictionary(data: bytes) -> tuple[tuple[PackedSymbol, ...], ...]:
-    """Decode the bank dictionary shared by all fixed UI table patchers.
+    """Decode the native Japanese dictionary for fixed-menu source extraction.
 
     Args:
-        data: Rebuilt scenario bank whose pointer at ``$0016`` is valid.
+        data: Original Japanese scenario bank with a valid ``$0016`` pointer.
 
     Returns:
         Exactly :data:`TT2_DICTIONARY_ENTRIES` aligned dictionary records.
@@ -1120,8 +1120,8 @@ def _tt2_dictionary(data: bytes) -> tuple[tuple[PackedSymbol, ...], ...]:
             outside the bank.
         PackedTextError: If the dictionary stream is truncated.
 
-    The historical function name remains for compatibility, but the layout is
-    shared by TT1B, T22, TT3-TT6, and T25 after scenario insertion.
+    The layout is shared by TT1B, TT2, T22, TT3-TT6, and T25. English release
+    dictionaries use the extended format and must not be decoded here.
     """
     pointer_end = TT2_DICTIONARY_POINTER_OFFSET + 2
     if len(data) < pointer_end:

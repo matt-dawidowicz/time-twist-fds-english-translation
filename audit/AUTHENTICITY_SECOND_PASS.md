@@ -1,10 +1,14 @@
 # Dialogue Authenticity Second Pass
 
-Status: **semantic/voice review complete; CI and fresh runtime validation pending** on `menu-dialogue-authenticity-audit-20260826`
+This completed review records the Japanese-source reasoning behind an earlier
+editorial pass. Current wording comes from `work/translations/*.json`; the
+[cross-bank decisions](../work/audits/final_cross_bank_consistency.md) and
+[playtest matrix](../docs/PLAYTEST_MATRIX.md) track the maintained editorial
+policy and remaining scene checks.
 
 This pass re-reviewed all **1,299 playable scenario records** against the exact Japanese source. It is deliberately stricter than the first workbook pass: a line is not considered finished merely because its basic meaning is understandable.
 
-The completed pass stages **129 scenario-record edits** across all 13 playable scenario banks, plus the parallel fixed-menu correction `Call` -> `Intercom` in TT1B. The edits restore omitted concrete detail, relationship/status information, puzzle rules, stutters and hesitations, rough or ceremonial register, plot logic, and several outright referent/pronoun errors. They are not a blanket prose rewrite.
+The pass produced **129 scenario-record edits** across all 13 playable scenario banks, plus the parallel fixed-menu correction `Call` -> `Intercom` in TT1B. The findings below explain the source readings; quoted English records that pass's wording and may have been refined by subsequent reviews.
 
 ## Review contract
 
@@ -28,29 +32,10 @@ The target is the closest American-English **effect**, not a one-to-one substitu
 - **Magi:** dignified ceremonial diction.
 - **Camel / cow in TT6B:** light rustic rhythm/vocabulary where the Japanese is explicitly marked, without heavy eye dialect or a named American regional caricature.
 
-## Capacity architecture
-
-The dialogue renderer remains a 24-tile row. More dictionary space does not mean unlimited line width.
-
-The English NOV2 decoder maps otherwise-unused extended-glyph values to dictionary references 32-68. The canonical release path now passes the **68-entry maximum to every playable scenario bank**. Native Japanese parsing remains 31-entry-aware because that describes the untouched source encoding, not an English release limit.
-
-For the 11 relocated full-word-menu banks, playable capacity is the historical scenario reservation plus the source-verified movable menu prefix:
-
-| Bank | Scenario capacity | Reclaimed prefix | Combined capacity |
-| --- | ---: | ---: | ---: |
-| TT1B | 4026 | 208 | **4234** |
-| TT2 | 3847 | 294 | **4141** |
-| T22 | 1812 | 127 | **1939** |
-| TT3A | 3741 | 428 | **4169** |
-| TT3B | 1840 | 87 | **1927** |
-| TT4 | 4741 | 446 | **5187** |
-| TT5 | 3702 | 499 | **4201** |
-| T25 | 2374 | 187 | **2561** |
-| TT6A | 2833 | 167 | **3000** |
-| TT6B | 2336 | 265 | **2601** |
-| TT6C | 3536 | 411 | **3947** |
-
-Independent conservative fit evidence already established TT2 at **<=4092/4141** and T22 at **<=1913/1939** before optimizer improvements. TT1A's fuller script independently fit its non-relocated capacity with the extended dictionary. The final whole-game script still requires current GitHub Actions recompression confirmation; CI was still queued when this ledger was frozen.
+Current capacity rules are documented in the
+[full-word menu implementation](../docs/FULL_WORD_MENU_IMPLEMENTATION.md).
+The [generated progress report](../outputs/Time_Twist_translation_progress.md)
+provides measurements recomputed from the current script.
 
 ## Completed bank status
 
@@ -212,23 +197,6 @@ The manual's disk-error table also distinguishes wrong side/order/version condit
 
 The manual review produced **no reason to revert any of the 129 scenario-record changes**. Its strongest effects are corroborative: it reinforces the Alexander correction, the Magi-as-astrologers wording, the direct treatment of historical violence/oppression, and the meanings of several terse system prompts. The only materially new story framing is the manual's explicit **evil-telepathy** description of the opening, which is documented here rather than inserted into dialogue that does not say it.
 
-## Extended-dictionary safety
-
-The patched English decoder's 32-68 references are global. The release and live-fit paths now use the 68-entry limit for **all 13 banks**, with a dedicated TT6D regression proving a non-relocated bank may exceed 31 entries. Additional regressions protect high dictionary references and the fixed-address tail. Native Japanese source parsing intentionally retains the native 31-entry fact.
-
-## Continuation commit ledger
-
-- TT3A: `636946b117ff6127cc4886ab1f38e412251e83e1`
-- TT3B: `76f58c808abd229a73141b17ece645b0f3542cd8`
-- TT4: `7681c7ab289a408d0c02671b90ea4168050f1a8e`
-- TT5: `59daa3bdf0b34786cf2a402b57d465cf496aa935`
-- T25: `2b37dea803e429d37fd49bd6a6e9b49979a57eb7`
-- TT6A initial pass: `a5fe53c65e7a5674ebfc564181407fc46feb0636`
-- TT6B: `41d37772ee97dc401ee4cd438d10613bd3b0a43e`
-- TT6C pass: `563c1f61c856d22cc6ff6ac0f59129b0374cc5ec`; width correction: `a6606c3701c7e2294562de90502dec10cc7efe63`
-- TT6D semantic pass: `06dce720aa93f2f2985ff2ae2eee369b27170b89`; final morning-fortune wording polish: `5d2f9b8338ae7017f4bdab0ccecd901ccd8a0b59`
-- TT6A pregnancy clarification: `cd28b36a4ff0795592729c27f402eacc934ce68c`
-
-Earlier completed France revisions remain TT2 `f3f4879d1dccbded7c141e364e94f2b36c6e3e54` and T22 `68a6c18a074fa687bbee6b4bea296ab2a2aefc80`.
-
-This ledger is not the playable authority; `work/translations/*.json` is. **Do not merge or promote a release solely because semantic review is complete.** Current CI/recompression and a fresh emulator/playtest candidate are still required.
+For candidate construction, validation, and promotion, follow the
+[maintainer release process](../docs/MAINTAINER_RELEASE_PROCESS.md). Semantic
+review alone does not establish runtime readiness.

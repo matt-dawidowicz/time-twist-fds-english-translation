@@ -1,10 +1,10 @@
 # External translation baseline
 
-This audit exists to identify places where the current English script deserves
-human review. The external patch is a diagnostic comparison target only. It is
-not a translation source, and its script text is not stored here. Any wording
-change in this repository must be independently justified from the original
-Japanese.
+This completed audit records the comparison against the input hashes below.
+Its wording-match counts describe those reviewed inputs. The external patch
+served as a diagnostic comparison target; Japanese remained the translation
+authority, and external script text is not stored here. Current English comes
+from `work/translations/*.json` and the fixed-UI code.
 
 ## Input identity
 
@@ -12,12 +12,12 @@ Japanese.
 | --- | ---: | --- |
 | Japanese Kouhen | 131000 | `f62a7424fe489cbe479c3ebaabe4ce62d85127601ffd3d08abd4e5a0dc39442a` |
 | Japanese Zenpen | 131000 | `b9424dd29ee195a9fa9ac4f844f058c380e30f7aca741218789fa8611f741916` |
-| Current English Kouhen | 131000 | `cb66e4fd8c64cf4e1e9c68e34a4d4ddbeb263f8414a9d86d2e77325a82e266c5` |
-| Current English Zenpen | 131000 | `3e82bcd2fdf1e4aff67ff90d97a03554ccf06a794a8f854c482dd86470f52e89` |
+| Reviewed English Kouhen | 131000 | `cb66e4fd8c64cf4e1e9c68e34a4d4ddbeb263f8414a9d86d2e77325a82e266c5` |
+| Reviewed English Zenpen | 131000 | `3e82bcd2fdf1e4aff67ff90d97a03554ccf06a794a8f854c482dd86470f52e89` |
 | External English Kouhen input | 250706 | `df9bd6d6c8fc4fb1b12531dd0ce628126215d0091df980a12c183f10b644a9f2` |
 | External English Zenpen input | 250706 | `027ca6a4945c0bcb3c934750947f3a95b6b2a3188ca7fce348ba0f4f5e05ce78` |
 
-The Japanese and current-English inputs are normal 131000-byte raw two-side FDS
+The Japanese and reviewed English inputs are normal 131000-byte raw two-side FDS
 images. Both supplied external inputs contain the same 119706-byte extension.
 Structural probing shows that the extension carries later Kouhen FDS data at
 absolute offsets expected from a four-side combined image. The comparison tool
@@ -82,10 +82,14 @@ production parser.
 | **Total** | **740** | **393** | **347** | **0** |
 
 The detailed per-bank segment map is stored in
-`work/audits/external_fixed_ui_baseline.{json,md}`. Differences remain diagnostic
+[external_fixed_ui_baseline.json](external_fixed_ui_baseline.json). Differences remain diagnostic
 only and must be resolved from Japanese and gameplay context.
 
-Source-grounded fixed-UI review is now **740/740 records (100%)**. All aligned major fixed tables and TT1A selectors have been reread against Japanese and gameplay context. Confirmed corrections are recorded individually in `translation_quality_changes.json`; compact but functionally faithful labels are left unchanged.
+The pass reviewed **740/740 fixed-UI records** against Japanese and gameplay
+context. Confirmed corrections are recorded in the
+[source-review change ledger](../../work/audits/translation_quality_changes.json).
+Current releases use the
+[full-word menu implementation](../../docs/FULL_WORD_MENU_IMPLEMENTATION.md).
 
 That comparison also exposed six NOV2 save/system records that had never been
 translated in the current runtime image. They are now source-verified, translated
@@ -93,31 +97,7 @@ in place with zero byte growth, covered by source-drift regression tests, and
 represented in the canonical review corpus. The external NOV2 layout is repacked,
 so those six records are not yet included in the 740 external-alignment count.
 
-## Current packed headroom
-
-The canonical `test_live_translation_fit.py` measurement after the complete
-1,299-record scenario review and all 740 fixed-UI source reviews gives:
-
-| Bank | Used | Capacity | Free |
-| --- | ---: | ---: | ---: |
-| TT1A | 1666 | 1669 | 3 |
-| TT6D | 327 | 332 | 5 |
-| TT5 | 4186 | 4201 | 15 |
-| TT3B | 1917 | 1927 | 10 |
-| TT4 | 5179 | 5187 | 8 |
-| T22 | 1898 | 1939 | 41 |
-| TT2 | 4125 | 4141 | 16 |
-| TT6B | 2554 | 2601 | 47 |
-| TT3A | 4119 | 4169 | 50 |
-| TT6C | 3854 | 3947 | 93 |
-| T25 | 2441 | 2561 | 120 |
-| TT6A | 2829 | 3000 | 171 |
-| TT1B | 3922 | 4234 | 312 |
-
-These are compressed byte limits used by the build, not visible-character counts.
-Faithful wording is retained unless measured capacity proves a shorter form necessary.
-
-## Current editorial findings
+## Source-review findings
 
 The TT3A review has already found several concrete compression losses. In
 `TT3A/g0/r14`, the Japanese identifies a POW camp in southern Germany and gives
@@ -151,22 +131,16 @@ sound/action lines are materially faithful to the Japanese despite wording or
 length differences from the external translation. Comparison differences are
 therefore never automatic replacement candidates.
 
-## Validation
+## System-text coverage and current validation
 
-Clean-branch GitHub Actions run `33289092641` passed on Python 3.11 and 3.12.
-Generated-artifact checks, Black, Ruff, pydocstyle, mypy, and the full unit suite
-all passed. The Python 3.12 job also passed package build, wheel reinstall,
-installed-wheel import smoke, `time-twist --help`, and
-`time-twist release-build --help`.
+The [fixed-UI evidence](external_fixed_ui_baseline.json) also records recovered
+locations for 15 external NOV2 records and NOV4's Start and Load records. Two
+source disk-error records remained Japanese in the external inputs and were
+left unaligned. System records are counted separately from the 740 menu and
+selector records.
 
-
-Targeted post-review workflow `33290609436` also regenerated the expanded
-**2,058-row** comparison/workbook corpus and passed Ruff, pydocstyle, mypy,
-targeted workbook/comparison tests, and the full **167-test** unit suite. Its live
-fit measurement confirmed TT3A at 4,118/4,169 bytes.
-
-## Still pending
-
-- Reconstruct and compare the remaining repacked external system-text surfaces
-  (NOV2/NOV4) without assuming source offsets survived the external repack.
-- Perform rebuilt-ROM and emulator validation after the editorial pass.
+For current compression measurements, use the
+[generated progress report](../../outputs/Time_Twist_translation_progress.md).
+Build and runtime acceptance follow the
+[maintainer release process](../../docs/MAINTAINER_RELEASE_PROCESS.md) and
+[playtest matrix](../../docs/PLAYTEST_MATRIX.md).

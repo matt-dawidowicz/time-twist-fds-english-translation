@@ -1,7 +1,9 @@
 # External fixed-UI baseline
 
-This audit extends the scenario comparison into fixed-address command, object,
-quiz, and selector text. The external patch remains a diagnostic target only:
+This completed audit extended the scenario comparison into fixed-address
+command, object, quiz, and selector text. Counts describe the
+[reviewed input images](external_translation_baseline.md#input-identity).
+The external patch remains a diagnostic target only:
 its wording is not stored here and never supplies replacement prose. Japanese
 source text remains authoritative for every editorial change.
 
@@ -32,10 +34,10 @@ All 740 records decode without unresolved external tokens after reconstructing
 the physical segments into source record order. TT1A exact-match counting strips
 only invisible trailing slot-padding spaces; no visible wording is normalized.
 
-The external layout is a comparison-format quirk, not a reason to relax the
-production parser. `work/tools/external_translation_compare.py` records only
-bank-relative offsets and record counts and provides a generic logical-segment
-decoder. Unit tests lock the recovered record totals and reassembly behavior.
+The [retained JSON evidence](external_fixed_ui_baseline.json) records
+bank-relative offsets and record counts. The completed comparison's decoder and
+dedicated tests remain in Git history; the production parser retains its
+source-layout checks.
 
 ## Editorial meaning
 
@@ -48,14 +50,16 @@ The comparison exposed a separate completeness issue in NOV2: six save/system
 records in the English image were byte-for-byte identical to the Japanese ROM.
 Those six records have now been independently decoded from Japanese, translated
 in their exact fixed allocations, protected by source-drift tests, and added as
-first-class rows to the 2,058-record review corpus. NOV2 is repacked differently
-by the external patch, so it still remains outside the 740-record external
-alignment until its system block is structurally reconstructed.
+first-class rows to the 2,058-record review corpus. NOV2's separate system-text
+alignment is recorded below.
 
-## Pending
+## System-text coverage
 
-- Recover and compare the external NOV2/NOV4 system-text blocks without
-  assuming that source offsets survived the external repack.
-- Review fixed-label differences against Japanese before making editorial
-  changes.
-- Keep competitor prose out of committed reports and change audits.
+The retained JSON also records 15 recovered external NOV2 records and NOV4's
+Start and Load records. Two source disk-error records were still Japanese in
+the external inputs and were left unaligned. These system-text records are
+counted separately from the 740 menu and selector records.
+
+The source review of all 740 menu and selector records is complete. Current
+playable labels come from the fixed-UI code and are checked by the
+[candidate menu audit](../../docs/TRANSLATION_WORKFLOW.md#6-build-one-canonical-candidate).

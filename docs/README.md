@@ -65,8 +65,12 @@ bank/UI construction commands are no longer part of the public CLI.
 Never replace exact Japanese evidence with reconstructed kanji, and never use an
 archived or generated English string as the playable source.
 
-## Historical records
+## Completed source reviews
 
+- [Japanese-source review evidence](../audit/AUTHENTICITY_SECOND_PASS.md):
+  semantic findings and manual terminology.
+- [Editorial change ledger](../audit/EDITORIAL_CHANGELOG.md): source readings,
+  recorded edits, and scene checks used by the playtest matrix.
 - [`../audit/third_party/`](../audit/third_party/README.md): completed third-party
   comparison evidence.
 - Git history: exact deleted code, old command implementations, and prior file states.

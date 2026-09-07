@@ -783,5 +783,4 @@ def build_title_assets(
         second_nametable=bytes(patched_second),
         encoded_final=encoded_final,
         encoded_second=encoded_second,
-        approximation_error=0,
     )
