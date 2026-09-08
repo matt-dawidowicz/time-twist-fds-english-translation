@@ -1,10 +1,30 @@
-"""Fixture-free invariants for title helper machine code."""
+"""Fixture-free invariants for the public title API and helper machine code."""
 
 from __future__ import annotations
 
 import unittest
 
 from time_twist import title
+
+
+class TitleAssetApiTests(unittest.TestCase):
+    """Preserve caller compatibility through the public title facade."""
+
+    def test_approximation_error_accepts_existing_constructor_forms(
+        self,
+    ) -> None:
+        """Keep attribute access and legacy keyword/positional construction."""
+        arguments = (b"", b"", b"", b"", 0, b"", b"", b"", b"", b"", b"", b"")
+        self.assertEqual(title.TitleAssets(*arguments).approximation_error, 0)
+        self.assertEqual(
+            title.TitleAssets(
+                *arguments, approximation_error=7
+            ).approximation_error,
+            7,
+        )
+        self.assertEqual(
+            title.TitleAssets(*arguments, 7).approximation_error, 7
+        )
 
 
 class TitleHelperTests(unittest.TestCase):

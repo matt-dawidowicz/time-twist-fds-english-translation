@@ -114,7 +114,7 @@
     "scenario_full_source_review_complete": true
   },
   "fixed_ui_progress": {
-    "baseline_file": "work/audits/external_fixed_ui_baseline.json",
+    "baseline_file": "audit/third_party/external_fixed_ui_baseline.json",
     "aligned_records": 740,
     "exact_english_matches": 393,
     "different_english_records": 347,

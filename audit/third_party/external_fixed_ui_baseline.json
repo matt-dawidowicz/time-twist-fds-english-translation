@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "fixed-address scenario-bank UI tables plus TT1A selectors; NOV2/NOV4 system text remains separate",
+  "scope": "Completed source review of the 740 scenario-bank menu and TT1A selector records, plus separately counted recovered external NOV2/NOV4 system-text coverage. Two external NOV2 disk-error records remain unaligned Japanese.",
   "policy": {
     "competitor_role": "diagnostic comparison only",
     "translation_source": "original Japanese",
@@ -14,6 +14,8 @@
     "unresolved_external_token_records": 0,
     "major_fixed_table_records": 721,
     "tt1a_selector_records": 19,
+    "source_records_reviewed": 740,
+    "source_review_complete": true,
     "nov2_source_verified_missing_records_found": 6,
     "nov2_source_verified_missing_records_translated": 6,
     "canonical_corpus_rows_after_nov2_integration": 2058,
@@ -274,7 +276,5 @@
       ]
     }
   ],
-  "pending": [
-    "review fixed-label differences against Japanese before any translation edit"
-  ]
+  "pending": []
 }
