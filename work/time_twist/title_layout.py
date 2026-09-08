@@ -196,6 +196,8 @@ class TitleAssets:
         second_nametable: Decoded slide/Nintendo nametable and attributes.
         encoded_final: Native RLE for ``final_nametable``.
         encoded_second: Native RLE for ``second_nametable``.
+        approximation_error: Retained public constructor/access field. Exact
+            title builds leave it at zero; it is not a runtime validation result.
 
     ``nintendo_chr`` and ``restore_chr`` intentionally share tile IDs across
     non-overlapping title phases. This temporal reuse avoids consuming
@@ -214,3 +216,4 @@ class TitleAssets:
     second_nametable: bytes
     encoded_final: bytes
     encoded_second: bytes
+    approximation_error: int = 0
