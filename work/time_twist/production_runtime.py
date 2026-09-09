@@ -10,6 +10,8 @@ The retained fixes are:
 
 * the extended English dictionary escape enters the dictionary expander at
   $82C5, after the native five-bit index reader, rather than at $82BE;
+* extended code 63 is redirected from unsafe title-graphics tile $AC to safe
+  production-font tile $B0, where it carries the dollar sign;
 * the existing menu text blitter copies eight characters instead of six; and
 * the right selection arrow is moved two glyph cells farther right, so the
   original bracket geometry encloses the same eight-glyph maximum visible by
@@ -91,6 +93,19 @@ _EXTENDED_DICTIONARY_ENTRY_FIX = RuntimePatch(
 )
 
 
+# Extended code 63 originally resolves through NOV2's $835E-$8378 lookup table
+# to tile $AC. NOV4 source slot $AC overlaps title graphics and cannot safely
+# hold an English glyph. The runtime-tested Start$ diagnostic proved that
+# redirecting only this final lookup byte to tile $B0 renders a clean dollar
+# sign while leaving the protected title-graphics source region untouched.
+_DOLLAR_SIGN_TILE_LOOKUP_PATCH = RuntimePatch(
+    file_offset=0x2378,
+    expected=_hex("AC"),
+    replacement=_hex("B0"),
+    label="extended code 63 dollar-sign tile redirect",
+)
+
+
 # NOV2 initializes sixteen bytes at $8747 before decoding a menu label. The
 # renderer consumes alternating bytes for the two tile rows, so the staging
 # buffer already holds eight glyphs. The original renderer simply stops after
@@ -132,6 +147,7 @@ PALETTE_DATA_RANGE = range(0x3390, 0x33B0)
 
 PRODUCTION_RUNTIME_PATCHES = (
     _EXTENDED_DICTIONARY_ENTRY_FIX,
+    _DOLLAR_SIGN_TILE_LOOKUP_PATCH,
     *_EIGHT_GLYPH_MENU_RENDERER_PATCHES,
     _EIGHT_GLYPH_SELECTION_SPAN_PATCH,
 )
