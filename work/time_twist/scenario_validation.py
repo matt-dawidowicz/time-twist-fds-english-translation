@@ -14,6 +14,17 @@ PERSONALITY_QUESTION_IDS = frozenset(
     f"TT1A/g0/r{record}" for record in range(6, 21)
 )
 
+# The native renderer can continue a long control-free segment on the next
+# 24-tile row when the byte stream places a blank tile exactly at the wrap
+# boundary.  This is not a blanket permission to overflow: a later control can
+# reuse the wrapped row and overwrite text.  Production IDs enter this set only
+# after their exact control topology and padded wrap have been reviewed.
+PRODUCTION_SAFE_WRAP_IDS = frozenset(
+    {
+        "TT1B/g0/r1",
+    }
+)
+
 
 def scenario_record_id(
     bank_name: str, group_index: int, record_index: int
@@ -30,7 +41,7 @@ def encode_validated_english(
     """Validate one nonempty translation and return its native symbols.
 
     The shared policy covers type/nonempty checks, exact control-tag order,
-    renderer width, the personality-question wrapping exception, and glyph
+    renderer width, explicitly reviewed wrapping exceptions, and glyph
     encodability. Callers add only their command-specific error context.
     """
     if not isinstance(english, str) or not english:
@@ -39,6 +50,9 @@ def encode_validated_english(
         raise EnglishTextError("control tags changed")
     validate_display_width(
         english,
-        allow_wrap=record_id in PERSONALITY_QUESTION_IDS,
+        allow_wrap=(
+            record_id in PERSONALITY_QUESTION_IDS
+            or record_id in PRODUCTION_SAFE_WRAP_IDS
+        ),
     )
     return encode_english(english)
