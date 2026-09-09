@@ -1,22 +1,15 @@
 """Production scenario layout with fixed-tail preservation and high-RAM spill.
 
-The canonical release rebuilds every scenario group, its pointer table, and the
-English dictionary contiguously inside the source text reservation.  The
-unrestricted production localization is intentionally larger.  This module
-keeps every fixed code/data byte at its original CPU address while allowing
-whole packed groups and the dictionary to live in otherwise-unused FDS PRG RAM
-immediately after the source overlay.
+The canonical release keeps every scenario group and its dictionary contiguous
+inside the source text reservation. The unrestricted localization is larger.
+Production instead keeps fixed code/data at the original CPU addresses, uses
+the old reservation for the most useful complete groups, appends remaining
+groups and the dictionary after the source overlay, and rewrites only the
+existing group/dictionary pointers.
 
-The runtime already addresses groups and the dictionary through header pointers.
-Only the tooling assumed that groups were contiguous and monotonically ordered.
-Production therefore uses the original reservation for the subset of complete
-groups that saves the most spill bytes, writes the group-pointer table after
-those resident groups, appends the remaining groups and dictionary after the
-original overlay, and repoints the three existing header words.
-
-No spilled byte may reach $E000: FDS program RAM occupies $6000-$DFFF and these
-scenario overlays load at $A200.  NOV2's production decoder raises its old
-$D400 packed-text scan guard to the correct $E000 exclusive boundary.
+Spilled data must remain below $E000, the exclusive end of FDS program RAM for
+these $A200 overlays. NOV2's adaptive decoder correspondingly raises its old
+$D400 packed-text scan guard to $E000.
 """
 
 from __future__ import annotations
@@ -60,6 +53,7 @@ class ProductionScenarioLayout:
     """Describe one rebuilt scenario overlay and its split text placement."""
 
     data: bytes
+    load_address: int
     group_addresses: tuple[int, ...]
     group_table_address: int
     dictionary_address: int
@@ -72,13 +66,15 @@ class ProductionScenarioLayout:
 
     @property
     def loaded_end(self) -> int:
-        """Return the exclusive CPU end address when loaded at the source base."""
-        return self.group_addresses[0] * 0 + self.source_bytes  # compatibility shim
+        """Return the exclusive CPU address occupied by the rebuilt file."""
+        return self.load_address + len(self.data)
 
 
 def _read_word(data: bytes, offset: int) -> int:
     if offset < 0 or offset + 2 > len(data):
-        raise ProductionScenarioError(f"word offset 0x{offset:04X} is outside bank")
+        raise ProductionScenarioError(
+            f"word offset 0x{offset:04X} is outside bank"
+        )
     return int.from_bytes(data[offset : offset + 2], "little")
 
 
@@ -86,7 +82,9 @@ def _write_word(data: bytearray, offset: int, value: int) -> None:
     if not 0 <= value <= 0xFFFF:
         raise ProductionScenarioError(f"pointer ${value:05X} exceeds 16 bits")
     if offset < 0 or offset + 2 > len(data):
-        raise ProductionScenarioError(f"word offset 0x{offset:04X} is outside bank")
+        raise ProductionScenarioError(
+            f"word offset 0x{offset:04X} is outside bank"
+        )
     data[offset : offset + 2] = value.to_bytes(2, "little")
 
 
@@ -97,11 +95,22 @@ def _source_record_counts(bank: ScenarioBank) -> tuple[int, ...]:
     )
 
 
+def _literal_groups(
+    groups: ScenarioGroups,
+    dictionary: ScenarioDictionary,
+) -> ScenarioGroups:
+    """Expand compressed groups once for exact post-build comparison."""
+    return tuple(
+        tuple(expand_dictionary_symbols(record, dictionary) for record in group)
+        for group in groups
+    )
+
+
 def _best_resident_subset(
     group_sizes: tuple[int, ...],
     capacity: int,
 ) -> tuple[int, ...]:
-    """Choose the subset of whole groups that uses the old reservation best."""
+    """Choose whole groups that consume the most old-reservation bytes."""
     if capacity < 0:
         raise ProductionScenarioError("group-pointer table exceeds old text space")
     best_bytes = -1
@@ -147,18 +156,12 @@ def relocate_production_fixed_record_table(
     group_zero_offset: int,
     records: tuple[tuple[PackedSymbol, ...], ...],
 ) -> tuple[bytes, int]:
-    """Repack a menu table with production dictionary escapes and page pointers.
-
-    This is the production-codec equivalent of
-    :func:`time_twist.ui.relocated_fixed_record_table_bank`.  Source verification
-    remains native/Japanese, while rebuilt record starts are decoded with the
-    production 255-entry prefix tree so menu labels may use high dictionary
-    references without corrupting page boundaries.
-    """
+    """Repack a menu table using the production prefix tree and page index."""
     spec = FIXED_RECORD_TABLE_SPECS[bank_name]
     if len(records) != len(spec.records):
         raise UiPatchError(
-            f"{bank_name} expected {len(spec.records)} fixed records, got {len(records)}"
+            f"{bank_name} expected {len(spec.records)} fixed records, "
+            f"got {len(records)}"
         )
     source = data[spec.start : spec.end]
     if len(source) != spec.end - spec.start:
@@ -177,12 +180,16 @@ def relocate_production_fixed_record_table(
         raise UiPatchError(f"{bank_name} fixed-table page pointer changed")
 
     page_pointer_bytes = fixed_record_table_page_pointer_bytes(bank_name)
-    old_following_offset = header_offset(FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[0])
+    old_following_offset = header_offset(
+        FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[0]
+    )
     if old_following_offset != spec.end + page_pointer_bytes:
         raise UiPatchError(
             f"{bank_name} fixed-table page index has an unexpected size"
         )
-    second_following_offset = header_offset(FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[1])
+    second_following_offset = header_offset(
+        FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[1]
+    )
     if not old_following_offset <= second_following_offset < group_zero_offset:
         raise UiPatchError(
             f"{bank_name} secondary table pointer is outside its recovered block"
@@ -268,7 +275,7 @@ def build_spill_scenario_bank(
     old_region_start: int | None = None,
     prg_ram_end: int = FDS_PRG_RAM_END,
 ) -> ProductionScenarioLayout:
-    """Place complete groups across the old reservation and appended high RAM."""
+    """Place complete compressed groups in old text RAM and appended high RAM."""
     counts = _source_record_counts(bank)
     if len(groups) != len(counts):
         raise ProductionScenarioError(
@@ -280,6 +287,7 @@ def build_spill_scenario_bank(
                 f"group {index} expected {expected} records, got {len(group)}"
             )
 
+    expected_groups = _literal_groups(groups, dictionary)
     source = bank.data if base_data is None else base_data
     if len(source) != len(bank.data):
         raise ProductionScenarioError(
@@ -300,12 +308,11 @@ def build_spill_scenario_bank(
     resident_capacity = bank.dictionary_end_offset - region_start - table_size
     resident = _best_resident_subset(group_sizes, resident_capacity)
     resident_set = set(resident)
-    spilled = tuple(index for index in range(len(groups)) if index not in resident_set)
+    spilled = tuple(
+        index for index in range(len(groups)) if index not in resident_set
+    )
 
     output = bytearray(source)
-    # This reservation is proven scenario text/table/dictionary storage. Clear
-    # it before placing selected groups so stale Japanese stream bytes cannot be
-    # mistaken for current production data during forensic inspection.
     output[region_start : bank.dictionary_end_offset] = b"\x00" * (
         bank.dictionary_end_offset - region_start
     )
@@ -321,7 +328,9 @@ def build_spill_scenario_bank(
     group_table_offset = cursor
     cursor += table_size
     if cursor > bank.dictionary_end_offset:
-        raise ProductionScenarioError("resident groups overrun fixed-tail boundary")
+        raise ProductionScenarioError(
+            "resident groups overrun fixed-tail boundary"
+        )
 
     high_cursor = len(bank.data)
     for index in spilled:
@@ -340,7 +349,9 @@ def build_spill_scenario_bank(
             f"${prg_ram_end:04X}"
         )
 
-    table = b"".join(address.to_bytes(2, "little") for address in addresses[1:])
+    table = b"".join(
+        address.to_bytes(2, "little") for address in addresses[1:]
+    )
     output[group_table_offset : group_table_offset + len(table)] = table
     group_table_address = bank.load_address + group_table_offset
 
@@ -356,6 +367,7 @@ def build_spill_scenario_bank(
 
     layout = ProductionScenarioLayout(
         data=bytes(output),
+        load_address=bank.load_address,
         group_addresses=tuple(addresses),
         group_table_address=group_table_address,
         dictionary_address=dictionary_address,
@@ -366,7 +378,7 @@ def build_spill_scenario_bank(
         dictionary_bytes=len(dictionary_blob),
         source_bytes=len(bank.data),
     )
-    validate_spill_scenario_bank(bank, groups, dictionary, layout)
+    validate_spill_scenario_bank(bank, expected_groups, dictionary, layout)
     return layout
 
 
@@ -431,4 +443,6 @@ def validate_spill_scenario_bank(
         data[source_bank.dictionary_end_offset : len(source_bank.data)]
         != source_bank.data[source_bank.dictionary_end_offset :]
     ):
-        raise ProductionScenarioError("fixed source tail differs from Japanese source")
+        raise ProductionScenarioError(
+            "fixed source tail differs from Japanese source"
+        )
