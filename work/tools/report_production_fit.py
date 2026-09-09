@@ -7,11 +7,54 @@ from pathlib import Path
 
 import generate_translation_workbook as workbook
 from time_twist.capacity import NATIVE_SCENARIO_CAPACITY_BYTES, playable_capacity
+from time_twist.compression import compress_english_groups, packed_size
+from time_twist.english import encode_english
 from time_twist.production_translation import materialize_production_maps
 from time_twist.project import KNOWN_SCENARIO_BANKS
+from time_twist.textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT
+from time_twist.ui import (
+    FIXED_RECORD_TABLE_SPECS,
+    fixed_record_table_page_pointer_bytes,
+)
 
 
 BANK_NAMES = tuple(KNOWN_SCENARIO_BANKS)
+SPACE_RUN_ENTRIES = tuple(encode_english(" " * size) for size in (16, 8, 4, 2))
+
+
+def _measure_space_run_dictionary(bank_name: str) -> int:
+    """Measure a decoder-compatible dictionary with reusable wrap padding."""
+    groups = workbook._load_translation_groups(bank_name)  # noqa: SLF001
+    capacity = playable_capacity(
+        bank_name,
+        NATIVE_SCENARIO_CAPACITY_BYTES[bank_name],
+    )
+    pointer_bytes = 2 * (len(groups) - 1)
+
+    if bank_name in FIXED_RECORD_TABLE_SPECS:
+        spec = FIXED_RECORD_TABLE_SPECS[bank_name]
+        menu_records = tuple(encode_english(text) for text in spec.records)
+        combined_groups = (*groups, menu_records)
+        structural_bytes = (
+            pointer_bytes + fixed_record_table_page_pointer_bytes(bank_name)
+        )
+        compressed, dictionary = compress_english_groups(
+            combined_groups,
+            required_entries=SPACE_RUN_ENTRIES,
+            max_bytes=capacity - structural_bytes,
+            optimize=False,
+            maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+        )
+        return packed_size(compressed, dictionary) + structural_bytes
+
+    compressed, dictionary = compress_english_groups(
+        groups,
+        required_entries=SPACE_RUN_ENTRIES,
+        max_bytes=capacity - pointer_bytes,
+        optimize=False,
+        maximum_entries=EXTENDED_DICTIONARY_ENTRY_COUNT,
+    )
+    return packed_size(compressed, dictionary) + pointer_bytes
 
 
 def main() -> int:
@@ -34,8 +77,11 @@ def main() -> int:
             f"{len(counts)} banks"
         )
         overflow = 0
+        baseline_overflow = 0
         for bank_name in BANK_NAMES:
-            used = workbook.measure_translation_footprint(bank_name)
+            baseline = workbook.measure_translation_footprint(bank_name)
+            space_run = _measure_space_run_dictionary(bank_name)
+            used = min(baseline, space_run)
             capacity = playable_capacity(
                 bank_name,
                 NATIVE_SCENARIO_CAPACITY_BYTES[bank_name],
@@ -43,13 +89,18 @@ def main() -> int:
             remaining = capacity - used
             state = "FIT" if remaining >= 0 else "OVER"
             print(
-                f"PRODUCTION {state} {bank_name}: {used}/{capacity} bytes "
-                f"({remaining:+d})"
+                f"PRODUCTION {state} {bank_name}: best={used}/{capacity} "
+                f"({remaining:+d}); flat={baseline}; space-runs={space_run}; "
+                f"space-saving={baseline - space_run:+d}"
             )
             overflow += max(0, -remaining)
+            baseline_overflow += max(0, baseline - capacity)
 
+        print(
+            f"PRODUCTION BASELINE OVERFLOW: {baseline_overflow} bytes; "
+            f"BEST OVERFLOW: {overflow} bytes"
+        )
         if overflow:
-            print(f"PRODUCTION TOTAL OVERFLOW: {overflow} bytes")
             return 2
         print("PRODUCTION FIT: every scenario bank fits")
     return 0
