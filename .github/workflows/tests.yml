@@ -33,6 +33,23 @@ jobs:
       - name: Measure full production retranslation fit
         continue-on-error: true
         run: python work/tools/report_production_fit.py
+      - if: matrix.python-version == '3.14'
+        name: Materialize production translation maps
+        run: >-
+          python work/tools/materialize_production_translations.py
+          --repo-root . --output work/build/production_translations
+      - if: matrix.python-version == '3.14'
+        name: Archive production source snapshot
+        run: git archive --format=zip --output=work/build/production-source.zip HEAD
+      - if: matrix.python-version == '3.14'
+        name: Upload production integration inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-integration-inputs
+          path: |
+            work/build/production_translations
+            work/build/production-source.zip
+          if-no-files-found: error
       - run: python -m black --check work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
