@@ -21,12 +21,13 @@ from .textcodec import PackedSymbol, SymbolKind
 # the 19 most frequent uppercase letters, and the two most common marks.
 COMMON_CHARACTERS = " " "etaoinshrdlucmfwypvbgkjqxz" "ETAOINSHRDLUCMFWYPV" ",."
 
-# Extended codes 37-62 cost nine bits and use the engine's existing lookup
-# table.  Code 45 is a recovered safe slot that the English script did not use;
-# it now carries the colon.  Code 61 is restored to its native ellipsis tile,
-# and code 57 is repurposed from the Japanese display-slash mark as a true em
-# dash.  The production English does not use a slash, so unsupported slashes
-# fail validation rather than silently displaying the wrong punctuation.
+# Extended codes 37-63 cost nine bits and use the engine's lookup table. Code
+# 63 is redirected by the production runtime from its unsafe native $AC tile to
+# recovered font tile $B0, where it carries the dollar sign. Code 45 is a safe
+# slot used for the colon; code 61 restores the native ellipsis; and code 57 is
+# repurposed from the Japanese display-slash mark as a true em dash. Production
+# English does not use the slash, so unsupported slashes fail validation rather
+# than silently displaying the wrong punctuation.
 EXTENDED_CHARACTERS: dict[int, str] = {
     37: "B",
     38: "G",
@@ -63,6 +64,10 @@ EXTENDED_CHARACTERS: dict[int, str] = {
     # Code 61 is the original Japanese ellipsis slot; restore that semantic.
     61: "…",
     62: "?",
+    # Runtime-tested production mapping: NOV2 redirects this code from $AC to
+    # safe font tile $B0. The diagnostic Start$ screen rendered cleanly without
+    # disturbing the protected title-background source region.
+    63: "$",
 }
 
 # At 8x8 resolution, curly quote variants do not benefit from separate tiles.
@@ -140,7 +145,8 @@ def encode_english(text: str) -> tuple[PackedSymbol, ...]:
             match = CONTROL_PATTERN.match(text, position)
             if not match:
                 raise EnglishTextError(
-                    f"invalid tag at character {position}: {text[position:position + 16]!r}"
+                    f"invalid tag at character {position}: "
+                    f"{text[position:position + 16]!r}"
                 )
             value = int(match.group(1))
             if value == 5:
