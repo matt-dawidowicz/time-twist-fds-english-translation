@@ -101,12 +101,12 @@ class Nov4FontSourceSafetyTests(unittest.TestCase):
             active_english_font_tiles() & direct_graphics_slots, set()
         )
 
-        # Native lookup metadata can keep these aliases for decoding/audit, but
-        # the English character map must not activate them as writable glyphs.
-        self.assertEqual(EXTENDED_TILE_IDS[63], 0xAC)
-        self.assertNotIn(63, EXTENDED_CHARACTERS)
+        # Code 63 formerly resolved to $AC. Production runtime evidence proved
+        # that redirecting it to the first recovered font tile, $B0, is safe.
+        self.assertEqual(EXTENDED_TILE_IDS[63], 0xB0)
+        self.assertEqual(EXTENDED_CHARACTERS[63], "$")
         self.assertEqual(EXTENDED_TILE_IDS[45], 0xFA)
-        self.assertNotIn(45, EXTENDED_CHARACTERS)
+        self.assertEqual(EXTENDED_CHARACTERS[45], ":")
 
 
 if __name__ == "__main__":
