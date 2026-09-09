@@ -1,4 +1,4 @@
-"""Materialize complete production translation maps from reviewed overrides."""
+"""Materialize complete production translation maps from reviewed prose."""
 
 from __future__ import annotations
 
@@ -25,6 +25,7 @@ BANK_NAMES = (
 
 
 def main() -> int:
+    """Write the complete game-facing production maps to a chosen directory."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--output", type=Path, required=True)
@@ -35,6 +36,7 @@ def main() -> int:
         BANK_NAMES,
         base_directory=root / "work" / "translations",
         override_directory=root / "work" / "production_overrides",
+        review_directory=root / "review" / "production_retranslation",
         output_directory=args.output.resolve(),
     )
     total = sum(counts.values())
