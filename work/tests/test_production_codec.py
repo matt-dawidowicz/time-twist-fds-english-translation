@@ -8,6 +8,8 @@ from time_twist.compression import expand_dictionary_symbols
 from time_twist.english import encode_english
 from time_twist.production_codec import (
     PRODUCTION_DICTIONARY_ENTRY_COUNT,
+    _dictionary_expansions,
+    _rebalanced_result,
     compress_production_groups,
     decode_production_symbol,
     optimal_parse_groups,
@@ -87,6 +89,59 @@ class ProductionCodecTests(unittest.TestCase):
         )
         expanded = expand_dictionary_symbols(parsed[0][0], dictionary)
         self.assertEqual(expanded, source[0][0])
+
+    def test_cheap_tier_participates_in_unified_nested_grammar(self) -> None:
+        """Build nested entries from slot 1 instead of freezing a flat tier."""
+        source = (
+            tuple(
+                encode_english("alpha beta alpha beta gamma")
+                for _ in range(10)
+            ),
+        )
+
+        _compressed, dictionary = compress_production_groups(
+            source,
+            maximum_entries=10,
+            rebalance_passes=0,
+        )
+
+        self.assertGreaterEqual(len(dictionary), 2)
+        self.assertTrue(
+            any(
+                symbol.kind is SymbolKind.DICTIONARY
+                for symbol in dictionary[1]
+            )
+        )
+
+    def test_rebalance_promotes_heavy_high_entry_into_cheap_tier(self) -> None:
+        """Let one logical dictionary move phrases across the 68-slot boundary."""
+        fillers = tuple(encode_english(f"R{index:02d}") for index in range(1, 69))
+        hot_phrase = encode_english("alpha beta gamma")
+        dictionary = (*fillers, hot_phrase)
+        source = (
+            tuple(
+                encode_english(
+                    "alpha beta gamma alpha beta gamma"
+                )
+                for _ in range(20)
+            ),
+        )
+        baseline = optimal_parse_groups(source, dictionary)
+        baseline_size = production_packed_size(baseline, dictionary)
+
+        parsed, rebalanced = _rebalanced_result(
+            source,
+            dictionary,
+            required_entry_count=0,
+            candidate_limit=6,
+            maximum_passes=3,
+        )
+
+        self.assertLess(production_packed_size(parsed, rebalanced), baseline_size)
+        self.assertLessEqual(
+            _dictionary_expansions(rebalanced).index(hot_phrase) + 1,
+            68,
+        )
 
     def test_compressor_adds_profitable_high_entries(self) -> None:
         """Prove the adaptive compressor can grow beyond the 68 cheap slots."""
