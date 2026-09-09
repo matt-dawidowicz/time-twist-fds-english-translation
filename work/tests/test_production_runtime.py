@@ -50,8 +50,14 @@ class ProductionRuntimeTests(unittest.TestCase):
         self.assertEqual(patch.expected[-3:], bytes.fromhex("4C BE 82"))
         self.assertEqual(patch.replacement[-3:], bytes.fromhex("4C C5 82"))
 
+    def test_dollar_sign_redirects_only_extended_code_63(self) -> None:
+        patch = PRODUCTION_RUNTIME_PATCHES[1]
+        self.assertEqual(patch.cpu_address, 0x8378)
+        self.assertEqual(patch.expected, bytes.fromhex("AC"))
+        self.assertEqual(patch.replacement, bytes.fromhex("B0"))
+
     def test_menu_renderer_uses_existing_eight_glyph_buffer(self) -> None:
-        renderer = PRODUCTION_RUNTIME_PATCHES[1:3]
+        renderer = PRODUCTION_RUNTIME_PATCHES[2:4]
         self.assertEqual(
             [patch.cpu_address for patch in renderer],
             [0x94BB, 0x94E6],
@@ -61,7 +67,7 @@ class ProductionRuntimeTests(unittest.TestCase):
             self.assertEqual(patch.replacement, bytes.fromhex("A9 08"))
 
     def test_selection_brackets_span_all_eight_visible_glyphs(self) -> None:
-        patch = PRODUCTION_RUNTIME_PATCHES[3]
+        patch = PRODUCTION_RUNTIME_PATCHES[4]
         self.assertEqual(patch.cpu_address, 0x98A3)
         self.assertEqual(patch.expected, bytes.fromhex("38"))
         self.assertEqual(patch.replacement, bytes.fromhex("48"))
