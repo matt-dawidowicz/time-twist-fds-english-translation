@@ -2,22 +2,24 @@
 
 This module stages only runtime changes that have survived emulator evidence.
 Two earlier RC3/RC4 experiments attempted to install a variable-width menu
-renderer by using $9391-$93B0 as code/scratch storage.  Runtime screenshots
+renderer by using $9391-$93B0 as code/scratch storage. Runtime screenshots
 proved that assumption unsafe: $9390-$93AF is live NES palette data, so those
-builds corrupted UI graphics.  That experiment is intentionally removed here.
+builds corrupted UI graphics. That experiment is intentionally removed here.
 
 The retained fixes are:
 
 * the extended English dictionary escape enters the dictionary expander at
-  $82C5, after the native five-bit index reader, rather than at $82BE; and
-* the existing menu text blitter copies eight characters instead of six.  The
-  native staging buffer is already sixteen bytes wide (two bytes per glyph), so
-  this raises the visible text limit to eight without changing menu geometry,
-  palette data, scratch RAM, cursor code, or automatic dialogue wrapping.
+  $82C5, after the native five-bit index reader, rather than at $82BE;
+* the existing menu text blitter copies eight characters instead of six; and
+* the right selection arrow is moved two glyph cells farther right, so the
+  original bracket geometry encloses the same eight-glyph maximum visible by
+  the conservative renderer.
 
-The eight-character change is deliberately conservative while the final
-production renderer is being reverse-engineered.  It is sufficient to exercise
-``Intercom`` without reintroducing the RC3/RC4 palette/layout regression.
+The menu changes deliberately preserve the game's original window geometry,
+palette data, scratch RAM, cursor code, and automatic dialogue wrapping. The
+selection span is fixed to the longest word the current renderer can display
+rather than attempting another dynamic-width system before safe scratch/code
+storage has been fully recovered.
 """
 
 from __future__ import annotations
@@ -78,7 +80,7 @@ def _hex(value: str) -> bytes:
 
 
 # The English extended-token decoder has already read the six-bit value into
-# $3A.  Entering at $82BE would clear $3A and consume another five bits.  $82C5
+# $3A. Entering at $82BE would clear $3A and consume another five bits. $82C5
 # is the first instruction after the native index reader and therefore expands
 # the already-decoded dictionary entry 32-68 correctly.
 _EXTENDED_DICTIONARY_ENTRY_FIX = RuntimePatch(
@@ -89,10 +91,10 @@ _EXTENDED_DICTIONARY_ENTRY_FIX = RuntimePatch(
 )
 
 
-# NOV2 initializes sixteen bytes at $8747 before decoding a menu label.  The
+# NOV2 initializes sixteen bytes at $8747 before decoding a menu label. The
 # renderer consumes alternating bytes for the two tile rows, so the staging
-# buffer already holds eight glyphs.  The original renderer simply stops after
-# six iterations on each row.  Raising only those two loop counts exposes all
+# buffer already holds eight glyphs. The original renderer simply stops after
+# six iterations on each row. Raising only those two loop counts exposes all
 # eight existing glyph slots while preserving every other menu/UI behavior.
 _EIGHT_GLYPH_MENU_RENDERER_PATCHES = (
     RuntimePatch(
@@ -109,13 +111,29 @@ _EIGHT_GLYPH_MENU_RENDERER_PATCHES = (
     ),
 )
 
-# $9390-$93AF is live palette data.  Do not place code, tables, or scratch
-# storage there.  RC3/RC4 did so experimentally and produced visible corruption.
+
+# The native right-arrow routine starts from the left-arrow coordinate in $14
+# and adds $38: 48 pixels for six glyphs plus the existing 8-pixel bracket
+# allowance. With the text blitter raised to eight glyphs, the equivalent
+# fixed span is $48: 64 pixels for eight glyphs plus the same 8-pixel allowance.
+# Moving only this immediate operand keeps the known-good RC2/RC5 window and
+# cursor behavior intact while ensuring the brackets enclose ``Intercom``.
+_EIGHT_GLYPH_SELECTION_SPAN_PATCH = RuntimePatch(
+    file_offset=0x38A3,
+    expected=_hex("38"),
+    replacement=_hex("48"),
+    label="eight-glyph selection bracket span",
+)
+
+
+# $9390-$93AF is live palette data. Do not place code, tables, or scratch
+# storage there. RC3/RC4 did so experimentally and produced visible corruption.
 PALETTE_DATA_RANGE = range(0x3390, 0x33B0)
 
 PRODUCTION_RUNTIME_PATCHES = (
     _EXTENDED_DICTIONARY_ENTRY_FIX,
     *_EIGHT_GLYPH_MENU_RENDERER_PATCHES,
+    _EIGHT_GLYPH_SELECTION_SPAN_PATCH,
 )
 
 
