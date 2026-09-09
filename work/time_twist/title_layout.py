@@ -47,9 +47,11 @@ NOV3_LOAD_ADDRESS = 0xD7B5
 SPLIT_TILE_ROW = 16
 # Background slots below the clock-owned $EC-$FF tail are shared across two
 # non-overlapping title phases. Patterns common to neither phase may reuse one
-# ID because the final transition replaces their contiguous CHR delta.
+# ID because the final transition replaces their contiguous CHR delta. The
+# normalized production font changes two subtitle patterns relative to the old
+# 5x7 metrics, so the exact reviewed phases now require 53 delta tiles.
 TOP_TILE_COUNT = CLOCK_SOURCE_TILE
-FINAL_DELTA_TILE_COUNT = 0x37
+FINAL_DELTA_TILE_COUNT = 0x35
 FINAL_DELTA_CHR_SIZE = FINAL_DELTA_TILE_COUNT * 16
 BOTTOM_TILE_COUNT = 0x37
 BOTTOM_CHR_SIZE = BOTTOM_TILE_COUNT * 16
