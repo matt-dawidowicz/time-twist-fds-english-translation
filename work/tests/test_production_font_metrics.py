@@ -45,14 +45,26 @@ class ProductionFontMetricsTests(unittest.TestCase):
     def test_ellipsis_and_em_dash_have_dedicated_runtime_codes(self) -> None:
         self.assertEqual(EXTENDED_CHARACTERS[57], "—")
         self.assertEqual(EXTENDED_CHARACTERS[61], "…")
-        self.assertEqual(render_english(encode_english("Wait… no—really!")), "Wait… no—really!")
+        self.assertEqual(
+            render_english(encode_english("Wait… no—really!")),
+            "Wait… no—really!",
+        )
         self.assertEqual(glyph_ink_bounds("…"), (6, 6))
         self.assertEqual(glyph_ink_bounds("—"), (3, 3))
         self.assertNotEqual(render_glyph("-"), render_glyph("—"))
 
     def test_colon_uses_the_recovered_safe_code_45_slot(self) -> None:
         self.assertEqual(EXTENDED_CHARACTERS[45], ":")
-        self.assertEqual(render_english(encode_english("Simon: Yes.")), "Simon: Yes.")
+        self.assertEqual(
+            render_english(encode_english("Simon: Yes.")),
+            "Simon: Yes.",
+        )
+
+    def test_dollar_sign_uses_the_runtime_tested_safe_tile(self) -> None:
+        self.assertEqual(EXTENDED_CHARACTERS[63], "$")
+        self.assertEqual(EXTENDED_TILE_IDS[63], 0xB0)
+        self.assertEqual(render_english(encode_english("$120")), "$120")
+        self.assertEqual(glyph_ink_bounds("$"), (0, 6))
 
     def test_curly_quotes_encode_to_the_established_quote_glyphs(self) -> None:
         self.assertEqual(render_english(encode_english("“Yes.”")), '"Yes."')
