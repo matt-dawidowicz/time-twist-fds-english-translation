@@ -28,6 +28,17 @@ class ProductionRuntimeTests(unittest.TestCase):
             data[start : start + len(patch.expected)] = patch.expected
         return data
 
+    @staticmethod
+    def _adaptive_patch(address: int):
+        matches = [
+            patch
+            for patch in ADAPTIVE_DICTIONARY_RUNTIME_PATCHES
+            if patch.cpu_address == address
+        ]
+        if len(matches) != 1:
+            raise AssertionError(f"expected one adaptive patch at ${address:04X}")
+        return matches[0]
+
     def test_patches_are_size_neutral_and_source_verified(self) -> None:
         source = bytes(self._synthetic_nov2())
         patched = patch_nov2(source)
@@ -89,12 +100,26 @@ class ProductionRuntimeTests(unittest.TestCase):
             end = start + len(patch.replacement)
             self.assertEqual(once[start:end], patch.replacement)
 
+    def test_production_scan_limit_reaches_end_of_fds_prg_ram(self) -> None:
+        patch = self._adaptive_patch(0x8142)
+        self.assertEqual(patch.expected, bytes.fromhex("C9 D4"))
+        self.assertEqual(patch.replacement, bytes.fromhex("C9 E0"))
+
+    def test_top_level_decoder_always_clears_nesting_depth(self) -> None:
+        branch = self._adaptive_patch(0x8154)
+        stub = self._adaptive_patch(0x81FA)
+        self.assertEqual(branch.expected, bytes.fromhex("A2 00 86 72 86 73"))
+        self.assertEqual(branch.replacement, bytes.fromhex("4C FA 81 EA EA EA"))
+        self.assertEqual(
+            stub.replacement,
+            bytes.fromhex("A2 00 86 71 86 72 86 73 A9 80 85 6C 4C 5E 81"),
+        )
+
     def test_adaptive_dictionary_uses_dead_english_decoder_region(self) -> None:
-        branch, stub = ADAPTIVE_DICTIONARY_RUNTIME_PATCHES[:2]
-        self.assertEqual(branch.cpu_address, 0x8182)
+        branch = self._adaptive_patch(0x8182)
+        stub = self._adaptive_patch(0x81E0)
         self.assertEqual(branch.expected, bytes.fromhex("4C BE 82"))
         self.assertEqual(branch.replacement, bytes.fromhex("4C E0 81"))
-        self.assertEqual(stub.cpu_address, 0x81E0)
         self.assertEqual(len(stub.expected), 26)
         self.assertEqual(len(stub.replacement), 26)
         self.assertIn(bytes.fromhex("20 0D 81"), stub.replacement)
@@ -104,11 +129,10 @@ class ProductionRuntimeTests(unittest.TestCase):
         self.assertTrue(stub.replacement.endswith(bytes.fromhex("4C C5 82")))
 
     def test_nested_dictionary_uses_depth_counter_not_boolean(self) -> None:
-        enter, leave = ADAPTIVE_DICTIONARY_RUNTIME_PATCHES[2:]
-        self.assertEqual(enter.cpu_address, 0x82C5)
+        enter = self._adaptive_patch(0x82C5)
+        leave = self._adaptive_patch(0x8311)
         self.assertEqual(enter.expected, bytes.fromhex("A9 FF 85 71"))
         self.assertEqual(enter.replacement, bytes.fromhex("E6 71 EA EA"))
-        self.assertEqual(leave.cpu_address, 0x8311)
         self.assertEqual(leave.expected, bytes.fromhex("A9 00 85 71"))
         self.assertEqual(leave.replacement, bytes.fromhex("C6 71 EA EA"))
 
