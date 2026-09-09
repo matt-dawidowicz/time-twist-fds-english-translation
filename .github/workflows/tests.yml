@@ -34,9 +34,6 @@ jobs:
       - run: python work/generate_translation_workbook.py
       - name: Verify generated translation review artifacts are current
         run: git diff --exit-code -- outputs work/translation_workbook_banks
-      - name: Measure full production retranslation fit
-        continue-on-error: true
-        run: python work/tools/report_production_fit.py
       - if: matrix.python-version == '3.14'
         name: Materialize production translation maps
         run: >-
@@ -54,6 +51,9 @@ jobs:
             work/build/production_translations
             work/build/production-source.zip
           if-no-files-found: error
+      - name: Measure full production retranslation fit
+        continue-on-error: true
+        run: python work/tools/report_production_fit.py
       - run: python -m black --check work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
