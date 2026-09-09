@@ -101,13 +101,13 @@ _DOLLAR_SIGN_TILE_LOOKUP_PATCH = RuntimePatch(
 # eight existing glyph slots while preserving every other menu/UI behavior.
 _EIGHT_GLYPH_MENU_RENDERER_PATCHES = (
     RuntimePatch(
-        file_offset=0x34BB,
+        file_offset=0x34BC,
         expected=_hex("A9 06"),
         replacement=_hex("A9 08"),
         label="eight-glyph menu renderer first row",
     ),
     RuntimePatch(
-        file_offset=0x34E6,
+        file_offset=0x34E7,
         expected=_hex("A9 06"),
         replacement=_hex("A9 08"),
         label="eight-glyph menu renderer second row",
