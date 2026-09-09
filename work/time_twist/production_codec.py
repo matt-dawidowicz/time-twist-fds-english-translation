@@ -33,7 +33,6 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Iterable
 
-from .compression import compress_english_groups
 from .textcodec import (
     BitReader,
     BitWriter,
@@ -52,6 +51,8 @@ HIGH_DICTIONARY_ESCAPE = 0
 DEFAULT_MAX_GRAMMAR_TOKENS = 12
 DEFAULT_MAX_NESTING_DEPTH = 4
 DEFAULT_TRIAL_CANDIDATES = 6
+DEFAULT_REBALANCE_CANDIDATES = 6
+DEFAULT_REBALANCE_PASSES = 3
 
 ScenarioGroups = tuple[tuple[tuple[PackedSymbol, ...], ...], ...]
 ScenarioDictionary = tuple[tuple[PackedSymbol, ...], ...]
@@ -396,6 +397,126 @@ def _rank_grammar_candidates(
     return ranked
 
 
+def _reference_counts(
+    groups: ScenarioGroups,
+    dictionary: ScenarioDictionary,
+) -> tuple[int, ...]:
+    """Count stored dictionary references in dialogue and dictionary entries."""
+    counts = [0] * len(dictionary)
+    for group in groups:
+        for record in group:
+            for symbol in record:
+                if symbol.kind is SymbolKind.DICTIONARY:
+                    counts[symbol.value - 1] += 1
+    for entry in dictionary:
+        for symbol in entry:
+            if symbol.kind is SymbolKind.DICTIONARY:
+                counts[symbol.value - 1] += 1
+    return tuple(counts)
+
+
+def _rebuild_dictionary_from_expansions(
+    expansions: tuple[tuple[PackedSymbol, ...], ...],
+) -> ScenarioDictionary:
+    """Re-encode ordered literal expansions using only earlier entries."""
+    dictionary: list[tuple[PackedSymbol, ...]] = []
+    for expansion in expansions:
+        if any(
+            symbol.kind not in (SymbolKind.COMMON, SymbolKind.EXTENDED)
+            for symbol in expansion
+        ):
+            raise ValueError("dictionary expansion contains non-literal data")
+        definition = _optimal_parse_record(expansion, tuple(dictionary))
+        dictionary.append(definition)
+    rebuilt = tuple(dictionary)
+    _validate_dictionary(rebuilt)
+    return rebuilt
+
+
+def _rebalanced_result(
+    groups: ScenarioGroups,
+    dictionary: ScenarioDictionary,
+    *,
+    required_entry_count: int,
+    candidate_limit: int,
+    maximum_passes: int,
+) -> tuple[ScenarioGroups, ScenarioDictionary]:
+    """Promote useful high entries into cheap slots using exact repack scoring.
+
+    Dictionary entries form one logical pool.  Entries 1-68 merely have a
+    cheaper wire representation than entries 69-255.  This pass therefore
+    allows non-required expansions to cross that pricing boundary, rebuilding
+    every nested definition from its literal expansion after each trial so the
+    backward-only grammar invariant remains valid.
+    """
+    parsed = optimal_parse_groups(groups, dictionary)
+    current_size = production_packed_size(parsed, dictionary)
+    if len(dictionary) <= EXTENDED_DICTIONARY_ENTRY_COUNT:
+        return parsed, dictionary
+
+    expansions = _dictionary_expansions(dictionary)
+    cheap_start = required_entry_count
+    cheap_end = min(EXTENDED_DICTIONARY_ENTRY_COUNT, len(dictionary))
+    if cheap_start >= cheap_end:
+        return parsed, dictionary
+
+    for _ in range(maximum_passes):
+        counts = _reference_counts(parsed, dictionary)
+        low_candidates = sorted(
+            range(cheap_start, cheap_end),
+            key=lambda index: (counts[index], index),
+        )[:candidate_limit]
+        high_candidates = sorted(
+            range(EXTENDED_DICTIONARY_ENTRY_COUNT, len(dictionary)),
+            key=lambda index: (counts[index], -index),
+            reverse=True,
+        )[:candidate_limit]
+
+        best_size = current_size
+        best_parsed: ScenarioGroups | None = None
+        best_dictionary: ScenarioDictionary | None = None
+        best_expansions: tuple[tuple[PackedSymbol, ...], ...] | None = None
+        for low_index in low_candidates:
+            for high_index in high_candidates:
+                # A high entry that is not referenced more often than the low
+                # entry has no direct pricing-tier advantage.  Dictionary
+                # definition changes could still help, but those are better
+                # handled by grammar selection rather than an O(n^2) swap.
+                if counts[high_index] <= counts[low_index]:
+                    continue
+                trial_order = list(expansions)
+                trial_order[low_index], trial_order[high_index] = (
+                    trial_order[high_index],
+                    trial_order[low_index],
+                )
+                trial_expansions = tuple(trial_order)
+                trial_dictionary = _rebuild_dictionary_from_expansions(
+                    trial_expansions
+                )
+                trial_parsed = optimal_parse_groups(groups, trial_dictionary)
+                trial_size = production_packed_size(
+                    trial_parsed, trial_dictionary
+                )
+                if trial_size < best_size:
+                    best_size = trial_size
+                    best_parsed = trial_parsed
+                    best_dictionary = trial_dictionary
+                    best_expansions = trial_expansions
+
+        if (
+            best_parsed is None
+            or best_dictionary is None
+            or best_expansions is None
+        ):
+            break
+        parsed = best_parsed
+        dictionary = best_dictionary
+        expansions = best_expansions
+        current_size = best_size
+
+    return parsed, dictionary
+
+
 def compress_production_groups(
     groups: ScenarioGroups,
     *,
@@ -404,15 +525,22 @@ def compress_production_groups(
     maximum_grammar_tokens: int = DEFAULT_MAX_GRAMMAR_TOKENS,
     maximum_nesting_depth: int = DEFAULT_MAX_NESTING_DEPTH,
     trial_candidates: int = DEFAULT_TRIAL_CANDIDATES,
+    rebalance_candidates: int = DEFAULT_REBALANCE_CANDIDATES,
+    rebalance_passes: int = DEFAULT_REBALANCE_PASSES,
 ) -> tuple[ScenarioGroups, ScenarioDictionary]:
-    """Compress English with 68 cheap slots plus profitable 69-255 grammar slots.
+    """Compress English as one 255-entry dictionary with two reference prices.
 
-    The first stage reuses the established flat English compressor for at most
-    68 entries.  The source records are then reparsed optimally against that
-    dictionary.  Additional entries are selected from repeated sequences in
-    the optimal token stream; they may reference earlier dictionary entries,
-    but never controls or later entries.  A proposed high entry is retained
-    only when an exact repack of groups plus dictionary becomes smaller.
+    Entries 1-68 and 69-255 are not separate dictionaries.  They are one
+    candidate pool whose first 68 slots happen to cost 9 bits per reference;
+    later slots cost 17 bits.  Grammar entries are therefore selected from the
+    beginning with the cost of the *next actual slot*, and a final exact-scored
+    rebalance may promote profitable high entries into the cheap tier while
+    demoting weaker low entries.
+
+    ``required_entries`` remain pinned at the start because fixed-address text
+    may reference those exact indices.  Every other entry competes globally.
+    Nested entries are rebuilt after cross-tier moves so they remain acyclic
+    and backward-only.
     """
     if not 1 <= maximum_entries <= PRODUCTION_DICTIONARY_ENTRY_COUNT:
         raise ValueError("maximum production dictionary entries is out of range")
@@ -422,6 +550,12 @@ def compress_production_groups(
         raise ValueError("maximum_nesting_depth must be positive")
     if trial_candidates < 1:
         raise ValueError("trial_candidates must be positive")
+    if rebalance_candidates < 1:
+        raise ValueError("rebalance_candidates must be positive")
+    if rebalance_passes < 0:
+        raise ValueError("rebalance_passes cannot be negative")
+    if len(required_entries) > maximum_entries:
+        raise ValueError("required entries exceed production dictionary limit")
     if any(
         symbol.kind is SymbolKind.DICTIONARY
         for group in groups
@@ -430,18 +564,14 @@ def compress_production_groups(
     ):
         raise ValueError("production compressor expects literal source groups")
 
-    low_limit = min(maximum_entries, EXTENDED_DICTIONARY_ENTRY_COUNT)
-    _, low_dictionary = compress_english_groups(
-        groups,
-        required_entries=required_entries,
-        maximum_entries=low_limit,
-        optimize=False,
-    )
-    dictionary: ScenarioDictionary = low_dictionary
+    dictionary: ScenarioDictionary = required_entries
     _validate_dictionary(dictionary)
     parsed = optimal_parse_groups(groups, dictionary)
     current_size = production_packed_size(parsed, dictionary)
 
+    # Grow one dictionary from slot 1 through slot 255.  The ranking function
+    # sees the real reference cost of next_index, so the exact same candidate
+    # machinery naturally becomes more selective after slot 68.
     while len(dictionary) < maximum_entries:
         next_index = len(dictionary) + 1
         ranked = _rank_grammar_candidates(
@@ -471,5 +601,14 @@ def compress_production_groups(
         dictionary = best_dictionary
         parsed = best_parsed
         current_size = best_size
+
+    if rebalance_passes and len(dictionary) > EXTENDED_DICTIONARY_ENTRY_COUNT:
+        parsed, dictionary = _rebalanced_result(
+            groups,
+            dictionary,
+            required_entry_count=len(required_entries),
+            candidate_limit=rebalance_candidates,
+            maximum_passes=rebalance_passes,
+        )
 
     return parsed, dictionary
