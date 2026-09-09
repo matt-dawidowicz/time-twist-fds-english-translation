@@ -65,7 +65,6 @@ class ProductionRuntimeTests(unittest.TestCase):
         self.assertEqual(patch.cpu_address, 0x98A3)
         self.assertEqual(patch.expected, bytes.fromhex("38"))
         self.assertEqual(patch.replacement, bytes.fromhex("48"))
-        # Six glyph cells plus one bracket cell is $38; eight plus one is $48.
         self.assertEqual(patch.expected[0], 6 * 8 + 8)
         self.assertEqual(patch.replacement[0], 8 * 8 + 8)
 
