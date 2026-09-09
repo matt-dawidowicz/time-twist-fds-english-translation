@@ -1,27 +1,15 @@
 """Source-verified runtime hardening for the production English build.
 
-This module stages only runtime changes that have survived emulator evidence.
+This module keeps proven UI/font fixes separate from the staged adaptive text
+codec.  The default patch path remains the runtime-tested 68-entry English
+format.  Passing ``adaptive_dictionary=True`` additionally installs the
+production 255-entry dictionary escape and bounded nested-dictionary support so
+new candidates can be tested without silently changing the certified path.
+
 Two earlier RC3/RC4 experiments attempted to install a variable-width menu
 renderer by using $9391-$93B0 as code/scratch storage. Runtime screenshots
 proved that assumption unsafe: $9390-$93AF is live NES palette data, so those
 builds corrupted UI graphics. That experiment is intentionally removed here.
-
-The retained fixes are:
-
-* the extended English dictionary escape enters the dictionary expander at
-  $82C5, after the native five-bit index reader, rather than at $82BE;
-* extended code 63 is redirected from unsafe title-graphics tile $AC to safe
-  production-font tile $B0, where it carries the dollar sign;
-* the existing menu text blitter copies eight characters instead of six; and
-* the right selection arrow is moved two glyph cells farther right, so the
-  original bracket geometry encloses the same eight-glyph maximum visible by
-  the conservative renderer.
-
-The menu changes deliberately preserve the game's original window geometry,
-palette data, scratch RAM, cursor code, and automatic dialogue wrapping. The
-selection span is fixed to the longest word the current renderer can display
-rather than attempting another dynamic-width system before safe scratch/code
-storage has been fully recovered.
 """
 
 from __future__ import annotations
@@ -130,14 +118,77 @@ _EIGHT_GLYPH_MENU_RENDERER_PATCHES = (
 # The native right-arrow routine starts from the left-arrow coordinate in $14
 # and adds $38: six 8-pixel glyph cells plus one 8-pixel bracket allowance.
 # With the text blitter raised to eight glyphs, the equivalent fixed span is
-# $48: eight glyph cells plus the same bracket allowance. Moving only this
-# immediate operand keeps the known-good RC2/RC5 window and cursor behavior
-# intact while ensuring the brackets enclose ``Intercom``.
+# $48: eight glyph cells plus the same bracket allowance.
 _EIGHT_GLYPH_SELECTION_SPAN_PATCH = RuntimePatch(
     file_offset=0x38A3,
     expected=_hex("38"),
     replacement=_hex("48"),
     label="eight-glyph selection bracket span",
+)
+
+
+# ---------------------------------------------------------------------------
+# Staged adaptive production dictionary: entries 69-255 + nested grammar
+# ---------------------------------------------------------------------------
+# Native dictionary prefix 1110xxxxx reaches $82BE when xxxxx is the five-bit
+# one-based index. Index zero is invalid in ordinary source text. Redirect that
+# branch to a stub in $81E0-$81F9, a region rendered unreachable by the proven
+# $81D3 English 32-68 decoder patch. No live palette, table, or scratch RAM is
+# commandeered.
+_ADAPTIVE_DICTIONARY_BRANCH_PATCH = RuntimePatch(
+    file_offset=0x2182,
+    expected=_hex("4C BE 82"),
+    replacement=_hex("4C E0 81"),
+    label="adaptive dictionary zero-index escape branch",
+)
+
+
+# Stub semantics:
+#   * read the native five-bit dictionary index into $3A;
+#   * nonzero indices continue unchanged at $82C5;
+#   * zero saves X, reads eight more stream bits into $3A, restores X, and
+#     continues at $82C5.
+# The production encoder emits only canonical high payloads 69-255. X must be
+# preserved because the caller uses it as the decoded menu/text output index.
+_ADAPTIVE_DICTIONARY_STUB_PATCH = RuntimePatch(
+    file_offset=0x21E0,
+    expected=_hex(
+        "18 69 20 4C 36 82 C9 25 B0 3C 4C 15 82 "
+        "A5 3A C9 1E D0 05 A9 2E 4C B7 81 C9 1F"
+    ),
+    replacement=_hex(
+        "A9 00 85 3A 20 0D 81 A5 3A D0 0C 8A 48 "
+        "A2 08 20 28 83 CA D0 FA 68 AA 4C C5 82"
+    ),
+    label="adaptive dictionary 8-bit high-index reader",
+)
+
+
+# The native dictionary expander used $71 as a boolean: set to $FF on entry,
+# clear to zero after one expansion. The 6502 already pushes the previous text
+# pointer triplet ($6A/$6B/$6C) for every dictionary call, so replacing that
+# boolean with a depth counter makes backward-only nested entries unwind
+# correctly without changing the stack representation. Production compression
+# caps grammar depth well below the 8-bit counter and practical CPU-stack limit.
+_NESTED_DICTIONARY_ENTER_PATCH = RuntimePatch(
+    file_offset=0x22C5,
+    expected=_hex("A9 FF 85 71"),
+    replacement=_hex("E6 71 EA EA"),
+    label="nested dictionary depth increment",
+)
+
+_NESTED_DICTIONARY_EXIT_PATCH = RuntimePatch(
+    file_offset=0x2311,
+    expected=_hex("A9 00 85 71"),
+    replacement=_hex("C6 71 EA EA"),
+    label="nested dictionary depth decrement",
+)
+
+ADAPTIVE_DICTIONARY_RUNTIME_PATCHES = (
+    _ADAPTIVE_DICTIONARY_BRANCH_PATCH,
+    _ADAPTIVE_DICTIONARY_STUB_PATCH,
+    _NESTED_DICTIONARY_ENTER_PATCH,
+    _NESTED_DICTIONARY_EXIT_PATCH,
 )
 
 
@@ -153,22 +204,32 @@ PRODUCTION_RUNTIME_PATCHES = (
 )
 
 
-def patch_nov2(data: bytes) -> bytes:
-    """Return NOV2 with all proven production runtime patches applied."""
+def patch_nov2(data: bytes, *, adaptive_dictionary: bool = False) -> bytes:
+    """Return NOV2 with proven fixes and optional adaptive codec patches."""
     result = bytearray(data)
     for patch in PRODUCTION_RUNTIME_PATCHES:
         patch.apply(result)
+    if adaptive_dictionary:
+        for patch in ADAPTIVE_DICTIONARY_RUNTIME_PATCHES:
+            patch.apply(result)
     return bytes(result)
 
 
-def patch_fds_image(raw: bytes) -> bytes:
-    """Patch NOV2 in a complete two- or four-side FDS image."""
+def patch_fds_image(
+    raw: bytes,
+    *,
+    adaptive_dictionary: bool = False,
+) -> bytes:
+    """Patch NOV2 in a complete FDS image without changing its payload size."""
     image = FdsImage.from_bytes(raw)
     if len(image.sides) <= NOV2_SIDE_INDEX:
         raise ProductionRuntimeError("FDS image has no Zenpen side A")
     nov2 = image.sides[NOV2_SIDE_INDEX].find_file(NOV2_FILENAME)
     original_size = len(nov2.data)
-    nov2.data = patch_nov2(nov2.data)
+    nov2.data = patch_nov2(
+        nov2.data,
+        adaptive_dictionary=adaptive_dictionary,
+    )
     if len(nov2.data) != original_size:
         raise ProductionRuntimeError("NOV2 production hardening changed size")
     return image.to_bytes()
