@@ -106,6 +106,13 @@ def _literal_groups(
     )
 
 
+def _semantic_record(
+    record: tuple[PackedSymbol, ...] | list[PackedSymbol],
+) -> tuple[tuple[object, int], ...]:
+    """Drop diagnostic source-bit positions while preserving token meaning."""
+    return tuple((symbol.kind, symbol.value) for symbol in record)
+
+
 def _best_resident_subset(
     group_sizes: tuple[int, ...],
     capacity: int,
@@ -420,7 +427,9 @@ def validate_spill_scenario_bank(
         limit=len(dictionary),
     )
     rebuilt_dictionary = tuple(tuple(entry) for entry in decoded_dictionary)
-    if rebuilt_dictionary != dictionary:
+    if tuple(_semantic_record(entry) for entry in rebuilt_dictionary) != tuple(
+        _semantic_record(entry) for entry in dictionary
+    ):
         raise ProductionScenarioError("dictionary round-trip mismatch")
 
     for group_index, (decoded, expected) in enumerate(
@@ -434,7 +443,7 @@ def validate_spill_scenario_bank(
             zip(decoded, expected, strict=True)
         ):
             expanded = expand_dictionary_symbols(packed, rebuilt_dictionary)
-            if expanded != literal:
+            if _semantic_record(expanded) != _semantic_record(literal):
                 raise ProductionScenarioError(
                     f"group {group_index} record {record_index} failed round-trip"
                 )
