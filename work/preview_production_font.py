@@ -12,9 +12,13 @@ SAMPLES = (
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     "abcdefghijklmnopqrstuvwxyz",
     "0123456789",
-    "Baseline: Agjpy Q7 1995",
-    "Wait… no—really!",
-    "“Yes.” don’t  consommé",
+    "September 25, 1995",
+    "I've been meaning to come here.",
+    "Your personality is…",
+    "Pépé, are you all right?",
+    "Yes—Jesus Christ!",
+    "The Gestapo are nearby.",
+    "Pay $120 now.",
 )
 
 
@@ -35,7 +39,12 @@ def main() -> None:
 
     for line_number, text in enumerate(SAMPLES):
         top = margin * scale + line_number * row_height
-        draw.text((4, top - 11), str(line_number + 1), fill=(80, 70, 65), font=label_font)
+        draw.text(
+            (4, top - 11),
+            str(line_number + 1),
+            fill=(80, 70, 65),
+            font=label_font,
+        )
 
         # Row 6 is the common baseline; row 7 is reserved for descenders.
         draw.line(
