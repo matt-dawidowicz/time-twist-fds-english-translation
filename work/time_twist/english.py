@@ -21,12 +21,13 @@ from .textcodec import PackedSymbol, SymbolKind
 # the 19 most frequent uppercase letters, and the two most common marks.
 COMMON_CHARACTERS = " " "etaoinshrdlucmfwypvbgkjqxz" "ETAOINSHRDLUCMFWYPV" ",."
 
-# Extended codes 37-62 cost nine bits and use the engine's existing lookup
-# table.  Code 45 is a recovered safe slot that the English script did not use;
-# it now carries the colon.  Code 61 is restored to its native ellipsis tile,
+# Extended codes 37-63 cost nine bits.  Code 63 is no longer allowed to point
+# at its Japanese tile $AC because that source slot overlaps title graphics;
+# the production runtime redirects it to the recovered safe font tile $B0.
+# Code 45 carries the colon, code 61 restores the native ellipsis semantic,
 # and code 57 is repurposed from the Japanese display-slash mark as a true em
-# dash.  The production English does not use a slash, so unsupported slashes
-# fail validation rather than silently displaying the wrong punctuation.
+# dash.  Production English does not use a slash, so unsupported slashes fail
+# validation rather than silently displaying the wrong punctuation.
 EXTENDED_CHARACTERS: dict[int, str] = {
     37: "B",
     38: "G",
@@ -61,6 +62,9 @@ EXTENDED_CHARACTERS: dict[int, str] = {
     # Code 61 is the original Japanese ellipsis slot; restore that semantic.
     61: "…",
     62: "?",
+    # NOV2's lookup entry for 63 is source-verified and redirected from $AC
+    # to safe font tile $B0 before this code is permitted in a release build.
+    63: "$",
 }
 
 # At 8x8 resolution, curly quote variants do not benefit from separate tiles.
