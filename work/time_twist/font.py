@@ -170,7 +170,6 @@ PIXEL_FONT_5X8 = {
     "/": ("00001", "00010", "00010", "00100", "01000", "01000", "10000"),
     "—": ("00000", "00000", "00000", "11111", "00000", "00000", "00000"),
     "…": ("00000", "00000", "00000", "00000", "00000", "00000", "10101"),
-    "$": ("00100", "01111", "10100", "01110", "00101", "11110", "00100"),
     "!": ("00100", "00100", "00100", "00100", "00100", "00000", "00100"),
     '"': ("01010", "01010", "01010", "00000", "00000", "00000", "00000"),
     "'": ("00100", "00100", "01000", "00000", "00000", "00000", "00000"),
@@ -181,10 +180,10 @@ PIXEL_FONT_5X8 = {
 # Backwards-compatible public name used by existing tests/tools.
 PIXEL_FONT_5X7 = PIXEL_FONT_5X8
 
-# Runtime tile IDs used by extended codes 37-63.  Values 37-62 retain NOV2's
-# recovered lookup-table tile IDs.  Production runtime code redirects value 63
-# from its unsafe native tile $AC to unused safe font tile $B0, so the dollar
-# sign can be active without touching the title graphics that own $AC.
+# Runtime tile IDs used by extended codes 37-63.  These are NOV2's original
+# lookup-table values at $835E-$8378.  Code 63 remains inactive because its
+# native tile $AC overlaps title graphics and must never be written as an
+# English font tile.
 EXTENDED_TILE_IDS = {
     37: 0xF2,
     38: 0xF3,
@@ -212,7 +211,7 @@ EXTENDED_TILE_IDS = {
     60: 0xB2,
     61: 0xB4,
     62: 0xFE,
-    63: 0xB0,
+    63: 0xAC,
 }
 
 
