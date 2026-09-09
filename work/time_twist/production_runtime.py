@@ -3,8 +3,8 @@
 This module keeps proven UI/font fixes separate from the staged adaptive text
 codec.  The default patch path remains the runtime-tested 68-entry English
 format.  Passing ``adaptive_dictionary=True`` additionally installs the
-production 255-entry dictionary escape and bounded nested-dictionary support so
-new candidates can be tested without silently changing the certified path.
+production 255-entry dictionary escape, bounded nested-dictionary support, and
+the high-RAM text-scan boundary needed by spill-relocated production banks.
 
 Two earlier RC3/RC4 experiments attempted to install a variable-width menu
 renderer by using $9391-$93B0 as code/scratch storage. Runtime screenshots
@@ -130,6 +130,31 @@ _EIGHT_GLYPH_SELECTION_SPAN_PATCH = RuntimePatch(
 # ---------------------------------------------------------------------------
 # Staged adaptive production dictionary: entries 69-255 + nested grammar
 # ---------------------------------------------------------------------------
+# Packed-text scanning originally stops when the stream pointer reaches the
+# $D400 page. Production banks may spill packed groups and their dictionary
+# into otherwise-unused PRG RAM above the source overlay. The FDS PRG window
+# ends at $DFFF, so $E000 is the correct exclusive high bound.
+_PRODUCTION_TEXT_SCAN_LIMIT_PATCH = RuntimePatch(
+    file_offset=0x2142,
+    expected=_hex("C9 D4"),
+    replacement=_hex("C9 E0"),
+    label="production packed-text scan high-RAM limit",
+)
+
+
+# Every top-level decode must begin with dictionary depth zero. The native
+# entry initialized X/$72/$73 and relied on $71 as a boolean that callers did
+# not consistently clear. Redirect only the true top-level entry at $8154 to a
+# dead English-code stub; dictionary return resumes at $815A and therefore does
+# not clear nesting depth while an expansion is still active.
+_TOP_LEVEL_DECODER_INIT_BRANCH_PATCH = RuntimePatch(
+    file_offset=0x2154,
+    expected=_hex("A2 00 86 72 86 73"),
+    replacement=_hex("4C FA 81 EA EA EA"),
+    label="production decoder depth initialization branch",
+)
+
+
 # Native dictionary prefix 1110xxxxx reaches $82BE when xxxxx is the five-bit
 # one-based index. Index zero is invalid in ordinary source text. Redirect that
 # branch to a stub in $81E0-$81F9, a region rendered unreachable by the proven
@@ -164,6 +189,17 @@ _ADAPTIVE_DICTIONARY_STUB_PATCH = RuntimePatch(
 )
 
 
+# $81FA-$8208 is the continuation of the same unreachable Japanese extended
+# glyph branch. It reconstructs the original top-level initialization and also
+# clears $71 before jumping past the overwritten bytes to $815E.
+_TOP_LEVEL_DECODER_INIT_STUB_PATCH = RuntimePatch(
+    file_offset=0x21FA,
+    expected=_hex("D0 05 A9 2F 4C B7 81 BD 48 87 C9 B5 D0 05 A9"),
+    replacement=_hex("A2 00 86 71 86 72 86 73 A9 80 85 6C 4C 5E 81"),
+    label="production decoder top-level initialization stub",
+)
+
+
 # The native dictionary expander used $71 as a boolean: set to $FF on entry,
 # clear to zero after one expansion. The 6502 already pushes the previous text
 # pointer triplet ($6A/$6B/$6C) for every dictionary call, so replacing that
@@ -185,8 +221,11 @@ _NESTED_DICTIONARY_EXIT_PATCH = RuntimePatch(
 )
 
 ADAPTIVE_DICTIONARY_RUNTIME_PATCHES = (
+    _PRODUCTION_TEXT_SCAN_LIMIT_PATCH,
+    _TOP_LEVEL_DECODER_INIT_BRANCH_PATCH,
     _ADAPTIVE_DICTIONARY_BRANCH_PATCH,
     _ADAPTIVE_DICTIONARY_STUB_PATCH,
+    _TOP_LEVEL_DECODER_INIT_STUB_PATCH,
     _NESTED_DICTIONARY_ENTER_PATCH,
     _NESTED_DICTIONARY_EXIT_PATCH,
 )
