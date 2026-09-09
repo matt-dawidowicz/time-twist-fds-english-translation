@@ -75,7 +75,7 @@ class ProductionRuntimeTests(unittest.TestCase):
         renderer = PRODUCTION_RUNTIME_PATCHES[2:4]
         self.assertEqual(
             [patch.cpu_address for patch in renderer],
-            [0x94BB, 0x94E6],
+            [0x94BC, 0x94E7],
         )
         for patch in renderer:
             self.assertEqual(patch.expected, bytes.fromhex("A9 06"))
