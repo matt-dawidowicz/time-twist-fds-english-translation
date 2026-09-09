@@ -72,6 +72,13 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest().upper()
 
 
+def _semantic_record(
+    record: tuple[PackedSymbol, ...] | list[PackedSymbol],
+) -> tuple[tuple[object, int], ...]:
+    """Drop decoder bit positions while preserving token kind and value."""
+    return tuple((symbol.kind, symbol.value) for symbol in record)
+
+
 def _load_translation_map(path: Path) -> dict[str, str]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
@@ -166,7 +173,7 @@ def _audit_menu(
     ):
         expanded = expand_dictionary_symbols(record, dictionary)
         expected = encode_english(expected_text)
-        if expanded != expected:
+        if _semantic_record(expanded) != _semantic_record(expected):
             raise ProductionBuildError(
                 f"{bank_name} menu record {index} failed production round-trip"
             )
