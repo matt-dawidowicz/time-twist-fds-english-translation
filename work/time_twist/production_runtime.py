@@ -113,11 +113,11 @@ _EIGHT_GLYPH_MENU_RENDERER_PATCHES = (
 
 
 # The native right-arrow routine starts from the left-arrow coordinate in $14
-# and adds $38: 48 pixels for six glyphs plus the existing 8-pixel bracket
-# allowance. With the text blitter raised to eight glyphs, the equivalent
-# fixed span is $48: 64 pixels for eight glyphs plus the same 8-pixel allowance.
-# Moving only this immediate operand keeps the known-good RC2/RC5 window and
-# cursor behavior intact while ensuring the brackets enclose ``Intercom``.
+# and adds $38: six 8-pixel glyph cells plus one 8-pixel bracket allowance.
+# With the text blitter raised to eight glyphs, the equivalent fixed span is
+# $48: eight glyph cells plus the same bracket allowance. Moving only this
+# immediate operand keeps the known-good RC2/RC5 window and cursor behavior
+# intact while ensuring the brackets enclose ``Intercom``.
 _EIGHT_GLYPH_SELECTION_SPAN_PATCH = RuntimePatch(
     file_offset=0x38A3,
     expected=_hex("38"),
