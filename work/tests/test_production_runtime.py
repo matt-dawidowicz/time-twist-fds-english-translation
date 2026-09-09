@@ -5,6 +5,7 @@ from __future__ import annotations
 import unittest
 
 from time_twist.production_runtime import (
+    PALETTE_DATA_RANGE,
     PRODUCTION_RUNTIME_PATCHES,
     ProductionRuntimeError,
     patch_nov2,
@@ -49,16 +50,26 @@ class ProductionRuntimeTests(unittest.TestCase):
         self.assertEqual(patch.expected[-3:], bytes.fromhex("4C BE 82"))
         self.assertEqual(patch.replacement[-3:], bytes.fromhex("4C C5 82"))
 
-    def test_variable_width_renderer_has_zero_count_guard(self) -> None:
-        renderer = next(
-            patch
-            for patch in PRODUCTION_RUNTIME_PATCHES
-            if patch.cpu_address == 0x949E
+    def test_menu_renderer_uses_existing_eight_glyph_buffer(self) -> None:
+        renderer = PRODUCTION_RUNTIME_PATCHES[1:]
+        self.assertEqual(
+            [patch.cpu_address for patch in renderer],
+            [0x94BB, 0x94E6],
         )
-        self.assertIn(
-            bytes.fromhex("8A 4A D0 02 A9 06 85 31 A2 00"),
-            renderer.replacement,
-        )
+        for patch in renderer:
+            self.assertEqual(patch.expected, bytes.fromhex("A9 06"))
+            self.assertEqual(patch.replacement, bytes.fromhex("A9 08"))
+
+    def test_runtime_patches_never_overlap_live_palette_data(self) -> None:
+        palette = set(PALETTE_DATA_RANGE)
+        for patch in PRODUCTION_RUNTIME_PATCHES:
+            touched = set(
+                range(patch.file_offset, patch.file_offset + len(patch.expected))
+            )
+            self.assertTrue(
+                palette.isdisjoint(touched),
+                f"{patch.label} overlaps NOV2 palette data",
+            )
 
 
 if __name__ == "__main__":
