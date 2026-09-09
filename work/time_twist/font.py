@@ -161,6 +161,7 @@ PIXEL_FONT_5X8 = {
     "7": ("11111", "00001", "00010", "00100", "01000", "01000", "01000"),
     "8": ("01110", "10001", "10001", "01110", "10001", "10001", "01110"),
     "9": ("01110", "10001", "10001", "01111", "00001", "00001", "01110"),
+    "$": ("00100", "01111", "10100", "01110", "00101", "11110", "00100"),
     ",": ("00000", "00000", "00000", "00000", "00100", "00100", "01000"),
     ".": ("00000", "00000", "00000", "00000", "00000", "00100", "00100"),
     "(": ("00010", "00100", "01000", "01000", "01000", "00100", "00010"),
@@ -180,10 +181,11 @@ PIXEL_FONT_5X8 = {
 # Backwards-compatible public name used by existing tests/tools.
 PIXEL_FONT_5X7 = PIXEL_FONT_5X8
 
-# Runtime tile IDs used by extended codes 37-63.  These are NOV2's original
-# lookup-table values at $835E-$8378.  Code 63 remains inactive because its
-# native tile $AC overlaps title graphics and must never be written as an
-# English font tile.
+# Runtime tile IDs used by extended codes 37-63. Most retain NOV2's original
+# lookup-table values at $835E-$8378. Code 63 is the sole production remap:
+# its native $AC destination aliases title graphics, so the runtime hardening
+# redirects it to recovered font tile $B0. The Start$ diagnostic build proved
+# that mapping renders correctly without disturbing the protected graphics.
 EXTENDED_TILE_IDS = {
     37: 0xF2,
     38: 0xF3,
@@ -211,7 +213,7 @@ EXTENDED_TILE_IDS = {
     60: 0xB2,
     61: 0xB4,
     62: 0xFE,
-    63: 0xAC,
+    63: 0xB0,
 }
 
 
@@ -277,15 +279,15 @@ def render_glyph(char: str) -> bytes:
     try:
         pattern = PIXEL_FONT_5X8[key]
     except KeyError as error:
-        raise FontPatchError(
-            f"pixel font has no glyph for {char!r}"
-        ) from error
+        raise FontPatchError(f"pixel font has no glyph for {char!r}") from error
     if len(pattern) > 8:
         raise FontPatchError(f"glyph {char!r} exceeds eight rows")
     rows = bytearray(b"\xff" * 8)
     for y, source_row in enumerate(pattern):
         if len(source_row) != 5 or set(source_row) - {"0", "1"}:
-            raise FontPatchError(f"glyph {char!r} has an invalid row {source_row!r}")
+            raise FontPatchError(
+                f"glyph {char!r} has an invalid row {source_row!r}"
+            )
         for x, pixel in enumerate(source_row, start=1):
             if pixel == "1":
                 rows[y] &= ~(1 << (7 - x))
