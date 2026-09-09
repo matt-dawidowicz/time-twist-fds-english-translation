@@ -92,11 +92,14 @@ def _template_parts(template: str) -> tuple[list[str], list[int]]:
 
 
 def _word_wrap_segment(text: str, *, columns: int = DISPLAY_COLUMNS) -> str:
-    """Pad word-wrapped rows so the native automatic wrap stays word-safe.
+    """Pad native automatic rows while keeping every word visibly separated.
 
-    The native renderer advances automatically after 24 visible cells. Each
-    nonfinal row is therefore padded to exactly 24 columns and followed by the
-    next word immediately. No new control code is invented.
+    The renderer advances automatically after ``columns`` visible cells. A
+    nonfinal row must therefore end with at least one blank tile: otherwise a
+    word ending exactly in column 24 becomes byte-adjacent to the first word on
+    the next row (for example ``men'ssweat``) even though the screen wraps it.
+    Final rows may use the full width because no following word needs a
+    separator. No new control code is invented.
     """
     if not text:
         return ""
@@ -106,20 +109,29 @@ def _word_wrap_segment(text: str, *, columns: int = DISPLAY_COLUMNS) -> str:
         raise ProductionTranslationError(
             f"word {longest!r} exceeds the {columns}-column renderer"
         )
+
     rows: list[str] = []
-    current = words[0]
-    for word in words[1:]:
-        candidate = f"{current} {word}"
-        if len(candidate) <= columns:
+    remaining = list(words)
+    while remaining:
+        final_text = " ".join(remaining)
+        if len(final_text) <= columns:
+            rows.append(final_text)
+            break
+
+        current = remaining.pop(0)
+        if len(current) >= columns:
+            raise ProductionTranslationError(
+                f"word {current!r} leaves no padding cell before an automatic wrap"
+            )
+        while remaining:
+            candidate = f"{current} {remaining[0]}"
+            if len(candidate) > columns - 1:
+                break
             current = candidate
-            continue
-        rows.append(current)
-        current = word
-    rows.append(current)
-    return "".join(
-        row.ljust(columns) if index < len(rows) - 1 else row
-        for index, row in enumerate(rows)
-    )
+            remaining.pop(0)
+        rows.append(current.ljust(columns))
+
+    return "".join(rows)
 
 
 def _break_score(text: str, position: int) -> int:
