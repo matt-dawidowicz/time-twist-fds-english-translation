@@ -78,8 +78,12 @@ class ProductionCodecTests(unittest.TestCase):
         parsed = optimal_parse_groups(source, dictionary)
 
         self.assertEqual(
-            [symbol.value for symbol in parsed[0][0]],
-            [69, 69],
+            [(symbol.kind, symbol.value) for symbol in parsed[0][0]],
+            [
+                (SymbolKind.DICTIONARY, 69),
+                (SymbolKind.COMMON, 0),
+                (SymbolKind.DICTIONARY, 69),
+            ],
         )
         expanded = expand_dictionary_symbols(parsed[0][0], dictionary)
         self.assertEqual(expanded, source[0][0])
