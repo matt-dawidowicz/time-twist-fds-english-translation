@@ -1,0 +1,47 @@
+name: Entropy formatter helper
+
+on:
+  push:
+    branches:
+      - entropy/canonical-runtime-20260909
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Black
+        run: python -m pip install black==25.1.0
+      - name: Format entropy files
+        run: |
+          black \
+            work/time_twist/entropy_codec.py \
+            work/time_twist/entropy_compression.py \
+            work/time_twist/entropy_scenario.py \
+            work/time_twist/entropy_runtime.py \
+            work/time_twist/entropy_title.py \
+            work/time_twist/entropy_release.py \
+            work/tests/test_entropy_production.py \
+            work/tools/build_entropy_candidate.py
+      - name: Archive formatted files
+        run: |
+          tar -czf entropy-formatted.tar.gz \
+            work/time_twist/entropy_codec.py \
+            work/time_twist/entropy_compression.py \
+            work/time_twist/entropy_scenario.py \
+            work/time_twist/entropy_runtime.py \
+            work/time_twist/entropy_title.py \
+            work/time_twist/entropy_release.py \
+            work/tests/test_entropy_production.py \
+            work/tools/build_entropy_candidate.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: entropy-formatted
+          path: entropy-formatted.tar.gz
+          if-no-files-found: error
