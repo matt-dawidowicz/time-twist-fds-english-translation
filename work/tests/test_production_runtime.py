@@ -5,6 +5,7 @@ from __future__ import annotations
 import unittest
 
 from time_twist.production_runtime import (
+    ADAPTIVE_DICTIONARY_RUNTIME_PATCHES,
     PALETTE_DATA_RANGE,
     PRODUCTION_RUNTIME_PATCHES,
     ProductionRuntimeError,
@@ -13,13 +14,16 @@ from time_twist.production_runtime import (
 
 
 class ProductionRuntimeTests(unittest.TestCase):
-    def _synthetic_nov2(self) -> bytearray:
+    def _synthetic_nov2(self, *, adaptive: bool = False) -> bytearray:
+        patches = PRODUCTION_RUNTIME_PATCHES
+        if adaptive:
+            patches = (*patches, *ADAPTIVE_DICTIONARY_RUNTIME_PATCHES)
         size = max(
             patch.file_offset + len(patch.expected)
-            for patch in PRODUCTION_RUNTIME_PATCHES
+            for patch in patches
         )
         data = bytearray(b"\xCC" * size)
-        for patch in PRODUCTION_RUNTIME_PATCHES:
+        for patch in patches:
             start = patch.file_offset
             data[start : start + len(patch.expected)] = patch.expected
         return data
@@ -74,9 +78,44 @@ class ProductionRuntimeTests(unittest.TestCase):
         self.assertEqual(patch.expected[0], 6 * 8 + 8)
         self.assertEqual(patch.replacement[0], 8 * 8 + 8)
 
+    def test_adaptive_dictionary_patch_is_size_neutral_and_idempotent(self) -> None:
+        source = bytes(self._synthetic_nov2(adaptive=True))
+        once = patch_nov2(source, adaptive_dictionary=True)
+        twice = patch_nov2(once, adaptive_dictionary=True)
+        self.assertEqual(len(once), len(source))
+        self.assertEqual(twice, once)
+        for patch in ADAPTIVE_DICTIONARY_RUNTIME_PATCHES:
+            start = patch.file_offset
+            end = start + len(patch.replacement)
+            self.assertEqual(once[start:end], patch.replacement)
+
+    def test_adaptive_dictionary_uses_dead_english_decoder_region(self) -> None:
+        branch, stub = ADAPTIVE_DICTIONARY_RUNTIME_PATCHES[:2]
+        self.assertEqual(branch.cpu_address, 0x8182)
+        self.assertEqual(branch.expected, bytes.fromhex("4C BE 82"))
+        self.assertEqual(branch.replacement, bytes.fromhex("4C E0 81"))
+        self.assertEqual(stub.cpu_address, 0x81E0)
+        self.assertEqual(len(stub.expected), 26)
+        self.assertEqual(len(stub.replacement), 26)
+        self.assertIn(bytes.fromhex("20 0D 81"), stub.replacement)
+        self.assertIn(bytes.fromhex("A2 08 20 28 83 CA D0 FA"), stub.replacement)
+        self.assertIn(bytes.fromhex("8A 48"), stub.replacement)
+        self.assertIn(bytes.fromhex("68 AA"), stub.replacement)
+        self.assertTrue(stub.replacement.endswith(bytes.fromhex("4C C5 82")))
+
+    def test_nested_dictionary_uses_depth_counter_not_boolean(self) -> None:
+        enter, leave = ADAPTIVE_DICTIONARY_RUNTIME_PATCHES[2:]
+        self.assertEqual(enter.cpu_address, 0x82C5)
+        self.assertEqual(enter.expected, bytes.fromhex("A9 FF 85 71"))
+        self.assertEqual(enter.replacement, bytes.fromhex("E6 71 EA EA"))
+        self.assertEqual(leave.cpu_address, 0x8311)
+        self.assertEqual(leave.expected, bytes.fromhex("A9 00 85 71"))
+        self.assertEqual(leave.replacement, bytes.fromhex("C6 71 EA EA"))
+
     def test_runtime_patches_never_overlap_live_palette_data(self) -> None:
         palette = set(PALETTE_DATA_RANGE)
-        for patch in PRODUCTION_RUNTIME_PATCHES:
+        patches = (*PRODUCTION_RUNTIME_PATCHES, *ADAPTIVE_DICTIONARY_RUNTIME_PATCHES)
+        for patch in patches:
             touched = set(
                 range(patch.file_offset, patch.file_offset + len(patch.expected))
             )
