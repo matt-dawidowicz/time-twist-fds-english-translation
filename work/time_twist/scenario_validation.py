@@ -16,12 +16,13 @@ PERSONALITY_QUESTION_IDS = frozenset(
 
 # The native renderer can continue a long control-free segment on the next
 # 24-tile row when the byte stream places a blank tile exactly at the wrap
-# boundary.  This is not a blanket permission to overflow: a later control can
-# reuse the wrapped row and overwrite text.  Production IDs enter this set only
+# boundary. This is not blanket permission to overflow: a later control can
+# reuse the wrapped row and overwrite text. Production IDs enter this set only
 # after their exact control topology and padded wrap have been reviewed.
 PRODUCTION_SAFE_WRAP_IDS = frozenset(
     {
         "TT1B/g0/r1",
+        "TT1B/g1/r28",
     }
 )
 
