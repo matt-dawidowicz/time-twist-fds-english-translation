@@ -6,131 +6,40 @@ on:
       - fix/entropy-codec-architecture-20260910
 
 jobs:
-  unit-repair:
+  validate:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.14"]
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: fix/entropy-codec-architecture-20260910
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.14"
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt
-      - name: Repair documentation contract and stale font test
-        run: |
-          python - <<'PY'
-          import ast
-          import re
-          from pathlib import Path
-
-          root = Path("work")
-
-          def humanize(name: str) -> str:
-              return name.strip("_").replace("_", " ")
-
-          def purpose(node: ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef) -> str:
-              name = node.name
-              clean = name.strip("_")
-              phrase = humanize(name)
-              if isinstance(node, ast.ClassDef):
-                  if name.endswith("Tests"):
-                      return f"Group regression coverage for {humanize(name[:-5])}."
-                  return f"Represent {phrase} state and behavior."
-              if name == "__init__":
-                  return "Initialize the helper state."
-              if name.startswith("test_"):
-                  return f"Verify {humanize(name[5:])}."
-              specials = {
-                  "_sha256": "Return the SHA-256 digest for the supplied data.",
-                  "_semantic": "Return the semantic text representation used by this module.",
-                  "_pad": "Pad the supplied payload to its required fixed capacity.",
-                  "_write_word": "Write one little-endian word into the supplied buffer.",
-                  "_read_word": "Read one little-endian word from the supplied buffer.",
-                  "_s": "Encode one source string for the entropy tests.",
-                  "_common": "Build one common-symbol token for the entropy tests.",
-                  "_bits": "Return the encoded bit cost for the supplied symbols.",
-                  "_hex": "Return a hexadecimal representation of the supplied bytes.",
-                  "pc": "Return the current assembler program counter.",
-                  "label": "Record an assembler label at the current program counter.",
-                  "emit": "Append raw bytes to the assembled runtime.",
-                  "absolute": "Record an absolute-address fixup in the assembled runtime.",
-                  "relative": "Record a relative-address fixup in the assembled runtime.",
-                  "finish": "Resolve assembler fixups and return the completed runtime bytes.",
-                  "emit_node": "Serialize one node of the entropy decode trie.",
-                  "parse": "Parse the supplied token stream with the current dictionary.",
-              }
-              if name in specials:
-                  return specials[name]
-              prefixes = (
-                  ("build_", "Build"),
-                  ("load_", "Load"),
-                  ("read_", "Read"),
-                  ("write_", "Write"),
-                  ("encode_", "Encode"),
-                  ("decode_", "Decode"),
-                  ("expand_", "Expand"),
-                  ("compress_", "Compress"),
-                  ("select_", "Select"),
-                  ("guard_", "Validate"),
-                  ("assert_", "Validate"),
-                  ("make_", "Build"),
-                  ("rebuild_", "Rebuild"),
-                  ("parse_", "Parse"),
-                  ("command_", "Run"),
-                  ("render_", "Render"),
-              )
-              for prefix, verb in prefixes:
-                  if clean.startswith(prefix):
-                      return f"{verb} {humanize(clean[len(prefix):])}."
-              return f"Support the {humanize(clean)} operation for this module."
-
-          for path in sorted(root.rglob("*.py")):
-              if "__pycache__" in path.parts:
-                  continue
-              source = path.read_text(encoding="utf-8")
-              tree = ast.parse(source)
-              lines = source.splitlines(keepends=True)
-              inserts: list[tuple[int, str]] = []
-              for node in ast.walk(tree):
-                  if not isinstance(node, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
-                      continue
-                  if ast.get_docstring(node) is not None or not node.body:
-                      continue
-                  first = node.body[0]
-                  insert_line = first.lineno - 1
-                  if isinstance(first, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)) and first.decorator_list:
-                      insert_line = min(dec.lineno for dec in first.decorator_list) - 1
-                  if first.lineno <= node.lineno:
-                      raise SystemExit(f"unsupported one-line definition: {path}:{node.lineno}:{node.name}")
-                  indent = re.match(r"\s*", lines[insert_line]).group(0)
-                  inserts.append((insert_line, f'{indent}"""{purpose(node)}"""\n'))
-              for index, text in sorted(inserts, reverse=True):
-                  lines.insert(index, text)
-              if inserts:
-                  path.write_text("".join(lines), encoding="utf-8")
-
-          font_test = Path("work/tests/test_font.py")
-          text = font_test.read_text(encoding="utf-8")
-          old = "        tile_id = EXTENDED_TILE_IDS[63]\n        offset = NOV4_FONT_BASE_OFFSET + tile_id * 8\n"
-          new = (
-              "        # Code 63 is deliberately remapped to $B0; protect the title tile itself.\n"
-              "        tile_id = 0xAC\n"
-              "        offset = NOV4_FONT_BASE_OFFSET + tile_id * 8\n"
-          )
-          if old not in text:
-              raise SystemExit("stale font regression-test fragment not found")
-          font_test.write_text(text.replace(old, new, 1), encoding="utf-8")
-          PY
-          python -m black work
-          python -m ruff check work
-          python -m pydocstyle --convention=pep257 work
-          python -m mypy
-          python -m unittest discover -s work/tests -p 'test_documentation_contract.py'
-          python -m unittest discover -s work/tests -p 'test_font.py'
-          git config user.name "starlight_world"
-          git config user.email "43389528+matt-dawidowicz@users.noreply.github.com"
-          git add work
-          git commit -m "Satisfy documentation contract and fix font regression test"
-          git push origin HEAD:fix/entropy-codec-architecture-20260910
+      - run: python -m black --check work
+      - run: python -m ruff check work
+      - run: python -m pydocstyle --convention=pep257 work
+      - run: python -m mypy
+      - run: python work/run_tests.py unit
+      - if: matrix.python-version == '3.14'
+        run: python -m build
+      - if: matrix.python-version == '3.14'
+        run: python -m pip install --force-reinstall dist/*.whl
+      - if: matrix.python-version == '3.14'
+        name: Prove smoke test imports the installed wheel
+        run: >-
+          python -c "from pathlib import Path; import time_twist;
+          from time_twist.release import build_code_provenance;
+          imported = Path(time_twist.__file__).resolve();
+          checkout = Path('work/time_twist').resolve(); print(imported);
+          assert checkout not in imported.parents,
+          f'import leaked from checkout: {imported}';
+          build_code_provenance(Path.cwd())"
+      - if: matrix.python-version == '3.14'
+        run: time-twist --help
+      - if: matrix.python-version == '3.14'
+        run: time-twist release-build --help
