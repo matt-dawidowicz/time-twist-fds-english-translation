@@ -74,6 +74,18 @@ interpretation and the next-record cursor. In the reproduced R5 failure, this
 quickly produced bogus dictionary references and runaway expansion instead of a
 clean `Start` terminator.
 
+The first entropy-only repair fixed that global ownership bug and restored the
+NOV4 `Start` menu in live MesenCE execution. Continuing farther into TT1A exposed
+a second, deeper invariant: the TT1A selector records are not merely a sequential
+table. Native code can enter the region at internal fixed byte addresses. The
+legacy source documentation already records the clearest example: NOV2 directly
+references the fourth blood-type record at `$A465`.
+
+Packing all 19 TT1A labels as one 60-byte bit-contiguous stream therefore moved
+record starts away from their native addresses even though an offline decode from
+record zero succeeded. Runtime then entered internal bytes as though they were
+fresh entropy streams, producing malformed questionnaire text and menu tiles.
+
 ## Entropy-only decoder contract
 
 The repair intentionally does not add a hybrid runtime decoder. Address-based
@@ -82,25 +94,32 @@ address range. A new zero-page mode flag would add save/restore state across
 nested dictionary expansion, and previously proposed `$7F7A` scratch storage is
 actually executable NOV2 code.
 
-Instead, the builder now enforces one format contract:
+Instead, the builder now enforces two complementary invariants:
 
 > Every packed-text stream that can reach the entropy-patched NOV2 decoder is
 > entropy encoded before the image is emitted.
 
+> Every independently byte-addressed native entry point remains the start of an
+> independently byte-addressed entropy stream unless the caller is deliberately
+> rewritten.
+
 The normal scenario builder already owns scenario groups, dictionaries, and the
-11 large page-indexed menu tables. `entropy_fixed_ui.py` now owns the two
-previously omitted surfaces:
+11 large page-indexed menu tables. `entropy_fixed_ui.py` owns the two previously
+omitted fixed surfaces:
 
 - NOV4: 26 menu records, seven internal text records, and a four-entry local
   dictionary. The packed streams occupy 97/134, 47/60, and 19/28 bytes of their
   existing reservations respectively.
-- TT1A: all 19 blood-type/month/confirmation records are packed as one continuous
-  60-byte entropy stream inside the original 80-byte table allocation.
+- TT1A: all 19 blood-type/month/confirmation records remain in their original
+  byte slots from `$A45B` through `$A4AA`. Each slot is one self-contained
+  entropy stream beginning at the same native address. The encoded payloads use
+  67 bytes total inside the unchanged 80-byte allocation.
 
 Padding is allowed only after the last record of each independently addressed
-stream. In particular, TT1A may not preserve the old per-record byte slots:
-doing so would insert zero padding between records that the bit-contiguous
-entropy scanner would interpret as real prefix bits.
+stream. For NOV4 that means after the final record of each multi-record stream.
+For TT1A each native slot is independently addressed, so any unused bytes belong
+only to that slot after its separator; the next slot begins at its preserved byte
+address with a fresh `$80` bit mask.
 
 The NOV4 entropy conversion runs after the size-neutral font patch and before
 title expansion. The font patch deliberately retains its strict whole-bank source
@@ -111,7 +130,7 @@ safely run after the fixed-text conversion.
 The entropy manifest reports `decoder_format: entropy-only` plus the fixed-stream
 coverage/capacity inventory. The runtime smoke suite includes exact binary and
 semantic oracles for these surfaces, including NOV4 menu record 3 = `Start` and
-the full contiguous 19-record TT1A stream.
+all 19 TT1A native entry addresses decoding independently.
 
 ## Direct entropy installation
 
