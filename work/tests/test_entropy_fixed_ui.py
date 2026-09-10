@@ -24,7 +24,6 @@ from time_twist.entropy_fixed_ui import (
     NOV4_POINTERS,
     NOV4_SOURCE_SIZE,
     TT1A_CHOICE_PATCHES,
-    TT1A_CHOICE_TEXT,
     TT1A_ENTRY_ADDRESSES,
     TT1A_LOAD_ADDRESS,
     TT1A_TABLE_CAPACITY,
@@ -191,7 +190,9 @@ class EntropyFixedUiTests(unittest.TestCase):
         patched = patched_nov4_entropy_text(bytes(source))
         self.assertEqual(patched, bytes(source))
         for offset, address in NOV4_POINTERS.items():
-            self.assertEqual(int.from_bytes(patched[offset : offset + 2], "little"), address)
+            self.assertEqual(
+                int.from_bytes(patched[offset : offset + 2], "little"), address
+            )
 
     def test_idempotent_tt1a_patcher_preserves_pointer_contract(self) -> None:
         source = bytearray(0x1000)
@@ -201,7 +202,9 @@ class EntropyFixedUiTests(unittest.TestCase):
         patched = patched_tt1a_entropy_ui(bytes(source))
         self.assertEqual(patched, bytes(source))
         for offset, address in TT1A_TABLE_POINTERS.items():
-            self.assertEqual(int.from_bytes(patched[offset : offset + 2], "little"), address)
+            self.assertEqual(
+                int.from_bytes(patched[offset : offset + 2], "little"), address
+            )
 
     def test_partial_nov4_conversion_is_rejected(self) -> None:
         menu, group, dictionary = nov4_entropy_payloads()
