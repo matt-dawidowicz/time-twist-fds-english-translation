@@ -1,9 +1,9 @@
 """Fast runtime-debug entry points for the 2026-08-29 vs current comparison.
 
-This module deliberately avoids the broad public CLI.  Runtime debugging needs a
+This module deliberately avoids the broad public CLI. Runtime debugging needs a
 small number of repeatable operations: inspect the code delta, compare two FDS
 images, run the focused tests in one interpreter, and build the current entropy
-candidate without spawning helper scripts.
+candidate without spawning helper scripts or exposing discarded runtime modes.
 """
 
 from __future__ import annotations
@@ -152,21 +152,9 @@ def command_smoke(_args: argparse.Namespace) -> int:
     return 0 if result.wasSuccessful() else 1
 
 
-def command_patch_runtime(args: argparse.Namespace) -> int:
-    """Patch NOV2 runtime in-process without a helper-script subprocess."""
-    from .production_runtime import patch_fds_image
-
-    source = args.input.read_bytes()
-    patched = patch_fds_image(source)
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_bytes(patched)
-    changed = sum(a != b for a, b in zip(source, patched, strict=True))
-    print(f"{args.output} SHA-256 {_sha256(patched)}; changed={changed}")
-    return 0
-
-
 def command_build(args: argparse.Namespace) -> int:
-    """Build a candidate in-process; default to one four-side artifact."""
+    """Build the current entropy candidate in-process."""
+    from .entropy_release import build_entropy_images
     from .title import DEFAULT_SUBTITLE
 
     project_root = Path(__file__).resolve().parents[2]
@@ -177,33 +165,23 @@ def command_build(args: argparse.Namespace) -> int:
         project_root / "work/title_assets/Time Twist approved native slide.png"
     )
     translations = args.translations or project_root / "work/translations"
-    if args.mode == "entropy":
-        from .entropy_release import build_entropy_images as builder
-
-        builder_kwargs = {}
-    else:
-        from .production_release import build_production_images as builder
-
-        builder_kwargs = {"adaptive_dictionary": not args.flat_68}
-    outputs, manifest = builder(
+    outputs, manifest = build_entropy_images(
         args.zenpen.read_bytes(),
         args.kouhen.read_bytes(),
         translations_directory=translations,
         title_asset=title,
         slide_title_asset=slide,
         subtitle=args.subtitle or DEFAULT_SUBTITLE,
-        **builder_kwargs,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(outputs["four_side"])
     if args.all_images:
-        label = "Entropy" if args.mode == "entropy" else "Production"
-        args.output.with_name(
-            f"Time-Twist-English-{label}-Zenpen.fds"
-        ).write_bytes(outputs["zenpen"])
-        args.output.with_name(
-            f"Time-Twist-English-{label}-Kouhen.fds"
-        ).write_bytes(outputs["kouhen"])
+        args.output.with_name("Time-Twist-English-Entropy-Zenpen.fds").write_bytes(
+            outputs["zenpen"]
+        )
+        args.output.with_name("Time-Twist-English-Entropy-Kouhen.fds").write_bytes(
+            outputs["kouhen"]
+        )
     if args.manifest:
         args.manifest.parent.mkdir(parents=True, exist_ok=True)
         args.manifest.write_text(
@@ -216,7 +194,7 @@ def command_build(args: argparse.Namespace) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="time-twist-runtime",
-        description="Fast 2026-08-29 vs current runtime-debug operations.",
+        description="Fast 2026-08-29 vs current entropy runtime-debug operations.",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -235,17 +213,7 @@ def build_parser() -> argparse.ArgumentParser:
     smoke = sub.add_parser("smoke", help="run focused runtime tests once")
     smoke.set_defaults(function=command_smoke)
 
-    patch_runtime = sub.add_parser(
-        "patch-runtime", help="apply production NOV2 hardening in-process"
-    )
-    patch_runtime.add_argument("input", type=Path)
-    patch_runtime.add_argument("output", type=Path)
-    patch_runtime.set_defaults(function=command_patch_runtime)
-
-    build = sub.add_parser("build", help="build a candidate in-process")
-    build.add_argument(
-        "--mode", choices=("entropy", "production"), default="entropy"
-    )
+    build = sub.add_parser("build", help="build the current entropy candidate")
     build.add_argument("--zenpen", type=Path, required=True)
     build.add_argument("--kouhen", type=Path, required=True)
     build.add_argument("--translations", type=Path)
@@ -258,11 +226,6 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("--title", type=Path)
     build.add_argument("--slide-title", type=Path)
     build.add_argument("--subtitle")
-    build.add_argument(
-        "--flat-68",
-        action="store_true",
-        help="production mode only: disable adaptive entries 69-255",
-    )
     build.add_argument(
         "--all-images",
         action="store_true",
