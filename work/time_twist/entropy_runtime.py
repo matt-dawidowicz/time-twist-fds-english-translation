@@ -38,6 +38,7 @@ FRONTEND_CPU_ADDRESS = 0x815E
 FRONTEND_REGION_SIZE = 69
 CATEGORY_CPU_ADDRESS = 0x81E0
 CATEGORY_REGION_SIZE = 70
+MENU_WIDTH_TABLE_CPU_ADDRESS = 0x8757
 
 
 class EntropyRuntimeError(ProductionRuntimeError):
@@ -149,7 +150,7 @@ def _entropy_tree() -> bytes:
 ENTROPY_TREE = _entropy_tree()
 
 
-def _build_scanner() -> tuple[bytes, int, int, int, int]:
+def _build_scanner() -> tuple[bytes, int, int, int, int, int]:
     """Build the resumable record scanner plus its two initialization stubs."""
     assembler = _Assembler(SCANNER_CPU_ADDRESS)
     assembler.absolute(0x8D, 0x7F79)  # STA $7F79 -- work budget
@@ -222,6 +223,18 @@ def _build_scanner() -> tuple[bytes, int, int, int, int]:
     assembler.label("menu_init")
     assembler.emit(0x85, 0xC2, 0xA9, 0x80, 0x85, 0x6C, 0xA0, 0x00, 0x60)
 
+    # The menu renderer knows the selected visual slot in $A8 but historically
+    # positioned the right bracket with one fixed six/eight-glyph span. Store
+    # each decoded label width separately and derive the selected span at draw
+    # time. This 25-byte helper consumes only recovered entropy-scanner padding.
+    assembler.label("selection_span")
+    assembler.emit(0x98, 0x48)  # TYA / PHA -- preserve caller Y
+    assembler.emit(0xA5, 0x98, 0x38, 0xE5, 0xA8, 0xA8)  # ($98-$A8) -> Y
+    assembler.absolute(0xB9, MENU_WIDTH_TABLE_CPU_ADDRESS)  # LDA widths,Y
+    assembler.emit(0x0A, 0x0A)  # decoder X was 2*glyphs; now 8*glyphs
+    assembler.emit(0x18, 0x69, 0x08, 0x65, 0x14, 0x85, 0x31)
+    assembler.emit(0x68, 0xA8, 0xA5, 0x31, 0x60)  # restore Y; return right X
+
     blob = assembler.finish()
     if len(blob) > SCANNER_REGION_SIZE:
         raise EntropyRuntimeError(
@@ -233,10 +246,11 @@ def _build_scanner() -> tuple[bytes, int, int, int, int]:
         assembler.labels["base_table"],
         assembler.labels["pointer_init"],
         assembler.labels["menu_init"],
+        assembler.labels["selection_span"],
     )
 
 
-def _build_category_decoder() -> bytes:
+def _build_category_decoder() -> tuple[bytes, int]:
     """Build the compact trie walker in the recovered decoder region."""
     assembler = _Assembler(CATEGORY_CPU_ADDRESS)
     assembler.emit(0xA2, 0x00)
@@ -255,12 +269,23 @@ def _build_category_decoder() -> bytes:
     assembler.emit(0x29, 0x0F, 0x60)
     assembler.label("tree")
     assembler.emit(*ENTROPY_TREE)
+
+    # Menu labels decode into $8747 with two bytes per visible glyph. X is
+    # therefore exactly twice the visible label width when the record ends.
+    # $99 counts the labels still being drawn, so use it as a stable 1..8 table
+    # index. $8758-$875F lies beyond the eight-glyph menu staging area and is
+    # overwritten normally when dialogue resumes.
+    assembler.label("menu_width_capture")
+    assembler.emit(0x8A, 0xA4, 0x99)  # TXA / LDY $99
+    assembler.absolute(0x99, MENU_WIDTH_TABLE_CPU_ADDRESS)  # STA widths,Y
+    assembler.emit(0xA9, 0x00, 0x85, 0x69, 0x60)  # original epilogue + RTS
+
     blob = assembler.finish()
     if len(blob) > CATEGORY_REGION_SIZE:
         raise EntropyRuntimeError(
             "entropy category decoder exceeds its region"
         )
-    return blob
+    return blob, assembler.labels["menu_width_capture"]
 
 
 def _build_frontend(bits_address: int, base_address: int) -> bytes:
@@ -307,8 +332,11 @@ def _build_frontend(bits_address: int, base_address: int) -> bytes:
     ENTROPY_BASE_TABLE_CPU_ADDRESS,
     ENTROPY_POINTER_INIT_CPU_ADDRESS,
     ENTROPY_MENU_INIT_CPU_ADDRESS,
+    ENTROPY_SELECTION_SPAN_CPU_ADDRESS,
 ) = _build_scanner()
-_CATEGORY_CODE = _build_category_decoder()
+_CATEGORY_CODE, ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS = (
+    _build_category_decoder()
+)
 _FRONTEND_CODE = _build_frontend(
     ENTROPY_BITS_TABLE_CPU_ADDRESS,
     ENTROPY_BASE_TABLE_CPU_ADDRESS,
@@ -335,6 +363,26 @@ _MENU_BRANCH = bytes(
         ENTROPY_MENU_INIT_CPU_ADDRESS & 0xFF,
         ENTROPY_MENU_INIT_CPU_ADDRESS >> 8,
         0xEA,
+    )
+)
+_MENU_WIDTH_CAPTURE_CALL = bytes(
+    (
+        0x20,
+        ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS & 0xFF,
+        ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS >> 8,
+        0x60,
+        0xEA,
+    )
+)
+_DYNAMIC_SELECTION_SPAN_CALL = bytes(
+    (
+        0x20,
+        ENTROPY_SELECTION_SPAN_CPU_ADDRESS & 0xFF,
+        ENTROPY_SELECTION_SPAN_CPU_ADDRESS >> 8,
+        0x24,
+        0x48,
+        0x85,
+        0x14,
     )
 )
 _DICTIONARY_REJOIN = bytes.fromhex("4C 5E 81")
@@ -467,6 +515,20 @@ ENTROPY_RUNTIME_PATCHES = (
         "CC2A96A8812992B0D78C1A9E5002A11C6C7D5D1E081760CF699352CF77980852",
         _MENU_BRANCH,
         "menu entropy page initialization",
+    ),
+    HashGuardedPatch(
+        0x946B,
+        5,
+        "002AAB0B912D72966AEF53951C21D4652EA570282197847178F097CB3E4F353E",
+        _MENU_WIDTH_CAPTURE_CALL,
+        "capture decoded menu label width",
+    ),
+    HashGuardedPatch(
+        0x989F,
+        7,
+        "2984E2D892D6B25057EE1BCFC1F1AD40CFD9D0DE279D3A86513C9FD1333DE203",
+        _DYNAMIC_SELECTION_SPAN_CALL,
+        "dynamic menu selection bracket span",
     ),
 )
 

@@ -23,11 +23,15 @@ from time_twist.entropy_compression import (
 from time_twist.entropy_runtime import (
     CATEGORY_CODE_BYTES,
     ENTROPY_MENU_INIT_CPU_ADDRESS,
+    ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS,
     ENTROPY_POINTER_INIT_CPU_ADDRESS,
+    ENTROPY_SELECTION_SPAN_CPU_ADDRESS,
     ENTROPY_PREREQUISITE_PATCHES,
     ENTROPY_RUNTIME_PATCHES,
     FRONTEND_CODE_BYTES,
+    MENU_WIDTH_TABLE_CPU_ADDRESS,
     NOV3_LOAD_ADDRESS,
+    PALETTE_CPU_RANGE,
     SCANNER_CODE_BYTES,
 )
 from time_twist.entropy_scenario import build_entropy_scenario_bank
@@ -210,11 +214,13 @@ class EntropyProductionTests(unittest.TestCase):
 
     def test_generated_6502_blocks_fit_and_do_not_overlap(self) -> None:
         """Verify generated 6502 blocks fit and do not overlap."""
-        self.assertEqual(SCANNER_CODE_BYTES, 134)
+        self.assertEqual(SCANNER_CODE_BYTES, 159)
         self.assertEqual(FRONTEND_CODE_BYTES, 64)
-        self.assertEqual(CATEGORY_CODE_BYTES, 59)
+        self.assertEqual(CATEGORY_CODE_BYTES, 70)
         self.assertEqual(ENTROPY_POINTER_INIT_CPU_ADDRESS, 0x8124)
         self.assertEqual(ENTROPY_MENU_INIT_CPU_ADDRESS, 0x812E)
+        self.assertEqual(ENTROPY_SELECTION_SPAN_CPU_ADDRESS, 0x8137)
+        self.assertEqual(ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS, 0x821B)
         occupied: set[int] = set()
         for patch in ENTROPY_RUNTIME_PATCHES:
             touched = set(
@@ -238,7 +244,7 @@ class EntropyProductionTests(unittest.TestCase):
         ]
         self.assertEqual(
             _sha256(scanner),
-            "5E598E7038DC3AEA566A4F8996CC14E50CB9EF6C4F3947D2DFDC2797BEF20D34",
+            "0FCC20BD4DC6ABE4D03B4442009827F524D11BC9638ED0CA40E99F91C10856C6",
         )
         self.assertEqual(
             _sha256(frontend),
@@ -246,8 +252,53 @@ class EntropyProductionTests(unittest.TestCase):
         )
         self.assertEqual(
             _sha256(category),
-            "13BB5546C4DAA3C3D688F07F75FBFFD226725EB9BD72CD6238CBB662308485A2",
+            "5D405463C581155CDED03FBFAE748B6784A7DF09292BCB115DAC09E1DF2BB598",
         )
+
+    def test_menu_selection_brackets_use_decoded_label_width(self) -> None:
+        """Verify entropy menus place the right bracket from each label width."""
+        patches = {patch.label: patch for patch in ENTROPY_RUNTIME_PATCHES}
+        scanner = patches["bit-contiguous entropy scanner"].replacement
+        category = patches["entropy prefix-category decoder"].replacement
+
+        span_offset = ENTROPY_SELECTION_SPAN_CPU_ADDRESS - 0x80B1
+        span_stub = scanner[span_offset : span_offset + 25]
+        self.assertEqual(
+            span_stub,
+            bytes.fromhex(
+                "98 48 A5 98 38 E5 A8 A8 B9 57 87 0A 0A 18 69 08 "
+                "65 14 85 31 68 A8 A5 31 60"
+            ),
+        )
+        capture_offset = ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS - 0x81E0
+        capture_stub = category[capture_offset : capture_offset + 11]
+        self.assertEqual(
+            capture_stub,
+            bytes.fromhex("8A A4 99 99 57 87 A9 00 85 69 60"),
+        )
+        self.assertEqual(MENU_WIDTH_TABLE_CPU_ADDRESS, 0x8757)
+
+        capture = patches["capture decoded menu label width"]
+        self.assertEqual(capture.cpu_address, 0x946B)
+        self.assertEqual(capture.replacement, bytes.fromhex("20 1B 82 60 EA"))
+        dynamic = patches["dynamic menu selection bracket span"]
+        self.assertEqual(dynamic.cpu_address, 0x989F)
+        self.assertEqual(
+            dynamic.replacement,
+            bytes.fromhex("20 37 81 24 48 85 14"),
+        )
+
+        # X is two bytes per decoded glyph. The stub multiplies X by four and
+        # adds one eight-pixel bracket cell: 3 -> $20, 7 -> $40, 8 -> $48.
+        for glyphs, expected_span in ((3, 0x20), (7, 0x40), (8, 0x48)):
+            self.assertEqual((glyphs * 2) * 4 + 8, expected_span)
+
+        palette = set(PALETTE_CPU_RANGE)
+        for patch in ENTROPY_RUNTIME_PATCHES:
+            touched = set(
+                range(patch.cpu_address, patch.cpu_address + patch.size)
+            )
+            self.assertTrue(palette.isdisjoint(touched), patch.label)
 
     def test_entropy_runtime_preserves_x_and_avoids_native_zero_page_74(
         self,

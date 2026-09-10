@@ -1,14 +1,14 @@
 """Validate materialized production prose without reimposing legacy brevity.
 
 The review layer is unconstrained English. ``production_translation`` preserves
-every source control in order, may insert control 4 as a native one-row scroll,
-and pads automatic 24-column wraps at word boundaries. Production validation
-therefore enforces source-control compatibility, four-row staging-buffer safety,
-and renderer width for every record.
+every source control in order, inserts control 0 for explicit native row advances,
+and may insert control 4 as a native one-row scroll. Production validation
+therefore rejects implicit row crossing and enforces source-control compatibility,
+four-row staging-buffer safety, and renderer width for every record.
 
 This proves token/layout safety, not scene aesthetics. Runtime certification
-still reviews every changed record because added scroll continuations can alter
-timing even when the native text buffer remains structurally safe.
+still reviews every changed record because added row/scroll continuations can alter timing even when the native
+text buffer remains structurally safe.
 """
 
 from __future__ import annotations

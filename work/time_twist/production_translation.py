@@ -3,8 +3,9 @@
 The maintained ``work/translations`` files remain the last certified playable
 baseline. Production builds layer the reviewed retranslation over that base,
 then adapt it to the native 24-column, four-row text buffer. Source controls
-remain in order, while control 4 may be inserted as the native one-row scroll
-continuation when approved prose needs more display space. Editorial prose
+remain in order, while control 0 may be inserted for native row advances and control 4 may be
+inserted as the native one-row scroll continuation when approved prose needs
+more display space. Editorial prose
 therefore remains authoritative while the integration layer owns presentation
 syntax.
 """
@@ -20,7 +21,9 @@ DISPLAY_COLUMNS = 24
 TEXT_ROW_BYTES = DISPLAY_COLUMNS * 2
 TEXT_BUFFER_ROWS = 4
 TEXT_BUFFER_BYTES = TEXT_ROW_BYTES * TEXT_BUFFER_ROWS
+LINE_ADVANCE_CONTROL = 0
 SCROLL_CONTROL = 4
+INSERTABLE_LAYOUT_CONTROLS = frozenset({LINE_ADVANCE_CONTROL, SCROLL_CONTROL})
 CONTROL_REENTRY_CURSOR = {
     1: TEXT_ROW_BYTES,
     2: TEXT_ROW_BYTES * 2,
@@ -55,9 +58,13 @@ def _load_json_object(path: Path, *, label: str) -> dict[str, object]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
-        raise ProductionTranslationError(f"cannot load {label}: {path}") from error
+        raise ProductionTranslationError(
+            f"cannot load {label}: {path}"
+        ) from error
     if not isinstance(payload, dict):
-        raise ProductionTranslationError(f"{label} must be a JSON object: {path}")
+        raise ProductionTranslationError(
+            f"{label} must be a JSON object: {path}"
+        )
     return payload
 
 
@@ -104,18 +111,20 @@ def _template_parts(template: str) -> tuple[list[str], list[int]]:
     return segments, controls
 
 
-def _word_wrap_segment(text: str, *, columns: int = DISPLAY_COLUMNS) -> str:
-    """Pad native automatic rows while keeping every word visibly separated.
+def _wrapped_rows(
+    text: str, *, columns: int = DISPLAY_COLUMNS
+) -> tuple[str, ...]:
+    """Wrap prose at word boundaries without relying on implicit row overflow.
 
-    The renderer advances automatically after ``columns`` visible cells. A
-    nonfinal row must therefore end with at least one blank tile: otherwise a
-    word ending exactly in column 24 becomes byte-adjacent to the first word on
-    the next row (for example ``men'ssweat``) even though the screen wraps it.
-    Final rows may use the full width because no following word needs a
-    separator. No new control code is invented.
+    NOV2 stores four contiguous 24-glyph rows, but merely letting the output
+    index cross a 24-glyph boundary does not update the renderer's row-state
+    variables. Every physical row transition must therefore be represented by
+    an explicit native control in the encoded stream. This helper only chooses
+    the visible words for each row; :func:`_layout_chunk_at_cursor` inserts the
+    required controls.
     """
     if not text:
-        return ""
+        return ()
     words = text.split(" ")
     if any(len(word) > columns for word in words):
         longest = max(words, key=len)
@@ -124,27 +133,16 @@ def _word_wrap_segment(text: str, *, columns: int = DISPLAY_COLUMNS) -> str:
         )
 
     rows: list[str] = []
-    remaining = list(words)
-    while remaining:
-        final_text = " ".join(remaining)
-        if len(final_text) <= columns:
-            rows.append(final_text)
-            break
-
-        current = remaining.pop(0)
-        if len(current) >= columns:
-            raise ProductionTranslationError(
-                f"word {current!r} leaves no padding cell before an automatic wrap"
-            )
-        while remaining:
-            candidate = f"{current} {remaining[0]}"
-            if len(candidate) > columns - 1:
-                break
+    current = words[0]
+    for word in words[1:]:
+        candidate = f"{current} {word}"
+        if len(candidate) <= columns:
             current = candidate
-            remaining.pop(0)
-        rows.append(current.ljust(columns))
-
-    return "".join(rows)
+            continue
+        rows.append(current)
+        current = word
+    rows.append(current)
+    return tuple(rows)
 
 
 def _break_score(text: str, position: int) -> int:
@@ -185,80 +183,114 @@ def _cursor_after_control(cursor: int, control: int) -> int:
         ) from error
 
 
+def _row_end_for_cursor(cursor: int) -> int:
+    """Return the exclusive byte end of the physical row containing ``cursor``."""
+    if not 0 <= cursor <= TEXT_BUFFER_BYTES:
+        raise ProductionTranslationError(
+            f"renderer cursor X=${cursor:02X} is outside the text buffer"
+        )
+    if cursor == TEXT_BUFFER_BYTES:
+        return TEXT_BUFFER_BYTES
+    row = cursor // TEXT_ROW_BYTES
+    return (row + 1) * TEXT_ROW_BYTES
+
+
 def validate_renderer_buffer_layout(text: str) -> None:
-    """Reject text that would write beyond NOV2's four-row staging buffer."""
+    """Reject implicit row crossing and writes beyond NOV2's four-row buffer."""
     segments, controls = _template_parts(text)
     cursor = 0
     for index, segment in enumerate(segments):
-        cursor += len(segment) * 2
-        if cursor > TEXT_BUFFER_BYTES:
+        row_end = _row_end_for_cursor(cursor)
+        end_cursor = cursor + len(segment) * 2
+        if end_cursor > row_end:
             raise ProductionTranslationError(
-                f"renderer segment {index} reaches X=${cursor:02X}; "
+                f"renderer segment {index} crosses a 24-column row without "
+                f"an explicit row control: X=${cursor:02X} -> ${end_cursor:02X}, "
+                f"row ends at ${row_end:02X}"
+            )
+        if end_cursor > TEXT_BUFFER_BYTES:
+            raise ProductionTranslationError(
+                f"renderer segment {index} reaches X=${end_cursor:02X}; "
                 f"four-row buffer ends at ${TEXT_BUFFER_BYTES:02X}"
             )
+        cursor = end_cursor
         if index < len(controls):
             cursor = _cursor_after_control(cursor, controls[index])
 
 
 def validate_production_control_sequence(source: str, production: str) -> None:
-    """Keep every source control in order and permit only added scroll controls."""
+    """Preserve source controls while allowing only native row/scroll insertions."""
     _source_segments, source_controls = _template_parts(source)
     _production_segments, production_controls = _template_parts(production)
-    source_index = 0
+
+    # A greedy subsequence check is insufficient because source controls 0 and
+    # 4 are themselves also legal layout insertions. Track every possible count
+    # of source controls consumed so an inserted 0/4 cannot accidentally steal
+    # the identity of a later source control with the same value.
+    states = {0}
     for control in production_controls:
-        if (
-            source_index < len(source_controls)
-            and control == source_controls[source_index]
-        ):
-            source_index += 1
-            continue
-        if control != SCROLL_CONTROL:
+        next_states: set[int] = set()
+        for source_index in states:
+            if (
+                source_index < len(source_controls)
+                and control == source_controls[source_index]
+            ):
+                next_states.add(source_index + 1)
+            if control in INSERTABLE_LAYOUT_CONTROLS:
+                next_states.add(source_index)
+        if not next_states:
             raise ProductionTranslationError(
-                "production layout introduced a non-scroll control"
+                f"production layout introduced non-layout control {control}"
             )
-    if source_index != len(source_controls):
-        missing = source_controls[source_index:]
+        states = next_states
+
+    if len(source_controls) not in states:
         raise ProductionTranslationError(
-            f"production layout lost or reordered source controls: {missing}"
+            "production layout lost or reordered one or more source controls"
         )
 
 
-def _wrapped_rows(text: str) -> tuple[str, ...]:
-    """Return one padded string per automatic 24-column renderer row."""
-    if not text:
-        return ()
-    wrapped = _word_wrap_segment(text)
-    return tuple(
-        wrapped[start : start + DISPLAY_COLUMNS]
-        for start in range(0, len(wrapped), DISPLAY_COLUMNS)
-    )
-
-
 def _layout_chunk_at_cursor(text: str, cursor: int) -> tuple[str, int, int]:
-    """Lay out one prose chunk, inserting native scrolls before any overflow."""
+    """Lay out prose with explicit native row advances and row-four scrolling."""
     if not text:
         return "", cursor, 0
 
     output: list[str] = []
     inserted_scrolls = 0
-    row_starts = {
-        0,
-        TEXT_ROW_BYTES,
-        TEXT_ROW_BYTES * 2,
-        TEXT_ROW_BYTES * 3,
-    }
-    if cursor not in row_starts:
-        output.append(f"{{CTRL:{SCROLL_CONTROL}}}")
-        inserted_scrolls += 1
-        cursor = CONTROL_REENTRY_CURSOR[SCROLL_CONTROL]
+    rows = _wrapped_rows(text)
+    for row_index, row in enumerate(rows):
+        row_end = _row_end_for_cursor(cursor)
+        remaining_cells = (row_end - cursor) // 2
+        if len(row) > remaining_cells:
+            # Segment boundaries normally begin at row starts. If a reviewed
+            # chunk reaches a partially used row, advance using the same native
+            # line/scroll rule rather than crossing the boundary implicitly.
+            if cursor < TEXT_ROW_BYTES * (TEXT_BUFFER_ROWS - 1):
+                output.append(f"{{CTRL:{LINE_ADVANCE_CONTROL}}}")
+                cursor = _cursor_after_control(cursor, LINE_ADVANCE_CONTROL)
+            else:
+                output.append(f"{{CTRL:{SCROLL_CONTROL}}}")
+                inserted_scrolls += 1
+                cursor = CONTROL_REENTRY_CURSOR[SCROLL_CONTROL]
+            row_end = _row_end_for_cursor(cursor)
+            remaining_cells = (row_end - cursor) // 2
+            if len(row) > remaining_cells:
+                raise ProductionTranslationError(
+                    f"row {row!r} cannot fit from renderer X=${cursor:02X}"
+                )
 
-    for row in _wrapped_rows(text):
-        if cursor + len(row) * 2 > TEXT_BUFFER_BYTES:
+        output.append(row)
+        cursor += len(row) * 2
+        if row_index == len(rows) - 1:
+            continue
+
+        if cursor < TEXT_ROW_BYTES * (TEXT_BUFFER_ROWS - 1):
+            output.append(f"{{CTRL:{LINE_ADVANCE_CONTROL}}}")
+            cursor = _cursor_after_control(cursor, LINE_ADVANCE_CONTROL)
+        else:
             output.append(f"{{CTRL:{SCROLL_CONTROL}}}")
             inserted_scrolls += 1
             cursor = CONTROL_REENTRY_CURSOR[SCROLL_CONTROL]
-        output.append(row)
-        cursor += len(row) * 2
 
     return "".join(output), cursor, inserted_scrolls
 
@@ -276,7 +308,9 @@ def _split_visible_text(
     and prefers punctuation boundaries. Every candidate is simulated against
     NOV2's four-row staging-buffer cursor before it can be selected.
     """
-    active = [index for index, segment in enumerate(template_segments) if segment]
+    active = [
+        index for index, segment in enumerate(template_segments) if segment
+    ]
     if not active:
         if text:
             raise ProductionTranslationError(
@@ -290,7 +324,9 @@ def _split_visible_text(
             "reviewed English has fewer words than nonempty control slots"
         )
 
-    target_total = sum(max(1, len(template_segments[index])) for index in active)
+    target_total = sum(
+        max(1, len(template_segments[index])) for index in active
+    )
     text_total = max(1, len(text))
     prefix_chars = [0]
     for word_index, word in enumerate(words):
@@ -328,9 +364,11 @@ def _split_visible_text(
                     else ""
                 )
                 try:
-                    rendered, end_cursor, added_scrolls = _layout_chunk_at_cursor(
-                        chunk,
-                        cursor,
+                    rendered, end_cursor, added_scrolls = (
+                        _layout_chunk_at_cursor(
+                            chunk,
+                            cursor,
+                        )
                     )
                 except ProductionTranslationError:
                     continue
@@ -394,7 +432,7 @@ def _split_visible_text(
 def _layout_fixed_segments(
     segments: list[str], controls: list[int]
 ) -> list[str]:
-    """Add scroll continuations to explicitly pre-segmented reviewed prose."""
+    """Add native row/scroll controls to explicitly pre-segmented reviewed prose."""
     cursor = 0
     laid_out: list[str] = []
     for index, segment in enumerate(segments):
