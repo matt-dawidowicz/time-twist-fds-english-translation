@@ -32,11 +32,11 @@ from .scenario import (
 )
 from .textcodec import PackedSymbol, split_records
 from .ui import (
-    FIXED_RECORDS_PER_PAGE,
     FIXED_RECORD_FOLLOWING_POINTER_OFFSETS,
     FIXED_RECORD_PAGE_POINTER_OFFSET,
     FIXED_RECORD_TABLE_POINTER_OFFSET,
     FIXED_RECORD_TABLE_SPECS,
+    FIXED_RECORDS_PER_PAGE,
     UiPatchError,
     fixed_record_table_page_pointer_bytes,
 )

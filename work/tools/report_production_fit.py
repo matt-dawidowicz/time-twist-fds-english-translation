@@ -24,14 +24,13 @@ from time_twist.ui import (
     fixed_record_table_page_pointer_bytes,
 )
 
-
 BANK_NAMES = tuple(KNOWN_SCENARIO_BANKS)
 SPACE_RUN_ENTRIES = tuple(encode_english(" " * size) for size in (16, 8, 4, 2))
 
 
 def _groups_and_structure(bank_name: str) -> tuple[object, int]:
     """Return dialogue/menu groups and non-compressible pointer bytes."""
-    groups = workbook._load_translation_groups(bank_name)  # noqa: SLF001
+    groups = workbook._load_translation_groups(bank_name)
     pointer_bytes = 2 * (len(groups) - 1)
     if bank_name not in FIXED_RECORD_TABLE_SPECS:
         return groups, pointer_bytes

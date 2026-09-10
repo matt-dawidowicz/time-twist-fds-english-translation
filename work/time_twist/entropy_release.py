@@ -52,15 +52,14 @@ from .scenario import parse_scenario_bank
 from .textcodec import PackedSymbol
 from .title import DEFAULT_SUBTITLE
 from .ui import (
-    FIXED_RECORDS_PER_PAGE,
     FIXED_RECORD_PAGE_POINTER_OFFSET,
     FIXED_RECORD_TABLE_SPECS,
+    FIXED_RECORDS_PER_PAGE,
     UiPatchError,
     fixed_record_table_page_pointer_bytes,
     patched_kouhen_boot_guard,
     patched_nov2_ui,
 )
-
 
 ScenarioGroups = tuple[tuple[tuple[PackedSymbol, ...], ...], ...]
 ScenarioDictionary = tuple[tuple[PackedSymbol, ...], ...]

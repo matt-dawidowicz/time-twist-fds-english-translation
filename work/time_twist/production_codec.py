@@ -34,11 +34,10 @@ from collections import Counter
 from collections.abc import Iterable
 
 from .textcodec import (
-    BitReader,
-    BitWriter,
     EXTENDED_DICTIONARY_ENTRY_COUNT,
     EXTENDED_DICTIONARY_LITERAL_LIMIT,
-    NATIVE_DICTIONARY_ENTRY_COUNT,
+    BitReader,
+    BitWriter,
     PackedSymbol,
     PackedTextError,
     SymbolKind,

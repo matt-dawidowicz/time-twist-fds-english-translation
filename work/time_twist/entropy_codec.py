@@ -13,8 +13,8 @@ padded every 32 records because their page index stores byte addresses.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import Iterable, Sequence
 
 from .textcodec import PackedSymbol, PackedTextError, SymbolKind
 

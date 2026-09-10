@@ -9,8 +9,8 @@ Only the public inputs/outputs use the project's semantic token class.
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from .textcodec import PackedSymbol, SymbolKind
 

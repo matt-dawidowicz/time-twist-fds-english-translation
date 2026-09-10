@@ -28,7 +28,6 @@ from .production_codec import (
 )
 from .production_runtime import patch_nov2
 from .production_scenario import (
-    ProductionScenarioLayout,
     build_spill_scenario_bank,
     relocate_production_fixed_record_table,
     validate_spill_scenario_bank,
