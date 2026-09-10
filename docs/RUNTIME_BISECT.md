@@ -19,10 +19,11 @@ After an editable install (`python -m pip install -e .`):
 time-twist-runtime code
 time-twist-runtime fds OLD.fds CURRENT.fds
 time-twist-runtime smoke
-time-twist-runtime patch-runtime INPUT.fds OUTPUT.fds
 time-twist-runtime build --zenpen ZENPEN.fds --kouhen KOUHEN.fds
-time-twist-runtime build --mode production --zenpen ZENPEN.fds --kouhen KOUHEN.fds
 ```
+
+`time-twist-runtime` is intentionally entropy-only. The discarded production /
+Adaptive255 runtime is no longer exposed as a parallel debug mode.
 
 The default build output is `build/runtime/current.fds`. Translation maps default
 to `work/translations`; title assets default to the reviewed repository assets.
@@ -31,25 +32,47 @@ needed.
 
 `code` invokes one `git diff` process. `fds` parses each FDS once and compares
 named payloads in memory. `smoke` runs the focused runtime tests in one Python
-interpreter instead of launching a process per test module. `build` and
-`patch-runtime` call library functions directly instead of spawning wrapper
-scripts. The remaining Python loops are intentionally in-memory passes; replacing
-them with per-item subprocesses would be slower.
+interpreter instead of launching a process per test module. `build` calls the
+entropy release builder directly instead of spawning wrapper scripts. The
+remaining Python loops are intentionally in-memory passes; replacing them with
+per-item subprocesses would be slower.
 
 ## Current blank-gameplay regression
 
 The discarded Adaptive255 crash and the current entropy blank-gameplay failure
 are separate bugs. Adaptive255 allowed scenario data to cross `$D7B5`, the load
-address of resident NOV3. The entropy layout already enforces `$D7B5` as the
-exclusive ceiling, so that old spill failure is not part of the active bisect.
+address of resident NOV3. The entropy layout enforces `$D7B5` as the exclusive
+ceiling, and the generic spill allocator now also defaults to that boundary. The
+old `$E000` ceiling exists only as an explicitly named legacy diagnostic constant.
 
 The active entropy regression was narrowed to NOV2 decoder state preservation.
 The entropy scanner used X internally without restoring the caller's X, and both
 the scanner and frontend borrowed zero-page `$74` as a temporary category byte.
 `$74` is native engine state, not entropy scratch. The runtime now preserves X
 across scanner calls and keeps the category on the 6502 stack instead of `$74`.
-The focused regression test also forbids entropy scanner/frontend accesses through
-`$74`.
+The focused regression tests freeze the generated scanner/frontend/category
+binaries and forbid entropy scanner/frontend accesses through `$74`.
+
+## Direct entropy installation
+
+Entropy no longer stages the discarded Adaptive255 runtime before overwriting it.
+The direct path is:
+
+```text
+Japanese NOV2
+  -> patched_nov2_ui
+  -> proven non-Adaptive production runtime fixes
+  -> two nested-dictionary depth patches ($82C5 / $8311)
+  -> frozen entropy scanner/frontend/category runtime
+```
+
+The five other Adaptive255 runtime changes were dead staging: the entropy scanner,
+top-level initializer, frontend, and category decoder overwrite those regions
+immediately. They are no longer installed or accepted as entropy source state.
+
+The only retained Adaptive-era semantics are the four-byte dictionary-depth
+increment/decrement patches. Those are now explicit entropy prerequisites rather
+than an implicit dependency on `patch_nov2(..., adaptive_dictionary=True)`.
 
 Do not create another R1/R2/R3/R4/C0/C1/C2 candidate family for this issue. The
 older runtime artifacts remain useful as binary observations only. New work
@@ -66,5 +89,5 @@ code-history comparison.
 
 The old standalone `build_entropy_candidate.py`, `build_production_candidate.py`,
 and `apply_production_runtime_hardening.py` wrappers are intentionally removed on
-this branch; their maintained operations are consolidated under
-`time-twist-runtime`.
+this branch; the maintained runtime-debug operations are consolidated under the
+entropy-only `time-twist-runtime` interface.
