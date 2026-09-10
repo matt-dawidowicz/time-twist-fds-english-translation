@@ -72,11 +72,15 @@ class ProductionFontMetricsTests(unittest.TestCase):
         self.assertEqual(render_glyph("“"), render_glyph('"'))
         self.assertEqual(render_glyph("’"), render_glyph("'"))
 
-    def test_slash_is_rejected_instead_of_rendering_as_the_em_dash_tile(self) -> None:
+    def test_slash_is_rejected_instead_of_rendering_as_the_em_dash_tile(
+        self,
+    ) -> None:
         with self.assertRaises(EnglishTextError):
             encode_english("and/or")
 
-    def test_all_active_extended_glyph_tiles_stay_in_safe_font_storage(self) -> None:
+    def test_all_active_extended_glyph_tiles_stay_in_safe_font_storage(
+        self,
+    ) -> None:
         active_tiles = {
             EXTENDED_TILE_IDS[value] for value in EXTENDED_CHARACTERS
         }

@@ -65,7 +65,9 @@ def _from_token(token: _Token) -> PackedSymbol:
 
 def _to_groups(groups: ScenarioGroups) -> _TGroups:
     return tuple(
-        tuple(tuple(_to_token(symbol) for symbol in record) for record in group)
+        tuple(
+            tuple(_to_token(symbol) for symbol in record) for record in group
+        )
         for group in groups
     )
 
@@ -80,7 +82,9 @@ def _to_records(
 
 def _public_groups(groups: _TGroups) -> ScenarioGroups:
     return tuple(
-        tuple(tuple(_from_token(token) for token in record) for record in group)
+        tuple(
+            tuple(_from_token(token) for token in record) for record in group
+        )
         for group in groups
     )
 
@@ -142,7 +146,9 @@ def _total_bytes(
     )
 
 
-def _expand_definitions(definitions: Sequence[_TRecord]) -> tuple[_TRecord, ...]:
+def _expand_definitions(
+    definitions: Sequence[_TRecord],
+) -> tuple[_TRecord, ...]:
     expansions: list[_TRecord] = []
     for index, definition in enumerate(definitions, start=1):
         output: list[_Token] = []
@@ -159,7 +165,9 @@ def _expand_definitions(definitions: Sequence[_TRecord]) -> tuple[_TRecord, ...]
     return tuple(expansions)
 
 
-def _expand_record(record: _TRecord, expansions: Sequence[_TRecord]) -> _TRecord:
+def _expand_record(
+    record: _TRecord, expansions: Sequence[_TRecord]
+) -> _TRecord:
     output: list[_Token] = []
     for token in record:
         if token[0] == "D":
@@ -211,7 +219,9 @@ def _make_parser(expansions: Sequence[_TRecord]):
     return parse
 
 
-def _rebuild_definitions(expansions: Sequence[_TRecord]) -> tuple[_TRecord, ...]:
+def _rebuild_definitions(
+    expansions: Sequence[_TRecord],
+) -> tuple[_TRecord, ...]:
     parse = _make_parser(expansions)
     return tuple(
         parse(expansion, index - 1)
@@ -227,7 +237,8 @@ def _parse_corpus(
     parse = _make_parser(expansions)
     return (
         tuple(
-            tuple(parse(record) for record in group) for group in literal_groups
+            tuple(parse(record) for record in group)
+            for group in literal_groups
         ),
         tuple(parse(record) for record in literal_menu),
     )
@@ -319,7 +330,9 @@ def optimize_entropy_dictionary(
         for record in group
         for token in record
     ):
-        raise EntropyCompressionError("scenario input must be dictionary-expanded")
+        raise EntropyCompressionError(
+            "scenario input must be dictionary-expanded"
+        )
     if any(token[0] == "D" for record in menu_literal for token in record):
         raise EntropyCompressionError("menu input must be dictionary-expanded")
     if not 0 <= maximum_entries <= 255:
@@ -334,9 +347,7 @@ def optimize_entropy_dictionary(
     while len(expansions) < maximum_entries:
         index = len(expansions) + 1
         reference_bits = _bits(("D", index))
-        candidates = _candidate_counts(
-            groups, menu, maximum_grammar_tokens
-        )
+        candidates = _candidate_counts(groups, menu, maximum_grammar_tokens)
         depths = _depths(definitions)
         existing = set(expansions)
         parse = _make_parser(expansions)
@@ -364,9 +375,7 @@ def optimize_entropy_dictionary(
         if not ranked:
             break
         ranked.sort(
-            key=lambda item: (
-                item[0], item[1], len(item[2]), item[2]
-            ),
+            key=lambda item: (item[0], item[1], len(item[2]), item[2]),
             reverse=True,
         )
         best = None
@@ -378,9 +387,7 @@ def optimize_entropy_dictionary(
             next_groups, next_menu = _parse_corpus(
                 groups_literal, menu_literal, next_expansions
             )
-            size = _total_bytes(
-                next_groups, next_menu, next_definitions
-            )
+            size = _total_bytes(next_groups, next_menu, next_definitions)
             key = (size, -estimate, expansion)
             if best is None or key < best[0]:
                 best = (
@@ -395,9 +402,7 @@ def optimize_entropy_dictionary(
         _, expansions, definitions, groups, menu = best
         current = best[0][0]
 
-    return _public_result(
-        groups, menu, definitions, expansions, current
-    )
+    return _public_result(groups, menu, definitions, expansions, current)
 
 
 def _reference_counts_tokens(

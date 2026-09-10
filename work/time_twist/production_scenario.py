@@ -102,7 +102,9 @@ def _literal_groups(
 ) -> ScenarioGroups:
     """Expand compressed groups once for exact post-build comparison."""
     return tuple(
-        tuple(expand_dictionary_symbols(record, dictionary) for record in group)
+        tuple(
+            expand_dictionary_symbols(record, dictionary) for record in group
+        )
         for group in groups
     )
 
@@ -120,7 +122,9 @@ def _best_resident_subset(
 ) -> tuple[int, ...]:
     """Choose whole groups that consume the most old-reservation bytes."""
     if capacity < 0:
-        raise ProductionScenarioError("group-pointer table exceeds old text space")
+        raise ProductionScenarioError(
+            "group-pointer table exceeds old text space"
+        )
     best_bytes = -1
     best: tuple[int, ...] = ()
     for mask in range(1 << len(group_sizes)):
@@ -173,7 +177,9 @@ def relocate_production_fixed_record_table(
         )
     source = data[spec.start : spec.end]
     if len(source) != spec.end - spec.start:
-        raise UiPatchError(f"{bank_name} is too short for its fixed text table")
+        raise UiPatchError(
+            f"{bank_name} is too short for its fixed text table"
+        )
     if hashlib.sha256(source).hexdigest().upper() != spec.source_sha256:
         raise UiPatchError(
             f"{bank_name} fixed text table does not match the known source"
@@ -205,14 +211,16 @@ def relocate_production_fixed_record_table(
 
     original_starts = _source_record_starts(source, len(spec.records))
     expected_source_pages = b"".join(
-        (load_address + spec.start + original_starts[index]).to_bytes(2, "little")
+        (load_address + spec.start + original_starts[index]).to_bytes(
+            2, "little"
+        )
         for index in range(
             FIXED_RECORDS_PER_PAGE,
             len(records),
             FIXED_RECORDS_PER_PAGE,
         )
     )
-    if data[spec.end:old_following_offset] != expected_source_pages:
+    if data[spec.end : old_following_offset] != expected_source_pages:
         raise UiPatchError(f"{bank_name} fixed-table page index changed")
 
     secondary_low = load_address + old_following_offset
@@ -231,7 +239,9 @@ def relocate_production_fixed_record_table(
     record_starts = _production_record_starts(packed_records, len(records))
     new_page_offset = spec.start + len(packed_records)
     new_pages = b"".join(
-        (load_address + spec.start + record_starts[index]).to_bytes(2, "little")
+        (load_address + spec.start + record_starts[index]).to_bytes(
+            2, "little"
+        )
         for index in range(
             FIXED_RECORDS_PER_PAGE,
             len(records),
@@ -252,7 +262,9 @@ def relocate_production_fixed_record_table(
     prefix.extend(new_pages)
     prefix.extend(data[old_following_offset:group_zero_offset])
     if len(prefix) != new_group_zero_offset:
-        raise UiPatchError(f"{bank_name} relocated prefix size is inconsistent")
+        raise UiPatchError(
+            f"{bank_name} relocated prefix size is inconsistent"
+        )
 
     _write_word(
         prefix,
@@ -289,7 +301,9 @@ def build_spill_scenario_bank(
         raise ProductionScenarioError(
             f"expected {len(counts)} groups, got {len(groups)}"
         )
-    for index, (group, expected) in enumerate(zip(groups, counts, strict=True)):
+    for index, (group, expected) in enumerate(
+        zip(groups, counts, strict=True)
+    ):
         if len(group) != expected:
             raise ProductionScenarioError(
                 f"group {index} expected {expected} records, got {len(group)}"
@@ -381,7 +395,8 @@ def build_spill_scenario_bank(
         dictionary_address=dictionary_address,
         resident_groups=resident,
         spilled_groups=spilled,
-        resident_bytes=sum(group_sizes[index] for index in resident) + table_size,
+        resident_bytes=sum(group_sizes[index] for index in resident)
+        + table_size,
         spill_bytes=sum(group_sizes[index] for index in spilled),
         dictionary_bytes=len(dictionary_blob),
         source_bytes=len(bank.data),
@@ -399,11 +414,20 @@ def validate_spill_scenario_bank(
     """Decode every relocated group by source record count and prove equality."""
     data = layout.data
     load = source_bank.load_address
-    if _read_word(data, DICTIONARY_POINTER_OFFSET) != layout.dictionary_address:
+    if (
+        _read_word(data, DICTIONARY_POINTER_OFFSET)
+        != layout.dictionary_address
+    ):
         raise ProductionScenarioError("dictionary header pointer mismatch")
-    if _read_word(data, GROUP_TABLE_POINTER_OFFSET) != layout.group_table_address:
+    if (
+        _read_word(data, GROUP_TABLE_POINTER_OFFSET)
+        != layout.group_table_address
+    ):
         raise ProductionScenarioError("group-table header pointer mismatch")
-    if _read_word(data, GROUP_ZERO_POINTER_OFFSET) != layout.group_addresses[0]:
+    if (
+        _read_word(data, GROUP_ZERO_POINTER_OFFSET)
+        != layout.group_addresses[0]
+    ):
         raise ProductionScenarioError("group-zero header pointer mismatch")
 
     table_offset = layout.group_table_address - load

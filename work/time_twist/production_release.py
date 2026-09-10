@@ -83,7 +83,9 @@ def _load_translation_map(path: Path) -> dict[str, str]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
-        raise ProductionBuildError(f"cannot load production map: {path}") from error
+        raise ProductionBuildError(
+            f"cannot load production map: {path}"
+        ) from error
     if not isinstance(payload, dict):
         raise ProductionBuildError(f"production map is not an object: {path}")
     result: dict[str, str] = {}
@@ -102,7 +104,9 @@ def _encoded_groups(
     translations: dict[str, str],
 ) -> ScenarioGroups:
     records_by_id = {
-        scenario_record_id(bank_name, record.group_index, record.record_index): record
+        scenario_record_id(
+            bank_name, record.group_index, record.record_index
+        ): record
         for record in bank.records
     }
     unknown = sorted(set(translations) - set(records_by_id))
@@ -187,7 +191,9 @@ def build_production_scenario_bank(
     adaptive_dictionary: bool = True,
 ) -> ProductionBankResult:
     """Rebuild one Japanese scenario overlay into the production spill layout."""
-    with tempfile.TemporaryDirectory(prefix=f"time_twist_{bank_name}_") as directory:
+    with tempfile.TemporaryDirectory(
+        prefix=f"time_twist_{bank_name}_"
+    ) as directory:
         source_path = Path(directory) / f"{bank_name}.bin"
         source_path.write_bytes(source)
         bank = parse_scenario_bank(
@@ -206,7 +212,8 @@ def build_production_scenario_bank(
 
     if bank_name in FIXED_RECORD_TABLE_SPECS:
         menu_literals = tuple(
-            encode_english(text) for text in FIXED_RECORD_TABLE_SPECS[bank_name].records
+            encode_english(text)
+            for text in FIXED_RECORD_TABLE_SPECS[bank_name].records
         )
         compressed_all, dictionary = _compress(
             (*literal_groups, menu_literals),
@@ -241,7 +248,9 @@ def build_production_scenario_bank(
     if patcher is not None:
         patched = patcher(layout.data)
         if len(patched) != len(layout.data):
-            raise ProductionBuildError(f"{bank_name} fixed UI patch changed file size")
+            raise ProductionBuildError(
+                f"{bank_name} fixed UI patch changed file size"
+            )
         layout = replace(layout, data=patched)
         # TT1A's fixed selectors precede group zero. Scenario streams and the
         # dictionary must still decode identically after that direct-address patch.
@@ -338,9 +347,7 @@ def build_production_images(
         "components": {
             "NOV2": _sha256(nov2),
             "NOV4": _sha256(nov4),
-            "SON-KOUH": _sha256(
-                kouhen.sides[0].find_file("SON-KOUH").data
-            ),
+            "SON-KOUH": _sha256(kouhen.sides[0].find_file("SON-KOUH").data),
         },
         "outputs": {
             name: {"bytes": len(data), "sha256": _sha256(data)}

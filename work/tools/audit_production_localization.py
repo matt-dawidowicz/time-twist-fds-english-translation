@@ -92,7 +92,9 @@ def rows(root: Path) -> list[dict[str, object]]:
                 "playable_english": playable,
                 "natural_english": natural,
                 "differs_from_natural": playable != natural,
-                "nuance_lost": source.get("nuance_lost_in_patch_safe_version", ""),
+                "nuance_lost": source.get(
+                    "nuance_lost_in_patch_safe_version", ""
+                ),
                 "requires_technical_expansion": source.get(
                     "requires_technical_expansion", False
                 ),
@@ -100,7 +102,8 @@ def rows(root: Path) -> list[dict[str, object]]:
                     "requires_gameplay_context", False
                 ),
                 "longest_playable_segment": max(
-                    (len(segment) for segment in _segments(playable)), default=0
+                    (len(segment) for segment in _segments(playable)),
+                    default=0,
                 ),
                 "longest_natural_segment": max(
                     (len(segment) for segment in _segments(natural)), default=0

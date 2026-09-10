@@ -42,9 +42,13 @@ def _load_json_object(path: Path, *, label: str) -> dict[str, object]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
-        raise ProductionTranslationError(f"cannot load {label}: {path}") from error
+        raise ProductionTranslationError(
+            f"cannot load {label}: {path}"
+        ) from error
     if not isinstance(payload, dict):
-        raise ProductionTranslationError(f"{label} must be a JSON object: {path}")
+        raise ProductionTranslationError(
+            f"{label} must be a JSON object: {path}"
+        )
     return payload
 
 
@@ -154,7 +158,9 @@ def _split_visible_text(text: str, template_segments: list[str]) -> list[str]:
     Dynamic programming minimizes deviation from the template's relative text
     distribution while preferring punctuation boundaries.
     """
-    active = [index for index, segment in enumerate(template_segments) if segment]
+    active = [
+        index for index, segment in enumerate(template_segments) if segment
+    ]
     if not active:
         if text:
             raise ProductionTranslationError(
@@ -172,7 +178,9 @@ def _split_visible_text(text: str, template_segments: list[str]) -> list[str]:
             "reviewed English has fewer words than nonempty control slots"
         )
 
-    target_lengths = [max(1, len(template_segments[index])) for index in active]
+    target_lengths = [
+        max(1, len(template_segments[index])) for index in active
+    ]
     target_total = sum(target_lengths)
     text_total = max(1, len(text))
     prefix_chars = [0]
@@ -204,7 +212,9 @@ def _split_visible_text(text: str, template_segments: list[str]) -> list[str]:
                     next_states[end_word] = trial
         states = next_states
         if not states:
-            raise ProductionTranslationError("cannot distribute reviewed English")
+            raise ProductionTranslationError(
+                "cannot distribute reviewed English"
+            )
 
     _, (_, breaks) = min(states.items(), key=lambda item: item[1])
     all_breaks = (*breaks, len(words))
@@ -233,7 +243,9 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
                 f"{record_id}: reviewed control sequence differs from template"
             )
         reviewed_segments, _ = _template_parts(reviewed)
-        laid_out = [_word_wrap_segment(segment) for segment in reviewed_segments]
+        laid_out = [
+            _word_wrap_segment(segment) for segment in reviewed_segments
+        ]
     else:
         raw_segments = _split_visible_text(reviewed, template_segments)
         laid_out = [_word_wrap_segment(segment) for segment in raw_segments]

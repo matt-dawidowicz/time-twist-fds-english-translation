@@ -126,7 +126,9 @@ class EntropyFixedUiTests(unittest.TestCase):
             decoded = unpack_entropy_stream(blob, record_count=len(texts))
             for record, text in zip(decoded, texts, strict=True):
                 expanded = expand_entropy_record(record, expansions)
-                self.assertEqual(_semantic(expanded), _semantic(encode_english(text)))
+                self.assertEqual(
+                    _semantic(expanded), _semantic(encode_english(text))
+                )
 
     def test_first_menu_start_record_is_entropy_not_native(self) -> None:
         menu, _group, dictionary = nov4_entropy_payloads()
@@ -135,7 +137,9 @@ class EntropyFixedUiTests(unittest.TestCase):
             record_count=len(NOV4_DICTIONARY_TEXT),
         )
         expansions = expand_entropy_dictionary(decoded_dictionary)
-        decoded_menu = unpack_entropy_stream(menu, record_count=len(NOV4_MENU_TEXT))
+        decoded_menu = unpack_entropy_stream(
+            menu, record_count=len(NOV4_MENU_TEXT)
+        )
         start = expand_entropy_record(decoded_menu[3], expansions)
         self.assertEqual(_semantic(start), _semantic(encode_english("Start")))
 
@@ -170,8 +174,12 @@ class EntropyFixedUiTests(unittest.TestCase):
             self.assertLessEqual(len(payload), len(source))
             decoded = unpack_entropy_stream(payload, record_count=1)
             self.assertEqual(len(decoded), 1)
-            self.assertEqual(_semantic(decoded[0]), _semantic(encode_english(text)))
-            self.assertEqual(TT1A_LOAD_ADDRESS + offset, TT1A_ENTRY_ADDRESSES[index])
+            self.assertEqual(
+                _semantic(decoded[0]), _semantic(encode_english(text))
+            )
+            self.assertEqual(
+                TT1A_LOAD_ADDRESS + offset, TT1A_ENTRY_ADDRESSES[index]
+            )
 
     def test_idempotent_nov4_patcher_preserves_pointer_contract(self) -> None:
         menu, group, dictionary = nov4_entropy_payloads()

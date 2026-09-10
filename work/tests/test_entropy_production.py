@@ -56,9 +56,22 @@ class EntropyProductionTests(unittest.TestCase):
         self.assertEqual(
             CATEGORY_PREFIXES,
             (
-                "0111", "11000", "111", "001", "101", "1101",
-                "00001", "1001", "0110", "0001", "1000", "010",
-                "000001", "0000001", "0000000", "11001",
+                "0111",
+                "11000",
+                "111",
+                "001",
+                "101",
+                "1101",
+                "00001",
+                "1001",
+                "0110",
+                "0001",
+                "1000",
+                "010",
+                "000001",
+                "0000001",
+                "0000000",
+                "11001",
             ),
         )
         self.assertEqual(
@@ -112,14 +125,18 @@ class EntropyProductionTests(unittest.TestCase):
             end = starts[page + 1] if page + 1 < len(starts) else len(packed)
             expected = records[page * 32 : page * 32 + 32]
             self.assertEqual(
-                unpack_entropy_stream(packed[start:end], record_count=len(expected)),
+                unpack_entropy_stream(
+                    packed[start:end], record_count=len(expected)
+                ),
                 expected,
             )
 
     def test_optimizer_is_deterministic_and_lossless(self) -> None:
         phrase = (_common(1), _common(2), _common(3), _common(4))
         groups = (
-            tuple((*phrase, _common(index % 8), *phrase) for index in range(18)),
+            tuple(
+                (*phrase, _common(index % 8), *phrase) for index in range(18)
+            ),
         )
         first = optimize_entropy_dictionary(
             groups, maximum_entries=24, trial_candidates=6
@@ -187,7 +204,9 @@ class EntropyProductionTests(unittest.TestCase):
         self.assertEqual(ENTROPY_MENU_INIT_CPU_ADDRESS, 0x812E)
         occupied: set[int] = set()
         for patch in ENTROPY_RUNTIME_PATCHES:
-            touched = set(range(patch.cpu_address, patch.cpu_address + patch.size))
+            touched = set(
+                range(patch.cpu_address, patch.cpu_address + patch.size)
+            )
             self.assertTrue(occupied.isdisjoint(touched), patch.label)
             occupied.update(touched)
         self.assertLess(max(occupied), NOV3_LOAD_ADDRESS)
@@ -216,7 +235,9 @@ class EntropyProductionTests(unittest.TestCase):
             "13BB5546C4DAA3C3D688F07F75FBFFD226725EB9BD72CD6238CBB662308485A2",
         )
 
-    def test_entropy_runtime_preserves_x_and_avoids_native_zero_page_74(self) -> None:
+    def test_entropy_runtime_preserves_x_and_avoids_native_zero_page_74(
+        self,
+    ) -> None:
         patches = {patch.label: patch for patch in ENTROPY_RUNTIME_PATCHES}
         scanner = patches["bit-contiguous entropy scanner"].replacement[
             :SCANNER_CODE_BYTES

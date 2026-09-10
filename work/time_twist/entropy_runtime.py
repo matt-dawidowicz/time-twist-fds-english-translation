@@ -21,7 +21,11 @@ from .entropy_codec import (
     CATEGORY_PAYLOAD_BITS,
     CATEGORY_PREFIXES,
 )
-from .production_runtime import ProductionRuntimeError, RuntimePatch, patch_nov2
+from .production_runtime import (
+    ProductionRuntimeError,
+    RuntimePatch,
+    patch_nov2,
+)
 
 NOV2_LOAD_ADDRESS = 0x6000
 NOV2_SIZE = 0x4200
@@ -73,7 +77,9 @@ class _Assembler:
 
     def finish(self) -> bytes:
         for position, kind, target in self.fixups:
-            address = self.labels[target] if isinstance(target, str) else target
+            address = (
+                self.labels[target] if isinstance(target, str) else target
+            )
             if kind == "absolute":
                 self.data[position] = address & 0xFF
                 self.data[position + 1] = (address >> 8) & 0xFF
@@ -98,7 +104,9 @@ def _entropy_tree() -> bytes:
             bit = int(bit_text)
             child = node.setdefault(bit, {})
             if not isinstance(child, dict):
-                raise EntropyRuntimeError("entropy prefix collides with a leaf")
+                raise EntropyRuntimeError(
+                    "entropy prefix collides with a leaf"
+                )
             node = child
         if node:
             raise EntropyRuntimeError("entropy prefix is not a unique leaf")
@@ -241,7 +249,9 @@ def _build_category_decoder() -> bytes:
     assembler.emit(*ENTROPY_TREE)
     blob = assembler.finish()
     if len(blob) > CATEGORY_REGION_SIZE:
-        raise EntropyRuntimeError("entropy category decoder exceeds its region")
+        raise EntropyRuntimeError(
+            "entropy category decoder exceeds its region"
+        )
     return blob
 
 
@@ -364,7 +374,9 @@ class HashGuardedPatch:
         if self.cpu_address < NOV2_LOAD_ADDRESS:
             raise EntropyRuntimeError(f"{self.label}: address precedes NOV2")
         if self.size != len(self.replacement):
-            raise EntropyRuntimeError(f"{self.label}: replacement changed size")
+            raise EntropyRuntimeError(
+                f"{self.label}: replacement changed size"
+            )
         if len(self.expected_sha256) != 64:
             raise EntropyRuntimeError(f"{self.label}: malformed source digest")
 
@@ -376,7 +388,7 @@ class HashGuardedPatch:
         end = self.file_offset + self.size
         if end > len(data):
             raise EntropyRuntimeError(f"{self.label}: NOV2 is too short")
-        current = bytes(data[self.file_offset:end])
+        current = bytes(data[self.file_offset : end])
         if current == self.replacement:
             return
         digest = hashlib.sha256(current).hexdigest().upper()
@@ -385,7 +397,7 @@ class HashGuardedPatch:
                 f"{self.label}: source drift at ${self.cpu_address:04X}; "
                 f"got {digest}"
             )
-        data[self.file_offset:end] = self.replacement
+        data[self.file_offset : end] = self.replacement
 
 
 ENTROPY_RUNTIME_PATCHES = (
@@ -470,7 +482,7 @@ ENTROPY_PREREQUISITE_PATCHES = (
 def _guard_entropy_prerequisites(data: bytes) -> None:
     for patch in ENTROPY_PREREQUISITE_PATCHES:
         end = patch.file_offset + len(patch.replacement)
-        if data[patch.file_offset:end] != patch.replacement:
+        if data[patch.file_offset : end] != patch.replacement:
             raise EntropyRuntimeError(
                 f"{patch.label}: direct entropy prerequisite is absent at "
                 f"${patch.cpu_address:04X}"
@@ -496,8 +508,9 @@ def patch_entropy_nov2(data: bytes) -> bytes:
     _guard_entropy_prerequisites(result)
     palette_before = bytes(
         result[
-            PALETTE_CPU_RANGE.start - NOV2_LOAD_ADDRESS :
-            PALETTE_CPU_RANGE.stop - NOV2_LOAD_ADDRESS
+            PALETTE_CPU_RANGE.start
+            - NOV2_LOAD_ADDRESS : PALETTE_CPU_RANGE.stop
+            - NOV2_LOAD_ADDRESS
         ]
     )
     for patch in ENTROPY_RUNTIME_PATCHES:
@@ -505,8 +518,9 @@ def patch_entropy_nov2(data: bytes) -> bytes:
     _guard_entropy_prerequisites(result)
     palette_after = bytes(
         result[
-            PALETTE_CPU_RANGE.start - NOV2_LOAD_ADDRESS :
-            PALETTE_CPU_RANGE.stop - NOV2_LOAD_ADDRESS
+            PALETTE_CPU_RANGE.start
+            - NOV2_LOAD_ADDRESS : PALETTE_CPU_RANGE.stop
+            - NOV2_LOAD_ADDRESS
         ]
     )
     if palette_after != palette_before:

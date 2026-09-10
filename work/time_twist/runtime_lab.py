@@ -72,8 +72,7 @@ def compare_fds(old_path: Path, new_path: Path) -> list[FileDelta]:
         missing = sorted(old.keys() - new.keys())
         added = sorted(new.keys() - old.keys())
         raise ValueError(
-            "FDS file inventory changed; "
-            f"missing={missing}, added={added}"
+            "FDS file inventory changed; " f"missing={missing}, added={added}"
         )
 
     deltas: list[FileDelta] = []
@@ -177,12 +176,12 @@ def command_build(args: argparse.Namespace) -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(outputs["four_side"])
     if args.all_images:
-        args.output.with_name("Time-Twist-English-Entropy-Zenpen.fds").write_bytes(
-            outputs["zenpen"]
-        )
-        args.output.with_name("Time-Twist-English-Entropy-Kouhen.fds").write_bytes(
-            outputs["kouhen"]
-        )
+        args.output.with_name(
+            "Time-Twist-English-Entropy-Zenpen.fds"
+        ).write_bytes(outputs["zenpen"])
+        args.output.with_name(
+            "Time-Twist-English-Entropy-Kouhen.fds"
+        ).write_bytes(outputs["kouhen"])
     if args.manifest:
         args.manifest.parent.mkdir(parents=True, exist_ok=True)
         args.manifest.write_text(
@@ -206,7 +205,9 @@ def build_parser() -> argparse.ArgumentParser:
     code.add_argument("--head", default="HEAD")
     code.set_defaults(function=command_code)
 
-    fds = sub.add_parser("fds", help="compare named payloads in two FDS images")
+    fds = sub.add_parser(
+        "fds", help="compare named payloads in two FDS images"
+    )
     fds.add_argument("old", type=Path)
     fds.add_argument("new", type=Path)
     fds.set_defaults(function=command_fds)

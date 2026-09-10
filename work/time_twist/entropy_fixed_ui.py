@@ -20,7 +20,10 @@ import hashlib
 
 from .english import encode_english
 from .entropy_codec import pack_entropy_stream, unpack_entropy_stream
-from .entropy_compression import expand_entropy_dictionary, expand_entropy_record
+from .entropy_compression import (
+    expand_entropy_dictionary,
+    expand_entropy_record,
+)
 from .textcodec import PackedSymbol, SymbolKind
 from .ui_fixed_tables import (
     TT1A_BLOOD_TYPE_PATCHES,
@@ -57,9 +60,12 @@ TT1A_CHOICE_PATCHES = (
     *TT1A_MONTH_PATCHES,
     *TT1A_CONFIRMATION_PATCHES,
 )
-TT1A_CHOICE_TEXT = tuple(english for _offset, _source, english in TT1A_CHOICE_PATCHES)
+TT1A_CHOICE_TEXT = tuple(
+    english for _offset, _source, english in TT1A_CHOICE_PATCHES
+)
 TT1A_ENTRY_ADDRESSES = tuple(
-    TT1A_LOAD_ADDRESS + offset for offset, _source, _english in TT1A_CHOICE_PATCHES
+    TT1A_LOAD_ADDRESS + offset
+    for offset, _source, _english in TT1A_CHOICE_PATCHES
 )
 
 
@@ -132,11 +138,15 @@ def _semantic(record: tuple[PackedSymbol, ...] | list[PackedSymbol]):
 
 def _word(data: bytes, offset: int) -> int:
     if offset < 0 or offset + 2 > len(data):
-        raise EntropyFixedTextError(f"word at 0x{offset:04X} is outside component")
+        raise EntropyFixedTextError(
+            f"word at 0x{offset:04X} is outside component"
+        )
     return int.from_bytes(data[offset : offset + 2], "little")
 
 
-def _assert_pointers(data: bytes, expected: dict[int, int], label: str) -> None:
+def _assert_pointers(
+    data: bytes, expected: dict[int, int], label: str
+) -> None:
     for offset, address in expected.items():
         actual = _word(data, offset)
         if actual != address:
@@ -195,7 +205,8 @@ def nov4_entropy_payloads() -> tuple[bytes, bytes, bytes]:
 def tt1a_entropy_payloads() -> tuple[bytes, ...]:
     """Return one independently byte-addressable entropy stream per TT1A slot."""
     return tuple(
-        pack_entropy_stream((encode_english(text),)) for text in TT1A_CHOICE_TEXT
+        pack_entropy_stream((encode_english(text),))
+        for text in TT1A_CHOICE_TEXT
     )
 
 
@@ -229,8 +240,12 @@ def _audit_nov4(data: bytes) -> None:
         record_count=len(NOV4_DICTIONARY_TEXT),
     )
     expected_dictionary = _dictionary_records()
-    if tuple(map(_semantic, dictionary)) != tuple(map(_semantic, expected_dictionary)):
-        raise EntropyFixedTextError("NOV4 entropy dictionary failed semantic audit")
+    if tuple(map(_semantic, dictionary)) != tuple(
+        map(_semantic, expected_dictionary)
+    ):
+        raise EntropyFixedTextError(
+            "NOV4 entropy dictionary failed semantic audit"
+        )
     expansions = expand_entropy_dictionary(dictionary)
 
     for label, start, end, expected_text in (
@@ -241,7 +256,9 @@ def _audit_nov4(data: bytes) -> None:
             data[start:end],
             record_count=len(expected_text),
         )
-        for index, (record, text) in enumerate(zip(decoded, expected_text, strict=True)):
+        for index, (record, text) in enumerate(
+            zip(decoded, expected_text, strict=True)
+        ):
             expanded = expand_entropy_record(record, expansions)
             if _semantic(expanded) != _semantic(encode_english(text)):
                 raise EntropyFixedTextError(
@@ -289,7 +306,9 @@ def patched_nov4_entropy_text(data: bytes) -> bytes:
             NOV4_GROUP_START,
             NOV4_GROUP_END,
             NOV4_GROUP_SOURCE_SHA256,
-            _fit(group, NOV4_GROUP_END - NOV4_GROUP_START, "NOV4 internal group"),
+            _fit(
+                group, NOV4_GROUP_END - NOV4_GROUP_START, "NOV4 internal group"
+            ),
             "NOV4 internal group",
         ),
         (
@@ -319,7 +338,9 @@ def patched_nov4_entropy_text(data: bytes) -> bytes:
                 "UI text patches before the entropy conversion"
             )
     if len(set(states)) != 1:
-        raise EntropyFixedTextError("NOV4 entropy text is only partially converted")
+        raise EntropyFixedTextError(
+            "NOV4 entropy text is only partially converted"
+        )
     if states[0] == "entropy":
         _audit_nov4(data)
         return data

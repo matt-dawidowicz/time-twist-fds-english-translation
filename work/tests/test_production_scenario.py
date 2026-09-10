@@ -35,7 +35,9 @@ class ProductionScenarioTests(unittest.TestCase):
             load_address=load,
             dictionary_address=load + 0x70,
             group_table_address=load + 0x68,
-            group_addresses=tuple(load + 0x40 + 8 * group for group in range(group_count)),
+            group_addresses=tuple(
+                load + 0x40 + 8 * group for group in range(group_count)
+            ),
             dictionary=(),
             dictionary_end_offset=0x80,
             records=records,
@@ -80,7 +82,9 @@ class ProductionScenarioTests(unittest.TestCase):
         layout = build_spill_scenario_bank(bank, groups, dictionary)
 
         self.assertEqual(layout.group_addresses[0], bank.load_address + 0x40)
-        self.assertGreaterEqual(layout.dictionary_address, bank.load_address + len(bank.data))
+        self.assertGreaterEqual(
+            layout.dictionary_address, bank.load_address + len(bank.data)
+        )
         self.assertLessEqual(layout.loaded_end, NOV3_SAFE_END)
 
     def test_spill_fails_before_crossing_prg_ram_end(self) -> None:

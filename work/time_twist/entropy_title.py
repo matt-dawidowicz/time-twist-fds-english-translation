@@ -49,21 +49,22 @@ def _seam_safe_permutation(slide_chr: bytes) -> dict[int, int]:
     if len(upper) != CLOCK_SOURCE_TILE * 16:
         raise TitlePatchError("upper title CHR is truncated")
     tiles = tuple(
-        upper[offset : offset + 16]
-        for offset in range(0, len(upper), 16)
+        upper[offset : offset + 16] for offset in range(0, len(upper), 16)
     )
-    blank_ids = [index for index, tile in enumerate(tiles) if tile == _ZERO_TILE]
+    blank_ids = [
+        index for index, tile in enumerate(tiles) if tile == _ZERO_TILE
+    ]
     if len(blank_ids) != 1:
         raise TitlePatchError(
             f"expected one assigned blank upper tile, found {len(blank_ids)}"
         )
     blank = blank_ids[0]
     if blank < FINAL_DELTA_TILE_COUNT:
-        raise TitlePatchError("blank upper tile unexpectedly belongs to delta IDs")
+        raise TitlePatchError(
+            "blank upper tile unexpectedly belongs to delta IDs"
+        )
 
-    mapping = {
-        old: old + 1 for old in range(FINAL_DELTA_TILE_COUNT)
-    }
+    mapping = {old: old + 1 for old in range(FINAL_DELTA_TILE_COUNT)}
     mapping[blank] = 0
     next_fixed = FINAL_DELTA_TILE_COUNT + 1
     for old in range(FINAL_DELTA_TILE_COUNT, CLOCK_SOURCE_TILE):
@@ -172,10 +173,30 @@ def patched_nov4_entropy_title(
         + SLIDE_PREP_SIZE
     )
     old_target = bytes(
-        (0xA0, 0x10, 0xA9, 0x00, 0xA2, FINAL_DELTA_TILE_COUNT, 0x20, 0xAF, 0xEB)
+        (
+            0xA0,
+            0x10,
+            0xA9,
+            0x00,
+            0xA2,
+            FINAL_DELTA_TILE_COUNT,
+            0x20,
+            0xAF,
+            0xEB,
+        )
     )
     new_target = bytes(
-        (0xA0, 0x10, 0xA9, 0x10, 0xA2, FINAL_DELTA_TILE_COUNT, 0x20, 0xAF, 0xEB)
+        (
+            0xA0,
+            0x10,
+            0xA9,
+            0x10,
+            0xA2,
+            FINAL_DELTA_TILE_COUNT,
+            0x20,
+            0xAF,
+            0xEB,
+        )
     )
     transition_end = transition_offset + TITLE_TRANSITION_SIZE
     transition = bytes(result[transition_offset:transition_end])
@@ -191,7 +212,7 @@ def patched_nov4_entropy_title(
         (
             encode_title_rle(remapped_final),
             encode_title_rle(remapped_second),
-            b"\xFF",
+            b"\xff",
         )
     )
     del result[title_stream_offset:]

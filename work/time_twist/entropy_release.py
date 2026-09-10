@@ -179,7 +179,9 @@ def _select_safe_variant(
             )
         except (EntropyScenarioError, UiPatchError):
             continue
-        total_bytes = sum(layout.group_bytes) + layout.dictionary_bytes + menu_bytes
+        total_bytes = (
+            sum(layout.group_bytes) + layout.dictionary_bytes + menu_bytes
+        )
         key: tuple[object, ...] = (
             layout.loaded_end,
             layout.spill_bytes,
@@ -234,8 +236,8 @@ def _audit_menu(
     spec = FIXED_RECORD_TABLE_SPECS[bank_name]
     page_index_address = int.from_bytes(
         data[
-            FIXED_RECORD_PAGE_POINTER_OFFSET :
-            FIXED_RECORD_PAGE_POINTER_OFFSET + 2
+            FIXED_RECORD_PAGE_POINTER_OFFSET : FIXED_RECORD_PAGE_POINTER_OFFSET
+            + 2
         ],
         "little",
     )
@@ -329,7 +331,9 @@ def build_entropy_scenario_candidate(
     if bank_name == "TT1A":
         patched = patched_tt1a_entropy_ui(layout.data)
         if len(patched) != len(layout.data):
-            raise ProductionBuildError("TT1A entropy UI patch changed file size")
+            raise ProductionBuildError(
+                "TT1A entropy UI patch changed file size"
+            )
         layout = replace(layout, data=patched)
         validate_entropy_scenario_bank(
             bank,
@@ -455,9 +459,7 @@ def build_entropy_images(
         "components": {
             "NOV2": _sha256(nov2),
             "NOV4": _sha256(nov4),
-            "SON-KOUH": _sha256(
-                kouhen.sides[0].find_file("SON-KOUH").data
-            ),
+            "SON-KOUH": _sha256(kouhen.sides[0].find_file("SON-KOUH").data),
         },
         "outputs": {
             name: {"bytes": len(data), "sha256": _sha256(data)}

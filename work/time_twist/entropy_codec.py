@@ -204,9 +204,7 @@ def pack_entropy_pages(
     cursor = 0
     for start in range(0, len(records), records_per_page):
         starts.append(cursor)
-        chunk = pack_entropy_stream(
-            records[start : start + records_per_page]
-        )
+        chunk = pack_entropy_stream(records[start : start + records_per_page])
         chunks.append(chunk)
         cursor += len(chunk)
     return b"".join(chunks), tuple(starts)

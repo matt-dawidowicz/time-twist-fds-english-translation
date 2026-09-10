@@ -19,10 +19,9 @@ class ProductionRuntimeTests(unittest.TestCase):
         if adaptive:
             patches = (*patches, *ADAPTIVE_DICTIONARY_RUNTIME_PATCHES)
         size = max(
-            patch.file_offset + len(patch.expected)
-            for patch in patches
+            patch.file_offset + len(patch.expected) for patch in patches
         )
-        data = bytearray(b"\xCC" * size)
+        data = bytearray(b"\xcc" * size)
         for patch in patches:
             start = patch.file_offset
             data[start : start + len(patch.expected)] = patch.expected
@@ -36,7 +35,9 @@ class ProductionRuntimeTests(unittest.TestCase):
             if patch.cpu_address == address
         ]
         if len(matches) != 1:
-            raise AssertionError(f"expected one adaptive patch at ${address:04X}")
+            raise AssertionError(
+                f"expected one adaptive patch at ${address:04X}"
+            )
         return matches[0]
 
     def test_patches_are_size_neutral_and_source_verified(self) -> None:
@@ -59,7 +60,9 @@ class ProductionRuntimeTests(unittest.TestCase):
         with self.assertRaises(ProductionRuntimeError):
             patch_nov2(bytes(source))
 
-    def test_extended_dictionary_enters_after_native_index_reader(self) -> None:
+    def test_extended_dictionary_enters_after_native_index_reader(
+        self,
+    ) -> None:
         patch = PRODUCTION_RUNTIME_PATCHES[0]
         self.assertEqual(patch.cpu_address, 0x81D3)
         self.assertEqual(patch.expected[-3:], bytes.fromhex("4C BE 82"))
@@ -89,7 +92,9 @@ class ProductionRuntimeTests(unittest.TestCase):
         self.assertEqual(patch.expected[0], 6 * 8 + 8)
         self.assertEqual(patch.replacement[0], 8 * 8 + 8)
 
-    def test_adaptive_dictionary_patch_is_size_neutral_and_idempotent(self) -> None:
+    def test_adaptive_dictionary_patch_is_size_neutral_and_idempotent(
+        self,
+    ) -> None:
         source = bytes(self._synthetic_nov2(adaptive=True))
         once = patch_nov2(source, adaptive_dictionary=True)
         twice = patch_nov2(once, adaptive_dictionary=True)
@@ -109,13 +114,17 @@ class ProductionRuntimeTests(unittest.TestCase):
         branch = self._adaptive_patch(0x8154)
         stub = self._adaptive_patch(0x81FA)
         self.assertEqual(branch.expected, bytes.fromhex("A2 00 86 72 86 73"))
-        self.assertEqual(branch.replacement, bytes.fromhex("4C FA 81 EA EA EA"))
+        self.assertEqual(
+            branch.replacement, bytes.fromhex("4C FA 81 EA EA EA")
+        )
         self.assertEqual(
             stub.replacement,
             bytes.fromhex("A2 00 86 71 86 72 86 73 A9 80 85 6C 4C 5E 81"),
         )
 
-    def test_adaptive_dictionary_uses_dead_english_decoder_region(self) -> None:
+    def test_adaptive_dictionary_uses_dead_english_decoder_region(
+        self,
+    ) -> None:
         branch = self._adaptive_patch(0x8182)
         stub = self._adaptive_patch(0x81E0)
         self.assertEqual(branch.expected, bytes.fromhex("4C BE 82"))
@@ -123,7 +132,9 @@ class ProductionRuntimeTests(unittest.TestCase):
         self.assertEqual(len(stub.expected), 26)
         self.assertEqual(len(stub.replacement), 26)
         self.assertIn(bytes.fromhex("20 0D 81"), stub.replacement)
-        self.assertIn(bytes.fromhex("A2 08 20 28 83 CA D0 FA"), stub.replacement)
+        self.assertIn(
+            bytes.fromhex("A2 08 20 28 83 CA D0 FA"), stub.replacement
+        )
         self.assertIn(bytes.fromhex("8A 48"), stub.replacement)
         self.assertIn(bytes.fromhex("68 AA"), stub.replacement)
         self.assertTrue(stub.replacement.endswith(bytes.fromhex("4C C5 82")))
@@ -138,10 +149,15 @@ class ProductionRuntimeTests(unittest.TestCase):
 
     def test_runtime_patches_never_overlap_live_palette_data(self) -> None:
         palette = set(PALETTE_DATA_RANGE)
-        patches = (*PRODUCTION_RUNTIME_PATCHES, *ADAPTIVE_DICTIONARY_RUNTIME_PATCHES)
+        patches = (
+            *PRODUCTION_RUNTIME_PATCHES,
+            *ADAPTIVE_DICTIONARY_RUNTIME_PATCHES,
+        )
         for patch in patches:
             touched = set(
-                range(patch.file_offset, patch.file_offset + len(patch.expected))
+                range(
+                    patch.file_offset, patch.file_offset + len(patch.expected)
+                )
             )
             self.assertTrue(
                 palette.isdisjoint(touched),
