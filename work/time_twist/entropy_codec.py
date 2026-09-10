@@ -13,8 +13,8 @@ padded every 32 records because their page index stores byte addresses.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
-from typing import Iterable, Sequence
 
 from .textcodec import PackedSymbol, PackedTextError, SymbolKind
 
@@ -63,11 +63,15 @@ CATEGORY_BASES = tuple(category.base for category in ENTROPY_CATEGORIES)
 
 
 class _BitWriter:
+    """Represent BitWriter state and behavior."""
+
     def __init__(self) -> None:
+        """Initialize the helper state."""
         self._data = bytearray()
         self.bit_position = 0
 
     def write_bits(self, value: int, width: int) -> None:
+        """Write bits."""
         if width < 0 or value < 0 or value >= (1 << width):
             raise EntropyCodecError(
                 f"value {value} does not fit in {width} bits"
@@ -80,26 +84,33 @@ class _BitWriter:
             self.bit_position += 1
 
     def write_prefix(self, prefix: str) -> None:
+        """Write prefix."""
         for bit in prefix:
             self.write_bits(int(bit), 1)
 
     def align(self) -> None:
+        """Support the align operation for this module."""
         remainder = self.bit_position & 7
         if remainder:
             self.bit_position += 8 - remainder
 
     def to_bytes(self) -> bytes:
+        """Support the to bytes operation for this module."""
         return bytes(self._data)
 
 
 class _BitReader:
+    """Represent BitReader state and behavior."""
+
     def __init__(self, data: bytes, bit_position: int = 0) -> None:
+        """Initialize the helper state."""
         if bit_position < 0 or bit_position > len(data) * 8:
             raise EntropyCodecError("bit position is outside entropy stream")
         self.data = data
         self.bit_position = bit_position
 
     def read_bit(self) -> int:
+        """Read bit."""
         if self.bit_position >= len(self.data) * 8:
             raise EntropyCodecError("unexpected end of entropy stream")
         byte_index, within = divmod(self.bit_position, 8)
@@ -107,6 +118,7 @@ class _BitReader:
         return (self.data[byte_index] >> (7 - within)) & 1
 
     def read_bits(self, width: int) -> int:
+        """Read bits."""
         value = 0
         for _ in range(width):
             value = (value << 1) | self.read_bit()
@@ -114,6 +126,7 @@ class _BitReader:
 
 
 def _category_index(symbol: PackedSymbol) -> int:
+    """Support the category index operation for this module."""
     kind = symbol.kind
     value = symbol.value
     if kind is SymbolKind.SEPARATOR:
@@ -167,6 +180,7 @@ def entropy_stream_size(records: Iterable[Sequence[PackedSymbol]]) -> int:
 
 
 def _encode_symbol(writer: _BitWriter, symbol: PackedSymbol) -> None:
+    """Encode symbol."""
     category = ENTROPY_CATEGORIES[_category_index(symbol)]
     writer.write_prefix(category.prefix)
     if category.payload_bits:
@@ -204,15 +218,14 @@ def pack_entropy_pages(
     cursor = 0
     for start in range(0, len(records), records_per_page):
         starts.append(cursor)
-        chunk = pack_entropy_stream(
-            records[start : start + records_per_page]
-        )
+        chunk = pack_entropy_stream(records[start : start + records_per_page])
         chunks.append(chunk)
         cursor += len(chunk)
     return b"".join(chunks), tuple(starts)
 
 
 def _build_decode_trie() -> dict[int | str, object]:
+    """Build decode trie."""
     root: dict[int | str, object] = {}
     for index, category in enumerate(ENTROPY_CATEGORIES):
         node = root
@@ -232,6 +245,7 @@ _DECODE_TRIE = _build_decode_trie()
 
 
 def _decode_symbol(reader: _BitReader) -> PackedSymbol:
+    """Decode symbol."""
     node: dict[int | str, object] = _DECODE_TRIE
     while "category" not in node:
         bit = reader.read_bit()

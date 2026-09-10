@@ -34,7 +34,9 @@ class ProductionCodecTests(unittest.TestCase):
         """Do not change any certified native/English dictionary reference."""
         for index in (1, 31, 32, 68):
             record = ((PackedSymbol(SymbolKind.DICTIONARY, index, 0, 0),),)
-            self.assertEqual(pack_production_records(record), pack_records(record))
+            self.assertEqual(
+                pack_production_records(record), pack_records(record)
+            )
 
     def test_high_dictionary_escape_round_trips_69_and_255(self) -> None:
         """Use native dictionary index zero as a 17-bit high-index escape."""
@@ -115,14 +117,14 @@ class ProductionCodecTests(unittest.TestCase):
 
     def test_rebalance_promotes_heavy_high_entry_into_cheap_tier(self) -> None:
         """Let one logical dictionary move phrases across the 68-slot boundary."""
-        fillers = tuple(encode_english(f"R{index:02d}") for index in range(1, 69))
+        fillers = tuple(
+            encode_english(f"R{index:02d}") for index in range(1, 69)
+        )
         hot_phrase = encode_english("alpha beta gamma")
         dictionary = (*fillers, hot_phrase)
         source = (
             tuple(
-                encode_english(
-                    "alpha beta gamma alpha beta gamma"
-                )
+                encode_english("alpha beta gamma alpha beta gamma")
                 for _ in range(20)
             ),
         )
@@ -137,7 +139,9 @@ class ProductionCodecTests(unittest.TestCase):
             maximum_passes=3,
         )
 
-        self.assertLess(production_packed_size(parsed, rebalanced), baseline_size)
+        self.assertLess(
+            production_packed_size(parsed, rebalanced), baseline_size
+        )
         self.assertLessEqual(
             _dictionary_expansions(rebalanced).index(hot_phrase) + 1,
             68,

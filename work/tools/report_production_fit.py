@@ -6,7 +6,10 @@ import tempfile
 from pathlib import Path
 
 import generate_translation_workbook as workbook
-from time_twist.capacity import NATIVE_SCENARIO_CAPACITY_BYTES, playable_capacity
+from time_twist.capacity import (
+    NATIVE_SCENARIO_CAPACITY_BYTES,
+    playable_capacity,
+)
 from time_twist.compression import compress_english_groups, packed_size
 from time_twist.english import encode_english
 from time_twist.production_codec import (
@@ -21,14 +24,13 @@ from time_twist.ui import (
     fixed_record_table_page_pointer_bytes,
 )
 
-
 BANK_NAMES = tuple(KNOWN_SCENARIO_BANKS)
 SPACE_RUN_ENTRIES = tuple(encode_english(" " * size) for size in (16, 8, 4, 2))
 
 
 def _groups_and_structure(bank_name: str) -> tuple[object, int]:
     """Return dialogue/menu groups and non-compressible pointer bytes."""
-    groups = workbook._load_translation_groups(bank_name)  # noqa: SLF001
+    groups = workbook._load_translation_groups(bank_name)
     pointer_bytes = 2 * (len(groups) - 1)
     if bank_name not in FIXED_RECORD_TABLE_SPECS:
         return groups, pointer_bytes
@@ -36,8 +38,8 @@ def _groups_and_structure(bank_name: str) -> tuple[object, int]:
     spec = FIXED_RECORD_TABLE_SPECS[bank_name]
     menu_records = tuple(encode_english(text) for text in spec.records)
     combined_groups = (*groups, menu_records)
-    structural_bytes = (
-        pointer_bytes + fixed_record_table_page_pointer_bytes(bank_name)
+    structural_bytes = pointer_bytes + fixed_record_table_page_pointer_bytes(
+        bank_name
     )
     return combined_groups, structural_bytes
 
@@ -72,7 +74,9 @@ def _measure_adaptive_dictionary(bank_name: str) -> tuple[int, int]:
 def main() -> int:
     """Materialize reviewed prose and print exact conservative bank footprints."""
     root = Path(__file__).resolve().parents[2]
-    with tempfile.TemporaryDirectory(prefix="time_twist_production_fit_") as directory:
+    with tempfile.TemporaryDirectory(
+        prefix="time_twist_production_fit_"
+    ) as directory:
         materialized = Path(directory)
         counts = materialize_production_maps(
             BANK_NAMES,

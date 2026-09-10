@@ -35,13 +35,16 @@ class ProductionScenarioTests(unittest.TestCase):
             load_address=load,
             dictionary_address=load + 0x70,
             group_table_address=load + 0x68,
-            group_addresses=tuple(load + 0x40 + 8 * group for group in range(group_count)),
+            group_addresses=tuple(
+                load + 0x40 + 8 * group for group in range(group_count)
+            ),
             dictionary=(),
             dictionary_end_offset=0x80,
             records=records,
         )
 
     def test_default_ceiling_is_nov3_not_legacy_e000(self) -> None:
+        """Verify default ceiling is nov3 not legacy e000."""
         self.assertEqual(NOV3_SAFE_END, 0xD7B5)
         self.assertEqual(LEGACY_ADAPTIVE_PRG_RAM_END, 0xE000)
         self.assertLess(NOV3_SAFE_END, LEGACY_ADAPTIVE_PRG_RAM_END)
@@ -72,7 +75,8 @@ class ProductionScenarioTests(unittest.TestCase):
         bank = self._bank(group_count=1)
         reference_one = PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0)
         reference_69 = PackedSymbol(SymbolKind.DICTIONARY, 69, 0, 0)
-        dictionary = tuple(encode_english("A") for _ in range(68)) + (
+        dictionary = (
+            *(encode_english("A") for _ in range(68)),
             (reference_one, *encode_english("B")),
         )
         groups = (((reference_69, reference_69),),)
@@ -80,7 +84,9 @@ class ProductionScenarioTests(unittest.TestCase):
         layout = build_spill_scenario_bank(bank, groups, dictionary)
 
         self.assertEqual(layout.group_addresses[0], bank.load_address + 0x40)
-        self.assertGreaterEqual(layout.dictionary_address, bank.load_address + len(bank.data))
+        self.assertGreaterEqual(
+            layout.dictionary_address, bank.load_address + len(bank.data)
+        )
         self.assertLessEqual(layout.loaded_end, NOV3_SAFE_END)
 
     def test_spill_fails_before_crossing_prg_ram_end(self) -> None:

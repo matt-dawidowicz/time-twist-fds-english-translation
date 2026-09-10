@@ -3,7 +3,8 @@
 This path is intentionally separate from the certified release builder and
 from the discarded Adaptive255 spill candidate. It materializes the complete
 production English script, builds a deterministic nested dictionary optimized
-for the frozen entropy cost model, chooses the best NOV3-safe layout, and then
+for the frozen entropy cost model, chooses the best NOV3-safe layout, converts
+every decoder-visible fixed stream to the same entropy grammar, and then
 installs the matching NOV2 entropy runtime directly.
 """
 
@@ -12,6 +13,7 @@ from __future__ import annotations
 import tempfile
 from dataclasses import dataclass, replace
 from pathlib import Path
+from typing import cast
 
 from .english import encode_english
 from .entropy_codec import pack_entropy_pages, unpack_entropy_stream
@@ -22,6 +24,11 @@ from .entropy_compression import (
     optimize_entropy_dictionary,
     usage_pruned_entropy_variants,
 )
+from .entropy_fixed_ui import (
+    entropy_fixed_text_coverage,
+    patched_nov4_entropy_text,
+    patched_tt1a_entropy_ui,
+)
 from .entropy_runtime import NOV3_LOAD_ADDRESS, patch_entropy_nov2
 from .entropy_scenario import (
     EntropyScenarioError,
@@ -30,6 +37,7 @@ from .entropy_scenario import (
     relocate_entropy_fixed_record_table,
     validate_entropy_scenario_bank,
 )
+from .entropy_title import patched_nov4_entropy_title
 from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
 from .production_release import (
@@ -40,22 +48,19 @@ from .production_release import (
     _sha256,
 )
 from .project import source_dictionary_reference_floor
-from .release_metadata import SCENARIO_LOCATIONS, SCENARIO_UI_PATCHERS
+from .release_metadata import SCENARIO_LOCATIONS
 from .scenario import parse_scenario_bank
 from .textcodec import PackedSymbol
 from .title import DEFAULT_SUBTITLE
-from .entropy_title import patched_nov4_entropy_title
 from .ui import (
-    FIXED_RECORDS_PER_PAGE,
     FIXED_RECORD_PAGE_POINTER_OFFSET,
     FIXED_RECORD_TABLE_SPECS,
+    FIXED_RECORDS_PER_PAGE,
     UiPatchError,
     fixed_record_table_page_pointer_bytes,
     patched_kouhen_boot_guard,
     patched_nov2_ui,
-    patched_nov4_ui,
 )
-
 
 ScenarioGroups = tuple[tuple[tuple[PackedSymbol, ...], ...], ...]
 ScenarioDictionary = tuple[tuple[PackedSymbol, ...], ...]
@@ -85,6 +90,7 @@ class EntropyProductionBankResult:
 
 
 def _dictionary_key(dictionary: ScenarioDictionary) -> tuple[object, ...]:
+    """Support the dictionary key operation for this module."""
     return tuple(
         tuple((symbol.kind.value, symbol.value) for symbol in record)
         for record in dictionary
@@ -92,6 +98,7 @@ def _dictionary_key(dictionary: ScenarioDictionary) -> tuple[object, ...]:
 
 
 def _menu_bytes(records: tuple[tuple[PackedSymbol, ...], ...]) -> int:
+    """Support the menu bytes operation for this module."""
     if not records:
         return 0
     packed, _ = pack_entropy_pages(
@@ -109,6 +116,7 @@ def _build_variant_layout(
     *,
     prg_ram_end: int = NOV3_LOAD_ADDRESS,
 ) -> tuple[EntropyScenarioLayout, int]:
+    """Build variant layout."""
     text_start = bank.group_addresses[0] - bank.load_address
     if bank_name in FIXED_RECORD_TABLE_SPECS:
         base_data, region_start = relocate_entropy_fixed_record_table(
@@ -141,6 +149,7 @@ def _select_safe_variant(
     literal_groups: ScenarioGroups,
     literal_menu: tuple[tuple[PackedSymbol, ...], ...],
 ) -> tuple[EntropyCompressionResult, EntropyScenarioLayout, int]:
+    """Select safe variant."""
     base = optimize_entropy_dictionary(
         literal_groups,
         literal_menu,
@@ -175,9 +184,7 @@ def _select_safe_variant(
         except (EntropyScenarioError, UiPatchError):
             continue
         total_bytes = (
-            sum(layout.group_bytes)
-            + layout.dictionary_bytes
-            + menu_bytes
+            sum(layout.group_bytes) + layout.dictionary_bytes + menu_bytes
         )
         key: tuple[object, ...] = (
             layout.loaded_end,
@@ -233,22 +240,22 @@ def _audit_menu(
     spec = FIXED_RECORD_TABLE_SPECS[bank_name]
     page_index_address = int.from_bytes(
         data[
-            FIXED_RECORD_PAGE_POINTER_OFFSET :
-            FIXED_RECORD_PAGE_POINTER_OFFSET + 2
+            FIXED_RECORD_PAGE_POINTER_OFFSET : FIXED_RECORD_PAGE_POINTER_OFFSET
+            + 2
         ],
         "little",
     )
     page_index_offset = page_index_address - 0xA200
     pointer_bytes = fixed_record_table_page_pointer_bytes(bank_name)
     page_starts = [spec.start]
-    for offset in range(
-        page_index_offset,
-        page_index_offset + pointer_bytes,
-        2,
-    ):
-        page_starts.append(
-            int.from_bytes(data[offset : offset + 2], "little") - 0xA200
+    page_starts.extend(
+        int.from_bytes(data[offset : offset + 2], "little") - 0xA200
+        for offset in range(
+            page_index_offset,
+            page_index_offset + pointer_bytes,
+            2,
         )
+    )
     page_ends = (*page_starts[1:], page_index_offset)
     decoded: list[tuple[PackedSymbol, ...]] = []
     for page_index, (start, end) in enumerate(
@@ -319,12 +326,15 @@ def build_entropy_scenario_candidate(
         literal_menu,
     )
 
-    patcher = SCENARIO_UI_PATCHERS.get(bank_name)
-    if patcher is not None:
-        patched = patcher(layout.data)
+    # TT1A is the one scenario bank whose selector table is outside the normal
+    # FIXED_RECORD_TABLE_SPECS relocation model. Its 19 native callers enter at
+    # fixed byte addresses, so preserve those slots as 19 independent one-record
+    # entropy streams rather than collapsing them into one sequential stream.
+    if bank_name == "TT1A":
+        patched = patched_tt1a_entropy_ui(layout.data)
         if len(patched) != len(layout.data):
             raise ProductionBuildError(
-                f"{bank_name} fixed UI patch changed file size"
+                "TT1A entropy UI patch changed file size"
             )
         layout = replace(layout, data=patched)
         validate_entropy_scenario_bank(
@@ -407,8 +417,14 @@ def build_entropy_images(
     nov2 = patch_entropy_nov2(nov2)
     zenpen.sides[0].find_file("NOV2").data = nov2
 
-    nov4 = patched_nov4_ui(zenpen.sides[0].find_file("NOV4").data)
+    # The font patch retains a strict whole-bank source whitelist, so keep it
+    # first.  Entropy conversion follows and owns every NOV4 packed-text stream
+    # consumed by NOV2.  Title expansion is last and validates only the title
+    # regions it owns.  The native patched_nov4_ui path is intentionally absent:
+    # inserting byte-aligned native records here caused the R5 blank START menu.
+    nov4 = zenpen.sides[0].find_file("NOV4").data
     nov4 = patched_nov4_font(nov4)
+    nov4 = patched_nov4_entropy_text(nov4)
     nov4 = patched_nov4_entropy_title(
         nov4,
         title_asset,
@@ -428,24 +444,24 @@ def build_entropy_images(
     }
     output["four_side"] = combine_images([zenpen, kouhen]).to_bytes()
     manifest: dict[str, object] = {
-        "schema": "Time Twist frozen entropy production candidate v1",
+        "schema": "Time Twist frozen entropy production candidate v2",
         "codec": "frozen-entropy-v1",
+        "decoder_format": "entropy-only",
         "record_framing": (
-            "bit-contiguous scenario/dictionary streams; "
-            "byte-aligned 32-record menu pages"
+            "bit-contiguous within every independently addressed stream; "
+            "menu pages begin on byte boundaries"
         ),
+        "fixed_decoder_surfaces": entropy_fixed_text_coverage(),
         "nov3_exclusive_boundary": f"0x{NOV3_LOAD_ADDRESS:04X}",
         "subtitle": subtitle,
         "scenario_records": sum(
-            int(record["records"]) for record in bank_report.values()
+            cast(int, record["records"]) for record in bank_report.values()
         ),
         "scenario_banks": bank_report,
         "components": {
             "NOV2": _sha256(nov2),
             "NOV4": _sha256(nov4),
-            "SON-KOUH": _sha256(
-                kouhen.sides[0].find_file("SON-KOUH").data
-            ),
+            "SON-KOUH": _sha256(kouhen.sides[0].find_file("SON-KOUH").data),
         },
         "outputs": {
             name: {"bytes": len(data), "sha256": _sha256(data)}

@@ -32,14 +32,17 @@ BANK_ORDER = (
 
 
 def _visible(text: str) -> str:
+    """Support the visible operation for this module."""
     return CONTROL_RE.sub(" / ", text).replace("  ", " ").strip()
 
 
 def _segments(text: str) -> list[str]:
+    """Support the segments operation for this module."""
     return [segment for segment in CONTROL_RE.split(text) if segment]
 
 
 def _priority(row: dict[str, object]) -> int:
+    """Support the priority operation for this module."""
     playable = str(row.get("patch_safe_english_translation", ""))
     natural = str(row.get("final_natural_english_translation", ""))
     score = 0
@@ -74,6 +77,7 @@ def _priority(row: dict[str, object]) -> int:
 
 
 def rows(root: Path) -> list[dict[str, object]]:
+    """Return prioritized localization audit rows from all workbook banks."""
     output: list[dict[str, object]] = []
     for bank in BANK_ORDER:
         path = root / "work" / "translation_workbook_banks" / f"{bank}.json"
@@ -92,7 +96,9 @@ def rows(root: Path) -> list[dict[str, object]]:
                 "playable_english": playable,
                 "natural_english": natural,
                 "differs_from_natural": playable != natural,
-                "nuance_lost": source.get("nuance_lost_in_patch_safe_version", ""),
+                "nuance_lost": source.get(
+                    "nuance_lost_in_patch_safe_version", ""
+                ),
                 "requires_technical_expansion": source.get(
                     "requires_technical_expansion", False
                 ),
@@ -100,7 +106,8 @@ def rows(root: Path) -> list[dict[str, object]]:
                     "requires_gameplay_context", False
                 ),
                 "longest_playable_segment": max(
-                    (len(segment) for segment in _segments(playable)), default=0
+                    (len(segment) for segment in _segments(playable)),
+                    default=0,
                 ),
                 "longest_natural_segment": max(
                     (len(segment) for segment in _segments(natural)), default=0
@@ -118,6 +125,7 @@ def rows(root: Path) -> list[dict[str, object]]:
 
 
 def main() -> int:
+    """Write the prioritized localization audit CSV."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--output-csv", type=Path, required=True)

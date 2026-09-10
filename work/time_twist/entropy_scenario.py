@@ -10,7 +10,10 @@ from .entropy_codec import (
     pack_entropy_stream,
     unpack_entropy_stream,
 )
-from .entropy_compression import expand_entropy_dictionary, expand_entropy_record
+from .entropy_compression import (
+    expand_entropy_dictionary,
+    expand_entropy_record,
+)
 from .scenario import (
     DICTIONARY_POINTER_OFFSET,
     GROUP_TABLE_POINTER_OFFSET,
@@ -19,11 +22,11 @@ from .scenario import (
 )
 from .textcodec import PackedSymbol
 from .ui import (
-    FIXED_RECORDS_PER_PAGE,
     FIXED_RECORD_FOLLOWING_POINTER_OFFSETS,
     FIXED_RECORD_PAGE_POINTER_OFFSET,
     FIXED_RECORD_TABLE_POINTER_OFFSET,
     FIXED_RECORD_TABLE_SPECS,
+    FIXED_RECORDS_PER_PAGE,
     UiPatchError,
     fixed_record_table_page_pointer_bytes,
 )
@@ -58,24 +61,32 @@ class EntropyScenarioLayout:
 
     @property
     def loaded_end(self) -> int:
+        """Return the exclusive loaded CPU address of the patched bank."""
         return self.load_address + len(self.data)
 
 
 def _read_word(data: bytes, offset: int) -> int:
+    """Read one little-endian word from the supplied buffer."""
     if offset < 0 or offset + 2 > len(data):
-        raise EntropyScenarioError(f"word offset 0x{offset:04X} is outside bank")
+        raise EntropyScenarioError(
+            f"word offset 0x{offset:04X} is outside bank"
+        )
     return int.from_bytes(data[offset : offset + 2], "little")
 
 
 def _write_word(data: bytearray, offset: int, value: int) -> None:
+    """Write one little-endian word into the supplied buffer."""
     if not 0 <= value <= 0xFFFF:
         raise EntropyScenarioError(f"pointer ${value:05X} exceeds 16 bits")
     if offset < 0 or offset + 2 > len(data):
-        raise EntropyScenarioError(f"word offset 0x{offset:04X} is outside bank")
+        raise EntropyScenarioError(
+            f"word offset 0x{offset:04X} is outside bank"
+        )
     data[offset : offset + 2] = value.to_bytes(2, "little")
 
 
 def _source_record_counts(bank: ScenarioBank) -> tuple[int, ...]:
+    """Support the source record counts operation for this module."""
     return tuple(
         sum(record.group_index == group for record in bank.records)
         for group in range(len(bank.group_addresses))
@@ -85,6 +96,7 @@ def _source_record_counts(bank: ScenarioBank) -> tuple[int, ...]:
 def _semantic_record(
     record: tuple[PackedSymbol, ...] | list[PackedSymbol],
 ) -> tuple[tuple[object, int], ...]:
+    """Support the semantic record operation for this module."""
     return tuple((symbol.kind, symbol.value) for symbol in record)
 
 
@@ -92,6 +104,7 @@ def _literal_groups(
     groups: ScenarioGroups,
     dictionary: ScenarioDictionary,
 ) -> ScenarioGroups:
+    """Support the literal groups operation for this module."""
     expansions = expand_entropy_dictionary(dictionary)
     return tuple(
         tuple(expand_entropy_record(record, expansions) for record in group)
@@ -111,9 +124,7 @@ def _best_resident_subset(
     best: tuple[int, ...] = ()
     for mask in range(1 << len(group_sizes)):
         selected = tuple(
-            index
-            for index in range(len(group_sizes))
-            if mask & (1 << index)
+            index for index in range(len(group_sizes)) if mask & (1 << index)
         )
         used = sum(group_sizes[index] for index in selected)
         if used > capacity:
@@ -155,11 +166,16 @@ def relocate_entropy_fixed_record_table(
         )
     source = data[spec.start : spec.end]
     if len(source) != spec.end - spec.start:
-        raise UiPatchError(f"{bank_name} is too short for its fixed text table")
+        raise UiPatchError(
+            f"{bank_name} is too short for its fixed text table"
+        )
     if hashlib.sha256(source).hexdigest().upper() != spec.source_sha256:
-        raise UiPatchError(f"{bank_name} fixed text table does not match source")
+        raise UiPatchError(
+            f"{bank_name} fixed text table does not match source"
+        )
 
     def header_offset(pointer_offset: int) -> int:
+        """Support the header offset operation for this module."""
         return _read_word(data, pointer_offset) - load_address
 
     if header_offset(FIXED_RECORD_TABLE_POINTER_OFFSET) != spec.start:
@@ -168,9 +184,13 @@ def relocate_entropy_fixed_record_table(
         raise UiPatchError(f"{bank_name} fixed-table page pointer changed")
 
     page_pointer_bytes = fixed_record_table_page_pointer_bytes(bank_name)
-    old_following_offset = header_offset(FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[0])
+    old_following_offset = header_offset(
+        FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[0]
+    )
     if old_following_offset != spec.end + page_pointer_bytes:
-        raise UiPatchError(f"{bank_name} fixed-table page index has unexpected size")
+        raise UiPatchError(
+            f"{bank_name} fixed-table page index has unexpected size"
+        )
     second_following = header_offset(FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[1])
     if not old_following_offset <= second_following < group_zero_offset:
         raise UiPatchError(
@@ -179,14 +199,16 @@ def relocate_entropy_fixed_record_table(
 
     original_starts = _source_record_starts(source, len(spec.records))
     expected_pages = b"".join(
-        (load_address + spec.start + original_starts[index]).to_bytes(2, "little")
+        (load_address + spec.start + original_starts[index]).to_bytes(
+            2, "little"
+        )
         for index in range(
             FIXED_RECORDS_PER_PAGE,
             len(records),
             FIXED_RECORDS_PER_PAGE,
         )
     )
-    if data[spec.end:old_following_offset] != expected_pages:
+    if data[spec.end : old_following_offset] != expected_pages:
         raise UiPatchError(f"{bank_name} fixed-table page index changed")
 
     secondary_low = load_address + old_following_offset
@@ -223,7 +245,9 @@ def relocate_entropy_fixed_record_table(
     prefix.extend(new_pages)
     prefix.extend(data[old_following_offset:group_zero_offset])
     if len(prefix) != new_group_zero_offset:
-        raise UiPatchError(f"{bank_name} relocated prefix size is inconsistent")
+        raise UiPatchError(
+            f"{bank_name} relocated prefix size is inconsistent"
+        )
 
     _write_word(
         prefix,
@@ -260,8 +284,12 @@ def build_entropy_scenario_bank(
         )
     counts = _source_record_counts(bank)
     if len(groups) != len(counts):
-        raise EntropyScenarioError(f"expected {len(counts)} groups, got {len(groups)}")
-    for index, (group, expected) in enumerate(zip(groups, counts, strict=True)):
+        raise EntropyScenarioError(
+            f"expected {len(counts)} groups, got {len(groups)}"
+        )
+    for index, (group, expected) in enumerate(
+        zip(groups, counts, strict=True)
+    ):
         if len(group) != expected:
             raise EntropyScenarioError(
                 f"group {index} expected {expected} records, got {len(group)}"
@@ -270,7 +298,9 @@ def build_entropy_scenario_bank(
     expected_groups = _literal_groups(groups, dictionary)
     source = bank.data if base_data is None else base_data
     if len(source) != len(bank.data):
-        raise EntropyScenarioError("base_data must retain original overlay size")
+        raise EntropyScenarioError(
+            "base_data must retain original overlay size"
+        )
     region_start = (
         bank.group_addresses[0] - bank.load_address
         if old_region_start is None
@@ -313,7 +343,9 @@ def build_entropy_scenario_bank(
     output[cursor : cursor + len(dictionary_blob)] = dictionary_blob
     cursor += len(dictionary_blob)
     if cursor > bank.dictionary_end_offset:
-        raise EntropyScenarioError("resident entropy data overrun fixed-tail boundary")
+        raise EntropyScenarioError(
+            "resident entropy data overrun fixed-tail boundary"
+        )
 
     high_cursor = len(bank.data)
     for index in spilled:
@@ -327,16 +359,19 @@ def build_entropy_scenario_bank(
             f"entropy text reaches ${loaded_end:04X}; NOV3 begins at ${prg_ram_end:04X}"
         )
 
-    table = b"".join(address.to_bytes(2, "little") for address in addresses[1:])
+    table = b"".join(
+        address.to_bytes(2, "little") for address in addresses[1:]
+    )
     output[group_table_offset : group_table_offset + len(table)] = table
     group_table_address = bank.load_address + group_table_offset
     _write_word(output, DICTIONARY_POINTER_OFFSET, dictionary_address)
     _write_word(output, GROUP_TABLE_POINTER_OFFSET, group_table_address)
     _write_word(output, GROUP_ZERO_POINTER_OFFSET, addresses[0])
 
-    if output[bank.dictionary_end_offset : len(bank.data)] != source[
-        bank.dictionary_end_offset :
-    ]:
+    if (
+        output[bank.dictionary_end_offset : len(bank.data)]
+        != source[bank.dictionary_end_offset :]
+    ):
         raise EntropyScenarioError("fixed source tail moved or changed")
 
     layout = EntropyScenarioLayout(
@@ -370,11 +405,20 @@ def validate_entropy_scenario_bank(
     """Decode every independently addressed stream and prove semantic equality."""
     data = layout.data
     load = source_bank.load_address
-    if _read_word(data, DICTIONARY_POINTER_OFFSET) != layout.dictionary_address:
+    if (
+        _read_word(data, DICTIONARY_POINTER_OFFSET)
+        != layout.dictionary_address
+    ):
         raise EntropyScenarioError("dictionary header pointer mismatch")
-    if _read_word(data, GROUP_TABLE_POINTER_OFFSET) != layout.group_table_address:
+    if (
+        _read_word(data, GROUP_TABLE_POINTER_OFFSET)
+        != layout.group_table_address
+    ):
         raise EntropyScenarioError("group-table header pointer mismatch")
-    if _read_word(data, GROUP_ZERO_POINTER_OFFSET) != layout.group_addresses[0]:
+    if (
+        _read_word(data, GROUP_ZERO_POINTER_OFFSET)
+        != layout.group_addresses[0]
+    ):
         raise EntropyScenarioError("group-zero header pointer mismatch")
 
     table_offset = layout.group_table_address - load

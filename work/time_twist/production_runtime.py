@@ -37,6 +37,7 @@ class RuntimePatch:
     label: str
 
     def __post_init__(self) -> None:
+        """Validate the patch offset and size neutrality."""
         if self.file_offset < 0:
             raise ProductionRuntimeError(f"{self.label}: negative file offset")
         if len(self.expected) != len(self.replacement):
@@ -54,7 +55,7 @@ class RuntimePatch:
             raise ProductionRuntimeError(
                 f"{self.label}: NOV2 ends before file 0x{end:04X}"
             )
-        current = bytes(data[self.file_offset:end])
+        current = bytes(data[self.file_offset : end])
         if current == self.replacement:
             return
         if current != self.expected:
@@ -62,10 +63,11 @@ class RuntimePatch:
                 f"{self.label}: source mismatch at file 0x{self.file_offset:04X} "
                 f"/ CPU ${self.cpu_address:04X}: got {current.hex(' ').upper()}"
             )
-        data[self.file_offset:end] = self.replacement
+        data[self.file_offset : end] = self.replacement
 
 
 def _hex(value: str) -> bytes:
+    """Return a hexadecimal representation of the supplied bytes."""
     return bytes.fromhex(value)
 
 

@@ -14,15 +14,16 @@ import json
 import subprocess
 import sys
 import unittest
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 from .fds import FdsFile, FdsImage
 
 BASELINE_COMMIT = "ad5ebe9fced6807c6398691db1b36c58e9b1d095"
 CODE_PATHS = ("work/time_twist", "work/tools", "pyproject.toml")
 FOCUSED_TESTS = (
+    "test_entropy_fixed_ui",
     "test_entropy_production",
     "test_production_runtime",
     "test_production_scenario",
@@ -44,10 +45,12 @@ class FileDelta:
 
 
 def _sha256(data: bytes) -> str:
+    """Return the SHA-256 digest for the supplied data."""
     return hashlib.sha256(data).hexdigest().upper()
 
 
 def _indexed_files(image: FdsImage) -> dict[tuple[int, str, int], FdsFile]:
+    """Support the indexed files operation for this module."""
     return {
         (side.index, entry.name, entry.load_address): entry
         for side in image.sides
@@ -56,6 +59,7 @@ def _indexed_files(image: FdsImage) -> dict[tuple[int, str, int], FdsFile]:
 
 
 def _first_difference(left: bytes, right: bytes) -> int | None:
+    """Support the first difference operation for this module."""
     common = min(len(left), len(right))
     mismatch = next((i for i in range(common) if left[i] != right[i]), None)
     if mismatch is not None:
@@ -71,8 +75,7 @@ def compare_fds(old_path: Path, new_path: Path) -> list[FileDelta]:
         missing = sorted(old.keys() - new.keys())
         added = sorted(new.keys() - old.keys())
         raise ValueError(
-            "FDS file inventory changed; "
-            f"missing={missing}, added={added}"
+            "FDS file inventory changed; " f"missing={missing}, added={added}"
         )
 
     deltas: list[FileDelta] = []
@@ -82,7 +85,9 @@ def compare_fds(old_path: Path, new_path: Path) -> list[FileDelta]:
         if left == right:
             continue
         common = min(len(left), len(right))
-        changed = sum(a != b for a, b in zip(left[:common], right[:common]))
+        changed = sum(
+            a != b for a, b in zip(left[:common], right[:common], strict=True)
+        )
         changed += abs(len(left) - len(right))
         deltas.append(
             FileDelta(
@@ -99,6 +104,7 @@ def compare_fds(old_path: Path, new_path: Path) -> list[FileDelta]:
 
 
 def command_fds(args: argparse.Namespace) -> int:
+    """Compare two FDS images and print changed file payloads."""
     old_raw = args.old.read_bytes()
     new_raw = args.new.read_bytes()
     print(f"old SHA-256 {_sha256(old_raw)}")
@@ -147,7 +153,9 @@ def command_smoke(_args: argparse.Namespace) -> int:
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
     for name in FOCUSED_TESTS:
-        suite.addTests(loader.discover(root / "tests", pattern=f"{name}.py"))
+        suite.addTests(
+            loader.discover(str(root / "tests"), pattern=f"{name}.py")
+        )
     result = unittest.TextTestRunner(verbosity=1).run(suite)
     return 0 if result.wasSuccessful() else 1
 
@@ -176,12 +184,12 @@ def command_build(args: argparse.Namespace) -> int:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(outputs["four_side"])
     if args.all_images:
-        args.output.with_name("Time-Twist-English-Entropy-Zenpen.fds").write_bytes(
-            outputs["zenpen"]
-        )
-        args.output.with_name("Time-Twist-English-Entropy-Kouhen.fds").write_bytes(
-            outputs["kouhen"]
-        )
+        args.output.with_name(
+            "Time-Twist-English-Entropy-Zenpen.fds"
+        ).write_bytes(outputs["zenpen"])
+        args.output.with_name(
+            "Time-Twist-English-Entropy-Kouhen.fds"
+        ).write_bytes(outputs["kouhen"])
     if args.manifest:
         args.manifest.parent.mkdir(parents=True, exist_ok=True)
         args.manifest.write_text(
@@ -192,6 +200,7 @@ def command_build(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the runtime-debug command-line parser."""
     parser = argparse.ArgumentParser(
         prog="time-twist-runtime",
         description="Fast 2026-08-29 vs current entropy runtime-debug operations.",
@@ -205,7 +214,9 @@ def build_parser() -> argparse.ArgumentParser:
     code.add_argument("--head", default="HEAD")
     code.set_defaults(function=command_code)
 
-    fds = sub.add_parser("fds", help="compare named payloads in two FDS images")
+    fds = sub.add_parser(
+        "fds", help="compare named payloads in two FDS images"
+    )
     fds.add_argument("old", type=Path)
     fds.add_argument("new", type=Path)
     fds.set_defaults(function=command_fds)
@@ -236,6 +247,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Iterable[str] | None = None) -> int:
+    """Run the runtime-debug command-line interface."""
     parser = build_parser()
     args = parser.parse_args(list(argv) if argv is not None else None)
     return int(args.function(args))

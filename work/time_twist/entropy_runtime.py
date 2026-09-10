@@ -21,7 +21,11 @@ from .entropy_codec import (
     CATEGORY_PAYLOAD_BITS,
     CATEGORY_PREFIXES,
 )
-from .production_runtime import ProductionRuntimeError, RuntimePatch, patch_nov2
+from .production_runtime import (
+    ProductionRuntimeError,
+    RuntimePatch,
+    patch_nov2,
+)
 
 NOV2_LOAD_ADDRESS = 0x6000
 NOV2_SIZE = 0x4200
@@ -44,6 +48,7 @@ class _Assembler:
     """Minimal deterministic assembler for the small 6502 replacement blocks."""
 
     def __init__(self, origin: int) -> None:
+        """Initialize the helper state."""
         self.origin = origin
         self.data = bytearray()
         self.labels: dict[str, int] = {}
@@ -51,29 +56,37 @@ class _Assembler:
 
     @property
     def pc(self) -> int:
+        """Return the current assembler program counter."""
         return self.origin + len(self.data)
 
     def label(self, name: str) -> None:
+        """Record an assembler label at the current program counter."""
         if name in self.labels:
             raise EntropyRuntimeError(f"duplicate assembler label {name}")
         self.labels[name] = self.pc
 
     def emit(self, *values: int) -> None:
+        """Append raw bytes to the assembled runtime."""
         if any(not 0 <= value <= 0xFF for value in values):
             raise EntropyRuntimeError("assembler byte is outside 0..255")
         self.data.extend(values)
 
     def absolute(self, opcode: int, target: str | int) -> None:
+        """Record an absolute-address fixup in the assembled runtime."""
         self.emit(opcode, 0, 0)
         self.fixups.append((len(self.data) - 2, "absolute", target))
 
     def relative(self, opcode: int, target: str | int) -> None:
+        """Record a relative-address fixup in the assembled runtime."""
         self.emit(opcode, 0)
         self.fixups.append((len(self.data) - 1, "relative", target))
 
     def finish(self) -> bytes:
+        """Resolve assembler fixups and return the completed runtime bytes."""
         for position, kind, target in self.fixups:
-            address = self.labels[target] if isinstance(target, str) else target
+            address = (
+                self.labels[target] if isinstance(target, str) else target
+            )
             if kind == "absolute":
                 self.data[position] = address & 0xFF
                 self.data[position + 1] = (address >> 8) & 0xFF
@@ -98,7 +111,9 @@ def _entropy_tree() -> bytes:
             bit = int(bit_text)
             child = node.setdefault(bit, {})
             if not isinstance(child, dict):
-                raise EntropyRuntimeError("entropy prefix collides with a leaf")
+                raise EntropyRuntimeError(
+                    "entropy prefix collides with a leaf"
+                )
             node = child
         if node:
             raise EntropyRuntimeError("entropy prefix is not a unique leaf")
@@ -107,6 +122,7 @@ def _entropy_tree() -> bytes:
     nodes: list[int | None] = []
 
     def emit_node(node: dict[int | str, object]) -> int:
+        """Serialize one node of the entropy decode trie."""
         index = len(nodes)
         nodes.append(None)
         category = node.get("category")
@@ -127,7 +143,7 @@ def _entropy_tree() -> bytes:
     emit_node(root)
     if len(nodes) != 31 or any(value is None for value in nodes):
         raise EntropyRuntimeError("unexpected serialized entropy tree size")
-    return bytes(int(value) for value in nodes)
+    return bytes(value for value in nodes if value is not None)
 
 
 ENTROPY_TREE = _entropy_tree()
@@ -241,7 +257,9 @@ def _build_category_decoder() -> bytes:
     assembler.emit(*ENTROPY_TREE)
     blob = assembler.finish()
     if len(blob) > CATEGORY_REGION_SIZE:
-        raise EntropyRuntimeError("entropy category decoder exceeds its region")
+        raise EntropyRuntimeError(
+            "entropy category decoder exceeds its region"
+        )
     return blob
 
 
@@ -361,22 +379,27 @@ class HashGuardedPatch:
     label: str
 
     def __post_init__(self) -> None:
+        """Validate patch bounds, size neutrality, and digest shape."""
         if self.cpu_address < NOV2_LOAD_ADDRESS:
             raise EntropyRuntimeError(f"{self.label}: address precedes NOV2")
         if self.size != len(self.replacement):
-            raise EntropyRuntimeError(f"{self.label}: replacement changed size")
+            raise EntropyRuntimeError(
+                f"{self.label}: replacement changed size"
+            )
         if len(self.expected_sha256) != 64:
             raise EntropyRuntimeError(f"{self.label}: malformed source digest")
 
     @property
     def file_offset(self) -> int:
+        """Return the NOV2-relative byte offset of the patch."""
         return self.cpu_address - NOV2_LOAD_ADDRESS
 
     def apply(self, data: bytearray) -> None:
+        """Apply the guarded patch idempotently to a mutable NOV2 image."""
         end = self.file_offset + self.size
         if end > len(data):
             raise EntropyRuntimeError(f"{self.label}: NOV2 is too short")
-        current = bytes(data[self.file_offset:end])
+        current = bytes(data[self.file_offset : end])
         if current == self.replacement:
             return
         digest = hashlib.sha256(current).hexdigest().upper()
@@ -385,7 +408,7 @@ class HashGuardedPatch:
                 f"{self.label}: source drift at ${self.cpu_address:04X}; "
                 f"got {digest}"
             )
-        data[self.file_offset:end] = self.replacement
+        data[self.file_offset : end] = self.replacement
 
 
 ENTROPY_RUNTIME_PATCHES = (
@@ -468,9 +491,10 @@ ENTROPY_PREREQUISITE_PATCHES = (
 
 
 def _guard_entropy_prerequisites(data: bytes) -> None:
+    """Validate entropy prerequisites."""
     for patch in ENTROPY_PREREQUISITE_PATCHES:
         end = patch.file_offset + len(patch.replacement)
-        if data[patch.file_offset:end] != patch.replacement:
+        if data[patch.file_offset : end] != patch.replacement:
             raise EntropyRuntimeError(
                 f"{patch.label}: direct entropy prerequisite is absent at "
                 f"${patch.cpu_address:04X}"
@@ -491,22 +515,24 @@ def patch_entropy_nov2(data: bytes) -> bytes:
             f"NOV2 must be {NOV2_SIZE} bytes, got {len(data)}"
         )
     result = bytearray(patch_nov2(data))
-    for patch in ENTROPY_PREREQUISITE_PATCHES:
-        patch.apply(result)
+    for prerequisite_patch in ENTROPY_PREREQUISITE_PATCHES:
+        prerequisite_patch.apply(result)
     _guard_entropy_prerequisites(result)
     palette_before = bytes(
         result[
-            PALETTE_CPU_RANGE.start - NOV2_LOAD_ADDRESS :
-            PALETTE_CPU_RANGE.stop - NOV2_LOAD_ADDRESS
+            PALETTE_CPU_RANGE.start
+            - NOV2_LOAD_ADDRESS : PALETTE_CPU_RANGE.stop
+            - NOV2_LOAD_ADDRESS
         ]
     )
-    for patch in ENTROPY_RUNTIME_PATCHES:
-        patch.apply(result)
+    for runtime_patch in ENTROPY_RUNTIME_PATCHES:
+        runtime_patch.apply(result)
     _guard_entropy_prerequisites(result)
     palette_after = bytes(
         result[
-            PALETTE_CPU_RANGE.start - NOV2_LOAD_ADDRESS :
-            PALETTE_CPU_RANGE.stop - NOV2_LOAD_ADDRESS
+            PALETTE_CPU_RANGE.start
+            - NOV2_LOAD_ADDRESS : PALETTE_CPU_RANGE.stop
+            - NOV2_LOAD_ADDRESS
         ]
     )
     if palette_after != palette_before:

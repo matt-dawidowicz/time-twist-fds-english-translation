@@ -279,7 +279,9 @@ def render_glyph(char: str) -> bytes:
     try:
         pattern = PIXEL_FONT_5X8[key]
     except KeyError as error:
-        raise FontPatchError(f"pixel font has no glyph for {char!r}") from error
+        raise FontPatchError(
+            f"pixel font has no glyph for {char!r}"
+        ) from error
     if len(pattern) > 8:
         raise FontPatchError(f"glyph {char!r} exceeds eight rows")
     rows = bytearray(b"\xff" * 8)

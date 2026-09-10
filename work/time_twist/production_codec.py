@@ -34,11 +34,10 @@ from collections import Counter
 from collections.abc import Iterable
 
 from .textcodec import (
-    BitReader,
-    BitWriter,
     EXTENDED_DICTIONARY_ENTRY_COUNT,
     EXTENDED_DICTIONARY_LITERAL_LIMIT,
-    NATIVE_DICTIONARY_ENTRY_COUNT,
+    BitReader,
+    BitWriter,
     PackedSymbol,
     PackedTextError,
     SymbolKind,
@@ -128,9 +127,7 @@ def decode_production_symbol(reader: BitReader) -> PackedSymbol:
             else:
                 value = reader.read_bits(3)
                 kind = (
-                    SymbolKind.SEPARATOR
-                    if value == 5
-                    else SymbolKind.CONTROL
+                    SymbolKind.SEPARATOR if value == 5 else SymbolKind.CONTROL
                 )
     return PackedSymbol(kind, value, start, reader.bit_position)
 
@@ -203,12 +200,14 @@ def _validate_dictionary(dictionary: ScenarioDictionary) -> None:
                 raise ValueError(
                     f"dictionary entry {entry_index} contains control data"
                 )
-            if symbol.kind is SymbolKind.DICTIONARY:
-                if not 1 <= symbol.value < entry_index:
-                    raise ValueError(
-                        f"dictionary entry {entry_index} references "
-                        f"non-earlier entry {symbol.value}"
-                    )
+            if (
+                symbol.kind is SymbolKind.DICTIONARY
+                and not 1 <= symbol.value < entry_index
+            ):
+                raise ValueError(
+                    f"dictionary entry {entry_index} references "
+                    f"non-earlier entry {symbol.value}"
+                )
 
 
 def _dictionary_expansions(
@@ -257,7 +256,9 @@ def _optimal_parse_record(
     if expansions is None:
         expansions = _dictionary_expansions(dictionary)
 
-    by_first: dict[PackedSymbol, list[tuple[int, tuple[PackedSymbol, ...]]]] = {}
+    by_first: dict[
+        PackedSymbol, list[tuple[int, tuple[PackedSymbol, ...]]]
+    ] = {}
     for index, expansion in enumerate(expansions, start=1):
         if not expansion:
             continue
@@ -268,12 +269,14 @@ def _optimal_parse_record(
     best_tokens: list[tuple[PackedSymbol, ...]] = [()] * (length + 1)
     for position in range(length - 1, -1, -1):
         symbol = record[position]
-        literal_bits = production_symbol_bit_length(symbol) + best_bits[position + 1]
+        literal_bits = (
+            production_symbol_bit_length(symbol) + best_bits[position + 1]
+        )
         chosen_bits = literal_bits
         chosen = (symbol, *best_tokens[position + 1])
 
         if symbol.kind in (SymbolKind.COMMON, SymbolKind.EXTENDED):
-            for index, expansion in by_first.get(symbol, ()):  # type: ignore[arg-type]
+            for index, expansion in by_first.get(symbol, ()):
                 end = position + len(expansion)
                 if end > length or tuple(record[position:end]) != expansion:
                     continue
@@ -317,7 +320,10 @@ def _candidate_counts(
         for record in group:
             segment: list[PackedSymbol] = []
             for symbol in (*record, None):
-                if symbol is not None and symbol.kind is not SymbolKind.CONTROL:
+                if (
+                    symbol is not None
+                    and symbol.kind is not SymbolKind.CONTROL
+                ):
                     segment.append(symbol)
                     continue
                 for start in range(len(segment)):
@@ -332,6 +338,7 @@ def _candidate_depth(
     candidate: tuple[PackedSymbol, ...],
     depths: tuple[int, ...],
 ) -> int:
+    """Support the candidate depth operation for this module."""
     referenced = [
         depths[symbol.value - 1]
         for symbol in candidate
@@ -344,6 +351,7 @@ def _candidate_expansion(
     candidate: tuple[PackedSymbol, ...],
     expansions: tuple[tuple[PackedSymbol, ...], ...],
 ) -> tuple[PackedSymbol, ...]:
+    """Support the candidate expansion operation for this module."""
     output: list[PackedSymbol] = []
     for symbol in candidate:
         if symbol.kind is SymbolKind.DICTIONARY:
@@ -378,7 +386,9 @@ def _rank_grammar_candidates(
         expanded = _candidate_expansion(candidate, expansions)
         if expanded in existing_expansions:
             continue
-        candidate_bits = sum(production_symbol_bit_length(s) for s in candidate)
+        candidate_bits = sum(
+            production_symbol_bit_length(s) for s in candidate
+        )
         if candidate_bits <= reference_bits:
             continue
         entry_bits = len(pack_production_records((candidate,))) * 8
@@ -543,7 +553,9 @@ def compress_production_groups(
     and backward-only.
     """
     if not 1 <= maximum_entries <= PRODUCTION_DICTIONARY_ENTRY_COUNT:
-        raise ValueError("maximum production dictionary entries is out of range")
+        raise ValueError(
+            "maximum production dictionary entries is out of range"
+        )
     if maximum_grammar_tokens < 2:
         raise ValueError("maximum_grammar_tokens must be at least two")
     if maximum_nesting_depth < 1:
