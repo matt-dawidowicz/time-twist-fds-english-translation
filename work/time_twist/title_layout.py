@@ -47,9 +47,11 @@ NOV3_LOAD_ADDRESS = 0xD7B5
 SPLIT_TILE_ROW = 16
 # Background slots below the clock-owned $EC-$FF tail are shared across two
 # non-overlapping title phases. Patterns common to neither phase may reuse one
-# ID because the final transition replaces their contiguous CHR delta.
+# ID because the final transition replaces their contiguous CHR delta. The
+# normalized production font changes two subtitle patterns relative to the old
+# 5x7 metrics, so the exact reviewed phases now require 53 delta tiles.
 TOP_TILE_COUNT = CLOCK_SOURCE_TILE
-FINAL_DELTA_TILE_COUNT = 0x37
+FINAL_DELTA_TILE_COUNT = 0x35
 FINAL_DELTA_CHR_SIZE = FINAL_DELTA_TILE_COUNT * 16
 BOTTOM_TILE_COUNT = 0x37
 BOTTOM_CHR_SIZE = BOTTOM_TILE_COUNT * 16
@@ -196,8 +198,8 @@ class TitleAssets:
         second_nametable: Decoded slide/Nintendo nametable and attributes.
         encoded_final: Native RLE for ``final_nametable``.
         encoded_second: Native RLE for ``second_nametable``.
-        approximation_error: Compatibility metric; zero for the exact split
-            conversion.
+        approximation_error: Retained public constructor/access field. Exact
+            title builds leave it at zero; it is not a runtime validation result.
 
     ``nintendo_chr`` and ``restore_chr`` intentionally share tile IDs across
     non-overlapping title phases. This temporal reuse avoids consuming
@@ -216,4 +218,4 @@ class TitleAssets:
     second_nametable: bytes
     encoded_final: bytes
     encoded_second: bytes
-    approximation_error: int
+    approximation_error: int = 0

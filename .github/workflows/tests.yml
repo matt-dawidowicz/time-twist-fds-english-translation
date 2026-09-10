@@ -2,10 +2,12 @@ name: tests
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 concurrency:
-  group: tests-${{ github.head_ref || github.ref_name }}
+  group: tests-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -14,30 +16,54 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12"]
+        python-version: ["3.11", "3.14"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
       - run: python work/tools/check_public_tree.py
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt
+      - name: Run focused production codec/runtime tests
+        run: >-
+          python -m unittest discover -s work/tests
+          -p 'test_production_*.py'
       - run: python work/generate_bilingual_comparison_ci.py
       - run: python work/generate_translation_workbook.py
       - name: Verify generated translation review artifacts are current
         run: git diff --exit-code -- outputs work/translation_workbook_banks
+      - if: matrix.python-version == '3.14'
+        name: Materialize production translation maps
+        run: >-
+          python work/tools/materialize_production_translations.py
+          --repo-root . --output work/build/production_translations
+      - if: matrix.python-version == '3.14'
+        name: Archive production source snapshot
+        run: git archive --format=zip --output=work/build/production-source.zip HEAD
+      - if: matrix.python-version == '3.14'
+        name: Upload production integration inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-integration-inputs
+          path: |
+            work/build/production_translations
+            work/build/production-source.zip
+          if-no-files-found: error
+      - name: Measure full production retranslation fit
+        continue-on-error: true
+        run: python work/tools/report_production_fit.py
       - run: python -m black --check work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
       - run: python work/run_tests.py unit
-      - if: matrix.python-version == '3.12'
+      - if: matrix.python-version == '3.14'
         run: python -m build
-      - if: matrix.python-version == '3.12'
+      - if: matrix.python-version == '3.14'
         run: python -m pip install --force-reinstall dist/*.whl
-      - if: matrix.python-version == '3.12'
+      - if: matrix.python-version == '3.14'
         name: Prove smoke test imports the installed wheel
         run: >-
           python -c "from pathlib import Path; import time_twist;
@@ -47,14 +73,12 @@ jobs:
           assert checkout not in imported.parents,
           f'import leaked from checkout: {imported}';
           build_code_provenance(Path.cwd())"
-      - if: matrix.python-version == '3.12'
+      - if: matrix.python-version == '3.14'
         run: time-twist --help
-      - if: matrix.python-version == '3.12'
+      - if: matrix.python-version == '3.14'
         run: time-twist release-build --help
 
   required-unit-tests:
-    # This stable check name is the branch-protection gate.  It passes only
-    # after both matrix variants above have completed successfully.
     name: unit-tests
     needs: unit-tests
     if: ${{ always() }}

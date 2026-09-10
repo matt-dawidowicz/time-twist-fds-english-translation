@@ -73,7 +73,7 @@ See [`PRIVATE_FIXTURES.md`](PRIVATE_FIXTURES.md) for the public/private split.
 ## CI and wheel checks
 
 Public CI runs the public-tree gate, style checks, type checking, and fixture-free
-unit suite on Python 3.11 and 3.12. Python 3.12 additionally performs the
+unit suite on Python 3.11 and 3.14. Python 3.14 additionally performs the
 packaging and installed-wheel smoke checks:
 
 ```powershell
@@ -261,9 +261,9 @@ available. A separate test requires the unpromoted checkout to reject strict
 publication because its target is absent. Candidate reproducibility evidence is
 not promotion; promotion repeats the reproducibility proof independently.
 
-See [`RELEASE_RISK_ASSESSMENT.md`](RELEASE_RISK_ASSESSMENT.md) for the audited
-failure modes, mitigations, accepted threat boundary, and remaining manual
-playtest obligations.
+See the [maintainer release process](MAINTAINER_RELEASE_PROCESS.md) for
+release safeguards and the [playtest matrix](PLAYTEST_MATRIX.md) for the
+remaining runtime checks.
 
 ## Generated and ignored files
 

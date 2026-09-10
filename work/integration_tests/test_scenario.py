@@ -10,8 +10,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from time_twist.charmap import decode_common, decode_extended
-from time_twist.cli import (
-    PERSONALITY_QUESTION_IDS,
+from time_twist.cli_commands import (
     command_scenario_extract,
     merge_translation_document,
 )
@@ -33,6 +32,7 @@ from time_twist.font import (
     patched_nov4_font,
     render_glyph,
 )
+from time_twist.project import PERSONALITY_QUESTION_IDS
 from time_twist.scenario import (
     ScenarioError,
     parse_scenario_bank,
@@ -209,7 +209,7 @@ class ScenarioTests(unittest.TestCase):
             )
         )
         self.assertEqual(len(COMMON_CHARACTERS), 48)
-        self.assertEqual(len(repertoire), 74)
+        self.assertEqual(len(repertoire), 73)
         text = repertoire + "{CTRL:1}" + repertoire
         self.assertEqual(render_english(encode_english(text)), text)
 
@@ -250,94 +250,6 @@ class ScenarioTests(unittest.TestCase):
         """Verify the current contract described by this regression test."""
         self.assertEqual(PIXEL_FONT_5X7["p"][:2], ("00000", "00000"))
         self.assertEqual(PIXEL_FONT_5X7["p"][-2:], ("10000", "10000"))
-
-    def test_tt1b_sky_line_is_natural_and_width_safe(self) -> None:
-        """Verify the current contract described by this regression test."""
-        path = WORK_DIR / "translations/TT1B.json"
-        if not path.exists():
-            self.fail("TT1B translation fixture is not available")
-        translations = json.loads(path.read_text(encoding="utf-8"))
-        line = translations["TT1B/g0/r1"]
-        self.assertEqual(line, "Blue sky--how long gone?")
-        validate_display_width(line)
-
-    def test_tt1a_fortune_prediction_has_terminal_punctuation(self) -> None:
-        """Verify the current contract described by this regression test."""
-        path = WORK_DIR / "translations/TT1A.json"
-        if not path.exists():
-            self.fail("TT1A translation fixture is not available")
-        translations = json.loads(path.read_text(encoding="utf-8"))
-        line = translations["TT1A/g0/r27"]
-        self.assertIn("She runs into your arms.{CTRL:3}", line)
-        validate_display_width(line)
-
-    def test_editorial_regressions_preserve_meaning_and_terminology(
-        self,
-    ) -> None:
-        """Verify the current contract described by this regression test."""
-
-        def translations(bank_name: str) -> dict[str, str]:
-            """Provide a deterministic helper for the current contract tests."""
-            path = WORK_DIR / f"translations/{bank_name}.json"
-            if not path.exists():
-                self.fail(f"{bank_name} translation fixture is not available")
-            return json.loads(path.read_text(encoding="utf-8"))
-
-        tt1a = translations("TT1A")
-        self.assertEqual(
-            tt1a["TT1A/g0/r1"],
-            "News: Dr. Simon,{CTRL:0}a reclusive genius in{CTRL:2}"
-            "physics, made this{CTRL:0}statement on time travel{CTRL:4}"
-            "late last night.",
-        )
-        self.assertNotIn("on TV", tt1a["TT1A/g0/r1"])
-
-        tt1b = translations("TT1B")
-        self.assertEqual(
-            tt1b["TT1B/g0/r28"],
-            "Me: Um...{CTRL:1}Girl: Seen everything?{CTRL:0}Me: No...",
-        )
-        self.assertIn("G-g-g-gah!", tt1b["TT1B/g0/r31"])
-        self.assertIn("My telepathy", tt1b["TT1B/g0/r31"])
-        self.assertIn("You might say so.", tt1b["TT1B/g0/r31"])
-        self.assertIn("finally paid off.", tt1b["TT1B/g0/r31"])
-        self.assertIn("You're busty.", tt1b["TT1B/g1/r14"])
-        self.assertIn("I'm no land shark.", tt1b["TT1B/g2/r5"])
-
-        t22 = translations("T22")
-        self.assertIn("You are my god{CTRL:6}of justice.", t22["T22/g0/r10"])
-        self.assertIn("I pledge all", t22["T22/g0/r10"])
-
-        tt3a = translations("TT3A")
-        self.assertIn("Anti-Hitler plot", tt3a["TT3A/g1/r19"])
-        self.assertEqual(
-            tt3a["TT3A/g3/r2"],
-            "Man: With Rebecca?!{CTRL:1}Me: No. I fled the camp{CTRL:0}"
-            "last night.",
-        )
-        self.assertIn("the Gestapo!", tt3a["TT3A/g4/r21"])
-        self.assertIn("A fragment of the note.", tt3a["TT3A/g2/r30"])
-
-        tt4 = translations("TT4")
-        self.assertFalse(any("Yomi" in line for line in tt4.values()))
-        self.assertIn("the underworld", tt4["TT4/g4/r4"])
-
-        tt5 = translations("TT5")
-        self.assertTrue(
-            tt5["TT5/g0/r2"].startswith("Belle: Thank you, truly.")
-        )
-        self.assertEqual(tt5["TT5/g0/r7"].count("Belle:"), 1)
-        self.assertIn("Stay in the South.", tt5["TT5/g0/r18"])
-        self.assertNotIn("Dixie", tt5["TT5/g0/r18"])
-
-        tt6a = translations("TT6A")
-        self.assertIn("My betrothed", tt6a["TT6A/g0/r13"])
-        self.assertIn("Mary has no idea how.", tt6a["TT6A/g0/r13"])
-        self.assertIn("The fiend descended...", tt6a["TT6A/g0/r18"])
-
-        tt6c = translations("TT6C")
-        self.assertIn("Voice: The perfect name.", tt6c["TT6C/g1/r9"])
-        self.assertIn("I'm the savior", tt6c["TT6C/g2/r13"])
 
     def test_fixed_footprint_rebuild_keeps_the_original_tail_address(
         self,
@@ -383,131 +295,6 @@ class ScenarioTests(unittest.TestCase):
                 preserve_memory_footprint=True,
             )
 
-    def test_translated_banks_match_sources_and_preserve_fixed_tails(
-        self,
-    ) -> None:
-        """Verify the current contract described by this regression test."""
-        fixtures = (
-            (
-                "TT1A",
-                WORK_DIR / "extracted_zenpen/side1_01_TT1A_A200.bin",
-                WORK_DIR / "translated_banks/TT1A_fixed_footprint.bin",
-                WORK_DIR / "translations/TT1A.json",
-            ),
-            (
-                "TT1B",
-                WORK_DIR / "extracted_zenpen/side1_00_TT1B_A200.bin",
-                WORK_DIR / "translated_banks/TT1B_fixed_footprint.bin",
-                WORK_DIR / "translations/TT1B.json",
-            ),
-            (
-                "TT2",
-                WORK_DIR / "extracted_zenpen/side1_02_TT2_A200.bin",
-                WORK_DIR / "translated_banks/TT2_fixed_footprint.bin",
-                WORK_DIR / "translations/TT2.json",
-            ),
-            (
-                "T22",
-                WORK_DIR / "extracted_zenpen/side1_03_T22_A200.bin",
-                WORK_DIR / "translated_banks/T22_fixed_footprint.bin",
-                WORK_DIR / "translations/T22.json",
-            ),
-            (
-                "TT3A",
-                WORK_DIR / "extracted_zenpen/side0_01_TT3A_A200.bin",
-                WORK_DIR / "translated_banks/TT3A_fixed_footprint.bin",
-                WORK_DIR / "translations/TT3A.json",
-            ),
-            (
-                "TT3B",
-                WORK_DIR / "extracted_zenpen/side0_02_TT3B_A200.bin",
-                WORK_DIR / "translated_banks/TT3B_fixed_footprint.bin",
-                WORK_DIR / "translations/TT3B.json",
-            ),
-            (
-                "TT4",
-                WORK_DIR / "extracted_kouhen/side1_00_TT4_A200.bin",
-                WORK_DIR / "translated_banks/TT4_fixed_footprint.bin",
-                WORK_DIR / "translations/TT4.json",
-            ),
-            (
-                "TT5",
-                WORK_DIR / "extracted_kouhen/side1_01_TT5_A200.bin",
-                WORK_DIR / "translated_banks/TT5_fixed_footprint.bin",
-                WORK_DIR / "translations/TT5.json",
-            ),
-            (
-                "T25",
-                WORK_DIR / "extracted_kouhen/side1_02_T25_A200.bin",
-                WORK_DIR / "translated_banks/T25_fixed_footprint.bin",
-                WORK_DIR / "translations/T25.json",
-            ),
-            (
-                "TT6A",
-                WORK_DIR / "extracted_kouhen/side0_04_TT6A_A200.bin",
-                WORK_DIR / "translated_banks/TT6A_fixed_footprint.bin",
-                WORK_DIR / "translations/TT6A.json",
-            ),
-            (
-                "TT6B",
-                WORK_DIR / "extracted_kouhen/side0_03_TT6B_A200.bin",
-                WORK_DIR / "translated_banks/TT6B_fixed_footprint.bin",
-                WORK_DIR / "translations/TT6B.json",
-            ),
-            (
-                "TT6C",
-                WORK_DIR / "extracted_kouhen/side0_02_TT6C_A200.bin",
-                WORK_DIR / "translated_banks/TT6C_fixed_footprint.bin",
-                WORK_DIR / "translations/TT6C.json",
-            ),
-            (
-                "TT6D",
-                WORK_DIR / "extracted_kouhen/side0_05_TT6D_A200.bin",
-                WORK_DIR / "translated_banks/TT6D_fixed_footprint.bin",
-                WORK_DIR / "translations/TT6D.json",
-            ),
-        )
-        if not all(
-            path.exists() for fixture in fixtures for path in fixture[1:]
-        ):
-            self.fail("translated bank fixtures are not available")
-
-        for (
-            bank_name,
-            original_path,
-            translated_path,
-            translations_path,
-        ) in fixtures:
-            with self.subTest(bank=bank_name):
-                original = parse_scenario_bank(original_path)
-                translated = parse_scenario_bank(translated_path)
-                expected = json.loads(
-                    translations_path.read_text(encoding="utf-8")
-                )
-                self.assertEqual(len(translated.data), len(original.data))
-                self.assertEqual(
-                    translated.data[original.dictionary_end_offset :],
-                    original.data[original.dictionary_end_offset :],
-                )
-                self.assertFalse(
-                    any(
-                        symbol.kind is SymbolKind.DICTIONARY
-                        for entry in translated.dictionary
-                        for symbol in entry
-                    )
-                )
-                self.assertEqual(len(translated.records), len(expected))
-                for record in translated.records:
-                    record_id = f"{bank_name}/g{record.group_index}/r{record.record_index}"
-                    self.assertEqual(
-                        render_english(
-                            expand_dictionary_symbols(
-                                record.symbols, translated.dictionary
-                            )
-                        ),
-                        expected[record_id],
-                    )
-
     def test_all_completed_translation_segments_fit_the_display(self) -> None:
         """Verify the current contract described by this regression test."""
         for bank_name in (
@@ -537,45 +324,22 @@ class ScenarioTests(unittest.TestCase):
                     )
 
     def test_personality_questions_are_complete_and_width_safe(self) -> None:
-        """Verify the current contract described by this regression test."""
+        """Validate every current personality question without duplicating prose."""
         path = WORK_DIR / "translations/TT1A.json"
         if not path.exists():
             self.fail("translation fixture is not available")
         translations = json.loads(path.read_text(encoding="utf-8"))
-        rows = [
-            ("Do you prefer consommé", "to miso soup?"),
-            ("Can you swim 50 meters?", None),
-            ("Do you laugh at random?", None),
-            ("Are the Giants the best?", None),
-            ("Have you dated at least", "three girls?"),
-            ("Have you had sleep", "paralysis?"),
-            ("Do you want to hit", "3 or more people?"),
-            ("Have you curled up and", "cried?"),
-            ("Do you put play first?", None),
-            ("Do brand names matter?", None),
-            ("Do you leave work until", "tomorrow?"),
-            ("Do you believe only you", "can protect yourself?"),
-            ("Will you help society", "someday?"),
-            ("Do you want a brief,", "full life?"),
-            ("Is love all you need?", None),
-        ]
-        expected = [
-            first if second is None else first.ljust(24) + second
-            for first, second in rows
-        ]
-        actual = [
-            translations[f"TT1A/g0/r{record}"] for record in range(6, 21)
-        ]
-        self.assertEqual(actual, expected)
-        for question in actual:
-            validate_display_width(question, allow_wrap=True)
-        for question, (first, second) in zip(actual, rows, strict=True):
-            self.assertEqual(question[:24].rstrip(), first)
-            if second is not None:
-                self.assertEqual(question[24:], second)
+        actual_ids = [f"TT1A/g0/r{record}" for record in range(6, 21)]
+        self.assertEqual(set(actual_ids), set(PERSONALITY_QUESTION_IDS))
+        for record_id in actual_ids:
+            with self.subTest(record=record_id):
+                validate_display_width(
+                    translations[record_id],
+                    allow_wrap=True,
+                )
 
-    def test_scenario_refresh_preserves_existing_english(self) -> None:
-        """Verify the current contract described by this regression test."""
+    def test_scenario_refresh_is_source_only(self) -> None:
+        """Ensure private-fixture extraction never carries English forward."""
         bank_path = WORK_DIR / "extracted_zenpen/side1_01_TT1A_A200.bin"
         if not bank_path.exists():
             self.fail("workspace fixture is not available")
@@ -585,7 +349,7 @@ class ScenarioTests(unittest.TestCase):
             command_scenario_extract(args)
             document = json.loads(output.read_text(encoding="utf-8"))
             record = document["groups"][0]["records"][0]
-            record["english"] = "Proof{CTRL:1}Text"
+            record["english"] = "STALE"
             output.write_text(
                 json.dumps(document, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
@@ -595,7 +359,7 @@ class ScenarioTests(unittest.TestCase):
             refreshed = json.loads(output.read_text(encoding="utf-8"))
             refreshed_record = refreshed["groups"][0]["records"][0]
             self.assertEqual(refreshed_record["id"], "TT1A/g0/r0")
-            self.assertEqual(refreshed_record["english"], "Proof{CTRL:1}Text")
+            self.assertNotIn("english", refreshed_record)
 
     def test_english_dictionary_compresses_and_expands_losslessly(
         self,

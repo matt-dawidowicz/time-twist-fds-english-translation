@@ -1,4 +1,4 @@
-"""Project-wide bank names, dictionary reservations, and path inference."""
+"""Project-wide bank names, source dictionary bounds, and path inference."""
 
 from __future__ import annotations
 
@@ -6,8 +6,7 @@ import re
 from pathlib import Path
 
 from . import scenario_validation as _scenario_validation
-from .english import encode_english
-from .textcodec import PackedSymbol, SymbolKind, split_records
+from .textcodec import SymbolKind, split_records
 from .ui import (
     T22_FIXED_TEXT_END_OFFSET,
     T22_FIXED_TEXT_RECORDS,
@@ -62,115 +61,6 @@ KNOWN_SCENARIO_BANKS = (
     "TT6D",
 )
 
-BANK_REQUIRED_DICTIONARY_TEXT = {
-    # These labels occupy undersized fixed slots.  Keep them in the immutable
-    # dictionary prefix so every compression strategy can encode the complete
-    # visible text instead of depending on an optimizer-specific entry choice.
-    "TT3A": (
-        "Back",
-        "Frankie",
-    ),
-    "TT3B": (
-        "Cougar",
-        "Look",
-        "Take",
-        # The complete label must occupy a four-byte fixed record.  Reserving
-        # its suffix lets the UI encode ``F`` + dictionary("ight") while a
-        # whole-word entry would push this already-tight bank four bytes over.
-        "ight",
-    ),
-    "TT1B": (
-        "Look",
-        "Museum",
-        "Body",
-        "Eyes",
-        "Picture",
-        "Simon",
-        "Ask",
-        "Member",
-        "Devil",
-        "Nose",
-        "Ears",
-        "Sky",
-        "Sign",
-        "Chest",
-        "House",
-        "Church",
-        "Priest",
-        "Back",
-        "West",
-        "Pot",
-        "Praise",
-        "Map",
-        "North",
-    ),
-    "TT2": (
-        "Crowd",
-        "Bishop",
-        "Guild",
-        "Take",
-    ),
-    "T22": (
-        "Baron",
-        "Bishop",
-        "Jailer",
-        "Lugot",
-        "Jeanne",
-        "Chino",
-        "Look",
-        "Crowd",
-        "Ask",
-        "Take",
-        "Woman",
-    ),
-    "TT4": (
-        "Cerberus: ",
-        "Soldier: ",
-        "Fisher: ",
-        "Man: ",
-        "Me: ",
-        "Merchant: ",
-        "Devil: ",
-        "Dario: ",
-        "Girl: ",
-        "Youth: ",
-        "Priest: ",
-    ),
-    "TT5": ("Tom: ",),
-    "T25": (
-        "Look",
-        "Sky",
-        "Outside",
-        "Wagon",
-        "Lincoln",
-        "Second",
-        "Picture",
-        "Ask",
-        "Coffee",
-    ),
-    "TT6A": (
-        "Look",
-        "Ask",
-        "Smell",
-        "Sky",
-        "Body",
-        "Soil",
-        "Village",
-        "Drink",
-        "Well",
-        "Trough",
-        "Rope",
-    ),
-    "TT6B": (
-        "Cow",
-        "Look",
-        "Ask",
-    ),
-    "TT6C": (
-        "Cougar",
-        "Look",
-    ),
-}
 
 _FIXED_SOURCE_TABLES = {
     "TT1B": (
@@ -229,25 +119,6 @@ _FIXED_SOURCE_TABLES = {
         len(TT6C_FIXED_TEXT_RECORDS),
     ),
 }
-
-
-class FullDictionaryEntries(tuple[tuple[PackedSymbol, ...], ...]):
-    """Mark required entries for a bank whose fixed UI needs all 31 slots."""
-
-    requires_full_dictionary = True
-
-
-def required_dictionary_entries(
-    bank_name: str,
-) -> tuple[tuple[PackedSymbol, ...], ...]:
-    """Encode dictionary entries reserved by a bank's fixed-address text."""
-    entries = tuple(
-        encode_english(text)
-        for text in BANK_REQUIRED_DICTIONARY_TEXT.get(bank_name, ())
-    )
-    if bank_name in _FIXED_SOURCE_TABLES:
-        return FullDictionaryEntries(entries)
-    return entries
 
 
 def source_dictionary_reference_floor(bank_name: str, data: bytes) -> int:

@@ -1,6 +1,6 @@
 # Translation workbook pipeline
 
-The workbook is the complete review surface for 2,052 extracted records. It is
+The workbook is the complete review surface for 2,058 extracted records. It is
 not the packed byte stream inserted into the game, but its patch-safe field is
 generated from and must mirror the playable sources.
 
@@ -13,7 +13,7 @@ decoded Japanese records             playable English sources
                                     |
                  generate_bilingual_comparison.py
                                     |
-                    ordered 2,052-record corpus
+                    ordered 2,058-record corpus
                                     |
                  generate_translation_workbook.py
                                     |
@@ -25,11 +25,18 @@ The exact-Japanese column is copied from decoded source records and is never
 normalized in place. Romaji, reconstructed Japanese, linguistic labels,
 literal readings, and natural English are editorial layers.
 
+The workbook's comparison-corpus fingerprint uses LF-normalized SHA-256, so
+Windows CRLF checkouts and Unix LF checkouts report the same text-source
+identity. JSON metadata records `source_hash_normalization: "lf"`. This changes
+only fingerprint calculation; source files and Japanese record data are not
+rewritten. Generated-artifact and optional diagnostic-file hashes remain
+byte-exact.
+
 ## Source locations
 
 | Path | Role |
 | --- | --- |
-| `work/translated_scripts/BANK.json` | Decoded scenario records and stable IDs |
+| `work/source_records/BANK.json` | Decoded scenario records and stable IDs |
 | `work/translations/BANK.json` | Authoritative playable scenario English |
 | `work/time_twist/ui_fixed_tables.py` | Authoritative full-word scenario menu labels |
 | `work/time_twist/ui.py` | Fixed-interface/graphics text and menu relocation logic |
@@ -123,7 +130,7 @@ not an incomplete translation.
 
 The generator validates:
 
-- exactly 2,052 unique rows;
+- exactly 2,058 unique rows;
 - byte-for-byte exact Japanese source retention;
 - complete playable scenario coverage;
 - patch-safe/playable equality;
@@ -135,6 +142,24 @@ The generator validates:
 `NOV2/wait` is the one documented fixed-UI control-layout exception: the engine
 patch intentionally changes its display segmentation. It is explicit in code
 and tests rather than treated as unexplained drift.
+
+## Compression evidence
+
+Generation recomputes conservative fit measurements from the current playable
+scenario maps and configured full-word menu labels. It uses the 68-entry greedy
+baseline, includes structural pointers, and counts the recovered movable menu
+reservation in relocated banks. A bank that exceeds this conservative capacity
+stops generation before workbook outputs are written.
+
+The HTML workbook, Markdown progress report, and JSON
+`patch_validation.revised_bank_footprints` all carry those same fresh results.
+`footprint_method` identifies the method. Recovered native capacities and movable
+menu reservations live in `work/time_twist/capacity.py`; usage is recomputed
+from current text rather than copied from a historical candidate.
+
+Actual release measurements, including any optimizer fallback, belong to a
+fresh ROM-backed candidate manifest. Public fit checks do not replace source
+layout validation, private integration tests, or emulator playtesting.
 
 ## Correcting a translation
 
@@ -186,7 +211,7 @@ python work/run_tests.py unit
 
 Then confirm:
 
-- 2,052 rows were emitted;
+- 2,058 rows were emitted;
 - no source fingerprint changed unexpectedly;
 - the affected checkpoint contains the intended natural and patch-safe text;
 - every scenario patch-safe field equals its playable map;

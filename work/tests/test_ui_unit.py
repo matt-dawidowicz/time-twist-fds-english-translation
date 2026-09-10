@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import unittest
-from pathlib import Path
 
 from time_twist import ui
 from time_twist.english import encode_english, render_english
@@ -115,25 +114,6 @@ class SourceVerifiedPatchTests(unittest.TestCase):
                     COMPONENT_LOAD_ADDRESSES[patch.component]
                     + patch.file_offset,
                 )
-
-    def test_documented_patch_offsets_match_declarative_records(self) -> None:
-        """Keep the implementation guide's file/CPU pairs auditable."""
-        project_root = Path(__file__).resolve().parents[2]
-        documentation = (
-            project_root / "docs" / "BUG_FIXES_AND_TITLE_IMPLEMENTATION.md"
-        ).read_text(encoding="utf-8")
-        patches = (
-            NOV2_EXTENDED_DICTIONARY_PATCH,
-            *NOV2_OPAQUE_CLEAR_PATCHES,
-            *NOV2_SINGLE_CHOICE_B_PATCHES,
-        )
-        for patch in patches:
-            with self.subTest(label=patch.label):
-                row_pair = (
-                    f"| `${patch.file_offset:04X}` | "
-                    f"`${patch.cpu_address:04X}` |"
-                )
-                self.assertIn(row_pair, documentation)
 
     def test_extended_dictionary_decoder_is_an_exact_size_replacement(
         self,

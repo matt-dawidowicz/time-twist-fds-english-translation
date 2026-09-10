@@ -31,7 +31,6 @@ AUDIT_FIELDNAMES = (
     "slot_bytes",
     "representation",
     "proposed_full_label",
-    "fallback_label",
     "status",
     "width_ok",
     "width_error",
@@ -142,15 +141,10 @@ def audit(
             for index, label in enumerate(records):
                 proposed = targets.get((bank_name, index), "")
                 decoded_label = decoded[index]
-                fallback = ui.FIXED_TEXT_BLOCKED_FALLBACKS.get(
-                    bank_name, {}
-                ).get(index)
                 status = "source-only"
                 if decoded_label is not None:
                     if decoded_label == label:
                         status = "full-word"
-                    elif fallback is not None and decoded_label == fallback:
-                        status = "blocked"
                     else:
                         status = "mismatch"
                 width_ok = True
@@ -171,7 +165,6 @@ def audit(
                         "slot_bytes": slots[index] or "",
                         "representation": representation[index],
                         "proposed_full_label": proposed,
-                        "fallback_label": fallback or "",
                         "status": status,
                         "width_ok": width_ok,
                         "width_error": width_error,
@@ -201,10 +194,9 @@ def main() -> int:
         if row["status"] == "mismatch" or not row["width_ok"]
     ]
     full_words = sum(row["status"] == "full-word" for row in rows)
-    blocked = sum(row["status"] == "blocked" for row in rows)
     print(
         f"audited {len(rows)} fixed labels; full-word={full_words}; "
-        f"blocked={blocked}; failures={len(failures)}"
+        f"failures={len(failures)}"
     )
     return 1 if failures else 0
 

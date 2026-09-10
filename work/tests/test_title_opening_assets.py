@@ -9,6 +9,7 @@ from pathlib import Path
 from PIL import Image
 from rebuild_native_title_asset import (
     CLOCK_NUMERAL_BOXES,
+    CLOCK_OUTER_BLACK_BOUNDARY,
     CLOCK_RIM_BRIDGE_PATCH,
     CLOCK_TRACE_CENTER_X,
     CLOCK_TRACE_COLORS,
@@ -74,13 +75,22 @@ class TitleOpeningAssetTests(unittest.TestCase):
         self.assertEqual(set(slide.get_flattened_data()), {0, 1})
         self.assertEqual(
             _sha256(final.tobytes()),
-            "27EE6BA45E19778B80EBBEACEEDC763EF896CE6A0A942D0C080114AB2C02B208",
+            "083F2C1AD128196CAB1528D4F871EB4156896B6A47F1D87C41A898A9A6DC92E4",
         )
         self.assertEqual(
             _sha256(slide.tobytes()),
             "34FF7674E69C187BBF504C126F5F1F4ACBEF93823633C2EB00D5E4558FFC95BB",
         )
         self.assertNotEqual(final.tobytes(), slide.tobytes())
+
+    def test_first_t_upper_right_tip_is_pixel_locked(self) -> None:
+        """Keep the corrected white cap and dark inner bevel on the first T."""
+        with Image.open(FINAL) as source:
+            final = source.copy()
+        self.assertEqual(final.getpixel((63, 29)), 1)
+        self.assertEqual(final.getpixel((64, 29)), 1)
+        self.assertEqual(final.getpixel((64, 30)), 1)
+        self.assertEqual(final.getpixel((63, 30)), 3)
 
     def test_checked_in_asset_files_are_locked(self) -> None:
         """Keep source and encoded PNG files byte-identical across rebuilds."""
@@ -90,7 +100,7 @@ class TitleOpeningAssetTests(unittest.TestCase):
         )
         self.assertEqual(
             _sha256(FINAL.read_bytes()),
-            "B1F262770FB490E2A933B956D5857432C101EE378A0F765CCCFACD8EE5FBF9A8",
+            "1D4A5F7E66B29D042B250D1E6A72BC0E2811CF7576F766B75FAAEE5399506BB0",
         )
         self.assertEqual(
             _sha256(SLIDE.read_bytes()),
@@ -155,10 +165,10 @@ class TitleOpeningAssetTests(unittest.TestCase):
                     in_trademark = 205 <= x < 238 and 22 <= y < 40
                     if not in_clock and not in_trademark:
                         white_mask.append(final.getpixel((x, y)) == 1)
-        self.assertEqual(sum(white_mask), 1836)
+        self.assertEqual(sum(white_mask), 1839)
         self.assertEqual(
             _sha256(bytes(white_mask)),
-            "DCBAA57C8A6E9BA21F2CAD7010BE6FAE56EE75DB80F1FD2014C131CFFC86A9EB",
+            "587E39604F5E8B56E15C63E76DABE644B680D9E8871693BC329F03024BA4CF96",
         )
 
     def test_reviewed_polish_repairs_all_reported_logo_details(self) -> None:
@@ -184,7 +194,7 @@ class TitleOpeningAssetTests(unittest.TestCase):
                 "00000000WW",
                 "000000WWWW",
                 "0000WWWWWW",
-                "00WWWWWDDW",
+                "00WWWWWWWW",
             ),
         )
 
@@ -215,7 +225,18 @@ class TitleOpeningAssetTests(unittest.TestCase):
             if coordinate not in numeral_pixels:
                 self.assertEqual(final.getpixel(coordinate), expected)
 
-        for value in (1, 2, 3):
+        self.assertEqual(len(CLOCK_OUTER_BLACK_BOUNDARY), 84)
+        for coordinate in CLOCK_OUTER_BLACK_BOUNDARY:
+            self.assertEqual(
+                final.getpixel(coordinate),
+                0,
+                f"clock outer boundary lost at {coordinate}",
+            )
+
+        # White and dark-purple remain continuous native contours. The pink
+        # outer rim follows the GIF's diagonal stairs and is intentionally
+        # allowed to meet at corners so its surrounding black outline survives.
+        for value in (1, 3):
             remaining = {
                 (x, y)
                 for y in range(55, 97)

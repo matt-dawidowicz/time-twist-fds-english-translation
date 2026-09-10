@@ -22,6 +22,35 @@ Use a clean cold boot for a continuity run. Emulator save states are welcome
 for reproducing an issue, but they do not prove the game's own save/load
 behavior.
 
+### Mesen FDS state must also be clean
+
+Mesen can persist FDS disk writes in a filename-matched `.ips` file in its
+`Saves` directory. If a candidate is rebuilt later under the same filename,
+that older sidecar can be applied to the new image and create a false runtime
+regression even when the candidate bytes are correct.
+
+Before the **first cold boot of a newly built candidate** in Mesen:
+
+1. close Mesen;
+2. check its `Saves` directory for `<candidate stem>.ips`;
+3. if one exists, move or rename it as evidence instead of deleting it
+   blindly;
+4. then launch the candidate and begin runtime certification.
+
+If you have a source checkout, the maintainer preflight is read-only and can
+perform this check. Replace `<MESEN-SAVES-DIRECTORY>` with the actual Mesen
+`Saves` directory on the machine being used for testing:
+
+```powershell
+python work/tools/check_mesen_fds_state.py `
+  --candidate-fds "build/candidate/Time Twist - reproducible English four-side playtest.fds" `
+  --mesen-save-dir "<MESEN-SAVES-DIRECTORY>"
+```
+
+Do **not** keep clearing the sidecar during the same candidate's save/load
+testing. Once the first boot starts from clean state, any new persistence made
+by that exact candidate is part of the behavior being tested.
+
 ## What to test first
 
 Start with the four-side candidate unless the maintainer asks for a focused
@@ -35,15 +64,18 @@ test. These checks are especially valuable:
    go Back/Cancel.
 3. Follow the in-game disk prompts without resetting. At `PART 1 / SIDE B`,
    choose the second side; at `PART 2 / SIDE A`, choose the third side.
-4. Try one wrong side deliberately, then recover through the in-game disk
-   flow. The short retry copy should be readable: `Bad side.` / `Try again.`
+4. At a request for another side, reselect the mounted side. The primary
+   retry says `Wrong side.` / `Try again.`; alternate headings can say
+   `Bad side.`. Repeat once, then select the requested side and confirm recovery.
+   Separately exercise the wrong-disk path (`Wrong disk!` / `Try another side`)
+   and record the disk/side selected and the message reached.
 5. Save through the game's own Save command, power-cycle or reopen as the game
    requires, then Load through the normal flow.
 6. Exercise command, object, topic, answer, and quiz menus. Report clipped,
    garbled, abbreviated, stale, or untranslated labels.
 
-The current candidate's static audit decodes all 721 configured menu labels as
-full-word matches. Runtime testing should concentrate on what static decoding
+The source configures 721 full-word menu labels. Each fresh candidate must pass
+its own static decode audit. Runtime testing should cover what static decoding
 cannot prove: opening menus on both sides of records 32, 64, and 96, moving the
 cursor across those page boundaries, selecting each kind of entry, and using
 Back/Cancel without stale or misaddressed text.

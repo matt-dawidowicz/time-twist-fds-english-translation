@@ -26,6 +26,7 @@ dev = [
 
 [project.scripts]
 time-twist = "time_twist.cli:main"
+time-twist-runtime = "time_twist.runtime_lab:main"
 
 [tool.setuptools]
 package-dir = {"" = "work"}

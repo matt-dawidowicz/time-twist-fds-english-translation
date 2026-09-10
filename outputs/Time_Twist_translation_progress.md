@@ -1,7 +1,7 @@
 # Time Twist translation progress
 
-- Total records: **2,052**
-- Completed records: **2,052**
+- Total records: **2,058**
+- Completed records: **2,058**
 - Remaining records: **0**
 - Completed banks/components: **TT1A, TT1B, TT2, T22, TT3A, TT3B, TT4, TT5, T25, TT6A, TT6B, TT6C, TT6D, NOV2, NOV4, TITLE, SON-KOUH**
 - Current bank: **Complete — cross-bank consistency and QC finished**
@@ -11,7 +11,7 @@
 
 ## Source fingerprints
 
-- `Time Twist Japanese-English script comparison.json` — SHA-256 `9A60BF2D87116B268FF126FE6D93E19BC1ACB3DDADBACE45146F56A1C1057E72`
+- `Time Twist Japanese-English script comparison.json` — LF-normalized SHA-256 `4EAFE4EA80A2545CF4786E56E55AA2A391571753FD51A7638692C4FB955F371D`
 - Diagnostic review: not supplied (neutral diagnostics used)
 
 ## Bank coverage
@@ -29,28 +29,30 @@
 - TT6B: 156 records complete
 - TT6C: 200 records complete
 - TT6D: 8 records complete
-- NOV2: 9 records complete
+- NOV2: 15 records complete
 - NOV4: 1 records complete
 - TITLE: 2 records complete
 - SON-KOUH: 1 records complete
 
-## Native compression validation
+## Current conservative fit checks
 
-Every patch-safe scenario line passed the ROM character encoder and 24-column display validator. All 13 complete public scenario maps also passed exact optimized dictionary recompression against their recorded fixed-tail capacities. A private ROM-backed candidate build and playtest remain separate gates:
+Recomputed from the current playable scenario maps and configured full-word menus using the 68-entry greedy baseline. Measurements include structural pointers and the recovered movable menu reservation where applicable. All 13 banks fit this public model:
 
-- TT1A: 1656/1669 bytes used; 13 bytes remain.
-- TT1B: 4022/4026 bytes used; 4 bytes remain.
-- TT2: 3834/3847 bytes used; 13 bytes remain.
-- T22: 1801/1812 bytes used; 11 bytes remain.
-- TT3A: 3733/3741 bytes used; 8 bytes remain.
-- TT3B: 1837/1840 bytes used; 3 bytes remain.
-- TT4: 4738/4741 bytes used; 3 bytes remain.
-- TT5: 3693/3702 bytes used; 9 bytes remain.
-- T25: 2363/2374 bytes used; 11 bytes remain.
-- TT6A: 2823/2833 bytes used; 10 bytes remain.
-- TT6B: 2298/2336 bytes used; 38 bytes remain.
-- TT6C: 3520/3536 bytes used; 16 bytes remain.
-- TT6D: 323/332 bytes used; 9 bytes remain.
+- TT1A: 1664/1669 bytes used; 5 bytes remain.
+- TT1B: 3899/4234 bytes used; 335 bytes remain.
+- TT2: 4041/4141 bytes used; 100 bytes remain.
+- T22: 1894/1939 bytes used; 45 bytes remain.
+- TT3A: 4119/4169 bytes used; 50 bytes remain.
+- TT3B: 1875/1927 bytes used; 52 bytes remain.
+- TT4: 5137/5187 bytes used; 50 bytes remain.
+- TT5: 4120/4201 bytes used; 81 bytes remain.
+- T25: 2421/2561 bytes used; 140 bytes remain.
+- TT6A: 2785/3000 bytes used; 215 bytes remain.
+- TT6B: 2486/2601 bytes used; 115 bytes remain.
+- TT6C: 3837/3947 bytes used; 110 bytes remain.
+- TT6D: 317/332 bytes used; 15 bytes remain.
+
+Actual release usage, including any optimizer fallback, must come from a fresh ROM-backed candidate manifest. These conservative measurements do not certify a built image or runtime behavior.
 
 ## Records requiring gameplay screenshots or visual verification
 

@@ -5,20 +5,24 @@ from __future__ import annotations
 import csv
 import json
 import re
+import tempfile
 import unittest
+from pathlib import Path
 
 from generate_translation_workbook import (
     CONTROL_OVERRIDE_IDS,
     OUTPUTS,
-    PATCH_FOOTPRINT_RESULTS,
+    SOURCE_JSON,
     controls,
     load_playable_scenario_text,
     make_glossary,
     make_rows,
+    sha256,
+    source_text_sha256,
     validate,
 )
-from time_twist.cli import PERSONALITY_QUESTION_IDS
 from time_twist.english import encode_english, validate_display_width
+from time_twist.project import PERSONALITY_QUESTION_IDS
 
 REQUIRED_FIELDS = (
     "original_record_id",
@@ -50,15 +54,28 @@ class TranslationWorkbookTests(unittest.TestCase):
 
     def test_all_source_records_are_present_once_and_in_order(self) -> None:
         """Verify the current contract described by this regression test."""
-        self.assertEqual(len(self.rows), 2052)
+        self.assertEqual(len(self.rows), 2058)
         self.assertEqual(
             [row.original_record_id for row in self.rows],
             [row["text_id"] for row in self.source_payload["rows"]],
         )
         self.assertEqual(
             len({row.original_record_id for row in self.rows}),
-            2052,
+            2058,
         )
+
+    def test_source_fingerprint_ignores_only_line_endings(self) -> None:
+        """Keep source provenance portable without hiding substantive changes."""
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "source.json"
+            lf = b'{\n  "text": "original"\n}\n'
+            path.write_bytes(lf)
+            expected = sha256(path)
+            for newline in (b"\n", b"\r\n", b"\r"):
+                path.write_bytes(lf.replace(b"\n", newline))
+                self.assertEqual(source_text_sha256(path), expected)
+            path.write_bytes(lf.replace(b"original", b"changed"))
+            self.assertNotEqual(source_text_sha256(path), expected)
 
     def test_exact_japanese_is_byte_for_byte_source_text(self) -> None:
         """Verify the current contract described by this regression test."""
@@ -154,14 +171,14 @@ class TranslationWorkbookTests(unittest.TestCase):
         json_path = OUTPUTS / "Time_Twist_complete_translation_workbook.json"
         csv_path = OUTPUTS / "Time_Twist_complete_translation_workbook.csv"
         payload = json.loads(json_path.read_text(encoding="utf-8"))
-        self.assertEqual(len(payload["rows"]), 2052)
+        self.assertEqual(len(payload["rows"]), 2058)
+        self.assertEqual(payload["source_hash_normalization"], "lf")
         self.assertEqual(
-            payload["patch_validation"]["revised_bank_footprints"],
-            PATCH_FOOTPRINT_RESULTS,
+            payload["source_sha256"], source_text_sha256(SOURCE_JSON)
         )
         with csv_path.open(encoding="utf-8-sig", newline="") as handle:
             csv_rows = list(csv.DictReader(handle))
-        self.assertEqual(len(csv_rows), 2052)
+        self.assertEqual(len(csv_rows), 2058)
         self.assertEqual(
             [row["original_record_id"] for row in payload["rows"]],
             [row["original_record_id"] for row in csv_rows],

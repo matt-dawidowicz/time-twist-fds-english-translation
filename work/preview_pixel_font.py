@@ -10,7 +10,7 @@ from time_twist.font import render_glyph
 SAMPLES = (
     "PART1  SIDE B  INSERT NOW",
     "September 25, 1995",
-    "Do you prefer consommé",
+    "Consommé over miso soup?",
     "News: Dr. Simon spoke",
     "The quick brown fox.",
 )

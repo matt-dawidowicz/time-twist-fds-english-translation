@@ -107,20 +107,20 @@ The English compressor deliberately creates a **flat** dictionary:
 
 - entries contain only common or extended literal glyphs;
 - controls and existing references form candidate boundaries;
-- required bank-specific entries are reserved first;
+- explicitly supplied required entries retain their order;
 - the native decoder permits 31 entries;
 - the guarded English release decoder permits 68 entries;
 - a candidate is accepted only if the complete packed size decreases.
 
-Legacy scenario-only builds compare greedy selection with bounded beam search
-and optional-entry reordering inside the native 31-entry limit. The release
-builder jointly compresses dialogue and full-word menus with up to 68 entries.
+The release builder compares greedy selection with bounded beam search and
+dictionary reordering. It jointly compresses dialogue and full-word menus with
+up to 68 entries.
 Every alternative retains a flat dictionary and is accepted only after exact
 packed-size and round-trip checks.
 
-Some fixed-address tables depend on required dictionary words such as command,
-object, or speaker labels. Changing those words may change both the scenario
-compression and the exact-size table encoding.
+Dialogue and relocated menus share one generated dictionary. Original Japanese
+menu references still determine how far the source dictionary extends, so source
+parsing must include entries used only by menus.
 
 ## English character map
 

@@ -8,7 +8,7 @@
   "completed_records": 2,
   "rows": [
     {
-      "sequential_entry_number": 2050,
+      "sequential_entry_number": 2056,
       "original_record_id": "TITLE/wordmark",
       "bank": "TITLE",
       "record_type": "graphics-text",
@@ -38,7 +38,7 @@
       "nuance_lost_in_patch_safe_version": ""
     },
     {
-      "sequential_entry_number": 2051,
+      "sequential_entry_number": 2057,
       "original_record_id": "TITLE/subtitle",
       "bank": "TITLE",
       "record_type": "graphics-text",

@@ -255,16 +255,14 @@ def _read_source_document(bank: str) -> dict:
         bank: Canonical name from :data:`BANK_ORDER`.
 
     Returns:
-        Parsed JSON object from ``work/translated_scripts/BANK.json``.
+        Parsed JSON object from ``work/source_records/BANK.json``.
 
     Raises:
         OSError: If the source document cannot be read.
         JSONDecodeError: If it is not valid JSON.
     """
     return json.loads(
-        (WORK / "translated_scripts" / f"{bank}.json").read_text(
-            encoding="utf-8"
-        )
+        (WORK / "source_records" / f"{bank}.json").read_text(encoding="utf-8")
     )
 
 
@@ -1044,6 +1042,26 @@ def _ui_rows(start_sequence: int) -> list[ComparisonRow]:
         ("NOV2", f"NOV2/disk/r{index}", 0x6000 + offset, packed, english)
         for index, (offset, packed, english) in enumerate(
             (*ui.DISK_PROMPT_PATCHES, *ui.WRONG_DISK_PATCHES)
+        )
+    )
+    save_system_ids = (
+        "save_destination",
+        "saving_status",
+        "chapter_start",
+        "disk_trouble",
+        "ram_store",
+        "ram_fetch",
+    )
+    ui_specs.extend(
+        (
+            "NOV2",
+            f"NOV2/system/{text_id}",
+            0x6000 + offset,
+            packed,
+            english,
+        )
+        for text_id, (offset, packed, english) in zip(
+            save_system_ids, ui.NOV2_SAVE_SYSTEM_PATCHES, strict=True
         )
     )
     for bank, text_id, address, packed, english in ui_specs:

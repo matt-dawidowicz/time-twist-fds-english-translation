@@ -8,7 +8,6 @@ from pathlib import Path
 
 from time_twist import (
     cli,
-    cli_commands,
     cli_parser,
     release,
     release_metadata,
@@ -26,21 +25,19 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 class ModernModuleLayoutTests(unittest.TestCase):
     """Keep modernized implementation modules behind stable public imports."""
 
-    def test_cli_facade_exports_the_parser_and_command_implementations(
+    def test_cli_entry_point_keeps_command_implementations_internal(
         self,
     ) -> None:
-        """Keep established command imports valid after the CLI split."""
+        """Expose parser/main publicly without compatibility command aliases."""
         self.assertIs(cli.build_parser, cli_parser.build_parser)
-        self.assertIs(
-            cli.command_release_build, cli_commands.command_release_build
-        )
-        self.assertIs(
-            cli.command_release_lock, cli_commands.command_release_lock
-        )
-        self.assertIs(
-            cli.command_release_promote,
-            cli_commands.command_release_promote,
-        )
+        for name in (
+            "command_release_build",
+            "command_release_lock",
+            "command_scenario_insert",
+            "command_ui_patch",
+        ):
+            with self.subTest(name=name):
+                self.assertFalse(hasattr(cli, name))
 
     def test_release_facade_exports_metadata_validation_helpers(self) -> None:
         """Keep release callers independent of metadata-module placement."""
@@ -81,7 +78,7 @@ class ModernModuleLayoutTests(unittest.TestCase):
             ui_fixed_tables.TT6C_FIXED_TEXT_RECORDS,
         )
 
-    def test_private_capture_fixture_paths_are_emulator_neutral(self) -> None:
+    def test_private_capture_fixture_path_is_emulator_neutral(self) -> None:
         """Keep private runtime evidence separate from any emulator brand."""
         fixture_path = PROJECT_ROOT / "work" / "integration_fixtures.json"
         fixture_paths = json.loads(fixture_path.read_text(encoding="utf-8"))[
@@ -92,12 +89,9 @@ class ModernModuleLayoutTests(unittest.TestCase):
             for path in fixture_paths
             if path.endswith(("_chr.dmp", "_cpu.dmp"))
         ]
-        self.assertEqual(len(capture_paths), 4)
-        self.assertTrue(
-            all(
-                path.startswith("work/runtime_capture/")
-                for path in capture_paths
-            )
+        self.assertEqual(
+            capture_paths,
+            ["work/runtime_capture/zenpen_title_cpu.dmp"],
         )
 
 

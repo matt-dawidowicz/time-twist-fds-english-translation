@@ -53,30 +53,12 @@ required. It validates controls, glyph support, and display width.
 ### `scenario-footprint BANK [--translations PATH]`
 
 Reports the fixed text reservation and, with a complete translation map,
-compressed use and remaining bytes. For banks with fixed-address UI text, the
-source reservation includes dictionary entries referenced by those verified
-source tables as well as ordinary scenario dialogue. Banks whose translated
-fixed UI consumes the English dictionary must also produce all 31 dictionary
-entries or the footprint check fails closed.
+scenario-only compressed use and remaining bytes using the native 31-entry
+format. The source reservation includes dictionary entries referenced only by
+Japanese menus as well as dialogue. This inspection does not include relocated
+English menus or the extended decoder; use the workbook for a current combined
+fit check and `release-build --candidate` for actual release measurements.
 
-### `scenario-insert BANK TRANSLATION OUTPUT [--no-compress] [--bank-name NAME]`
-
-Rebuilds scenario groups and pointers only after validating group indices,
-record indices, stable IDs, control order, display width, and glyph support.
-Complete translations receive a new English dictionary; partial work keeps the
-Japanese dictionary. `--bank-name` is available when the input filename does
-not safely identify its bank. Capacity-constrained complete builds retry the
-deterministic compressor without candidate pruning if the normal fast search
-misses the native reservation. They then compare that valid result with bounded
-beam search and fixed-prefix-safe dictionary reordering and keep the smallest
-exact output. Fixed-UI banks also retry when the fast search stops before all
-31 required English dictionary slots are populated, and fail if no search can
-produce a complete dictionary.
-
-`--no-compress` is diagnostic only. A fully translated bank whose fixed UI
-requires the 31-entry English dictionary rejects that option before writing an
-output, because preserving the Japanese dictionary cannot produce a safe input
-for the later `ui-patch` step.
 
 ## Asset and UI commands
 
@@ -92,14 +74,6 @@ and monochrome-swipe images while preserving the clock and recovered
 raster-split behavior. `--slide-target` defaults to `Time Twist approved
 native slide.png` beside `TARGET`.
 
-### `ui-patch SOURCE OUTPUT [--component NAME]`
-
-Applies one source-verified fixed UI/text-table patch. Supported components are
-`SON-KOUH`, `NOV2`, `NOV4`, `TT1A`, `TT1B`, `TT2`, `T22`, `TT3A`, `TT3B`,
-`TT4`, `TT5`, `T25`, `TT6A`, `TT6B`, and `TT6C`.
-
-The command rejects source-byte, record-count, table-hash, dictionary, and
-exact-slot mismatches.
 
 ## Release commands
 
@@ -130,9 +104,8 @@ Zenpen and Kouhen, combines four sides, and writes `release_manifest.json`.
 For the 11 banks with scenario menu tables, this canonical path packs the
 unabbreviated labels together with dialogue, uses the guarded 68-entry English
 dictionary decoder, regenerates the menu page pointers, and preserves the
-overlay's original fixed suffix. The standalone `scenario-insert` and
-`ui-patch` commands retain the older 31-entry, fixed-slot diagnostic workflow;
-use `release-build` for the full-word playable result.
+overlay's original fixed suffix. Use `release-build` for the full-word playable
+result; inspection commands do not produce release candidates.
 
 Release manifest schema v4 is a complete audit record. It includes source-lock
 and release-code provenance, Python/Pillow environment versions, all

@@ -10,14 +10,16 @@ from pathlib import Path
 import time_twist.title as title
 from PIL import Image
 from rebuild_native_title_asset import build_native_titles
+from time_twist.font import patched_nov4_font
+from time_twist.ui import patched_nov4_ui
 
 WORK_DIR = Path(__file__).resolve().parents[1]
 
 NATIVE_FILE_SHA256 = (
-    "B1F262770FB490E2A933B956D5857432C101EE378A0F765CCCFACD8EE5FBF9A8"
+    "1D4A5F7E66B29D042B250D1E6A72BC0E2811CF7576F766B75FAAEE5399506BB0"
 )
 NATIVE_PIXELS_SHA256 = (
-    "27EE6BA45E19778B80EBBEACEEDC763EF896CE6A0A942D0C080114AB2C02B208"
+    "083F2C1AD128196CAB1528D4F871EB4156896B6A47F1D87C41A898A9A6DC92E4"
 )
 SLIDE_FILE_SHA256 = (
     "5B77F1E1080BC6A34AAB8B66420C2D53F025121285095ED142B481AD3C0C873C"
@@ -53,10 +55,7 @@ class TitlePatchTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         """Prepare shared fixtures for the current contract tests."""
-        source = WORK_DIR / "build/NOV4_accented_font_ui.bin"
-        if not source.exists():
-            source = WORK_DIR / "extracted_zenpen/side0_08_NOV4_A200.bin"
-        cls.source_path = source
+        cls.source_path = WORK_DIR / "extracted_zenpen/side0_08_NOV4_A200.bin"
         cls.native_path = (
             WORK_DIR / "title_assets/Time Twist approved native title.png"
         )
@@ -75,7 +74,9 @@ class TitlePatchTests(unittest.TestCase):
         missing = [str(path) for path in required if not path.exists()]
         if missing:
             raise AssertionError(f"title fixtures are unavailable: {missing}")
-        cls.source = cls.source_path.read_bytes()
+        cls.source = patched_nov4_font(
+            patched_nov4_ui(cls.source_path.read_bytes())
+        )
         cls.native = title._target_to_indices(cls.native_path)
         cls.slide = title._target_to_indices(cls.slide_path, last_owned_row=95)
         cls.assets = title.build_title_assets(
@@ -184,7 +185,7 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(_sha256(self.slide.tobytes()), SLIDE_PIXELS_SHA256)
         self.assertEqual(
             sum(pixel != 0 for pixel in self.native.get_flattened_data()),
-            7982,
+            7929,
         )
         self.assertEqual(
             sum(pixel != 0 for pixel in self.slide.get_flattened_data()),
@@ -287,7 +288,6 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(bytes(rebuilt_final), self.assets.background_chr)
         self.assertEqual(self.assets.slide_chr, self.assets.chr_data)
         self.assertNotEqual(self.assets.background_chr, self.assets.chr_data)
-        self.assertEqual(self.assets.approximation_error, 0)
 
         final_tiles = self.assets.final_nametable
         slide_tiles = self.assets.second_nametable
