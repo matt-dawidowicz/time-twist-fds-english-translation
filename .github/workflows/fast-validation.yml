@@ -6,6 +6,102 @@ on:
       - fix/entropy-codec-architecture-20260910
 
 jobs:
+  docstring-repair:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: fix/entropy-codec-architecture-20260910
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Add missing public API docstrings
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              Path("work/tools/audit_production_localization.py"): [
+                  (
+                      "def rows(root: Path) -> list[dict[str, object]]:\n    output:",
+                      'def rows(root: Path) -> list[dict[str, object]]:\n    """Build prioritized localization-audit rows from workbook banks."""\n    output:',
+                  ),
+                  (
+                      "def main() -> int:\n    parser =",
+                      'def main() -> int:\n    """Run the production-localization audit command-line interface."""\n    parser =',
+                  ),
+              ],
+              Path("work/time_twist/entropy_runtime.py"): [
+                  (
+                      "    def __post_init__(self) -> None:\n        if self.cpu_address",
+                      '    def __post_init__(self) -> None:\n        """Validate address, size, and source-digest invariants."""\n        if self.cpu_address',
+                  ),
+                  (
+                      "    def file_offset(self) -> int:\n        return self.cpu_address",
+                      '    def file_offset(self) -> int:\n        """Return this patch address as a NOV2 file offset."""\n        return self.cpu_address',
+                  ),
+                  (
+                      "    def apply(self, data: bytearray) -> None:\n        end = self.file_offset",
+                      '    def apply(self, data: bytearray) -> None:\n        """Apply the replacement after verifying the guarded source bytes."""\n        end = self.file_offset',
+                  ),
+              ],
+              Path("work/time_twist/production_runtime.py"): [
+                  (
+                      "    def __post_init__(self) -> None:\n        if self.file_offset",
+                      '    def __post_init__(self) -> None:\n        """Validate offset and size invariants for this runtime patch."""\n        if self.file_offset',
+                  ),
+              ],
+              Path("work/time_twist/runtime_lab.py"): [
+                  (
+                      "def command_fds(args: argparse.Namespace) -> int:\n    old_raw =",
+                      'def command_fds(args: argparse.Namespace) -> int:\n    """Compare named payload changes between two FDS images."""\n    old_raw =',
+                  ),
+                  (
+                      "def build_parser() -> argparse.ArgumentParser:\n    parser =",
+                      'def build_parser() -> argparse.ArgumentParser:\n    """Build the command-line parser for runtime debugging operations."""\n    parser =',
+                  ),
+                  (
+                      "def main(argv: Iterable[str] | None = None) -> int:\n    parser =",
+                      'def main(argv: Iterable[str] | None = None) -> int:\n    """Run the runtime-lab command-line interface."""\n    parser =',
+                  ),
+              ],
+              Path("work/time_twist/entropy_scenario.py"): [
+                  (
+                      "    def loaded_end(self) -> int:\n        return self.load_address",
+                      '    def loaded_end(self) -> int:\n        """Return the exclusive loaded end address of the overlay."""\n        return self.load_address',
+                  ),
+              ],
+          }
+
+          changed = False
+          for path, edits in replacements.items():
+              text = path.read_text(encoding="utf-8")
+              for old, new in edits:
+                  if old in text:
+                      text = text.replace(old, new, 1)
+                      changed = True
+              path.write_text(text, encoding="utf-8")
+
+          if not changed:
+              print("docstrings already present")
+              raise SystemExit(0)
+          PY
+          python -m pip install black==25.1.0 ruff==0.16.6 pydocstyle==6.3.0
+          python -m black work
+          python -m ruff check work
+          python -m pydocstyle --convention=pep257 work
+          git config user.name "starlight_world"
+          git config user.email "43389528+matt-dawidowicz@users.noreply.github.com"
+          git add work
+          if git diff --cached --quiet; then
+            echo "No source changes to commit"
+          else
+            git commit -m "Document public runtime APIs"
+            git push origin HEAD:fix/entropy-codec-architecture-20260910
+          fi
+
   validate:
     runs-on: ubuntu-latest
     strategy:
