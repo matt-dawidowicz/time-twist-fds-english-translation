@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import random
 import unittest
 from pathlib import Path
@@ -23,6 +24,7 @@ from time_twist.entropy_runtime import (
     CATEGORY_CODE_BYTES,
     ENTROPY_MENU_INIT_CPU_ADDRESS,
     ENTROPY_POINTER_INIT_CPU_ADDRESS,
+    ENTROPY_PREREQUISITE_PATCHES,
     ENTROPY_RUNTIME_PATCHES,
     FRONTEND_CODE_BYTES,
     NOV3_LOAD_ADDRESS,
@@ -43,6 +45,10 @@ def _common(value: int) -> PackedSymbol:
 
 def _semantic(record):
     return tuple((symbol.kind, symbol.value) for symbol in record)
+
+
+def _sha256(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest().upper()
 
 
 class EntropyProductionTests(unittest.TestCase):
@@ -159,6 +165,20 @@ class EntropyProductionTests(unittest.TestCase):
             bank.data[bank.dictionary_end_offset :],
         )
 
+    def test_entropy_prerequisites_are_only_native_nested_depth(self) -> None:
+        self.assertEqual(
+            tuple(patch.cpu_address for patch in ENTROPY_PREREQUISITE_PATCHES),
+            (0x82C5, 0x8311),
+        )
+        self.assertEqual(
+            tuple(patch.expected for patch in ENTROPY_PREREQUISITE_PATCHES),
+            (bytes.fromhex("A9 FF 85 71"), bytes.fromhex("A9 00 85 71")),
+        )
+        self.assertEqual(
+            tuple(patch.replacement for patch in ENTROPY_PREREQUISITE_PATCHES),
+            (bytes.fromhex("E6 71 EA EA"), bytes.fromhex("C6 71 EA EA")),
+        )
+
     def test_generated_6502_blocks_fit_and_do_not_overlap(self) -> None:
         self.assertEqual(SCANNER_CODE_BYTES, 134)
         self.assertEqual(FRONTEND_CODE_BYTES, 64)
@@ -172,7 +192,7 @@ class EntropyProductionTests(unittest.TestCase):
             occupied.update(touched)
         self.assertLess(max(occupied), NOV3_LOAD_ADDRESS)
 
-    def test_entropy_runtime_does_not_borrow_native_zero_page_74(self) -> None:
+    def test_generated_runtime_binary_is_frozen(self) -> None:
         patches = {patch.label: patch for patch in ENTROPY_RUNTIME_PATCHES}
         scanner = patches["bit-contiguous entropy scanner"].replacement[
             :SCANNER_CODE_BYTES
@@ -180,7 +200,44 @@ class EntropyProductionTests(unittest.TestCase):
         frontend = patches["entropy semantic dispatch frontend"].replacement[
             :FRONTEND_CODE_BYTES
         ]
-        for opcode in (bytes.fromhex("85 74"), bytes.fromhex("A5 74"), bytes.fromhex("A4 74")):
+        category = patches["entropy prefix-category decoder"].replacement[
+            :CATEGORY_CODE_BYTES
+        ]
+        self.assertEqual(
+            _sha256(scanner),
+            "5E598E7038DC3AEA566A4F8996CC14E50CB9EF6C4F3947D2DFDC2797BEF20D34",
+        )
+        self.assertEqual(
+            _sha256(frontend),
+            "19AAE5C50313AA051E39395A0C7BF50A24F8D733AF09E4A64134C3C068AC1AF6",
+        )
+        self.assertEqual(
+            _sha256(category),
+            "13BB5546C4DAA3C3D688F07F75FBFFD226725EB9BD72CD6238CBB662308485A2",
+        )
+
+    def test_entropy_runtime_preserves_x_and_avoids_native_zero_page_74(self) -> None:
+        patches = {patch.label: patch for patch in ENTROPY_RUNTIME_PATCHES}
+        scanner = patches["bit-contiguous entropy scanner"].replacement[
+            :SCANNER_CODE_BYTES
+        ]
+        frontend = patches["entropy semantic dispatch frontend"].replacement[
+            :FRONTEND_CODE_BYTES
+        ]
+
+        # Scanner saves X once after fresh-stream setup and restores it on its
+        # single return path. Frontend saves X before category decoding and
+        # restores it before tail-dispatching into the native handlers.
+        self.assertEqual(scanner[11:13], bytes.fromhex("8A 48"))
+        self.assertIn(bytes.fromhex("68 AA 60"), scanner)
+        self.assertEqual(frontend[:2], bytes.fromhex("8A 48"))
+        self.assertIn(bytes.fromhex("68 AA 98"), frontend)
+
+        for opcode in (
+            bytes.fromhex("85 74"),
+            bytes.fromhex("A5 74"),
+            bytes.fromhex("A4 74"),
+        ):
             self.assertNotIn(opcode, scanner)
             self.assertNotIn(opcode, frontend)
 
