@@ -135,7 +135,7 @@ def _entropy_tree() -> bytes:
     emit_node(root)
     if len(nodes) != 31 or any(value is None for value in nodes):
         raise EntropyRuntimeError("unexpected serialized entropy tree size")
-    return bytes(int(value) for value in nodes)
+    return bytes(value for value in nodes if value is not None)
 
 
 ENTROPY_TREE = _entropy_tree()
@@ -506,8 +506,8 @@ def patch_entropy_nov2(data: bytes) -> bytes:
             f"NOV2 must be {NOV2_SIZE} bytes, got {len(data)}"
         )
     result = bytearray(patch_nov2(data))
-    for patch in ENTROPY_PREREQUISITE_PATCHES:
-        patch.apply(result)
+    for prerequisite_patch in ENTROPY_PREREQUISITE_PATCHES:
+        prerequisite_patch.apply(result)
     _guard_entropy_prerequisites(result)
     palette_before = bytes(
         result[
@@ -516,8 +516,8 @@ def patch_entropy_nov2(data: bytes) -> bytes:
             - NOV2_LOAD_ADDRESS
         ]
     )
-    for patch in ENTROPY_RUNTIME_PATCHES:
-        patch.apply(result)
+    for runtime_patch in ENTROPY_RUNTIME_PATCHES:
+        runtime_patch.apply(result)
     _guard_entropy_prerequisites(result)
     palette_after = bytes(
         result[

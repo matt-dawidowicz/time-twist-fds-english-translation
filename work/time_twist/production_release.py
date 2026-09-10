@@ -13,6 +13,7 @@ import json
 import tempfile
 from dataclasses import dataclass, replace
 from pathlib import Path
+from typing import cast
 
 from .compression import compress_english_groups, expand_dictionary_symbols
 from .english import encode_english
@@ -340,7 +341,7 @@ def build_production_images(
         "adaptive_dictionary": adaptive_dictionary,
         "subtitle": subtitle,
         "scenario_records": sum(
-            int(record["records"]) for record in bank_report.values()
+            cast(int, record["records"]) for record in bank_report.values()
         ),
         "scenario_banks": bank_report,
         "components": {

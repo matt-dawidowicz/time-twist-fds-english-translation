@@ -13,6 +13,7 @@ from __future__ import annotations
 import tempfile
 from dataclasses import dataclass, replace
 from pathlib import Path
+from typing import cast
 
 from .english import encode_english
 from .entropy_codec import pack_entropy_pages, unpack_entropy_stream
@@ -450,7 +451,7 @@ def build_entropy_images(
         "nov3_exclusive_boundary": f"0x{NOV3_LOAD_ADDRESS:04X}",
         "subtitle": subtitle,
         "scenario_records": sum(
-            int(record["records"]) for record in bank_report.values()
+            cast(int, record["records"]) for record in bank_report.values()
         ),
         "scenario_banks": bank_report,
         "components": {

@@ -150,7 +150,9 @@ def command_smoke(_args: argparse.Namespace) -> int:
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
     for name in FOCUSED_TESTS:
-        suite.addTests(loader.discover(root / "tests", pattern=f"{name}.py"))
+        suite.addTests(
+            loader.discover(str(root / "tests"), pattern=f"{name}.py")
+        )
     result = unittest.TextTestRunner(verbosity=1).run(suite)
     return 0 if result.wasSuccessful() else 1
 

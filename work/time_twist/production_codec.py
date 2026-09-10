@@ -276,7 +276,7 @@ def _optimal_parse_record(
         chosen = (symbol, *best_tokens[position + 1])
 
         if symbol.kind in (SymbolKind.COMMON, SymbolKind.EXTENDED):
-            for index, expansion in by_first.get(symbol, ()):  # type: ignore[arg-type]
+            for index, expansion in by_first.get(symbol, ()):
                 end = position + len(expansion)
                 if end > length or tuple(record[position:end]) != expansion:
                     continue
