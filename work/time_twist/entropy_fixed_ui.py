@@ -2,14 +2,16 @@
 
 The entropy NOV2 runtime replaces the native packed-text decoder globally.
 Therefore every packed-text stream that can reach that decoder must use the
-same entropy grammar.  Scenario groups, dictionaries, and the large relocated
+same entropy grammar. Scenario groups, dictionaries, and the large relocated
 menu tables already satisfy that rule; NOV4's title/menu text and TT1A's small
 fixed selector table historically did not.
 
-This module owns those exceptional fixed-address surfaces.  It deliberately
-keeps their existing byte allocations and pointers, packs records contiguously
-inside each independently addressed stream, and pads only after the final
-record.  No runtime format flag or address heuristic is needed.
+This module owns those exceptional fixed-address surfaces. NOV4 keeps its
+existing byte allocations and pointers, with records bit-contiguous inside
+each independently addressed stream. TT1A is different: native code can enter
+its selector table at individual record addresses, so all 19 original slots
+remain byte-addressable and each slot is encoded as its own entropy stream.
+No runtime format flag or address heuristic is needed.
 """
 
 from __future__ import annotations
@@ -32,7 +34,7 @@ class EntropyFixedTextError(ValueError):
 
 
 # ---------------------------------------------------------------------------
-# TT1A: 19 directly selected choice records in one scanner-visible stream.
+# TT1A: 19 byte-addressed choice records with immutable native entry points.
 # ---------------------------------------------------------------------------
 
 TT1A_LOAD_ADDRESS = 0xA200
@@ -50,13 +52,14 @@ TT1A_TABLE_POINTERS = {
     0x1A: 0xA4AB,
     0x26: 0xA4C2,
 }
-TT1A_CHOICE_TEXT = tuple(
-    english
-    for _offset, _source, english in (
-        *TT1A_BLOOD_TYPE_PATCHES,
-        *TT1A_MONTH_PATCHES,
-        *TT1A_CONFIRMATION_PATCHES,
-    )
+TT1A_CHOICE_PATCHES = (
+    *TT1A_BLOOD_TYPE_PATCHES,
+    *TT1A_MONTH_PATCHES,
+    *TT1A_CONFIRMATION_PATCHES,
+)
+TT1A_CHOICE_TEXT = tuple(english for _offset, _source, english in TT1A_CHOICE_PATCHES)
+TT1A_ENTRY_ADDRESSES = tuple(
+    TT1A_LOAD_ADDRESS + offset for offset, _source, _english in TT1A_CHOICE_PATCHES
 )
 
 
@@ -114,7 +117,7 @@ NOV4_GROUP_TEXT = (
     "Title demo test.",
 )
 # Four short, literal definitions are enough to make every NOV4 fixed stream
-# fit its original reservation.  Keeping this dictionary local also avoids
+# fit its original reservation. Keeping this dictionary local also avoids
 # widening the global entropy grammar to Japanese-only extended values 0-36.
 NOV4_DICTIONARY_TEXT = ("Book", "Part", "Chapter", " Select")
 
@@ -189,9 +192,35 @@ def nov4_entropy_payloads() -> tuple[bytes, bytes, bytes]:
     return menu, group, dictionary
 
 
+def tt1a_entropy_payloads() -> tuple[bytes, ...]:
+    """Return one independently byte-addressable entropy stream per TT1A slot."""
+    return tuple(
+        pack_entropy_stream((encode_english(text),)) for text in TT1A_CHOICE_TEXT
+    )
+
+
 def tt1a_entropy_payload() -> bytes:
-    """Return the complete 19-record TT1A choice stream with one final pad."""
-    return pack_entropy_stream(tuple(encode_english(text) for text in TT1A_CHOICE_TEXT))
+    """Return the complete 80-byte TT1A region with native entry addresses kept."""
+    payloads = tt1a_entropy_payloads()
+    output = bytearray()
+    cursor = TT1A_TABLE_START
+
+    for index, ((offset, source, _text), payload) in enumerate(
+        zip(TT1A_CHOICE_PATCHES, payloads, strict=True)
+    ):
+        if offset != cursor:
+            raise EntropyFixedTextError(
+                f"TT1A slot {index} begins at 0x{offset:04X}; "
+                f"expected contiguous native address 0x{cursor:04X}"
+            )
+        output.extend(_fit(payload, len(source), f"TT1A choice slot {index}"))
+        cursor += len(source)
+
+    if cursor != TT1A_TABLE_END or len(output) != TT1A_TABLE_CAPACITY:
+        raise EntropyFixedTextError(
+            "TT1A fixed choice slots do not exactly cover the native table region"
+        )
+    return bytes(output)
 
 
 def _audit_nov4(data: bytes) -> None:
@@ -221,21 +250,23 @@ def _audit_nov4(data: bytes) -> None:
 
 
 def _audit_tt1a(data: bytes) -> None:
-    decoded = unpack_entropy_stream(
-        data[TT1A_TABLE_START:TT1A_TABLE_END],
-        record_count=len(TT1A_CHOICE_TEXT),
-    )
-    for index, (record, text) in enumerate(zip(decoded, TT1A_CHOICE_TEXT, strict=True)):
-        if _semantic(record) != _semantic(encode_english(text)):
+    for index, (offset, source, text) in enumerate(TT1A_CHOICE_PATCHES):
+        end = offset + len(source)
+        decoded = unpack_entropy_stream(data[offset:end], record_count=1)
+        if len(decoded) != 1:
             raise EntropyFixedTextError(
-                f"TT1A entropy choice record {index} failed semantic audit"
+                f"TT1A entropy choice slot {index} did not decode one record"
+            )
+        if _semantic(decoded[0]) != _semantic(encode_english(text)):
+            raise EntropyFixedTextError(
+                f"TT1A entropy choice slot {index} failed semantic audit"
             )
 
 
 def patched_nov4_entropy_text(data: bytes) -> bytes:
     """Convert every NOV4 stream consumed by the global entropy decoder.
 
-    This runs after the size-neutral font patch and before title expansion.  The
+    This runs after the size-neutral font patch and before title expansion. The
     font patch intentionally remains first because it validates a whole-bank
     source hash; weakening that source guard merely to accommodate a new text
     intermediate would reduce safety.
@@ -303,10 +334,9 @@ def patched_nov4_entropy_text(data: bytes) -> bytes:
 
 
 def patched_tt1a_entropy_ui(data: bytes) -> bytes:
-    """Replace TT1A's native aligned selector records with one entropy stream."""
+    """Replace TT1A native slots with address-stable one-record entropy streams."""
     _assert_pointers(data, TT1A_TABLE_POINTERS, "TT1A")
-    payload = tt1a_entropy_payload()
-    replacement = _fit(payload, TT1A_TABLE_CAPACITY, "TT1A choice table")
+    replacement = tt1a_entropy_payload()
     current = data[TT1A_TABLE_START:TT1A_TABLE_END]
     if current == replacement:
         _audit_tt1a(data)
@@ -327,26 +357,30 @@ def patched_tt1a_entropy_ui(data: bytes) -> bytes:
 def entropy_fixed_text_coverage() -> dict[str, dict[str, int]]:
     """Expose the fixed-stream coverage invariant in release manifests/tests."""
     menu, group, dictionary = nov4_entropy_payloads()
-    tt1a = tt1a_entropy_payload()
+    tt1a_payloads = tt1a_entropy_payloads()
     return {
         "NOV4_menu": {
             "records": len(NOV4_MENU_TEXT),
+            "streams": 1,
             "packed_bytes": len(menu),
             "capacity_bytes": NOV4_MENU_END - NOV4_MENU_START,
         },
         "NOV4_internal": {
             "records": len(NOV4_GROUP_TEXT),
+            "streams": 1,
             "packed_bytes": len(group),
             "capacity_bytes": NOV4_GROUP_END - NOV4_GROUP_START,
         },
         "NOV4_dictionary": {
             "records": len(NOV4_DICTIONARY_TEXT),
+            "streams": 1,
             "packed_bytes": len(dictionary),
             "capacity_bytes": NOV4_DICTIONARY_END - NOV4_DICTIONARY_START,
         },
         "TT1A_choices": {
             "records": len(TT1A_CHOICE_TEXT),
-            "packed_bytes": len(tt1a),
+            "streams": len(tt1a_payloads),
+            "packed_bytes": sum(len(payload) for payload in tt1a_payloads),
             "capacity_bytes": TT1A_TABLE_CAPACITY,
         },
     }
