@@ -66,6 +66,7 @@ class EntropyScenarioLayout:
 
 
 def _read_word(data: bytes, offset: int) -> int:
+    """Read one little-endian word from the supplied buffer."""
     if offset < 0 or offset + 2 > len(data):
         raise EntropyScenarioError(
             f"word offset 0x{offset:04X} is outside bank"
@@ -74,6 +75,7 @@ def _read_word(data: bytes, offset: int) -> int:
 
 
 def _write_word(data: bytearray, offset: int, value: int) -> None:
+    """Write one little-endian word into the supplied buffer."""
     if not 0 <= value <= 0xFFFF:
         raise EntropyScenarioError(f"pointer ${value:05X} exceeds 16 bits")
     if offset < 0 or offset + 2 > len(data):
@@ -84,6 +86,7 @@ def _write_word(data: bytearray, offset: int, value: int) -> None:
 
 
 def _source_record_counts(bank: ScenarioBank) -> tuple[int, ...]:
+    """Support the source record counts operation for this module."""
     return tuple(
         sum(record.group_index == group for record in bank.records)
         for group in range(len(bank.group_addresses))
@@ -93,6 +96,7 @@ def _source_record_counts(bank: ScenarioBank) -> tuple[int, ...]:
 def _semantic_record(
     record: tuple[PackedSymbol, ...] | list[PackedSymbol],
 ) -> tuple[tuple[object, int], ...]:
+    """Support the semantic record operation for this module."""
     return tuple((symbol.kind, symbol.value) for symbol in record)
 
 
@@ -100,6 +104,7 @@ def _literal_groups(
     groups: ScenarioGroups,
     dictionary: ScenarioDictionary,
 ) -> ScenarioGroups:
+    """Support the literal groups operation for this module."""
     expansions = expand_entropy_dictionary(dictionary)
     return tuple(
         tuple(expand_entropy_record(record, expansions) for record in group)
@@ -170,6 +175,7 @@ def relocate_entropy_fixed_record_table(
         )
 
     def header_offset(pointer_offset: int) -> int:
+        """Support the header offset operation for this module."""
         return _read_word(data, pointer_offset) - load_address
 
     if header_offset(FIXED_RECORD_TABLE_POINTER_OFFSET) != spec.start:

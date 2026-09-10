@@ -48,6 +48,7 @@ class _Assembler:
     """Minimal deterministic assembler for the small 6502 replacement blocks."""
 
     def __init__(self, origin: int) -> None:
+        """Initialize the helper state."""
         self.origin = origin
         self.data = bytearray()
         self.labels: dict[str, int] = {}
@@ -55,27 +56,33 @@ class _Assembler:
 
     @property
     def pc(self) -> int:
+        """Return the current assembler program counter."""
         return self.origin + len(self.data)
 
     def label(self, name: str) -> None:
+        """Record an assembler label at the current program counter."""
         if name in self.labels:
             raise EntropyRuntimeError(f"duplicate assembler label {name}")
         self.labels[name] = self.pc
 
     def emit(self, *values: int) -> None:
+        """Append raw bytes to the assembled runtime."""
         if any(not 0 <= value <= 0xFF for value in values):
             raise EntropyRuntimeError("assembler byte is outside 0..255")
         self.data.extend(values)
 
     def absolute(self, opcode: int, target: str | int) -> None:
+        """Record an absolute-address fixup in the assembled runtime."""
         self.emit(opcode, 0, 0)
         self.fixups.append((len(self.data) - 2, "absolute", target))
 
     def relative(self, opcode: int, target: str | int) -> None:
+        """Record a relative-address fixup in the assembled runtime."""
         self.emit(opcode, 0)
         self.fixups.append((len(self.data) - 1, "relative", target))
 
     def finish(self) -> bytes:
+        """Resolve assembler fixups and return the completed runtime bytes."""
         for position, kind, target in self.fixups:
             address = (
                 self.labels[target] if isinstance(target, str) else target
@@ -115,6 +122,7 @@ def _entropy_tree() -> bytes:
     nodes: list[int | None] = []
 
     def emit_node(node: dict[int | str, object]) -> int:
+        """Serialize one node of the entropy decode trie."""
         index = len(nodes)
         nodes.append(None)
         category = node.get("category")
@@ -483,6 +491,7 @@ ENTROPY_PREREQUISITE_PATCHES = (
 
 
 def _guard_entropy_prerequisites(data: bytes) -> None:
+    """Validate entropy prerequisites."""
     for patch in ENTROPY_PREREQUISITE_PATCHES:
         end = patch.file_offset + len(patch.replacement)
         if data[patch.file_offset : end] != patch.replacement:

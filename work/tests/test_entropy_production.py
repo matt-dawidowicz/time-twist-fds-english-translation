@@ -36,23 +36,30 @@ from time_twist.textcodec import PackedSymbol, SymbolKind
 
 
 def _s(kind: SymbolKind, value: int) -> PackedSymbol:
+    """Encode one source string for the entropy tests."""
     return PackedSymbol(kind, value, 0, 0)
 
 
 def _common(value: int) -> PackedSymbol:
+    """Build one common-symbol token for the entropy tests."""
     return _s(SymbolKind.COMMON, value)
 
 
 def _semantic(record):
+    """Return the semantic text representation used by this module."""
     return tuple((symbol.kind, symbol.value) for symbol in record)
 
 
 def _sha256(data: bytes) -> str:
+    """Return the SHA-256 digest for the supplied data."""
     return hashlib.sha256(data).hexdigest().upper()
 
 
 class EntropyProductionTests(unittest.TestCase):
+    """Group regression coverage for EntropyProduction."""
+
     def test_runtime_abi_is_frozen(self) -> None:
+        """Verify runtime abi is frozen."""
         self.assertEqual(
             CATEGORY_PREFIXES,
             (
@@ -85,6 +92,7 @@ class EntropyProductionTests(unittest.TestCase):
         self.assertEqual(NOV3_LOAD_ADDRESS, 0xD7B5)
 
     def test_mixed_bit_contiguous_streams_round_trip(self) -> None:
+        """Verify mixed bit contiguous streams round trip."""
         rng = random.Random(0xD7B5)
         for _ in range(40):
             records = []
@@ -118,6 +126,7 @@ class EntropyProductionTests(unittest.TestCase):
             )
 
     def test_menu_pages_are_independently_byte_addressable(self) -> None:
+        """Verify menu pages are independently byte addressable."""
         records = tuple((_common(index % 48),) for index in range(70))
         packed, starts = pack_entropy_pages(records, records_per_page=32)
         self.assertEqual(len(starts), 3)
@@ -132,6 +141,7 @@ class EntropyProductionTests(unittest.TestCase):
             )
 
     def test_optimizer_is_deterministic_and_lossless(self) -> None:
+        """Verify optimizer is deterministic and lossless."""
         phrase = (_common(1), _common(2), _common(3), _common(4))
         groups = (
             tuple(
@@ -153,6 +163,7 @@ class EntropyProductionTests(unittest.TestCase):
             )
 
     def test_scenario_layout_preserves_fixed_tail(self) -> None:
+        """Verify scenario layout preserves fixed tail."""
         load = 0xA200
         data = bytearray(b"\x00" * 0x120)
         data[0x90:] = bytes((index * 13 + 7) & 0xFF for index in range(0x90))
@@ -183,6 +194,7 @@ class EntropyProductionTests(unittest.TestCase):
         )
 
     def test_entropy_prerequisites_are_only_native_nested_depth(self) -> None:
+        """Verify entropy prerequisites are only native nested depth."""
         self.assertEqual(
             tuple(patch.cpu_address for patch in ENTROPY_PREREQUISITE_PATCHES),
             (0x82C5, 0x8311),
@@ -197,6 +209,7 @@ class EntropyProductionTests(unittest.TestCase):
         )
 
     def test_generated_6502_blocks_fit_and_do_not_overlap(self) -> None:
+        """Verify generated 6502 blocks fit and do not overlap."""
         self.assertEqual(SCANNER_CODE_BYTES, 134)
         self.assertEqual(FRONTEND_CODE_BYTES, 64)
         self.assertEqual(CATEGORY_CODE_BYTES, 59)
@@ -212,6 +225,7 @@ class EntropyProductionTests(unittest.TestCase):
         self.assertLess(max(occupied), NOV3_LOAD_ADDRESS)
 
     def test_generated_runtime_binary_is_frozen(self) -> None:
+        """Verify generated runtime binary is frozen."""
         patches = {patch.label: patch for patch in ENTROPY_RUNTIME_PATCHES}
         scanner = patches["bit-contiguous entropy scanner"].replacement[
             :SCANNER_CODE_BYTES
@@ -238,6 +252,7 @@ class EntropyProductionTests(unittest.TestCase):
     def test_entropy_runtime_preserves_x_and_avoids_native_zero_page_74(
         self,
     ) -> None:
+        """Verify entropy runtime preserves x and avoids native zero page 74."""
         patches = {patch.label: patch for patch in ENTROPY_RUNTIME_PATCHES}
         scanner = patches["bit-contiguous entropy scanner"].replacement[
             :SCANNER_CODE_BYTES

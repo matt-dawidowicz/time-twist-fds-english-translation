@@ -90,6 +90,7 @@ class EntropyProductionBankResult:
 
 
 def _dictionary_key(dictionary: ScenarioDictionary) -> tuple[object, ...]:
+    """Support the dictionary key operation for this module."""
     return tuple(
         tuple((symbol.kind.value, symbol.value) for symbol in record)
         for record in dictionary
@@ -97,6 +98,7 @@ def _dictionary_key(dictionary: ScenarioDictionary) -> tuple[object, ...]:
 
 
 def _menu_bytes(records: tuple[tuple[PackedSymbol, ...], ...]) -> int:
+    """Support the menu bytes operation for this module."""
     if not records:
         return 0
     packed, _ = pack_entropy_pages(
@@ -114,6 +116,7 @@ def _build_variant_layout(
     *,
     prg_ram_end: int = NOV3_LOAD_ADDRESS,
 ) -> tuple[EntropyScenarioLayout, int]:
+    """Build variant layout."""
     text_start = bank.group_addresses[0] - bank.load_address
     if bank_name in FIXED_RECORD_TABLE_SPECS:
         base_data, region_start = relocate_entropy_fixed_record_table(
@@ -146,6 +149,7 @@ def _select_safe_variant(
     literal_groups: ScenarioGroups,
     literal_menu: tuple[tuple[PackedSymbol, ...], ...],
 ) -> tuple[EntropyCompressionResult, EntropyScenarioLayout, int]:
+    """Select safe variant."""
     base = optimize_entropy_dictionary(
         literal_groups,
         literal_menu,

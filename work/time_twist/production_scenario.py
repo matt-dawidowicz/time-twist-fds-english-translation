@@ -72,6 +72,7 @@ class ProductionScenarioLayout:
 
 
 def _read_word(data: bytes, offset: int) -> int:
+    """Read one little-endian word from the supplied buffer."""
     if offset < 0 or offset + 2 > len(data):
         raise ProductionScenarioError(
             f"word offset 0x{offset:04X} is outside bank"
@@ -80,6 +81,7 @@ def _read_word(data: bytes, offset: int) -> int:
 
 
 def _write_word(data: bytearray, offset: int, value: int) -> None:
+    """Write one little-endian word into the supplied buffer."""
     if not 0 <= value <= 0xFFFF:
         raise ProductionScenarioError(f"pointer ${value:05X} exceeds 16 bits")
     if offset < 0 or offset + 2 > len(data):
@@ -90,6 +92,7 @@ def _write_word(data: bytearray, offset: int, value: int) -> None:
 
 
 def _source_record_counts(bank: ScenarioBank) -> tuple[int, ...]:
+    """Support the source record counts operation for this module."""
     return tuple(
         sum(record.group_index == group_index for record in bank.records)
         for group_index in range(len(bank.group_addresses))
@@ -143,6 +146,7 @@ def _best_resident_subset(
 
 
 def _production_record_starts(data: bytes, count: int) -> tuple[int, ...]:
+    """Support the production record starts operation for this module."""
     starts: list[int] = []
     offset = 0
     for _ in range(count):
@@ -152,6 +156,7 @@ def _production_record_starts(data: bytes, count: int) -> tuple[int, ...]:
 
 
 def _source_record_starts(data: bytes, count: int) -> tuple[int, ...]:
+    """Support the source record starts operation for this module."""
     starts: list[int] = []
     offset = 0
     for _ in range(count):
@@ -186,6 +191,7 @@ def relocate_production_fixed_record_table(
         )
 
     def header_offset(pointer_offset: int) -> int:
+        """Support the header offset operation for this module."""
         return _read_word(data, pointer_offset) - load_address
 
     if header_offset(FIXED_RECORD_TABLE_POINTER_OFFSET) != spec.start:

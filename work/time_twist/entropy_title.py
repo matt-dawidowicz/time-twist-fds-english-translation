@@ -80,6 +80,7 @@ def _seam_safe_permutation(slide_chr: bytes) -> dict[int, int]:
 
 
 def _permute_upper_chr(slide_chr: bytes, mapping: dict[int, int]) -> bytes:
+    """Support the permute upper chr operation for this module."""
     result = bytearray(slide_chr)
     for old, new in mapping.items():
         source = slide_chr[old * 16 : (old + 1) * 16]
@@ -97,6 +98,7 @@ def _remap_rows(
     *,
     rows: int,
 ) -> bytes:
+    """Support the remap rows operation for this module."""
     result = bytearray(nametable)
     limit = rows * _NAMETABLE_WIDTH
     if limit > len(result):

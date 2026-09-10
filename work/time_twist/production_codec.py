@@ -338,6 +338,7 @@ def _candidate_depth(
     candidate: tuple[PackedSymbol, ...],
     depths: tuple[int, ...],
 ) -> int:
+    """Support the candidate depth operation for this module."""
     referenced = [
         depths[symbol.value - 1]
         for symbol in candidate
@@ -350,6 +351,7 @@ def _candidate_expansion(
     candidate: tuple[PackedSymbol, ...],
     expansions: tuple[tuple[PackedSymbol, ...], ...],
 ) -> tuple[PackedSymbol, ...]:
+    """Support the candidate expansion operation for this module."""
     output: list[PackedSymbol] = []
     for symbol in candidate:
         if symbol.kind is SymbolKind.DICTIONARY:

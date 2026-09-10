@@ -69,6 +69,7 @@ class ProductionBankResult:
 
 
 def _sha256(data: bytes) -> str:
+    """Return the SHA-256 digest for the supplied data."""
     return hashlib.sha256(data).hexdigest().upper()
 
 
@@ -80,6 +81,7 @@ def _semantic_record(
 
 
 def _load_translation_map(path: Path) -> dict[str, str]:
+    """Load translation map."""
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
@@ -103,6 +105,7 @@ def _encoded_groups(
     bank_name: str,
     translations: dict[str, str],
 ) -> ScenarioGroups:
+    """Support the encoded groups operation for this module."""
     records_by_id = {
         scenario_record_id(
             bank_name, record.group_index, record.record_index
@@ -147,6 +150,7 @@ def _compress(
     *,
     adaptive_dictionary: bool,
 ) -> tuple[ScenarioGroups, ScenarioDictionary]:
+    """Support the compress operation for this module."""
     if adaptive_dictionary:
         return compress_production_groups(
             groups,

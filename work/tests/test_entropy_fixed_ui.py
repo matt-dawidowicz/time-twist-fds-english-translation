@@ -41,23 +41,30 @@ from time_twist.entropy_fixed_ui import (
 
 
 def _sha256(data: bytes) -> str:
+    """Return the SHA-256 digest for the supplied data."""
     return hashlib.sha256(data).hexdigest().upper()
 
 
 def _semantic(record):
+    """Return the semantic text representation used by this module."""
     return tuple((symbol.kind, symbol.value) for symbol in record)
 
 
 def _pad(payload: bytes, size: int) -> bytes:
+    """Pad the supplied payload to its required fixed capacity."""
     return payload + bytes(size - len(payload))
 
 
 def _write_word(data: bytearray, offset: int, value: int) -> None:
+    """Write one little-endian word into the supplied buffer."""
     data[offset : offset + 2] = value.to_bytes(2, "little")
 
 
 class EntropyFixedUiTests(unittest.TestCase):
+    """Group regression coverage for EntropyFixedUi."""
+
     def test_payload_oracles_and_capacity(self) -> None:
+        """Verify payload oracles and capacity."""
         menu, group, dictionary = nov4_entropy_payloads()
         tt1a = tt1a_entropy_payload()
 
@@ -91,6 +98,7 @@ class EntropyFixedUiTests(unittest.TestCase):
         self.assertLessEqual(len(tt1a), TT1A_TABLE_CAPACITY)
 
     def test_padded_region_oracles_are_frozen(self) -> None:
+        """Verify padded region oracles are frozen."""
         menu, group, dictionary = nov4_entropy_payloads()
         tt1a = tt1a_entropy_payload()
         self.assertEqual(
@@ -116,6 +124,7 @@ class EntropyFixedUiTests(unittest.TestCase):
         )
 
     def test_nov4_streams_round_trip_to_english_semantics(self) -> None:
+        """Verify nov4 streams round trip to english semantics."""
         menu, group, dictionary = nov4_entropy_payloads()
         decoded_dictionary = unpack_entropy_stream(
             dictionary,
@@ -131,6 +140,7 @@ class EntropyFixedUiTests(unittest.TestCase):
                 )
 
     def test_first_menu_start_record_is_entropy_not_native(self) -> None:
+        """Verify first menu start record is entropy not native."""
         menu, _group, dictionary = nov4_entropy_payloads()
         decoded_dictionary = unpack_entropy_stream(
             dictionary,
@@ -144,6 +154,7 @@ class EntropyFixedUiTests(unittest.TestCase):
         self.assertEqual(_semantic(start), _semantic(encode_english("Start")))
 
     def test_tt1a_slots_preserve_every_native_entry_address(self) -> None:
+        """Verify tt1a slots preserve every native entry address."""
         self.assertEqual(
             TT1A_ENTRY_ADDRESSES,
             (
@@ -182,6 +193,7 @@ class EntropyFixedUiTests(unittest.TestCase):
             )
 
     def test_idempotent_nov4_patcher_preserves_pointer_contract(self) -> None:
+        """Verify idempotent nov4 patcher preserves pointer contract."""
         menu, group, dictionary = nov4_entropy_payloads()
         source = bytearray(NOV4_SOURCE_SIZE)
         for offset, address in NOV4_POINTERS.items():
@@ -203,6 +215,7 @@ class EntropyFixedUiTests(unittest.TestCase):
             )
 
     def test_idempotent_tt1a_patcher_preserves_pointer_contract(self) -> None:
+        """Verify idempotent tt1a patcher preserves pointer contract."""
         source = bytearray(0x1000)
         for offset, address in TT1A_TABLE_POINTERS.items():
             _write_word(source, offset, address)
@@ -215,6 +228,7 @@ class EntropyFixedUiTests(unittest.TestCase):
             )
 
     def test_partial_nov4_conversion_is_rejected(self) -> None:
+        """Verify partial nov4 conversion is rejected."""
         menu, group, dictionary = nov4_entropy_payloads()
         source = bytearray(NOV4_SOURCE_SIZE)
         for offset, address in NOV4_POINTERS.items():
@@ -233,6 +247,7 @@ class EntropyFixedUiTests(unittest.TestCase):
             patched_nov4_entropy_text(bytes(source))
 
     def test_manifest_coverage_inventory_is_complete_and_bounded(self) -> None:
+        """Verify manifest coverage inventory is complete and bounded."""
         self.assertEqual(
             entropy_fixed_text_coverage(),
             {

@@ -67,6 +67,7 @@ class RuntimePatch:
 
 
 def _hex(value: str) -> bytes:
+    """Return a hexadecimal representation of the supplied bytes."""
     return bytes.fromhex(value)
 
 

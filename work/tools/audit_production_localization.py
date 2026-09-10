@@ -32,14 +32,17 @@ BANK_ORDER = (
 
 
 def _visible(text: str) -> str:
+    """Support the visible operation for this module."""
     return CONTROL_RE.sub(" / ", text).replace("  ", " ").strip()
 
 
 def _segments(text: str) -> list[str]:
+    """Support the segments operation for this module."""
     return [segment for segment in CONTROL_RE.split(text) if segment]
 
 
 def _priority(row: dict[str, object]) -> int:
+    """Support the priority operation for this module."""
     playable = str(row.get("patch_safe_english_translation", ""))
     natural = str(row.get("final_natural_english_translation", ""))
     score = 0

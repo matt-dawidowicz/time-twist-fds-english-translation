@@ -129,14 +129,17 @@ NOV4_DICTIONARY_TEXT = ("Book", "Part", "Chapter", " Select")
 
 
 def _sha256(data: bytes) -> str:
+    """Return the SHA-256 digest for the supplied data."""
     return hashlib.sha256(data).hexdigest().upper()
 
 
 def _semantic(record: tuple[PackedSymbol, ...] | list[PackedSymbol]):
+    """Return the semantic text representation used by this module."""
     return tuple((symbol.kind, symbol.value) for symbol in record)
 
 
 def _word(data: bytes, offset: int) -> int:
+    """Support the word operation for this module."""
     if offset < 0 or offset + 2 > len(data):
         raise EntropyFixedTextError(
             f"word at 0x{offset:04X} is outside component"
@@ -147,6 +150,7 @@ def _word(data: bytes, offset: int) -> int:
 def _assert_pointers(
     data: bytes, expected: dict[int, int], label: str
 ) -> None:
+    """Validate pointers."""
     for offset, address in expected.items():
         actual = _word(data, offset)
         if actual != address:
@@ -157,6 +161,7 @@ def _assert_pointers(
 
 
 def _fit(payload: bytes, capacity: int, label: str) -> bytes:
+    """Support the fit operation for this module."""
     if len(payload) > capacity:
         raise EntropyFixedTextError(
             f"{label} needs {len(payload)} bytes but only {capacity} are reserved"
@@ -165,6 +170,7 @@ def _fit(payload: bytes, capacity: int, label: str) -> bytes:
 
 
 def _dictionary_records() -> tuple[tuple[PackedSymbol, ...], ...]:
+    """Support the dictionary records operation for this module."""
     return tuple(encode_english(text) for text in NOV4_DICTIONARY_TEXT)
 
 
@@ -235,6 +241,7 @@ def tt1a_entropy_payload() -> bytes:
 
 
 def _audit_nov4(data: bytes) -> None:
+    """Support the audit nov4 operation for this module."""
     dictionary = unpack_entropy_stream(
         data[NOV4_DICTIONARY_START:NOV4_DICTIONARY_END],
         record_count=len(NOV4_DICTIONARY_TEXT),
@@ -267,6 +274,7 @@ def _audit_nov4(data: bytes) -> None:
 
 
 def _audit_tt1a(data: bytes) -> None:
+    """Support the audit tt1a operation for this module."""
     for index, (offset, source, text) in enumerate(TT1A_CHOICE_PATCHES):
         end = offset + len(source)
         decoded = unpack_entropy_stream(data[offset:end], record_count=1)

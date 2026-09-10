@@ -44,6 +44,7 @@ class ProductionScenarioTests(unittest.TestCase):
         )
 
     def test_default_ceiling_is_nov3_not_legacy_e000(self) -> None:
+        """Verify default ceiling is nov3 not legacy e000."""
         self.assertEqual(NOV3_SAFE_END, 0xD7B5)
         self.assertEqual(LEGACY_ADAPTIVE_PRG_RAM_END, 0xE000)
         self.assertLess(NOV3_SAFE_END, LEGACY_ADAPTIVE_PRG_RAM_END)

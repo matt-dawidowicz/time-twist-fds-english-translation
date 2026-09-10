@@ -45,10 +45,12 @@ class FileDelta:
 
 
 def _sha256(data: bytes) -> str:
+    """Return the SHA-256 digest for the supplied data."""
     return hashlib.sha256(data).hexdigest().upper()
 
 
 def _indexed_files(image: FdsImage) -> dict[tuple[int, str, int], FdsFile]:
+    """Support the indexed files operation for this module."""
     return {
         (side.index, entry.name, entry.load_address): entry
         for side in image.sides
@@ -57,6 +59,7 @@ def _indexed_files(image: FdsImage) -> dict[tuple[int, str, int], FdsFile]:
 
 
 def _first_difference(left: bytes, right: bytes) -> int | None:
+    """Support the first difference operation for this module."""
     common = min(len(left), len(right))
     mismatch = next((i for i in range(common) if left[i] != right[i]), None)
     if mismatch is not None:
