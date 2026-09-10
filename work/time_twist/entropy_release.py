@@ -143,6 +143,14 @@ def _build_variant_layout(
     return layout, menu_bytes
 
 
+ENTROPY_DICTIONARY_ENTRY_CAPS: dict[str, int] = {
+    # TT2 reaches the same NOV3-safe boundary with 96 entries. Extending its
+    # grammar search to 128 adds substantial optimizer time without improving
+    # the selected loaded end.
+    "TT2": 96,
+}
+
+
 def _select_safe_variant(
     source: bytes,
     bank,
@@ -154,7 +162,7 @@ def _select_safe_variant(
     base = optimize_entropy_dictionary(
         literal_groups,
         literal_menu,
-        maximum_entries=128,
+        maximum_entries=ENTROPY_DICTIONARY_ENTRY_CAPS.get(bank_name, 128),
         maximum_grammar_tokens=12,
         maximum_nesting_depth=4,
         trial_candidates=8,

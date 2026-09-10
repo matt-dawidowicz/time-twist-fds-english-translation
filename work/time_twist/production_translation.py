@@ -24,6 +24,11 @@ TEXT_BUFFER_BYTES = TEXT_ROW_BYTES * TEXT_BUFFER_ROWS
 LINE_ADVANCE_CONTROL = 0
 SCROLL_CONTROL = 4
 INSERTABLE_LAYOUT_CONTROLS = frozenset({LINE_ADVANCE_CONTROL, SCROLL_CONTROL})
+OVERWRITE_REENTRY_LIMIT = {
+    1: TEXT_ROW_BYTES,
+    2: TEXT_ROW_BYTES * 2,
+    6: TEXT_ROW_BYTES * 3,
+}
 CONTROL_REENTRY_CURSOR = {
     1: TEXT_ROW_BYTES,
     2: TEXT_ROW_BYTES * 2,
@@ -196,7 +201,7 @@ def _row_end_for_cursor(cursor: int) -> int:
 
 
 def validate_renderer_buffer_layout(text: str) -> None:
-    """Reject implicit row crossing and writes beyond NOV2's four-row buffer."""
+    """Reject row crossing, buffer overflow, and control re-entry overwrite."""
     segments, controls = _template_parts(text)
     cursor = 0
     for index, segment in enumerate(segments):
@@ -215,7 +220,14 @@ def validate_renderer_buffer_layout(text: str) -> None:
             )
         cursor = end_cursor
         if index < len(controls):
-            cursor = _cursor_after_control(cursor, controls[index])
+            control = controls[index]
+            overwrite_limit = OVERWRITE_REENTRY_LIMIT.get(control)
+            if overwrite_limit is not None and cursor > overwrite_limit:
+                raise ProductionTranslationError(
+                    f"renderer control {control} re-enters at X=${overwrite_limit:02X} "
+                    f"and would overwrite staged prose through X=${cursor:02X}"
+                )
+            cursor = _cursor_after_control(cursor, control)
 
 
 def validate_production_control_sequence(source: str, production: str) -> None:
@@ -250,12 +262,15 @@ def validate_production_control_sequence(source: str, production: str) -> None:
         )
 
 
-def _layout_chunk_at_cursor(text: str, cursor: int) -> tuple[str, int, int]:
+def _layout_chunk_at_cursor(
+    text: str, cursor: int
+) -> tuple[str, int, int, int]:
     """Lay out prose with explicit native row advances and row-four scrolling."""
     if not text:
-        return "", cursor, 0
+        return "", cursor, 0, 0
 
     output: list[str] = []
+    inserted_controls = 0
     inserted_scrolls = 0
     rows = _wrapped_rows(text)
     for row_index, row in enumerate(rows):
@@ -267,9 +282,11 @@ def _layout_chunk_at_cursor(text: str, cursor: int) -> tuple[str, int, int]:
             # line/scroll rule rather than crossing the boundary implicitly.
             if cursor < TEXT_ROW_BYTES * (TEXT_BUFFER_ROWS - 1):
                 output.append(f"{{CTRL:{LINE_ADVANCE_CONTROL}}}")
+                inserted_controls += 1
                 cursor = _cursor_after_control(cursor, LINE_ADVANCE_CONTROL)
             else:
                 output.append(f"{{CTRL:{SCROLL_CONTROL}}}")
+                inserted_controls += 1
                 inserted_scrolls += 1
                 cursor = CONTROL_REENTRY_CURSOR[SCROLL_CONTROL]
             row_end = _row_end_for_cursor(cursor)
@@ -286,13 +303,15 @@ def _layout_chunk_at_cursor(text: str, cursor: int) -> tuple[str, int, int]:
 
         if cursor < TEXT_ROW_BYTES * (TEXT_BUFFER_ROWS - 1):
             output.append(f"{{CTRL:{LINE_ADVANCE_CONTROL}}}")
+            inserted_controls += 1
             cursor = _cursor_after_control(cursor, LINE_ADVANCE_CONTROL)
         else:
             output.append(f"{{CTRL:{SCROLL_CONTROL}}}")
+            inserted_controls += 1
             inserted_scrolls += 1
             cursor = CONTROL_REENTRY_CURSOR[SCROLL_CONTROL]
 
-    return "".join(output), cursor, inserted_scrolls
+    return "".join(output), cursor, inserted_controls, inserted_scrolls
 
 
 def _split_visible_text(
@@ -303,10 +322,11 @@ def _split_visible_text(
     """Distribute prose across source controls without overrunning the renderer.
 
     Empty source slots remain empty because adjacent controls can carry scene
-    semantics. Dynamic programming moves only word boundaries, minimizes added
-    control-4 scrolls first, then stays close to the source segment proportions
-    and prefers punctuation boundaries. Every candidate is simulated against
-    NOV2's four-row staging-buffer cursor before it can be selected.
+    semantics. Dynamic programming moves only word boundaries and minimizes all
+    inserted layout controls before editorial-distance scoring. Controls 1, 2,
+    and 6 have strict staging barriers because their native continuation paths
+    restart decoding at rows 2, 3, and 4 without scrolling; candidates that
+    pre-stage prose in those re-entry rows are rejected.
     """
     active = [
         index for index, segment in enumerate(template_segments) if segment
@@ -334,19 +354,20 @@ def _split_visible_text(
             prefix_chars[-1] + len(word) + (1 if word_index else 0)
         )
 
-    # (next word, decoder cursor) -> (inserted scrolls, editorial score, chunks)
-    states: dict[tuple[int, int], tuple[int, int, tuple[str, ...]]] = {
-        (0, 0): (0, 0, ())
+    # (next word, decoder cursor) -> (layout controls, scrolls, score, chunks)
+    states: dict[tuple[int, int], tuple[int, int, int, tuple[str, ...]]] = {
+        (0, 0): (0, 0, 0, ())
     }
     for segment_index, template_segment in enumerate(template_segments):
         remaining_active = sum(
             1 for segment in template_segments[segment_index + 1 :] if segment
         )
         next_states: dict[
-            tuple[int, int], tuple[int, int, tuple[str, ...]]
+            tuple[int, int], tuple[int, int, int, tuple[str, ...]]
         ] = {}
         for (start_word, cursor), (
-            inserted,
+            inserted_controls,
+            inserted_scrolls,
             score,
             chunks,
         ) in states.items():
@@ -364,7 +385,7 @@ def _split_visible_text(
                     else ""
                 )
                 try:
-                    rendered, end_cursor, added_scrolls = (
+                    rendered, end_cursor, added_controls, added_scrolls = (
                         _layout_chunk_at_cursor(
                             chunk,
                             cursor,
@@ -374,9 +395,20 @@ def _split_visible_text(
                     continue
 
                 if segment_index < len(controls):
+                    source_control = controls[segment_index]
+                    overwrite_limit = OVERWRITE_REENTRY_LIMIT.get(
+                        source_control
+                    )
+                    if (
+                        overwrite_limit is not None
+                        and end_cursor > overwrite_limit
+                    ):
+                        # Controls 1/2/6 restart at rows 2/3/4 without scrolling.
+                        # Reject prose that would be erased by that continuation.
+                        continue
                     next_cursor = _cursor_after_control(
                         end_cursor,
-                        controls[segment_index],
+                        source_control,
                     )
                 else:
                     next_cursor = end_cursor
@@ -403,7 +435,8 @@ def _split_visible_text(
 
                 key = (end_word, next_cursor)
                 trial = (
-                    inserted + added_scrolls,
+                    inserted_controls + added_controls,
+                    inserted_scrolls + added_scrolls,
                     trial_score,
                     (*chunks, rendered),
                 )
@@ -426,7 +459,7 @@ def _split_visible_text(
         raise ProductionTranslationError(
             "cannot place all reviewed English inside the native text buffer"
         )
-    return list(min(complete)[2])
+    return list(min(complete)[3])
 
 
 def _layout_fixed_segments(
@@ -436,10 +469,19 @@ def _layout_fixed_segments(
     cursor = 0
     laid_out: list[str] = []
     for index, segment in enumerate(segments):
-        rendered, cursor, _inserted = _layout_chunk_at_cursor(segment, cursor)
+        rendered, cursor, _inserted_controls, _inserted_scrolls = (
+            _layout_chunk_at_cursor(segment, cursor)
+        )
         laid_out.append(rendered)
         if index < len(controls):
-            cursor = _cursor_after_control(cursor, controls[index])
+            source_control = controls[index]
+            overwrite_limit = OVERWRITE_REENTRY_LIMIT.get(source_control)
+            if overwrite_limit is not None and cursor > overwrite_limit:
+                raise ProductionTranslationError(
+                    f"source control {source_control} would overwrite staged prose "
+                    f"at X=${cursor:02X}; must end by X=${overwrite_limit:02X}"
+                )
+            cursor = _cursor_after_control(cursor, source_control)
     return laid_out
 
 
