@@ -1,15 +1,15 @@
-"""Production scenario layout with fixed-tail preservation and high-RAM spill.
+"""Production scenario layout with fixed-tail preservation and bounded spill.
 
 The canonical release keeps every scenario group and its dictionary contiguous
 inside the source text reservation. The unrestricted localization is larger.
-Production instead keeps fixed code/data at the original CPU addresses, uses
-the old reservation for the most useful complete groups, appends remaining
-groups and the dictionary after the source overlay, and rewrites only the
-existing group/dictionary pointers.
+This helper can keep fixed code/data at the original CPU addresses, use the old
+reservation for the most useful complete groups, append remaining groups and
+the dictionary, and rewrite only the existing group/dictionary pointers.
 
-Spilled data must remain below $E000, the exclusive end of FDS program RAM for
-these $A200 overlays. NOV2's adaptive decoder correspondingly raises its old
-$D400 packed-text scan guard to $E000.
+The default spill ceiling is $D7B5, the exact load address of resident NOV3.
+Older Adaptive255 experiments intentionally scanned as high as $E000; that
+ceiling remains named only as a legacy diagnostic constant and is never the
+default for new layouts.
 """
 
 from __future__ import annotations
@@ -41,7 +41,8 @@ from .ui import (
     fixed_record_table_page_pointer_bytes,
 )
 
-FDS_PRG_RAM_END = 0xE000
+NOV3_SAFE_END = 0xD7B5
+LEGACY_ADAPTIVE_PRG_RAM_END = 0xE000
 
 
 class ProductionScenarioError(ValueError):
@@ -280,9 +281,9 @@ def build_spill_scenario_bank(
     *,
     base_data: bytes | None = None,
     old_region_start: int | None = None,
-    prg_ram_end: int = FDS_PRG_RAM_END,
+    prg_ram_end: int = NOV3_SAFE_END,
 ) -> ProductionScenarioLayout:
-    """Place complete compressed groups in old text RAM and appended high RAM."""
+    """Place complete compressed groups below an explicit safe RAM ceiling."""
     counts = _source_record_counts(bank)
     if len(groups) != len(counts):
         raise ProductionScenarioError(
@@ -352,7 +353,7 @@ def build_spill_scenario_bank(
     loaded_end = bank.load_address + high_cursor
     if loaded_end > prg_ram_end:
         raise ProductionScenarioError(
-            f"production text reaches ${loaded_end:04X}; PRG RAM ends before "
+            f"production text reaches ${loaded_end:04X}; PRG RAM safety ceiling is "
             f"${prg_ram_end:04X}"
         )
 
