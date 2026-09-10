@@ -371,6 +371,7 @@ class HashGuardedPatch:
     label: str
 
     def __post_init__(self) -> None:
+        """Validate patch bounds, size neutrality, and digest shape."""
         if self.cpu_address < NOV2_LOAD_ADDRESS:
             raise EntropyRuntimeError(f"{self.label}: address precedes NOV2")
         if self.size != len(self.replacement):
@@ -382,9 +383,11 @@ class HashGuardedPatch:
 
     @property
     def file_offset(self) -> int:
+        """Return the NOV2-relative byte offset of the patch."""
         return self.cpu_address - NOV2_LOAD_ADDRESS
 
     def apply(self, data: bytearray) -> None:
+        """Apply the guarded patch idempotently to a mutable NOV2 image."""
         end = self.file_offset + self.size
         if end > len(data):
             raise EntropyRuntimeError(f"{self.label}: NOV2 is too short")

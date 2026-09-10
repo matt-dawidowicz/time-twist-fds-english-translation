@@ -37,6 +37,7 @@ class RuntimePatch:
     label: str
 
     def __post_init__(self) -> None:
+        """Validate the patch offset and size neutrality."""
         if self.file_offset < 0:
             raise ProductionRuntimeError(f"{self.label}: negative file offset")
         if len(self.expected) != len(self.replacement):

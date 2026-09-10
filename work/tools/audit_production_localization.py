@@ -74,6 +74,7 @@ def _priority(row: dict[str, object]) -> int:
 
 
 def rows(root: Path) -> list[dict[str, object]]:
+    """Return prioritized localization audit rows from all workbook banks."""
     output: list[dict[str, object]] = []
     for bank in BANK_ORDER:
         path = root / "work" / "translation_workbook_banks" / f"{bank}.json"
@@ -121,6 +122,7 @@ def rows(root: Path) -> list[dict[str, object]]:
 
 
 def main() -> int:
+    """Write the prioritized localization audit CSV."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--output-csv", type=Path, required=True)

@@ -101,6 +101,7 @@ def compare_fds(old_path: Path, new_path: Path) -> list[FileDelta]:
 
 
 def command_fds(args: argparse.Namespace) -> int:
+    """Compare two FDS images and print changed file payloads."""
     old_raw = args.old.read_bytes()
     new_raw = args.new.read_bytes()
     print(f"old SHA-256 {_sha256(old_raw)}")
@@ -194,6 +195,7 @@ def command_build(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    """Build the runtime-debug command-line parser."""
     parser = argparse.ArgumentParser(
         prog="time-twist-runtime",
         description="Fast 2026-08-29 vs current entropy runtime-debug operations.",
@@ -240,6 +242,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: Iterable[str] | None = None) -> int:
+    """Run the runtime-debug command-line interface."""
     parser = build_parser()
     args = parser.parse_args(list(argv) if argv is not None else None)
     return int(args.function(args))

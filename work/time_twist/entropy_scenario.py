@@ -61,6 +61,7 @@ class EntropyScenarioLayout:
 
     @property
     def loaded_end(self) -> int:
+        """Return the exclusive loaded CPU address of the patched bank."""
         return self.load_address + len(self.data)
 
 
