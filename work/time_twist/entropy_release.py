@@ -28,6 +28,7 @@ from .entropy_fixed_ui import (
     entropy_fixed_text_coverage,
     patched_nov4_entropy_text,
     patched_tt1a_entropy_ui,
+    tt1a_renderer_entropy_payload,
 )
 from .entropy_runtime import NOV3_LOAD_ADDRESS, patch_entropy_nov2
 from .entropy_scenario import (
@@ -326,17 +327,14 @@ def build_entropy_scenario_candidate(
         literal_menu,
     )
 
-    # TT1A is the one scenario bank whose selector table is outside the normal
-    # FIXED_RECORD_TABLE_SPECS relocation model. Its 19 native callers enter at
-    # fixed byte addresses, so preserve those slots as 19 independent one-record
-    # entropy streams rather than collapsing them into one sequential stream.
+    # TT1A is the one scenario bank whose selector table has two native access
+    # contracts. Direct entry points retain address-stable one-record entropy
+    # mirrors, while the generic NOV2 renderer scans a separate contiguous copy
+    # through $A214. The renderer copy is appended after the scenario layout.
     if bank_name == "TT1A":
         patched = patched_tt1a_entropy_ui(layout.data)
-        if len(patched) != len(layout.data):
-            raise ProductionBuildError(
-                "TT1A entropy UI patch changed file size"
-            )
         layout = replace(layout, data=patched)
+        menu_bytes = len(tt1a_renderer_entropy_payload())
         validate_entropy_scenario_bank(
             bank,
             literal_groups,

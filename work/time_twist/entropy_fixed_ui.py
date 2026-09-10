@@ -24,6 +24,7 @@ from .entropy_compression import (
     expand_entropy_dictionary,
     expand_entropy_record,
 )
+from .scenario import GROUP_ZERO_POINTER_OFFSET
 from .textcodec import PackedSymbol, SymbolKind
 from .ui_fixed_tables import (
     TT1A_BLOOD_TYPE_PATCHES,
@@ -47,13 +48,20 @@ TT1A_TABLE_CAPACITY = TT1A_TABLE_END - TT1A_TABLE_START
 TT1A_TABLE_SOURCE_SHA256 = (
     "A32AF053FB86837B730491965F213FFADE180A1C57F468EB83DFD2A02491E9A3"
 )
+TT1A_RENDERER_POINTER_OFFSET = 0x14
+TT1A_SOURCE_RENDERER_ADDRESS = 0xA45B
 TT1A_TABLE_POINTERS = {
     0x0C: 0xA45B,
     0x10: 0xA4AB,
     0x12: 0xA4C2,
-    0x14: 0xA45B,
+    TT1A_RENDERER_POINTER_OFFSET: TT1A_SOURCE_RENDERER_ADDRESS,
     0x1A: 0xA4AB,
     0x26: 0xA4C2,
+}
+TT1A_STATIC_POINTERS = {
+    offset: address
+    for offset, address in TT1A_TABLE_POINTERS.items()
+    if offset not in (TT1A_RENDERER_POINTER_OFFSET, GROUP_ZERO_POINTER_OFFSET)
 }
 TT1A_CHOICE_PATCHES = (
     *TT1A_BLOOD_TYPE_PATCHES,
@@ -216,6 +224,13 @@ def tt1a_entropy_payloads() -> tuple[bytes, ...]:
     )
 
 
+def tt1a_renderer_entropy_payload() -> bytes:
+    """Return the sequential entropy stream consumed by the menu renderer."""
+    return pack_entropy_stream(
+        tuple(encode_english(text) for text in TT1A_CHOICE_TEXT)
+    )
+
+
 def tt1a_entropy_payload() -> bytes:
     """Return the complete 80-byte TT1A region with native entry addresses kept."""
     payloads = tt1a_entropy_payloads()
@@ -274,7 +289,7 @@ def _audit_nov4(data: bytes) -> None:
 
 
 def _audit_tt1a(data: bytes) -> None:
-    """Support the audit tt1a operation for this module."""
+    """Audit both direct-address selector mirrors and sequential renderer data."""
     for index, (offset, source, text) in enumerate(TT1A_CHOICE_PATCHES):
         end = offset + len(source)
         decoded = unpack_entropy_stream(data[offset:end], record_count=1)
@@ -285,6 +300,28 @@ def _audit_tt1a(data: bytes) -> None:
         if _semantic(decoded[0]) != _semantic(encode_english(text)):
             raise EntropyFixedTextError(
                 f"TT1A entropy choice slot {index} failed semantic audit"
+            )
+
+    renderer_address = _word(data, TT1A_RENDERER_POINTER_OFFSET)
+    renderer_offset = renderer_address - TT1A_LOAD_ADDRESS
+    renderer = tt1a_renderer_entropy_payload()
+    renderer_end = renderer_offset + len(renderer)
+    if renderer_offset < TT1A_TABLE_END or renderer_end > len(data):
+        raise EntropyFixedTextError(
+            f"TT1A renderer stream at ${renderer_address:04X} is outside the bank"
+        )
+    if data[renderer_offset:renderer_end] != renderer:
+        raise EntropyFixedTextError("TT1A sequential renderer stream changed")
+    decoded = unpack_entropy_stream(
+        data[renderer_offset:renderer_end],
+        record_count=len(TT1A_CHOICE_TEXT),
+    )
+    for index, (record, text) in enumerate(
+        zip(decoded, TT1A_CHOICE_TEXT, strict=True)
+    ):
+        if _semantic(record) != _semantic(encode_english(text)):
+            raise EntropyFixedTextError(
+                f"TT1A renderer choice {index} failed semantic audit"
             )
 
 
@@ -363,22 +400,55 @@ def patched_nov4_entropy_text(data: bytes) -> bytes:
 
 
 def patched_tt1a_entropy_ui(data: bytes) -> bytes:
-    """Replace TT1A native slots with address-stable one-record entropy streams."""
-    _assert_pointers(data, TT1A_TABLE_POINTERS, "TT1A")
+    """Install TT1A direct mirrors plus a sequential entropy renderer stream.
+
+    TT1A has two incompatible native access patterns: some logic can address
+    individual selector slots, while the generic NOV2 menu renderer begins at
+    header word ``$A214`` and scans forward across several records. Entropy
+    records are bit-contiguous within that renderer stream, so the padded
+    direct-address mirrors cannot also serve as its sequential source. Keep the
+    19 fixed-address mirrors and append one contiguous renderer copy, then
+    repoint only ``$A214`` to that copy. Both views remain entropy encoded.
+    """
+    _assert_pointers(data, TT1A_STATIC_POINTERS, "TT1A")
     replacement = tt1a_entropy_payload()
+    renderer = tt1a_renderer_entropy_payload()
     current = data[TT1A_TABLE_START:TT1A_TABLE_END]
-    if current == replacement:
+    renderer_address = _word(data, TT1A_RENDERER_POINTER_OFFSET)
+
+    if (
+        current == replacement
+        and renderer_address != TT1A_SOURCE_RENDERER_ADDRESS
+    ):
         _audit_tt1a(data)
         return data
-    if _sha256(current) != TT1A_TABLE_SOURCE_SHA256:
+
+    if current != replacement and _sha256(current) != TT1A_TABLE_SOURCE_SHA256:
         raise EntropyFixedTextError(
-            "TT1A fixed choice table does not match the verified Japanese source; "
-            "the native TT1A UI patch must not run on the entropy build path"
+            "TT1A fixed choice table does not match the verified Japanese source "
+            "or the deterministic direct-address entropy replacement"
         )
+    if renderer_address != TT1A_SOURCE_RENDERER_ADDRESS:
+        raise EntropyFixedTextError(
+            "TT1A renderer pointer changed before the sequential entropy stream "
+            "was installed"
+        )
+
+    renderer_offset = len(data)
+    new_renderer_address = TT1A_LOAD_ADDRESS + renderer_offset
+    if new_renderer_address + len(renderer) > 0x10000:
+        raise EntropyFixedTextError(
+            "TT1A renderer stream exceeds 16-bit address space"
+        )
+
     result = bytearray(data)
     result[TT1A_TABLE_START:TT1A_TABLE_END] = replacement
+    result[TT1A_RENDERER_POINTER_OFFSET : TT1A_RENDERER_POINTER_OFFSET + 2] = (
+        new_renderer_address.to_bytes(2, "little")
+    )
+    result.extend(renderer)
     patched = bytes(result)
-    _assert_pointers(patched, TT1A_TABLE_POINTERS, "TT1A")
+    _assert_pointers(patched, TT1A_STATIC_POINTERS, "TT1A")
     _audit_tt1a(patched)
     return patched
 
@@ -387,6 +457,7 @@ def entropy_fixed_text_coverage() -> dict[str, dict[str, int]]:
     """Expose the fixed-stream coverage invariant in release manifests/tests."""
     menu, group, dictionary = nov4_entropy_payloads()
     tt1a_payloads = tt1a_entropy_payloads()
+    tt1a_renderer = tt1a_renderer_entropy_payload()
     return {
         "NOV4_menu": {
             "records": len(NOV4_MENU_TEXT),
@@ -411,5 +482,11 @@ def entropy_fixed_text_coverage() -> dict[str, dict[str, int]]:
             "streams": len(tt1a_payloads),
             "packed_bytes": sum(len(payload) for payload in tt1a_payloads),
             "capacity_bytes": TT1A_TABLE_CAPACITY,
+        },
+        "TT1A_renderer": {
+            "records": len(TT1A_CHOICE_TEXT),
+            "streams": 1,
+            "packed_bytes": len(tt1a_renderer),
+            "capacity_bytes": len(tt1a_renderer),
         },
     }

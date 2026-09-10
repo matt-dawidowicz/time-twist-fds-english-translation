@@ -26,6 +26,9 @@ from time_twist.entropy_fixed_ui import (
     TT1A_CHOICE_PATCHES,
     TT1A_ENTRY_ADDRESSES,
     TT1A_LOAD_ADDRESS,
+    TT1A_RENDERER_POINTER_OFFSET,
+    TT1A_SOURCE_RENDERER_ADDRESS,
+    TT1A_STATIC_POINTERS,
     TT1A_TABLE_CAPACITY,
     TT1A_TABLE_END,
     TT1A_TABLE_POINTERS,
@@ -37,6 +40,7 @@ from time_twist.entropy_fixed_ui import (
     patched_tt1a_entropy_ui,
     tt1a_entropy_payload,
     tt1a_entropy_payloads,
+    tt1a_renderer_entropy_payload,
 )
 
 
@@ -89,6 +93,12 @@ class EntropyFixedUiTests(unittest.TestCase):
             "25D9B9DFF381D2E16D17F336FA5EBDF405D8215BF979CF5558EA388553492F25",
         )
         self.assertEqual(sum(map(len, tt1a_entropy_payloads())), 67)
+        renderer = tt1a_renderer_entropy_payload()
+        self.assertEqual(len(renderer), 60)
+        self.assertEqual(
+            _sha256(renderer),
+            "CA96AE920B0E22B467469180A49D6E342779695B3B0B719CF89C842112E50308",
+        )
 
         self.assertLessEqual(len(menu), NOV4_MENU_END - NOV4_MENU_START)
         self.assertLessEqual(len(group), NOV4_GROUP_END - NOV4_GROUP_START)
@@ -192,6 +202,34 @@ class EntropyFixedUiTests(unittest.TestCase):
                 TT1A_LOAD_ADDRESS + offset, TT1A_ENTRY_ADDRESSES[index]
             )
 
+    def test_tt1a_renderer_stream_walks_all_choices_sequentially(self) -> None:
+        """Verify the renderer copy supports sequential blood/month choice scans."""
+        renderer = tt1a_renderer_entropy_payload()
+        decoded = unpack_entropy_stream(
+            renderer, record_count=len(TT1A_CHOICE_PATCHES)
+        )
+        self.assertEqual(len(decoded), len(TT1A_CHOICE_PATCHES))
+        for record, (_offset, _source, text) in zip(
+            decoded, TT1A_CHOICE_PATCHES, strict=True
+        ):
+            self.assertEqual(
+                _semantic(record), _semantic(encode_english(text))
+            )
+
+    def test_tt1a_patcher_accepts_relocated_scenario_group_zero(self) -> None:
+        """Verify selector installation leaves a relocated group-zero pointer intact."""
+        source = bytearray(0x1000)
+        for offset, address in TT1A_TABLE_POINTERS.items():
+            _write_word(source, offset, address)
+        relocated_group_zero = 0xAB70
+        _write_word(source, 0x26, relocated_group_zero)
+        source[TT1A_TABLE_START:TT1A_TABLE_END] = tt1a_entropy_payload()
+
+        patched = patched_tt1a_entropy_ui(bytes(source))
+        self.assertEqual(
+            int.from_bytes(patched[0x26:0x28], "little"), relocated_group_zero
+        )
+
     def test_idempotent_nov4_patcher_preserves_pointer_contract(self) -> None:
         """Verify idempotent nov4 patcher preserves pointer contract."""
         menu, group, dictionary = nov4_entropy_payloads()
@@ -214,18 +252,34 @@ class EntropyFixedUiTests(unittest.TestCase):
                 int.from_bytes(patched[offset : offset + 2], "little"), address
             )
 
-    def test_idempotent_tt1a_patcher_preserves_pointer_contract(self) -> None:
-        """Verify idempotent tt1a patcher preserves pointer contract."""
+    def test_idempotent_tt1a_patcher_preserves_dual_pointer_contract(
+        self,
+    ) -> None:
+        """Verify TT1A keeps direct slots while repointing sequential rendering."""
         source = bytearray(0x1000)
         for offset, address in TT1A_TABLE_POINTERS.items():
             _write_word(source, offset, address)
         source[TT1A_TABLE_START:TT1A_TABLE_END] = tt1a_entropy_payload()
+
         patched = patched_tt1a_entropy_ui(bytes(source))
-        self.assertEqual(patched, bytes(source))
-        for offset, address in TT1A_TABLE_POINTERS.items():
+        self.assertEqual(len(patched), len(source) + 60)
+        self.assertEqual(patched_tt1a_entropy_ui(patched), patched)
+        for offset, address in TT1A_STATIC_POINTERS.items():
             self.assertEqual(
                 int.from_bytes(patched[offset : offset + 2], "little"), address
             )
+        renderer_address = int.from_bytes(
+            patched[
+                TT1A_RENDERER_POINTER_OFFSET : TT1A_RENDERER_POINTER_OFFSET + 2
+            ],
+            "little",
+        )
+        self.assertNotEqual(renderer_address, TT1A_SOURCE_RENDERER_ADDRESS)
+        self.assertEqual(renderer_address, TT1A_LOAD_ADDRESS + len(source))
+        renderer_offset = renderer_address - TT1A_LOAD_ADDRESS
+        self.assertEqual(
+            patched[renderer_offset:], tt1a_renderer_entropy_payload()
+        )
 
     def test_partial_nov4_conversion_is_rejected(self) -> None:
         """Verify partial nov4 conversion is rejected."""
@@ -274,6 +328,12 @@ class EntropyFixedUiTests(unittest.TestCase):
                     "streams": 19,
                     "packed_bytes": 67,
                     "capacity_bytes": 80,
+                },
+                "TT1A_renderer": {
+                    "records": 19,
+                    "streams": 1,
+                    "packed_bytes": 60,
+                    "capacity_bytes": 60,
                 },
             },
         )
