@@ -1,10 +1,10 @@
 """Build the full production translation with the frozen entropy codec.
 
 This path is intentionally separate from the certified release builder and
-from the discarded Adaptive255 spill candidate.  It materializes the complete
+from the discarded Adaptive255 spill candidate. It materializes the complete
 production English script, builds a deterministic nested dictionary optimized
 for the frozen entropy cost model, chooses the best NOV3-safe layout, and then
-installs the matching NOV2 entropy runtime.
+installs the matching NOV2 entropy runtime directly.
 """
 
 from __future__ import annotations
@@ -39,7 +39,6 @@ from .production_release import (
     _semantic_record,
     _sha256,
 )
-from .production_runtime import patch_nov2
 from .project import source_dictionary_reference_floor
 from .release_metadata import SCENARIO_LOCATIONS, SCENARIO_UI_PATCHERS
 from .scenario import parse_scenario_bank
@@ -405,7 +404,6 @@ def build_entropy_images(
         }
 
     nov2 = patched_nov2_ui(zenpen.sides[0].find_file("NOV2").data)
-    nov2 = patch_nov2(nov2, adaptive_dictionary=True)
     nov2 = patch_entropy_nov2(nov2)
     zenpen.sides[0].find_file("NOV2").data = nov2
 
