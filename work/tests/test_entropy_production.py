@@ -160,17 +160,29 @@ class EntropyProductionTests(unittest.TestCase):
         )
 
     def test_generated_6502_blocks_fit_and_do_not_overlap(self) -> None:
-        self.assertEqual(SCANNER_CODE_BYTES, 132)
-        self.assertEqual(FRONTEND_CODE_BYTES, 66)
+        self.assertEqual(SCANNER_CODE_BYTES, 134)
+        self.assertEqual(FRONTEND_CODE_BYTES, 64)
         self.assertEqual(CATEGORY_CODE_BYTES, 59)
-        self.assertEqual(ENTROPY_POINTER_INIT_CPU_ADDRESS, 0x8122)
-        self.assertEqual(ENTROPY_MENU_INIT_CPU_ADDRESS, 0x812C)
+        self.assertEqual(ENTROPY_POINTER_INIT_CPU_ADDRESS, 0x8124)
+        self.assertEqual(ENTROPY_MENU_INIT_CPU_ADDRESS, 0x812E)
         occupied: set[int] = set()
         for patch in ENTROPY_RUNTIME_PATCHES:
             touched = set(range(patch.cpu_address, patch.cpu_address + patch.size))
             self.assertTrue(occupied.isdisjoint(touched), patch.label)
             occupied.update(touched)
         self.assertLess(max(occupied), NOV3_LOAD_ADDRESS)
+
+    def test_entropy_runtime_does_not_borrow_native_zero_page_74(self) -> None:
+        patches = {patch.label: patch for patch in ENTROPY_RUNTIME_PATCHES}
+        scanner = patches["bit-contiguous entropy scanner"].replacement[
+            :SCANNER_CODE_BYTES
+        ]
+        frontend = patches["entropy semantic dispatch frontend"].replacement[
+            :FRONTEND_CODE_BYTES
+        ]
+        for opcode in (bytes.fromhex("85 74"), bytes.fromhex("A5 74"), bytes.fromhex("A4 74")):
+            self.assertNotIn(opcode, scanner)
+            self.assertNotIn(opcode, frontend)
 
 
 if __name__ == "__main__":
