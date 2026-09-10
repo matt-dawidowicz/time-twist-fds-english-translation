@@ -82,7 +82,9 @@ def compare_fds(old_path: Path, new_path: Path) -> list[FileDelta]:
         if left == right:
             continue
         common = min(len(left), len(right))
-        changed = sum(a != b for a, b in zip(left[:common], right[:common]))
+        changed = sum(
+            a != b for a, b in zip(left[:common], right[:common], strict=True)
+        )
         changed += abs(len(left) - len(right))
         deltas.append(
             FileDelta(

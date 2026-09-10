@@ -243,14 +243,14 @@ def _audit_menu(
     page_index_offset = page_index_address - 0xA200
     pointer_bytes = fixed_record_table_page_pointer_bytes(bank_name)
     page_starts = [spec.start]
-    for offset in range(
-        page_index_offset,
-        page_index_offset + pointer_bytes,
-        2,
-    ):
-        page_starts.append(
-            int.from_bytes(data[offset : offset + 2], "little") - 0xA200
+    page_starts.extend(
+        int.from_bytes(data[offset : offset + 2], "little") - 0xA200
+        for offset in range(
+            page_index_offset,
+            page_index_offset + pointer_bytes,
+            2,
         )
+    )
     page_ends = (*page_starts[1:], page_index_offset)
     decoded: list[tuple[PackedSymbol, ...]] = []
     for page_index, (start, end) in enumerate(
@@ -322,11 +322,9 @@ def build_entropy_scenario_candidate(
     )
 
     # TT1A is the one scenario bank whose selector table is outside the normal
-    # FIXED_RECORD_TABLE_SPECS relocation model.  The native release patcher
-    # writes byte-aligned records and therefore cannot run after a global
-    # entropy decoder is installed.  Convert the complete 19-record table as
-    # one contiguous entropy stream instead, then prove the scenario payload
-    # itself was unaffected.
+    # FIXED_RECORD_TABLE_SPECS relocation model. Its 19 native callers enter at
+    # fixed byte addresses, so preserve those slots as 19 independent one-record
+    # entropy streams rather than collapsing them into one sequential stream.
     if bank_name == "TT1A":
         patched = patched_tt1a_entropy_ui(layout.data)
         if len(patched) != len(layout.data):

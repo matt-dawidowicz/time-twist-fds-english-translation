@@ -200,12 +200,14 @@ def _validate_dictionary(dictionary: ScenarioDictionary) -> None:
                 raise ValueError(
                     f"dictionary entry {entry_index} contains control data"
                 )
-            if symbol.kind is SymbolKind.DICTIONARY:
-                if not 1 <= symbol.value < entry_index:
-                    raise ValueError(
-                        f"dictionary entry {entry_index} references "
-                        f"non-earlier entry {symbol.value}"
-                    )
+            if (
+                symbol.kind is SymbolKind.DICTIONARY
+                and not 1 <= symbol.value < entry_index
+            ):
+                raise ValueError(
+                    f"dictionary entry {entry_index} references "
+                    f"non-earlier entry {symbol.value}"
+                )
 
 
 def _dictionary_expansions(

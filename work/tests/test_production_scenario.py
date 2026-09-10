@@ -74,7 +74,8 @@ class ProductionScenarioTests(unittest.TestCase):
         bank = self._bank(group_count=1)
         reference_one = PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0)
         reference_69 = PackedSymbol(SymbolKind.DICTIONARY, 69, 0, 0)
-        dictionary = tuple(encode_english("A") for _ in range(68)) + (
+        dictionary = (
+            *(encode_english("A") for _ in range(68)),
             (reference_one, *encode_english("B")),
         )
         groups = (((reference_69, reference_69),),)
