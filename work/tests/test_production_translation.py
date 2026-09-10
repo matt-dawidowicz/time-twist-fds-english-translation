@@ -1,0 +1,129 @@
+"""Regression tests for production prose layout in NOV2's text buffer."""
+
+from __future__ import annotations
+
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+from time_twist.production_translation import (
+    ProductionTranslationError,
+    layout_review_text,
+    materialize_production_maps,
+    validate_production_control_sequence,
+    validate_renderer_buffer_layout,
+)
+
+ROOT = Path(__file__).resolve().parents[2]
+BANK_NAMES = (
+    "TT1A",
+    "TT1B",
+    "TT2",
+    "T22",
+    "TT3A",
+    "TT3B",
+    "TT4",
+    "TT5",
+    "T25",
+    "TT6A",
+    "TT6B",
+    "TT6C",
+    "TT6D",
+)
+
+
+class ProductionTranslationLayoutTests(unittest.TestCase):
+    """Keep reviewed prose inside the native four-row dialogue staging buffer."""
+
+    def test_newscaster_retranslation_stays_inside_four_rows(self) -> None:
+        """Reflow the screenshot regression without adding an unnecessary scroll."""
+        template = (
+            "News: Dr. Simon, a{CTRL:0}reclusive genius in{CTRL:2}"
+            "physics, issued this{CTRL:0}comment on time travel{CTRL:4}"
+            "late last night."
+        )
+        reviewed = (
+            "Newscaster: Late last night, Dr. Simon—the physicist known as a "
+            "reclusive genius—made a remarkable statement about time travel."
+        )
+
+        output = layout_review_text("TT1A/g0/r1", reviewed, template)
+
+        self.assertEqual(
+            output,
+            "Newscaster: Late last   night, Dr.{CTRL:0}"
+            "Simon—the physicist     known as{CTRL:2}"
+            "a reclusive genius—made{CTRL:0}"
+            "a remarkable statement{CTRL:4}about time travel.",
+        )
+        validate_renderer_buffer_layout(output)
+        validate_production_control_sequence(template, output)
+
+    def test_long_prose_uses_only_native_scroll_continuations(self) -> None:
+        """Extend a long record with CTRL4 rather than truncating approved prose."""
+        template = "One short source line."
+        reviewed = " ".join(f"word{index}" for index in range(40))
+
+        output = layout_review_text("TEST/g0/r0", reviewed, template)
+
+        self.assertIn("{CTRL:4}", output)
+        validate_renderer_buffer_layout(output)
+        validate_production_control_sequence(template, output)
+        self.assertEqual(
+            output.replace("{CTRL:4}", "").split(),
+            reviewed.split(),
+        )
+
+    def test_non_scroll_inserted_control_is_rejected(self) -> None:
+        """Reject production layouts that invent semantic controls other than scroll."""
+        with self.assertRaisesRegex(
+            ProductionTranslationError,
+            "non-scroll control",
+        ):
+            validate_production_control_sequence(
+                "Alpha{CTRL:0}beta",
+                "Alpha{CTRL:1}beta{CTRL:0}gamma",
+            )
+
+    def test_known_pre_fix_newscaster_layout_overflows(self) -> None:
+        """Detect the exact cursor pattern that corrupted the user's screenshot."""
+        unsafe = (
+            "Newscaster: Late last   night, Dr.{CTRL:0}"
+            "Simon—the physicist     known{CTRL:2}"
+            "as a reclusive          genius—made{CTRL:0}"
+            "a remarkable statement  about{CTRL:4}time travel."
+        )
+        with self.assertRaisesRegex(ProductionTranslationError, "four-row buffer"):
+            validate_renderer_buffer_layout(unsafe)
+
+    def test_entire_reviewed_corpus_materializes_buffer_safe(self) -> None:
+        """Prove all 1,299 reviewed records preserve controls and stay in bounds."""
+        with tempfile.TemporaryDirectory(prefix="time_twist_prod_layout_") as directory:
+            output_directory = Path(directory)
+            counts = materialize_production_maps(
+                BANK_NAMES,
+                base_directory=ROOT / "work" / "translations",
+                override_directory=ROOT / "work" / "production_overrides",
+                review_directory=ROOT / "review" / "production_retranslation",
+                output_directory=output_directory,
+            )
+            self.assertEqual(sum(counts.values()), 1299)
+
+            for bank_name in BANK_NAMES:
+                baseline = json.loads(
+                    (ROOT / "work" / "translations" / f"{bank_name}.json").read_text(
+                        encoding="utf-8"
+                    )
+                )
+                production = json.loads(
+                    (output_directory / f"{bank_name}.json").read_text(encoding="utf-8")
+                )
+                self.assertEqual(set(production), set(baseline))
+                for record_id, text in production.items():
+                    validate_renderer_buffer_layout(text)
+                    validate_production_control_sequence(baseline[record_id], text)
+
+
+if __name__ == "__main__":
+    unittest.main()
