@@ -3,7 +3,8 @@
 This path is intentionally separate from the certified release builder and
 from the discarded Adaptive255 spill candidate. It materializes the complete
 production English script, builds a deterministic nested dictionary optimized
-for the frozen entropy cost model, chooses the best NOV3-safe layout, and then
+for the frozen entropy cost model, chooses the best NOV3-safe layout, converts
+every decoder-visible fixed stream to the same entropy grammar, and then
 installs the matching NOV2 entropy runtime directly.
 """
 
@@ -22,6 +23,11 @@ from .entropy_compression import (
     optimize_entropy_dictionary,
     usage_pruned_entropy_variants,
 )
+from .entropy_fixed_ui import (
+    entropy_fixed_text_coverage,
+    patched_nov4_entropy_text,
+    patched_tt1a_entropy_ui,
+)
 from .entropy_runtime import NOV3_LOAD_ADDRESS, patch_entropy_nov2
 from .entropy_scenario import (
     EntropyScenarioError,
@@ -30,6 +36,7 @@ from .entropy_scenario import (
     relocate_entropy_fixed_record_table,
     validate_entropy_scenario_bank,
 )
+from .entropy_title import patched_nov4_entropy_title
 from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
 from .production_release import (
@@ -40,11 +47,10 @@ from .production_release import (
     _sha256,
 )
 from .project import source_dictionary_reference_floor
-from .release_metadata import SCENARIO_LOCATIONS, SCENARIO_UI_PATCHERS
+from .release_metadata import SCENARIO_LOCATIONS
 from .scenario import parse_scenario_bank
 from .textcodec import PackedSymbol
 from .title import DEFAULT_SUBTITLE
-from .entropy_title import patched_nov4_entropy_title
 from .ui import (
     FIXED_RECORDS_PER_PAGE,
     FIXED_RECORD_PAGE_POINTER_OFFSET,
@@ -53,7 +59,6 @@ from .ui import (
     fixed_record_table_page_pointer_bytes,
     patched_kouhen_boot_guard,
     patched_nov2_ui,
-    patched_nov4_ui,
 )
 
 
@@ -174,11 +179,7 @@ def _select_safe_variant(
             )
         except (EntropyScenarioError, UiPatchError):
             continue
-        total_bytes = (
-            sum(layout.group_bytes)
-            + layout.dictionary_bytes
-            + menu_bytes
-        )
+        total_bytes = sum(layout.group_bytes) + layout.dictionary_bytes + menu_bytes
         key: tuple[object, ...] = (
             layout.loaded_end,
             layout.spill_bytes,
@@ -319,13 +320,16 @@ def build_entropy_scenario_candidate(
         literal_menu,
     )
 
-    patcher = SCENARIO_UI_PATCHERS.get(bank_name)
-    if patcher is not None:
-        patched = patcher(layout.data)
+    # TT1A is the one scenario bank whose selector table is outside the normal
+    # FIXED_RECORD_TABLE_SPECS relocation model.  The native release patcher
+    # writes byte-aligned records and therefore cannot run after a global
+    # entropy decoder is installed.  Convert the complete 19-record table as
+    # one contiguous entropy stream instead, then prove the scenario payload
+    # itself was unaffected.
+    if bank_name == "TT1A":
+        patched = patched_tt1a_entropy_ui(layout.data)
         if len(patched) != len(layout.data):
-            raise ProductionBuildError(
-                f"{bank_name} fixed UI patch changed file size"
-            )
+            raise ProductionBuildError("TT1A entropy UI patch changed file size")
         layout = replace(layout, data=patched)
         validate_entropy_scenario_bank(
             bank,
@@ -407,8 +411,14 @@ def build_entropy_images(
     nov2 = patch_entropy_nov2(nov2)
     zenpen.sides[0].find_file("NOV2").data = nov2
 
-    nov4 = patched_nov4_ui(zenpen.sides[0].find_file("NOV4").data)
+    # The font patch retains a strict whole-bank source whitelist, so keep it
+    # first.  Entropy conversion follows and owns every NOV4 packed-text stream
+    # consumed by NOV2.  Title expansion is last and validates only the title
+    # regions it owns.  The native patched_nov4_ui path is intentionally absent:
+    # inserting byte-aligned native records here caused the R5 blank START menu.
+    nov4 = zenpen.sides[0].find_file("NOV4").data
     nov4 = patched_nov4_font(nov4)
+    nov4 = patched_nov4_entropy_text(nov4)
     nov4 = patched_nov4_entropy_title(
         nov4,
         title_asset,
@@ -428,12 +438,14 @@ def build_entropy_images(
     }
     output["four_side"] = combine_images([zenpen, kouhen]).to_bytes()
     manifest: dict[str, object] = {
-        "schema": "Time Twist frozen entropy production candidate v1",
+        "schema": "Time Twist frozen entropy production candidate v2",
         "codec": "frozen-entropy-v1",
+        "decoder_format": "entropy-only",
         "record_framing": (
-            "bit-contiguous scenario/dictionary streams; "
-            "byte-aligned 32-record menu pages"
+            "bit-contiguous within every independently addressed stream; "
+            "menu pages begin on byte boundaries"
         ),
+        "fixed_decoder_surfaces": entropy_fixed_text_coverage(),
         "nov3_exclusive_boundary": f"0x{NOV3_LOAD_ADDRESS:04X}",
         "subtitle": subtitle,
         "scenario_records": sum(
