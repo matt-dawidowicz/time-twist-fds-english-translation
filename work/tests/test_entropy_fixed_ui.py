@@ -23,7 +23,10 @@ from time_twist.entropy_fixed_ui import (
     NOV4_MENU_TEXT,
     NOV4_POINTERS,
     NOV4_SOURCE_SIZE,
+    TT1A_CHOICE_PATCHES,
     TT1A_CHOICE_TEXT,
+    TT1A_ENTRY_ADDRESSES,
+    TT1A_LOAD_ADDRESS,
     TT1A_TABLE_CAPACITY,
     TT1A_TABLE_END,
     TT1A_TABLE_POINTERS,
@@ -34,6 +37,7 @@ from time_twist.entropy_fixed_ui import (
     patched_nov4_entropy_text,
     patched_tt1a_entropy_ui,
     tt1a_entropy_payload,
+    tt1a_entropy_payloads,
 )
 
 
@@ -73,11 +77,12 @@ class EntropyFixedUiTests(unittest.TestCase):
             _sha256(dictionary),
             "ABCF4B7F02519D1A90DCC3A5E5522C9249833199A52A99019364E23C3F31DAC2",
         )
-        self.assertEqual(len(tt1a), 60)
+        self.assertEqual(len(tt1a), 80)
         self.assertEqual(
             _sha256(tt1a),
-            "CA96AE920B0E22B467469180A49D6E342779695B3B0B719CF89C842112E50308",
+            "25D9B9DFF381D2E16D17F336FA5EBDF405D8215BF979CF5558EA388553492F25",
         )
+        self.assertEqual(sum(map(len, tt1a_entropy_payloads())), 67)
 
         self.assertLessEqual(len(menu), NOV4_MENU_END - NOV4_MENU_START)
         self.assertLessEqual(len(group), NOV4_GROUP_END - NOV4_GROUP_START)
@@ -107,8 +112,8 @@ class EntropyFixedUiTests(unittest.TestCase):
             "12F0F22ED0D44C1A4CF2BEC567E972F83C183AAA1A351C83CB64E096585E8B2D",
         )
         self.assertEqual(
-            _sha256(_pad(tt1a, TT1A_TABLE_CAPACITY)),
-            "3A58862A2F1F9DB4DE0BBE55112D2EB1DCAB882E69A430E07CBEB19B7A0F1EA8",
+            _sha256(tt1a),
+            "25D9B9DFF381D2E16D17F336FA5EBDF405D8215BF979CF5558EA388553492F25",
         )
 
     def test_nov4_streams_round_trip_to_english_semantics(self) -> None:
@@ -135,12 +140,39 @@ class EntropyFixedUiTests(unittest.TestCase):
         start = expand_entropy_record(decoded_menu[3], expansions)
         self.assertEqual(_semantic(start), _semantic(encode_english("Start")))
 
-    def test_tt1a_is_one_contiguous_19_record_stream(self) -> None:
-        payload = tt1a_entropy_payload()
-        decoded = unpack_entropy_stream(payload, record_count=len(TT1A_CHOICE_TEXT))
-        self.assertEqual(len(decoded), 19)
-        for record, text in zip(decoded, TT1A_CHOICE_TEXT, strict=True):
-            self.assertEqual(_semantic(record), _semantic(encode_english(text)))
+    def test_tt1a_slots_preserve_every_native_entry_address(self) -> None:
+        self.assertEqual(
+            TT1A_ENTRY_ADDRESSES,
+            (
+                0xA45B,
+                0xA45E,
+                0xA462,
+                0xA465,
+                0xA46A,
+                0xA46E,
+                0xA472,
+                0xA476,
+                0xA47A,
+                0xA47E,
+                0xA482,
+                0xA489,
+                0xA48D,
+                0xA491,
+                0xA495,
+                0xA49A,
+                0xA49F,
+                0xA4A4,
+                0xA4A8,
+            ),
+        )
+        for index, ((offset, source, text), payload) in enumerate(
+            zip(TT1A_CHOICE_PATCHES, tt1a_entropy_payloads(), strict=True)
+        ):
+            self.assertLessEqual(len(payload), len(source))
+            decoded = unpack_entropy_stream(payload, record_count=1)
+            self.assertEqual(len(decoded), 1)
+            self.assertEqual(_semantic(decoded[0]), _semantic(encode_english(text)))
+            self.assertEqual(TT1A_LOAD_ADDRESS + offset, TT1A_ENTRY_ADDRESSES[index])
 
     def test_idempotent_nov4_patcher_preserves_pointer_contract(self) -> None:
         menu, group, dictionary = nov4_entropy_payloads()
@@ -165,9 +197,7 @@ class EntropyFixedUiTests(unittest.TestCase):
         source = bytearray(0x1000)
         for offset, address in TT1A_TABLE_POINTERS.items():
             _write_word(source, offset, address)
-        source[TT1A_TABLE_START:TT1A_TABLE_END] = _pad(
-            tt1a_entropy_payload(), TT1A_TABLE_CAPACITY
-        )
+        source[TT1A_TABLE_START:TT1A_TABLE_END] = tt1a_entropy_payload()
         patched = patched_tt1a_entropy_ui(bytes(source))
         self.assertEqual(patched, bytes(source))
         for offset, address in TT1A_TABLE_POINTERS.items():
@@ -197,22 +227,26 @@ class EntropyFixedUiTests(unittest.TestCase):
             {
                 "NOV4_menu": {
                     "records": 26,
+                    "streams": 1,
                     "packed_bytes": 97,
                     "capacity_bytes": 134,
                 },
                 "NOV4_internal": {
                     "records": 7,
+                    "streams": 1,
                     "packed_bytes": 47,
                     "capacity_bytes": 60,
                 },
                 "NOV4_dictionary": {
                     "records": 4,
+                    "streams": 1,
                     "packed_bytes": 19,
                     "capacity_bytes": 28,
                 },
                 "TT1A_choices": {
                     "records": 19,
-                    "packed_bytes": 60,
+                    "streams": 19,
+                    "packed_bytes": 67,
                     "capacity_bytes": 80,
                 },
             },
