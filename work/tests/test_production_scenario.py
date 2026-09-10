@@ -1,4 +1,4 @@
-"""Regression tests for production scenario high-RAM spill placement."""
+"""Regression tests for bounded production scenario spill placement."""
 
 from __future__ import annotations
 
@@ -7,6 +7,8 @@ from pathlib import Path
 
 from time_twist.english import encode_english
 from time_twist.production_scenario import (
+    LEGACY_ADAPTIVE_PRG_RAM_END,
+    NOV3_SAFE_END,
     ProductionScenarioError,
     build_spill_scenario_bank,
 )
@@ -15,7 +17,7 @@ from time_twist.textcodec import PackedSymbol, SymbolKind
 
 
 class ProductionScenarioTests(unittest.TestCase):
-    """Keep spill placement pointer-driven and fixed-tail preserving."""
+    """Keep spill placement pointer-driven, fixed-tail preserving, and bounded."""
 
     @staticmethod
     def _bank(group_count: int = 3) -> ScenarioBank:
@@ -39,6 +41,11 @@ class ProductionScenarioTests(unittest.TestCase):
             records=records,
         )
 
+    def test_default_ceiling_is_nov3_not_legacy_e000(self) -> None:
+        self.assertEqual(NOV3_SAFE_END, 0xD7B5)
+        self.assertEqual(LEGACY_ADAPTIVE_PRG_RAM_END, 0xE000)
+        self.assertLess(NOV3_SAFE_END, LEGACY_ADAPTIVE_PRG_RAM_END)
+
     def test_whole_groups_spill_without_moving_fixed_tail(self) -> None:
         """Use old text RAM first and append only groups that do not fit."""
         bank = self._bank()
@@ -57,7 +64,7 @@ class ProductionScenarioTests(unittest.TestCase):
             bank.data[bank.dictionary_end_offset :],
         )
         self.assertGreater(len(layout.data), len(bank.data))
-        self.assertLessEqual(layout.loaded_end, 0xE000)
+        self.assertLessEqual(layout.loaded_end, NOV3_SAFE_END)
         self.assertEqual(layout.dictionary_address, layout.loaded_end)
 
     def test_high_nested_dictionary_reference_round_trips(self) -> None:
@@ -74,10 +81,10 @@ class ProductionScenarioTests(unittest.TestCase):
 
         self.assertEqual(layout.group_addresses[0], bank.load_address + 0x40)
         self.assertGreaterEqual(layout.dictionary_address, bank.load_address + len(bank.data))
-        self.assertLessEqual(layout.loaded_end, 0xE000)
+        self.assertLessEqual(layout.loaded_end, NOV3_SAFE_END)
 
     def test_spill_fails_before_crossing_prg_ram_end(self) -> None:
-        """Reject a candidate before appended text can overwrite non-PRG space."""
+        """Reject a candidate before appended text crosses its configured ceiling."""
         bank = self._bank()
         groups = (
             (encode_english("A" * 40),),
