@@ -1,13 +1,12 @@
 """NOV2 runtime patch for the frozen production entropy grammar.
 
-Entropy mode is installed *after* the proven production UI and Adaptive255
-runtime hardening.  Adaptive255 is only an intermediate source state: this
-module replaces its scanner and token-prefix decoder with the fixed sixteen-
-category entropy ABI while retaining the proven semantic handlers and nested
-dictionary stack discipline.
+Entropy mode installs directly on top of the proven NOV2 UI/runtime fixes. It
+retains only the two native dictionary-depth changes required by the entropy
+semantic handlers; the discarded Adaptive255 scanner, escape decoder, and
+high-RAM scan-limit staging are not installed first.
 
 Production records are bit-contiguous inside each independently addressed
-stream.  The scanner therefore preserves ``$6A/$6B/$6C`` across record
+stream. The scanner therefore preserves ``$6A/$6B/$6C`` across record
 separators and frame-budget returns; only genuinely new byte-addressed streams
 reset the bit mask to ``$80``.
 """
@@ -22,7 +21,7 @@ from .entropy_codec import (
     CATEGORY_PAYLOAD_BITS,
     CATEGORY_PREFIXES,
 )
-from .production_runtime import ProductionRuntimeError
+from .production_runtime import ProductionRuntimeError, RuntimePatch, patch_nov2
 
 NOV2_LOAD_ADDRESS = 0x6000
 NOV2_SIZE = 0x4200
@@ -35,10 +34,6 @@ FRONTEND_CPU_ADDRESS = 0x815E
 FRONTEND_REGION_SIZE = 69
 CATEGORY_CPU_ADDRESS = 0x81E0
 CATEGORY_REGION_SIZE = 70
-
-ADAPTIVE_NOV2_SHA256 = (
-    "E76D9F60BAB6972F6855651105DE6468459CD71743A0F6E2B85D3A1D09552218"
-)
 
 
 class EntropyRuntimeError(ProductionRuntimeError):
@@ -226,7 +221,7 @@ def _build_scanner() -> tuple[bytes, int, int, int, int]:
 
 
 def _build_category_decoder() -> bytes:
-    """Build the compact trie walker in the dead Adaptive255 decoder region."""
+    """Build the compact trie walker in the recovered decoder region."""
     assembler = _Assembler(CATEGORY_CPU_ADDRESS)
     assembler.emit(0xA2, 0x00)
     assembler.label("loop")
@@ -404,28 +399,28 @@ ENTROPY_RUNTIME_PATCHES = (
     HashGuardedPatch(
         0x80B1,
         SCANNER_REGION_SIZE,
-        "F9A5ADD7FD20645D919665872C63AF27C67BA192AD1516993693492794A9D17B",
+        "541427E7B3BE828955CD537B923AA496C76364E3C1770CE5ED9E041BD894E068",
         _SCANNER_BLOCK,
         "bit-contiguous entropy scanner",
     ),
     HashGuardedPatch(
         0x8154,
         10,
-        "FD7C0FA8A60988EC505BD529685962FD3EBA862D917578C4F1ECA9BB959D11DD",
+        "FC27C8BA692687F01284D4838644C3B44FB99E152DFEB7762FC2F4EED8A996FA",
         _TOP_LEVEL_CODE,
         "entropy top-level renderer initialization",
     ),
     HashGuardedPatch(
         0x815E,
         FRONTEND_REGION_SIZE,
-        "3CA7B3559888BD1203AA98A6E0A690065E4CC2BC7E6D074D1A6E2914624D9D1B",
+        "D02A0217AE5E3D0E0249CAF254E4DB769019F9A840D5B775D81ACFEC86FAA048",
         _FRONTEND_BLOCK,
         "entropy semantic dispatch frontend",
     ),
     HashGuardedPatch(
         0x81E0,
         CATEGORY_REGION_SIZE,
-        "07D14560C311ACCFCAC86E05ADF8FD42DCCF322D34DAFB827D4B6BEE471CF4C3",
+        "5746E2B506C1B093D2045674B9A95EAAEB93822BC6DD3973AD42F1384F56CCBF",
         _CATEGORY_BLOCK,
         "entropy prefix-category decoder",
     ),
@@ -452,35 +447,53 @@ ENTROPY_RUNTIME_PATCHES = (
     ),
 )
 
-_NESTED_DEPTH_GUARDS = (
-    (0x82C5, bytes.fromhex("E6 71 EA EA"), "nested dictionary depth increment"),
-    (0x8311, bytes.fromhex("C6 71 EA EA"), "nested dictionary depth decrement"),
+# These are the only Adaptive255-era semantics retained by entropy: the native
+# dictionary expander already saves the text pointer triplet on the CPU stack,
+# so a depth counter allows nested backward references to unwind correctly.
+# Everything else in the Adaptive255 runtime is superseded by entropy code.
+ENTROPY_PREREQUISITE_PATCHES = (
+    RuntimePatch(
+        file_offset=0x22C5,
+        expected=bytes.fromhex("A9 FF 85 71"),
+        replacement=bytes.fromhex("E6 71 EA EA"),
+        label="entropy nested dictionary depth increment",
+    ),
+    RuntimePatch(
+        file_offset=0x2311,
+        expected=bytes.fromhex("A9 00 85 71"),
+        replacement=bytes.fromhex("C6 71 EA EA"),
+        label="entropy nested dictionary depth decrement",
+    ),
 )
 
 
-def _guard_nested_runtime(data: bytes) -> None:
-    for address, expected, label in _NESTED_DEPTH_GUARDS:
-        offset = address - NOV2_LOAD_ADDRESS
-        if data[offset : offset + len(expected)] != expected:
+def _guard_entropy_prerequisites(data: bytes) -> None:
+    for patch in ENTROPY_PREREQUISITE_PATCHES:
+        end = patch.file_offset + len(patch.replacement)
+        if data[patch.file_offset:end] != patch.replacement:
             raise EntropyRuntimeError(
-                f"{label}: Adaptive255 prerequisite is absent at ${address:04X}"
+                f"{patch.label}: direct entropy prerequisite is absent at "
+                f"${patch.cpu_address:04X}"
             )
 
 
 def patch_entropy_nov2(data: bytes) -> bytes:
-    """Replace an Adaptive255-hardened NOV2 with the frozen entropy runtime.
+    """Install the complete frozen entropy runtime on a UI-patched NOV2.
 
-    The operation is size-neutral, source-verified, and idempotent. Callers
-    must first apply the normal production UI fixes and
-    ``patch_nov2(..., adaptive_dictionary=True)`` so the proven nested-depth
-    patches and downstream English semantic handlers are present.
+    The operation is size-neutral, source-verified, and idempotent. The caller
+    applies :func:`time_twist.ui.patched_nov2_ui`; this function then applies
+    the proven non-Adaptive production runtime fixes, the two nested-dictionary
+    prerequisites, and the entropy runtime itself. No Adaptive255 scanner,
+    escape decoder, or $E000 scan-limit staging is installed.
     """
     if len(data) != NOV2_SIZE:
         raise EntropyRuntimeError(
             f"NOV2 must be {NOV2_SIZE} bytes, got {len(data)}"
         )
-    result = bytearray(data)
-    _guard_nested_runtime(result)
+    result = bytearray(patch_nov2(data))
+    for patch in ENTROPY_PREREQUISITE_PATCHES:
+        patch.apply(result)
+    _guard_entropy_prerequisites(result)
     palette_before = bytes(
         result[
             PALETTE_CPU_RANGE.start - NOV2_LOAD_ADDRESS :
@@ -489,7 +502,7 @@ def patch_entropy_nov2(data: bytes) -> bytes:
     )
     for patch in ENTROPY_RUNTIME_PATCHES:
         patch.apply(result)
-    _guard_nested_runtime(result)
+    _guard_entropy_prerequisites(result)
     palette_after = bytes(
         result[
             PALETTE_CPU_RANGE.start - NOV2_LOAD_ADDRESS :
