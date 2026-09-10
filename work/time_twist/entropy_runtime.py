@@ -143,11 +143,16 @@ def _build_scanner() -> tuple[bytes, int, int, int, int]:
     assembler = _Assembler(SCANNER_CPU_ADDRESS)
     assembler.absolute(0x8D, 0x7F79)  # STA $7F79 -- work budget
 
-    # A=$FF is used only for a fresh dictionary seek.  Scenario/menu scanner
+    # A=$FF is used only for a fresh dictionary seek. Scenario/menu scanner
     # resumes use ordinary budgets and must preserve the current bit mask.
     assembler.emit(0xC9, 0xFF)
-    assembler.relative(0xD0, "record_top")
+    assembler.relative(0xD0, "save_x")
     assembler.emit(0xA9, 0x80, 0x85, 0x6C)
+
+    # The native callers keep live state in X. Save it once per scanner entry,
+    # not once per record: the inner record loop jumps past this push.
+    assembler.label("save_x")
+    assembler.emit(0x8A, 0x48)
 
     assembler.label("record_top")
     assembler.emit(0xA9, 0x00, 0xC5, 0xC2)
@@ -156,7 +161,8 @@ def _build_scanner() -> tuple[bytes, int, int, int, int]:
 
     assembler.label("scan_symbol")
     assembler.absolute(0x20, CATEGORY_CPU_ADDRESS)
-    assembler.emit(0x85, 0x74, 0xA8)
+    # Do not borrow zero-page state here. $74 is live native engine state.
+    assembler.emit(0x48, 0xA8)
     assembler.absolute(0xB9, "bits_table")
     assembler.emit(0xAA, 0xA0, 0x00, 0xE0, 0x00)
     assembler.relative(0xF0, "payload_done")
@@ -167,10 +173,10 @@ def _build_scanner() -> tuple[bytes, int, int, int, int]:
     assembler.relative(0xD0, "payload_loop")
 
     assembler.label("payload_done")
-    assembler.emit(0xA5, 0x74)
+    assembler.emit(0x68)
     assembler.relative(0xD0, "scan_symbol")
 
-    # Category zero is CTRL5.  Do not align: the next record begins at the next
+    # Category zero is CTRL5. Do not align: the next record begins at the next
     # unread bit in the same stream.
     assembler.emit(0xA5, 0xC2, 0x38, 0xE9, 0x01, 0x85, 0xC2)
 
@@ -190,7 +196,7 @@ def _build_scanner() -> tuple[bytes, int, int, int, int]:
     assembler.emit(0xA9, 0x00)
     assembler.absolute(0x8D, 0x7F78)
     assembler.label("budget_return")
-    assembler.emit(0x60)
+    assembler.emit(0x68, 0xAA, 0x60)
 
     assembler.label("bits_table")
     assembler.emit(*CATEGORY_PAYLOAD_BITS)
@@ -249,7 +255,9 @@ def _build_frontend(bits_address: int, base_address: int) -> bytes:
     assembler = _Assembler(FRONTEND_CPU_ADDRESS)
     assembler.emit(0x8A, 0x48)
     assembler.absolute(0x20, CATEGORY_CPU_ADDRESS)
-    assembler.emit(0x85, 0x74, 0xA8)
+    # Preserve the category on the CPU stack instead of borrowing $74, which
+    # belongs to unrelated native engine state.
+    assembler.emit(0x48, 0xA8)
     assembler.absolute(0xB9, bits_address)
     assembler.emit(0xAA, 0xA9, 0x00, 0x85, 0x3A, 0xA0, 0x00, 0xE0, 0x00)
     assembler.relative(0xF0, "payload_done")
@@ -258,9 +266,9 @@ def _build_frontend(bits_address: int, base_address: int) -> bytes:
     assembler.emit(0xCA)
     assembler.relative(0xD0, "payload_loop")
     assembler.label("payload_done")
-    assembler.emit(0xA4, 0x74)
+    assembler.emit(0x68, 0xA8)
     assembler.absolute(0xB9, base_address)
-    assembler.emit(0x18, 0x65, 0x3A, 0x85, 0x3A, 0x68, 0xAA, 0xA5, 0x74)
+    assembler.emit(0x18, 0x65, 0x3A, 0x85, 0x3A, 0x68, 0xAA, 0x98)
     assembler.emit(0xC9, 0x02)
     assembler.relative(0x90, "control")
     assembler.emit(0xC9, 0x08)
@@ -462,7 +470,7 @@ def _guard_nested_runtime(data: bytes) -> None:
 def patch_entropy_nov2(data: bytes) -> bytes:
     """Replace an Adaptive255-hardened NOV2 with the frozen entropy runtime.
 
-    The operation is size-neutral, source-verified, and idempotent.  Callers
+    The operation is size-neutral, source-verified, and idempotent. Callers
     must first apply the normal production UI fixes and
     ``patch_nov2(..., adaptive_dictionary=True)`` so the proven nested-depth
     patches and downstream English semantic handlers are present.
