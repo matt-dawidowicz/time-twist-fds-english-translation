@@ -6,86 +6,40 @@ on:
       - fix/entropy-codec-architecture-20260910
 
 jobs:
-  mypy-repair:
+  validate:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.14"]
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: fix/entropy-codec-architecture-20260910
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.14"
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt
-      - name: Apply reviewed mypy repairs
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-
-          replacements = {
-              Path("work/time_twist/production_codec.py"): [
-                  (
-                      'for index, expansion in by_first.get(symbol, ()):  # type: ignore[arg-type]',
-                      'for index, expansion in by_first.get(symbol, ()):',
-                  ),
-              ],
-              Path("work/time_twist/entropy_runtime.py"): [
-                  (
-                      'return bytes(int(value) for value in nodes)',
-                      'return bytes(value for value in nodes if value is not None)',
-                  ),
-                  (
-                      'for patch in ENTROPY_PREREQUISITE_PATCHES:\n        patch.apply(result)',
-                      'for prerequisite_patch in ENTROPY_PREREQUISITE_PATCHES:\n        prerequisite_patch.apply(result)',
-                  ),
-                  (
-                      'for patch in ENTROPY_RUNTIME_PATCHES:\n        patch.apply(result)',
-                      'for runtime_patch in ENTROPY_RUNTIME_PATCHES:\n        runtime_patch.apply(result)',
-                  ),
-              ],
-              Path("work/time_twist/production_release.py"): [
-                  (
-                      'from pathlib import Path\n',
-                      'from pathlib import Path\nfrom typing import cast\n',
-                  ),
-                  (
-                      'int(record["records"]) for record in bank_report.values()',
-                      'cast(int, record["records"]) for record in bank_report.values()',
-                  ),
-              ],
-              Path("work/time_twist/entropy_release.py"): [
-                  (
-                      'from pathlib import Path\n',
-                      'from pathlib import Path\nfrom typing import cast\n',
-                  ),
-                  (
-                      'int(record["records"]) for record in bank_report.values()',
-                      'cast(int, record["records"]) for record in bank_report.values()',
-                  ),
-              ],
-              Path("work/time_twist/runtime_lab.py"): [
-                  (
-                      'loader.discover(root / "tests", pattern=f"{name}.py")',
-                      'loader.discover(str(root / "tests"), pattern=f"{name}.py")',
-                  ),
-              ],
-          }
-
-          for path, edits in replacements.items():
-              text = path.read_text(encoding="utf-8")
-              for old, new in edits:
-                  if old not in text:
-                      raise SystemExit(f"expected source fragment missing in {path}: {old!r}")
-                  text = text.replace(old, new, 1)
-              path.write_text(text, encoding="utf-8")
-          PY
-          python -m black work
-          python -m ruff check work
-          python -m pydocstyle --convention=pep257 work
-          python -m mypy
-          git config user.name "starlight_world"
-          git config user.email "43389528+matt-dawidowicz@users.noreply.github.com"
-          git add work
-          git commit -m "Resolve static typing regressions"
-          git push origin HEAD:fix/entropy-codec-architecture-20260910
+      - run: python -m black --check work
+      - run: python -m ruff check work
+      - run: python -m pydocstyle --convention=pep257 work
+      - run: python -m mypy
+      - run: python work/run_tests.py unit
+      - if: matrix.python-version == '3.14'
+        run: python -m build
+      - if: matrix.python-version == '3.14'
+        run: python -m pip install --force-reinstall dist/*.whl
+      - if: matrix.python-version == '3.14'
+        name: Prove smoke test imports the installed wheel
+        run: >-
+          python -c "from pathlib import Path; import time_twist;
+          from time_twist.release import build_code_provenance;
+          imported = Path(time_twist.__file__).resolve();
+          checkout = Path('work/time_twist').resolve(); print(imported);
+          assert checkout not in imported.parents,
+          f'import leaked from checkout: {imported}';
+          build_code_provenance(Path.cwd())"
+      - if: matrix.python-version == '3.14'
+        run: time-twist --help
+      - if: matrix.python-version == '3.14'
+        run: time-twist release-build --help
