@@ -5,6 +5,7 @@ on:
     branches:
       - fix/entropy-codec-architecture-20260910
 
+# Connector-authored nudge: validate the latest safe-fix commit.
 jobs:
   lint-repair:
     runs-on: ubuntu-latest
