@@ -23,6 +23,7 @@ from .fds import FdsFile, FdsImage
 BASELINE_COMMIT = "ad5ebe9fced6807c6398691db1b36c58e9b1d095"
 CODE_PATHS = ("work/time_twist", "work/tools", "pyproject.toml")
 FOCUSED_TESTS = (
+    "test_entropy_fixed_ui",
     "test_entropy_production",
     "test_production_runtime",
     "test_production_scenario",
