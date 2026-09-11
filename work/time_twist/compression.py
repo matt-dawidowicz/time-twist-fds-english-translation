@@ -1,16 +1,14 @@
-"""Build compact dictionaries that the original scenario engine can decode.
+"""Build flat native-format dictionaries for analysis and source tooling.
 
-The native game offers 31 one-based dictionary references; the guarded English
-NOV2 decoder extends that space to 68. Each reference costs nine bits, so a
-repeated literal sequence is useful only when the references save more space
-than the packed dictionary entry consumes. The fast path uses deterministic
-greedy selection. Release builds additionally compare bounded beam search and
-fixed-prefix-safe dictionary reordering, keeping the smallest exact result.
-Every path creates flat entries containing only literal common/extended symbols.
+The recovered game offers 31 one-based dictionary references. Historical English
+analysis can model the former 68-entry extension as well, which remains useful for
+conservative workbook and ``scenario-footprint`` measurements. These streams use
+the native prefix tree and byte-align after every record separator.
 
-The result is not a general-purpose optimal compressor. It is designed around
-the game's fixed RAM reservation, native prefix tree, byte-aligned record
-separators, and fixed tables that may require particular entries.
+This module is not the playable release codec. Canonical candidates use
+``entropy_codec.py`` and ``entropy_compression.py`` with the matching entropy-only
+NOV2 runtime. Keeping the native/flat model explicit here prevents analysis tools
+from being mistaken for ROM-construction code.
 """
 
 from __future__ import annotations
@@ -613,12 +611,12 @@ def compress_english_groups(
         max_bytes: Optional packed groups-plus-dictionary byte reservation.
         optimize: Compare the established greedy result with deterministic
             beam search and fixed-prefix-safe dictionary-order hill climbing.
-            Release and complete-scenario build paths enable this explicitly;
-            generic and property-test callers retain the fast greedy default.
+            Analysis callers can enable this explicitly; generic and property
+            tests retain the fast greedy default.
         maximum_entries: Maximum dictionary entries accepted by the target
             decoder. The native format supports 31; the guarded English NOV2
             extension supports up to 68.
-        candidate_validator: Optional release-level compatibility check for
+        candidate_validator: Optional caller-level compatibility check for
             optimized candidates. Results that return false are excluded
             before the exact-size minimum is selected.
 
@@ -635,8 +633,7 @@ def compress_english_groups(
 
     With ``optimize=True``, the valid greedy result is also compared against a
     bounded beam and dictionary-order hill climb. Tight reservations receive a
-    wider beam. The smallest exact result wins; an alternative path can never
-    make a release bank larger than the established greedy result.
+    wider beam. The smallest exact result wins.
     """
     if max_bytes is not None and max_bytes < 0:
         raise ValueError("max_bytes must be nonnegative")

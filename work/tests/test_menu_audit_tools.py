@@ -93,9 +93,12 @@ class CandidateReportTests(unittest.TestCase):
                 "TT1B": {
                     "records": 1,
                     "dictionary_entries": 0,
-                    "packed_bytes": 1,
-                    "capacity_bytes": 1,
-                    "remaining_bytes": 0,
+                    "scenario_bytes": 1,
+                    "menu_bytes": 0,
+                    "dictionary_bytes": 0,
+                    "spill_bytes": 0,
+                    "loaded_end": "0xD7B4",
+                    "nov3_headroom": 1,
                     "sha256": self.bank_sha256,
                 }
             },
@@ -183,7 +186,7 @@ class CandidateReportTests(unittest.TestCase):
                     "fixed_menu_full_word_literal.csv",
                     "fixed_menu_full_word_dictionary.csv",
                     "fixed_menu_label_summary.json",
-                    "compression_report_by_bank.csv",
+                    "entropy_layout_report_by_bank.csv",
                     "review-notes.txt",
                 },
             )

@@ -21,6 +21,7 @@ from time_twist.entropy_compression import (
     optimize_entropy_dictionary,
 )
 from time_twist.entropy_runtime import (
+    BASE_RUNTIME_PATCHES,
     CATEGORY_CODE_BYTES,
     ENTROPY_MENU_INIT_CPU_ADDRESS,
     ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS,
@@ -195,6 +196,23 @@ class EntropyProductionTests(unittest.TestCase):
         self.assertEqual(
             layout.data[bank.dictionary_end_offset : len(bank.data)],
             bank.data[bank.dictionary_end_offset :],
+        )
+
+    def test_base_renderer_patches_are_frozen(self) -> None:
+        """Keep the proven pre-entropy renderer repairs byte-identical."""
+        self.assertEqual(
+            tuple(patch.cpu_address for patch in BASE_RUNTIME_PATCHES),
+            (0x81D3, 0x8378, 0x94BC, 0x94E7, 0x98A3),
+        )
+        self.assertEqual(
+            tuple(patch.replacement for patch in BASE_RUNTIME_PATCHES),
+            (
+                bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
+                bytes.fromhex("B0"),
+                bytes.fromhex("A9 08"),
+                bytes.fromhex("A9 08"),
+                bytes.fromhex("48"),
+            ),
         )
 
     def test_entropy_prerequisites_are_only_native_nested_depth(self) -> None:

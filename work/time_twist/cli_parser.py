@@ -187,11 +187,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     scenario_footprint = subparsers.add_parser(
         "scenario-footprint",
-        help="report fixed text capacity and compressed usage",
+        help="report conservative native/flat text-fit analysis",
         description=(
-            "Show the scenario reservation and fixed tail. With a complete "
-            "translation map, build the English dictionary and report "
-            "remaining bytes or a hard overrun."
+            "Show the native scenario reservation and fixed tail. With a "
+            "complete translation map, run the conservative flat-codec fit "
+            "diagnostic. This is not the canonical entropy release builder."
         ),
     )
     scenario_footprint.add_argument(
