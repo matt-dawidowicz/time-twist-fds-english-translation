@@ -6,9 +6,6 @@ on:
       - main
   pull_request:
 
-permissions:
-  contents: write
-
 concurrency:
   group: tests-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
@@ -22,28 +19,6 @@ jobs:
         python-version: ["3.11", "3.14"]
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
-      - if: matrix.python-version == '3.14'
-        name: Apply narrow mypy fix and restore validation workflow
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          path = Path("work/time_twist/production_translation.py")
-          source = path.read_text(encoding="utf-8")
-          old = """                semantic_ordinal = semantic_ordinal_by_control.get(\n                    segment_index\n                )\n                if (\n                    semantic_ordinal in anchored_semantic_ordinals\n"""
-          new = """                control_semantic_ordinal = semantic_ordinal_by_control.get(\n                    segment_index\n                )\n                if (\n                    control_semantic_ordinal in anchored_semantic_ordinals\n"""
-          if old not in source:
-              raise SystemExit("expected mypy-fix target not found")
-          path.write_text(source.replace(old, new, 1), encoding="utf-8")
-          PY
-          git fetch origin fix/playtest-dialogue-layout-20260911 --depth=1
-          git show FETCH_HEAD:.github/workflows/tests.yml > .github/workflows/tests.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add work/time_twist/production_translation.py .github/workflows/tests.yml
-          git commit -m "Fix semantic-control ordinal typing"
-          git push origin HEAD:${{ github.head_ref }}
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}

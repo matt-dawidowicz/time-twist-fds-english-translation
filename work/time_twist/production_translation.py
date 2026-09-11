@@ -676,11 +676,11 @@ def _split_visible_text(
                     trial_score = score
 
                 anchor_violation = 0
-                semantic_ordinal = semantic_ordinal_by_control.get(
+                control_semantic_ordinal = semantic_ordinal_by_control.get(
                     segment_index
                 )
                 if (
-                    semantic_ordinal in anchored_semantic_ordinals
+                    control_semantic_ordinal in anchored_semantic_ordinals
                     and end_word < len(words)
                     and not _is_strong_semantic_break(words, end_word)
                 ):
