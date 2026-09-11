@@ -2,8 +2,9 @@
 
 This module deliberately avoids the broad public CLI. Runtime debugging needs a
 small number of repeatable operations: inspect the code delta, compare two FDS
-images, run the focused tests in one interpreter, and build the current entropy
-candidate without spawning helper scripts or exposing discarded runtime modes.
+images, profile disk loads, run the focused tests in one interpreter, and build
+the current entropy candidate without spawning helper scripts or exposing
+discarded runtime modes.
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from .fds import FdsFile, FdsImage
+from .load_profile import format_load_profile
 
 BASELINE_COMMIT = "ad5ebe9fced6807c6398691db1b36c58e9b1d095"
 CODE_PATHS = ("work/time_twist", "work/tools", "pyproject.toml")
@@ -122,6 +124,12 @@ def command_fds(args: argparse.Namespace) -> int:
             f"{item.old_size}->{item.new_size} bytes; "
             f"changed={item.changed_bytes}; first={first}"
         )
+    return 0
+
+
+def command_load_profile(args: argparse.Namespace) -> int:
+    """Print source-verified Time Twist FDS LoadFiles topology."""
+    print(format_load_profile(args.zenpen, args.kouhen))
     return 0
 
 
@@ -238,6 +246,14 @@ def build_parser() -> argparse.ArgumentParser:
     fds.add_argument("old", type=Path)
     fds.add_argument("new", type=Path)
     fds.set_defaults(function=command_fds)
+
+    loads = sub.add_parser(
+        "load-profile",
+        help="map Time Twist BIOS LoadFiles calls and file lists",
+    )
+    loads.add_argument("--zenpen", type=Path, required=True)
+    loads.add_argument("--kouhen", type=Path, required=True)
+    loads.set_defaults(function=command_load_profile)
 
     smoke = sub.add_parser("smoke", help="run focused runtime tests once")
     smoke.set_defaults(function=command_smoke)
