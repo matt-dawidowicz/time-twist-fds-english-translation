@@ -24,6 +24,7 @@ def _file(
     data: bytes,
     data_offset: int,
 ) -> FdsFile:
+    """Construct one synthetic FDS file for profiler tests."""
     header = bytearray(16)
     header[0] = 0x03
     header[1] = number
@@ -41,6 +42,7 @@ def _file(
 
 
 def _side(game: bytes, files: list[FdsFile], parsed_length: int) -> FdsSide:
+    """Construct one synthetic FDS side with deterministic metadata."""
     disk_info = bytearray(56)
     disk_info[0] = 0x01
     disk_info[16:20] = game
@@ -57,6 +59,7 @@ class LoadProfileTests(unittest.TestCase):
     """Exercise direct-call decoding and the Time Twist NOV2 source guard."""
 
     def test_scan_decodes_inline_file_list(self) -> None:
+        """Decode a BIOS call's inline pointers and terminated file-ID list."""
         data = bytearray(0x80)
         data[8:15] = bytes.fromhex("20 F8 E1 40 60 50 60")
         data[0x50:0x53] = bytes((0x41, 0x51, 0xFF))
@@ -79,6 +82,7 @@ class LoadProfileTests(unittest.TestCase):
         self.assertEqual(calls[0].static_file_ids, (0x41, 0x51))
 
     def test_dynamic_table_maps_tt3_prefix(self) -> None:
+        """Map one guarded NOV2 selector row to its physical side prefix."""
         data = bytearray(0x1C00)
         primary = PRIMARY_LOAD_CALL - 0x6000
         secondary = SECONDARY_LOAD_CALL - 0x6000
