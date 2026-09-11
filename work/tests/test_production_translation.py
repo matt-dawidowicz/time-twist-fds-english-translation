@@ -55,7 +55,7 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
 
         self.assertEqual(
             output,
-            "Newscaster: Late last{CTRL:0}night, Dr. Simon—the{CTRL:2}"
+            "Newscaster: Late last{CTRL:0}night, Dr. Simon—the{CTRL:0}"
             "physicist known as a{CTRL:0}reclusive genius—made a{CTRL:4}"
             "remarkable statement{CTRL:4}about time travel.",
         )
@@ -137,6 +137,51 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
         self.assertEqual(
             visible.split(), ["Chant", "it", "again", "and", "again."]
         )
+
+    def test_weak_ctrl2_does_not_force_half_empty_box(self) -> None:
+        """Fill four rows before paging when CTRL:2 cuts continuous prose."""
+        template = (
+            "Cautious, methodical.{CTRL:0}Rarely fail, but can{CTRL:2}"
+            "seem a bit ordinary.{CTRL:0}Hardworking, principled{CTRL:3}"
+            "Stubborn scholar type.{CTRL:4}You care till worn out.{CTRL:4}"
+            "Romantic, but awkward."
+        )
+        reviewed = (
+            "You're cautious and methodical, so you rarely fail, but you can "
+            "come across as ordinary. Principled and diligent, you're a "
+            "serious, stubborn scholar type. You worry so much about other "
+            "people that you wear yourself out. You're awkward in love, but "
+            "a romantic at heart."
+        )
+
+        output = layout_review_text("TT1A/g0/r24", reviewed, template)
+
+        self.assertNotIn("{CTRL:2}", output)
+        self.assertTrue(
+            output.startswith(
+                "You're cautious and{CTRL:0}methodical, so you{CTRL:0}"
+                "rarely fail, but you can{CTRL:0}come across as ordinary."
+            )
+        )
+        validate_renderer_buffer_layout(output)
+        validate_production_control_sequence(template, output)
+
+    def test_strong_ctrl2_pause_is_still_preserved(self) -> None:
+        """Keep a genuine phrase boundary even when English pagination is greedy."""
+        template = (
+            "Maradul Barao Garadura{CTRL:0}{CTRL:2}"
+            "Chant it over and over.{CTRL:3}"
+            "Maradul Barao Garadura{CTRL:4}Maradul Barao Garadura!"
+        )
+        reviewed = (
+            "Maradul Barao Garadura… Chant it again and again. "
+            "Maradul Barao Garadura… Maradul Barao Garadura!"
+        )
+
+        output = layout_review_text("TT1A/g0/r29", reviewed, template)
+
+        self.assertIn("Garadura…{CTRL:2}Chant", output)
+        validate_production_control_sequence(template, output)
 
     def test_greedy_wrap_uses_maximum_available_width(self) -> None:
         """Fill each row greedily instead of balancing two short rows."""

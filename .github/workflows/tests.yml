@@ -1,37 +1,84 @@
 name: tests
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
 
-permissions:
-  contents: write
+# PR validation is intentionally read-only.
+concurrency:
+  group: tests-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
-  apply-pagination-fix:
+  unit-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.14"]
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: fix/production-em-dash-audit-20260911
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.14"
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: python work/tools/check_public_tree.py
+      - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt
-      - name: Apply tested pagination patch
-        run: python .github/apply_pagination_fix.py
-      - name: Canonical formatting and lint fixes
-        run: |
-          python -m black work/time_twist/production_translation.py work/tests/test_production_translation.py
-          sed -i 's/        template_segments, controls = _template_parts(template)/        _template_segments, controls = _template_parts(template)/' work/time_twist/production_translation.py
-          python -m black work/time_twist/production_translation.py work/tests/test_production_translation.py
-          python -m ruff check work/time_twist/production_translation.py work/tests/test_production_translation.py
-      - name: Restore normal CI and commit only final changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git fetch --deepen=4 origin fix/production-em-dash-audit-20260911
-          git checkout HEAD^^^ -- .github/workflows/tests.yml
-          rm .github/apply_pagination_fix.py
-          git add -A .github/workflows/tests.yml .github/apply_pagination_fix.py work/time_twist/production_translation.py work/tests/test_production_translation.py work/production_overrides/TT1A_pagination_policy.json
-          git commit -m "Fill English dialogue boxes before weak page breaks"
-          git push origin HEAD:fix/production-em-dash-audit-20260911
+      - name: Run focused canonical runtime tests
+        run: time-twist-runtime smoke
+      - run: python work/generate_bilingual_comparison_ci.py
+      - run: python work/generate_translation_workbook.py
+      - name: Verify generated translation review artifacts are current
+        run: git diff --exit-code -- outputs work/translation_workbook_banks
+      - if: matrix.python-version == '3.14'
+        name: Materialize production translation maps
+        run: >-
+          python work/tools/materialize_production_translations.py
+          --repo-root . --output work/build/production_translations
+      - if: matrix.python-version == '3.14'
+        name: Archive production source snapshot
+        run: git archive --format=zip --output=work/build/production-source.zip HEAD
+      - if: matrix.python-version == '3.14'
+        name: Upload production integration inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-integration-inputs
+          path: |
+            work/build/production_translations
+            work/build/production-source.zip
+          if-no-files-found: error
+      - run: python -m black --check work
+      - run: python -m ruff check work
+      - run: python -m pydocstyle --convention=pep257 work
+      - run: python -m mypy
+      - run: python work/run_tests.py unit
+      - if: matrix.python-version == '3.14'
+        run: python -m build
+      - if: matrix.python-version == '3.14'
+        run: python -m pip install --force-reinstall dist/*.whl
+      - if: matrix.python-version == '3.14'
+        name: Prove smoke test imports the installed wheel
+        run: >-
+          python -c "from pathlib import Path; import time_twist;
+          from time_twist.release import build_code_provenance;
+          imported = Path(time_twist.__file__).resolve();
+          checkout = Path('work/time_twist').resolve(); print(imported);
+          assert checkout not in imported.parents,
+          f'import leaked from checkout: {imported}';
+          build_code_provenance(Path.cwd())"
+      - if: matrix.python-version == '3.14'
+        run: time-twist --help
+      - if: matrix.python-version == '3.14'
+        run: time-twist release-build --help
+
+  required-unit-tests:
+    name: unit-tests
+    needs: unit-tests
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every supported Python version to pass
+        run: test "${{ needs.unit-tests.result }}" = "success"

@@ -133,7 +133,11 @@ def _template_parts(template: str) -> tuple[list[str], list[int]]:
     return segments, controls
 
 
-def _semantic_template_parts(template: str) -> tuple[list[str], list[int]]:
+def _semantic_template_parts(
+    template: str,
+    *,
+    demoted_ctrl2_ordinals: frozenset[int] = frozenset(),
+) -> tuple[list[str], list[int]]:
     """Collapse source-only line geometry while retaining semantic boundaries.
 
     Controls 1, 2, 3, and 6 carry native timing/continuation semantics and must
@@ -151,9 +155,15 @@ def _semantic_template_parts(template: str) -> tuple[list[str], list[int]]:
 
     collapsed = [segments[0]]
     kept_controls: list[int] = []
+    ctrl2_ordinal = -1
     for index, control in enumerate(controls):
+        if control == 2:
+            ctrl2_ordinal += 1
+        demoted_ctrl2 = (
+            control == 2 and ctrl2_ordinal in demoted_ctrl2_ordinals
+        )
         keep = (
-            control in SEMANTIC_CONTROLS
+            (control in SEMANTIC_CONTROLS and not demoted_ctrl2)
             or index < first_visible
             or index >= last_visible
         )
@@ -165,7 +175,11 @@ def _semantic_template_parts(template: str) -> tuple[list[str], list[int]]:
     return collapsed, kept_controls
 
 
-def _semantic_anchor_ordinals(template: str) -> frozenset[int]:
+def _semantic_anchor_ordinals(
+    template: str,
+    *,
+    demoted_ctrl2_ordinals: frozenset[int] = frozenset(),
+) -> frozenset[int]:
     """Return source section controls that followed an explicit row break.
 
     A source ``{CTRL:0}{CTRL:2}`` pair marks a header/instruction boundary: the
@@ -175,8 +189,13 @@ def _semantic_anchor_ordinals(template: str) -> frozenset[int]:
     """
     segments, controls = _template_parts(template)
     semantic_ordinal = -1
+    ctrl2_ordinal = -1
     anchored: set[int] = set()
     for index, control in enumerate(controls):
+        if control == 2:
+            ctrl2_ordinal += 1
+            if ctrl2_ordinal in demoted_ctrl2_ordinals:
+                continue
         if control not in SEMANTIC_CONTROLS:
             continue
         semantic_ordinal += 1
@@ -462,7 +481,13 @@ def validate_renderer_buffer_layout(text: str) -> None:
 
 
 def validate_production_control_sequence(source: str, production: str) -> None:
-    """Preserve semantic native controls while regenerating English line geometry."""
+    """Preserve native semantics while allowing safe CTRL:2 pagination removal.
+
+    Controls 1, 3, and 6 remain mandatory. CTRL:2 is a mixed page/timing
+    control: production layout may omit it when it interrupts continuous prose,
+    but may never invent one or move surviving semantic controls out of source
+    order.
+    """
     _source_segments, source_controls = _semantic_template_parts(source)
     _production_segments, production_controls = _template_parts(production)
     required = [
@@ -471,10 +496,27 @@ def validate_production_control_sequence(source: str, production: str) -> None:
     actual_semantic = [
         value for value in production_controls if value in SEMANTIC_CONTROLS
     ]
-    if actual_semantic != required:
+
+    source_index = 0
+    omitted: list[int] = []
+    for actual in actual_semantic:
+        while (
+            source_index < len(required) and required[source_index] != actual
+        ):
+            omitted.append(required[source_index])
+            source_index += 1
+        if source_index >= len(required):
+            raise ProductionTranslationError(
+                "production layout introduced or reordered semantic controls"
+            )
+        source_index += 1
+    omitted.extend(required[source_index:])
+    if any(value != 2 for value in omitted):
         raise ProductionTranslationError(
-            "production layout lost or reordered one or more semantic controls"
+            "production layout lost or reordered one or more mandatory "
+            "semantic controls"
         )
+
     unexpected = [
         value
         for value in production_controls
@@ -740,12 +782,64 @@ def _layout_fixed_segments(
     return laid_out
 
 
+def _weak_non_speaker_ctrl2_ordinals(text: str) -> frozenset[int]:
+    """Find CTRL:2 page breaks that interrupt continuous English prose.
+
+    A weak break falls inside a sentence or phrase rather than after normal
+    terminal punctuation. If the following chunk begins with a speaker label,
+    the control remains semantic even when the preceding phrase is incomplete.
+    """
+    segments, controls = _template_parts(text)
+    visible_before = ""
+    ctrl2_ordinal = -1
+    demoted: set[int] = set()
+    for index, control in enumerate(controls):
+        visible_before += segments[index]
+        if control != 2:
+            continue
+        ctrl2_ordinal += 1
+        after = segments[index + 1]
+        before_words = visible_before.split()
+        combined_words = (visible_before + " " + after).split()
+        end_word = len(before_words)
+        next_visible = after.lstrip()
+        speaker_spans = _speaker_label_spans(next_visible)
+        starts_new_speaker = bool(speaker_spans and speaker_spans[0][0] == 0)
+        if not starts_new_speaker and not _is_strong_semantic_break(
+            combined_words, end_word
+        ):
+            demoted.add(ctrl2_ordinal)
+    return frozenset(demoted)
+
+
+def _layout_semantic_review(
+    reviewed: str,
+    template: str,
+    *,
+    demoted_ctrl2_ordinals: frozenset[int] = frozenset(),
+) -> tuple[list[str], list[int]]:
+    """Lay out prose against native semantics with selected page breaks demoted."""
+    template_segments, controls = _semantic_template_parts(
+        template, demoted_ctrl2_ordinals=demoted_ctrl2_ordinals
+    )
+    laid_out = _split_visible_text(
+        reviewed,
+        template_segments,
+        controls,
+        anchored_semantic_ordinals=_semantic_anchor_ordinals(
+            template, demoted_ctrl2_ordinals=demoted_ctrl2_ordinals
+        ),
+    )
+    return laid_out, controls
+
+
 def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
     """Fit approved prose using greedy English geometry and native semantics."""
     reviewed = " ".join(reviewed.split())
     reviewed_controls = [int(value) for value in CONTROL_RE.findall(reviewed)]
+    demoted_ctrl2_ordinals = frozenset()
     if reviewed_controls:
-        template_segments, controls = _template_parts(template)
+        _template_segments, controls = _template_parts(template)
         if reviewed_controls != controls:
             raise ProductionTranslationError(
                 f"{record_id}: reviewed control sequence differs from template"
@@ -753,13 +847,17 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
         reviewed_segments, _ = _template_parts(reviewed)
         laid_out = _layout_fixed_segments(reviewed_segments, controls)
     else:
-        template_segments, controls = _semantic_template_parts(template)
-        laid_out = _split_visible_text(
-            reviewed,
-            template_segments,
-            controls,
-            anchored_semantic_ordinals=_semantic_anchor_ordinals(template),
-        )
+        laid_out, controls = _layout_semantic_review(reviewed, template)
+        initial = laid_out[0]
+        for value, segment in zip(controls, laid_out[1:], strict=True):
+            initial += f"{{CTRL:{value}}}{segment}"
+        demoted_ctrl2_ordinals = _weak_non_speaker_ctrl2_ordinals(initial)
+        if demoted_ctrl2_ordinals:
+            laid_out, controls = _layout_semantic_review(
+                reviewed,
+                template,
+                demoted_ctrl2_ordinals=demoted_ctrl2_ordinals,
+            )
 
     output = laid_out[0]
     for value, segment in zip(controls, laid_out[1:], strict=True):
