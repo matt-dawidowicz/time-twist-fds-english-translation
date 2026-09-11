@@ -80,9 +80,21 @@ class CodexFollowupSemanticTests(unittest.TestCase):
         self.assertNotIn("scholar{CTRL:3}type", text)
         self.assertIn("serious,{CTRL:3}stubborn scholar type.", text)
 
+    def test_directional_riddle_keeps_right_to_middle_ctrl2(self) -> None:
+        """Keep the native Right-to-Middle timing transition in TT6B."""
+        text = _production("TT6B")["TT6B/g1/r3"]
+        self.assertIn("the unreliable one.{CTRL:2}Middle:", text)
+
+    def test_warding_bell_reveal_keeps_source_ctrl2_pause(self) -> None:
+        """Keep the short Devil reaction separate from the bell reveal."""
+        text = _production("TT4")["TT4/g4/r23"]
+        self.assertIn("Devil: What?!{CTRL:2}The Warding Bell rings!", text)
+
     def test_bishop_pact_signature_keeps_final_ctrl3_field(self) -> None:
         """Keep the pact signer visually and semantically separate from prose."""
         text = _production("T22")["T22/g0/r10"]
+        self.assertIn("dark ruler", text)
+        self.assertIn("My god of justice.", text)
         self.assertIn('every evil.{CTRL:3}Bishop"', text)
         self.assertEqual(
             [1, 0, 6, 4, 3],
