@@ -45,7 +45,7 @@ from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
 from .production_validation import encode_production_english
 from .project import source_dictionary_reference_floor
-from .release_metadata import ReleaseBuildError, SCENARIO_LOCATIONS
+from .release_metadata import SCENARIO_LOCATIONS, ReleaseBuildError
 from .scenario import ScenarioBank, parse_scenario_bank, render_symbols
 from .scenario_validation import scenario_record_id
 from .textcodec import PackedSymbol
