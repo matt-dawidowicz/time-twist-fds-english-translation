@@ -248,7 +248,8 @@ def build_parser() -> argparse.ArgumentParser:
     fds.set_defaults(function=command_fds)
 
     loads = sub.add_parser(
-        "load-profile", help="map Time Twist BIOS LoadFiles calls and file lists"
+        "load-profile",
+        help="map Time Twist BIOS LoadFiles calls and file lists",
     )
     loads.add_argument("--zenpen", type=Path, required=True)
     loads.add_argument("--kouhen", type=Path, required=True)
