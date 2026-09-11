@@ -11,10 +11,10 @@ from __future__ import annotations
 
 from .fds import FdsImage
 from .production_runtime_support import (
-    NOV2_LOAD_ADDRESS,
-    PRODUCTION_RUNTIME_PATCHES,
+    NOV2_LOAD_ADDRESS as NOV2_LOAD_ADDRESS,
+    PRODUCTION_RUNTIME_PATCHES as PRODUCTION_RUNTIME_PATCHES,
     ProductionRuntimeError,
-    RuntimePatch,
+    RuntimePatch as RuntimePatch,
     patch_proven_nov2,
 )
 
@@ -26,7 +26,7 @@ NOV2_FILENAME = "NOV2"
 PALETTE_DATA_RANGE = range(0x3390, 0x33B0)
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> object:
     """Lazily preserve the historical adaptive patch-table export."""
     if name == "ADAPTIVE_DICTIONARY_RUNTIME_PATCHES":
         from .adaptive_runtime import ADAPTIVE_DICTIONARY_RUNTIME_PATCHES
