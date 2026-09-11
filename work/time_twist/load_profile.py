@@ -234,13 +234,13 @@ def format_load_profile(zenpen_path: Path, kouhen_path: Path) -> str:
         raw_text = " ".join(f"{value:02X}" for value in item.raw_ids)
         suffix = " boot-semantics" if item.boot_semantics else ""
         lines.append(f"  {item.index:02d}: [{raw_text}]{suffix}")
-        for target in item.targets:
-            lines.append(
-                f"      {target.game_code} side {target.side}: "
-                f"{', '.join(target.files)}; "
-                f"last_file={target.last_file_number}; "
-                f"prefix={target.prefix_bytes}; "
-                f"used={target.full_used_bytes}; "
-                f"after_last={target.avoidable_archival_bytes}"
-            )
+        lines.extend(
+            f"      {target.game_code} side {target.side}: "
+            f"{', '.join(target.files)}; "
+            f"last_file={target.last_file_number}; "
+            f"prefix={target.prefix_bytes}; "
+            f"used={target.full_used_bytes}; "
+            f"after_last={target.avoidable_archival_bytes}"
+            for target in item.targets
+        )
     return "\n".join(lines)
