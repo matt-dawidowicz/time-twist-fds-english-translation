@@ -62,6 +62,82 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
         validate_renderer_buffer_layout(output)
         validate_production_control_sequence(template, output)
 
+    def test_exact_third_row_advances_without_premature_scroll(self) -> None:
+        """Use row four when row three ends exactly at the 24-column edge."""
+        template = (
+            "Our sincere apologies.{CTRL:0}The correct words are:{CTRL:0}"
+            '"Your smile makes the{CTRL:0}sun rise."{CTRL:3}'
+            "Thank you for using us."
+        )
+        reviewed = (
+            'We sincerely apologize. The correct phrase is: "When you smile, '
+            'it\'s as though the sun rises." Thank you for using our service.'
+        )
+
+        output = layout_review_text("TT1A/g1/r0", reviewed, template)
+
+        self.assertIn(
+            '{CTRL:0}"When you smile, it\'s as{CTRL:0}though the sun rises."',
+            output,
+        )
+        self.assertNotIn(
+            '{CTRL:0}"When you smile, it\'s as{CTRL:4}though the sun rises."',
+            output,
+        )
+        validate_renderer_buffer_layout(output)
+
+    def test_adjacent_row_and_section_control_keeps_chant_boundary_natural(
+        self,
+    ) -> None:
+        """Keep the source section change before the chant, not inside it."""
+        template = (
+            "Maradul Barao Garadura{CTRL:0}{CTRL:2}"
+            "Chant it over and over.{CTRL:3}"
+            "Maradul Barao Garadura{CTRL:4}Maradul Barao Garadura!"
+        )
+        reviewed = (
+            "Maradul Barao Garadura… Chant it again and again. "
+            "Maradul Barao Garadura… Maradul Barao Garadura!"
+        )
+
+        output = layout_review_text("TT1A/g0/r29", reviewed, template)
+
+        self.assertEqual(
+            output,
+            "Maradul Barao Garadura…{CTRL:2}Chant it again and{CTRL:0}"
+            "again.{CTRL:3}Maradul Barao Garadura…{CTRL:4}"
+            "Maradul Barao Garadura!",
+        )
+
+    def test_section_anchor_does_not_treat_dr_as_sentence_end(self) -> None:
+        """Keep the newspaper heading intact rather than breaking after DR."""
+        template = (
+            '"Dr. Simon Vanishes"{CTRL:0}{CTRL:2}'
+            "Last night, Simon, 84,{CTRL:0}unveiled a warp theory."
+        )
+        reviewed = (
+            '"DR. SIMON VANISHES" Last night, Dr. Simon, 84, '
+            "revealed warp theory."
+        )
+
+        output = layout_review_text("TEST/g0/r2", reviewed, template)
+
+        self.assertTrue(output.startswith('"DR. SIMON VANISHES"{CTRL:2}'))
+        self.assertNotIn('"DR.{CTRL:2}', output)
+
+    def test_layout_normalizes_repeated_interword_spacing(self) -> None:
+        """Collapse source/editorial padding to one visible word space."""
+        output = layout_review_text(
+            "TEST/g0/r3",
+            "Chant   it    again and again.",
+            "Short source.",
+        )
+        visible = LAYOUT_CONTROL_RE.sub(" ", output)
+        self.assertNotIn("  ", visible)
+        self.assertEqual(
+            visible.split(), ["Chant", "it", "again", "and", "again."]
+        )
+
     def test_greedy_wrap_uses_maximum_available_width(self) -> None:
         """Fill each row greedily instead of balancing two short rows."""
         output = layout_review_text(
