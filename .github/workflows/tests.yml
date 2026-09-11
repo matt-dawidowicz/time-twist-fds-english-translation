@@ -6,6 +6,9 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: write
+
 concurrency:
   group: tests-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
@@ -19,6 +22,8 @@ jobs:
         python-version: ["3.11", "3.14"]
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
@@ -26,6 +31,18 @@ jobs:
       - run: python work/tools/check_public_tree.py
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt
+      - if: matrix.python-version == '3.14'
+        name: Apply canonical formatter and safe lint fixes
+        run: |
+          python -m black work/time_twist/production_translation.py work/tests/test_production_translation.py work/tests/test_production_typography.py
+          python -m ruff check --fix work/time_twist/production_translation.py work/tests/test_production_translation.py work/tests/test_production_typography.py || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add work/time_twist/production_translation.py work/tests/test_production_translation.py work/tests/test_production_typography.py
+          if ! git diff --cached --quiet; then
+            git commit -m "Apply canonical formatting to playtest fixes"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
       - name: Run focused canonical runtime tests
         run: time-twist-runtime smoke
       - run: python work/generate_bilingual_comparison_ci.py
@@ -49,18 +66,7 @@ jobs:
             work/build/production_translations
             work/build/production-source.zip
           if-no-files-found: error
-      - run: python -m black work
-      - if: matrix.python-version == '3.14'
-        name: Upload canonical Black formatting
-        uses: actions/upload-artifact@v4
-        with:
-          name: black-formatted-playtest-layout
-          path: |
-            work/time_twist/production_translation.py
-            work/tests/test_production_translation.py
-            work/tests/test_production_typography.py
-          if-no-files-found: error
-          retention-days: 1
+      - run: python -m black --check work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
