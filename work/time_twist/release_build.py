@@ -1,15 +1,17 @@
-"""Build the full production translation with the frozen entropy codec.
+"""Canonical entropy image construction for the playable English release.
 
-This path is intentionally separate from the certified release builder and
-from the discarded Adaptive255 spill candidate. It materializes the complete
-production English script, builds a deterministic nested dictionary optimized
-for the frozen entropy cost model, chooses the best NOV3-safe layout, converts
-every decoder-visible fixed stream to the same entropy grammar, and then
-installs the matching NOV2 entropy runtime directly.
+This module owns the one ROM-building implementation. It consumes already
+materialized production English, builds a deterministic nested dictionary for
+the frozen entropy cost model, chooses a NOV3-safe layout, converts every
+decoder-visible fixed stream to the same entropy grammar, and installs the
+matching NOV2 runtime. Release locking, publication, and promotion remain in
+:mod:`time_twist.release`.
 """
 
 from __future__ import annotations
 
+import hashlib
+import json
 import tempfile
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -41,16 +43,11 @@ from .entropy_scenario import (
 from .entropy_title import patched_nov4_entropy_title
 from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
-from .production_release import (
-    ProductionBuildError,
-    _encoded_groups,
-    _load_translation_map,
-    _semantic_record,
-    _sha256,
-)
+from .production_validation import encode_production_english
 from .project import source_dictionary_reference_floor
-from .release_metadata import SCENARIO_LOCATIONS
-from .scenario import parse_scenario_bank
+from .release_metadata import ReleaseBuildError, SCENARIO_LOCATIONS
+from .scenario import ScenarioBank, parse_scenario_bank, render_symbols
+from .scenario_validation import scenario_record_id
 from .textcodec import PackedSymbol
 from .title import DEFAULT_SUBTITLE
 from .ui import (
@@ -67,8 +64,83 @@ ScenarioGroups = tuple[tuple[tuple[PackedSymbol, ...], ...], ...]
 ScenarioDictionary = tuple[tuple[PackedSymbol, ...], ...]
 
 
+def _sha256(data: bytes) -> str:
+    """Return an uppercase SHA-256 digest for a built payload."""
+    return hashlib.sha256(data).hexdigest().upper()
+
+
+def _semantic_record(
+    record: tuple[PackedSymbol, ...] | list[PackedSymbol],
+) -> tuple[tuple[object, int], ...]:
+    """Drop decoder bit positions while retaining token kind and value."""
+    return tuple((symbol.kind, symbol.value) for symbol in record)
+
+
+def _load_translation_map(path: Path) -> dict[str, str]:
+    """Load one materialized production translation map."""
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise ReleaseBuildError(
+            f"cannot load production map: {path}"
+        ) from error
+    if not isinstance(payload, dict):
+        raise ReleaseBuildError(f"production map is not an object: {path}")
+    result: dict[str, str] = {}
+    for key, value in payload.items():
+        if not isinstance(key, str) or not isinstance(value, str) or not value:
+            raise ReleaseBuildError(
+                f"production map must contain nonempty string pairs: {path}"
+            )
+        result[key] = value
+    return result
+
+
+def _encoded_groups(
+    bank: ScenarioBank,
+    bank_name: str,
+    translations: dict[str, str],
+) -> ScenarioGroups:
+    """Validate and encode every reviewed record in source order."""
+    records_by_id = {
+        scenario_record_id(
+            bank_name, record.group_index, record.record_index
+        ): record
+        for record in bank.records
+    }
+    unknown = sorted(set(translations) - set(records_by_id))
+    missing = sorted(set(records_by_id) - set(translations))
+    if unknown or missing:
+        raise ReleaseBuildError(
+            f"{bank_name} production IDs differ from source; "
+            f"unknown={unknown[:1]}, missing={missing[:1]}"
+        )
+
+    encoded: dict[str, tuple[PackedSymbol, ...]] = {}
+    for record_id, record in records_by_id.items():
+        japanese = render_symbols(record.symbols, bank.dictionary)
+        encoded[record_id] = encode_production_english(
+            record_id, translations[record_id], japanese
+        )
+
+    return tuple(
+        tuple(
+            encoded[
+                scenario_record_id(
+                    bank_name,
+                    group_index,
+                    record.record_index,
+                )
+            ]
+            for record in bank.records
+            if record.group_index == group_index
+        )
+        for group_index in range(len(bank.group_addresses))
+    )
+
+
 @dataclass(frozen=True)
-class EntropyProductionBankResult:
+class ReleaseBankResult:
     """One entropy-coded scenario bank plus exact capacity statistics."""
 
     data: bytes
@@ -228,7 +300,7 @@ def _select_safe_variant(
             f"{closest[1]} dictionary entries"
         )
     )
-    raise ProductionBuildError(
+    raise ReleaseBuildError(
         f"{bank_name} cannot fit below NOV3 at ${NOV3_LOAD_ADDRESS:04X}; "
         f"{detail}"
     )
@@ -276,7 +348,7 @@ def _audit_menu(
             )
         )
     if len(decoded) != len(literal_menu):
-        raise ProductionBuildError(
+        raise ReleaseBuildError(
             f"{bank_name} entropy menu decoded {len(decoded)} records, "
             f"expected {len(literal_menu)}"
         )
@@ -286,17 +358,17 @@ def _audit_menu(
     ):
         expanded = expand_entropy_record(packed, expansions)
         if _semantic_record(expanded) != _semantic_record(expected):
-            raise ProductionBuildError(
+            raise ReleaseBuildError(
                 f"{bank_name} menu record {index} failed entropy round-trip"
             )
 
 
-def build_entropy_scenario_candidate(
+def build_release_scenario_bank(
     source: bytes,
     bank_name: str,
     *,
     translations_directory: Path,
-) -> EntropyProductionBankResult:
+) -> ReleaseBankResult:
     """Rebuild one Japanese scenario overlay into the NOV3-safe entropy layout."""
     with tempfile.TemporaryDirectory(
         prefix=f"time_twist_entropy_{bank_name}_"
@@ -356,11 +428,11 @@ def build_entropy_scenario_candidate(
         )
 
     if layout.loaded_end > NOV3_LOAD_ADDRESS:
-        raise ProductionBuildError(
+        raise ReleaseBuildError(
             f"{bank_name} entropy layout crosses NOV3: "
             f"${layout.loaded_end:04X} > ${NOV3_LOAD_ADDRESS:04X}"
         )
-    return EntropyProductionBankResult(
+    return ReleaseBankResult(
         data=layout.data,
         records=len(bank.records),
         dictionary_entries=len(variant.dictionary),
@@ -376,7 +448,7 @@ def build_entropy_scenario_candidate(
     )
 
 
-def build_entropy_images(
+def build_release_images(
     zenpen_raw: bytes,
     kouhen_raw: bytes,
     *,
@@ -385,7 +457,7 @@ def build_entropy_images(
     slide_title_asset: Path,
     subtitle: str = DEFAULT_SUBTITLE,
 ) -> tuple[dict[str, bytes], dict[str, object]]:
-    """Build Zenpen, Kouhen, and four-side frozen-entropy playtest images."""
+    """Build the canonical Zenpen, Kouhen, and four-side entropy images."""
     zenpen = FdsImage.from_bytes(zenpen_raw)
     kouhen = FdsImage.from_bytes(kouhen_raw)
     images = {"zenpen": zenpen, "kouhen": kouhen}
@@ -393,7 +465,7 @@ def build_entropy_images(
 
     for bank_name, (image_name, side) in SCENARIO_LOCATIONS.items():
         entry = images[image_name].sides[side].find_file(bank_name)
-        result = build_entropy_scenario_candidate(
+        result = build_release_scenario_bank(
             entry.data,
             bank_name,
             translations_directory=translations_directory,
@@ -447,7 +519,7 @@ def build_entropy_images(
     }
     output["four_side"] = combine_images([zenpen, kouhen]).to_bytes()
     manifest: dict[str, object] = {
-        "schema": "Time Twist frozen entropy production candidate v2",
+        "schema": "Time Twist canonical entropy image build v1",
         "codec": "frozen-entropy-v1",
         "decoder_format": "entropy-only",
         "record_framing": (

@@ -1,9 +1,8 @@
 """NOV2 runtime patch for the frozen production entropy grammar.
 
-Entropy mode installs directly on top of the proven NOV2 UI/runtime fixes. It
-retains only the two native dictionary-depth changes required by the entropy
-semantic handlers; the discarded Adaptive255 scanner, escape decoder, and
-high-RAM scan-limit staging are not installed first.
+This module owns the complete production NOV2 codec/runtime sequence directly.
+It combines the proven English renderer fixes, the two native dictionary-depth
+changes required for nested entropy references, and the frozen entropy decoder.
 
 Production records are bit-contiguous inside each independently addressed
 stream. The scanner therefore preserves ``$6A/$6B/$6C`` across record
@@ -21,11 +20,6 @@ from .entropy_codec import (
     CATEGORY_PAYLOAD_BITS,
     CATEGORY_PREFIXES,
 )
-from .production_runtime import (
-    ProductionRuntimeError,
-    RuntimePatch,
-    patch_nov2,
-)
 
 NOV2_LOAD_ADDRESS = 0x6000
 NOV2_SIZE = 0x4200
@@ -41,8 +35,89 @@ CATEGORY_REGION_SIZE = 70
 MENU_WIDTH_TABLE_CPU_ADDRESS = 0x8757
 
 
-class EntropyRuntimeError(ProductionRuntimeError):
+class EntropyRuntimeError(ValueError):
     """Report source drift or an invalid entropy runtime assembly."""
+
+
+@dataclass(frozen=True)
+class RuntimePatch:
+    """One source-verified size-neutral patch inside NOV2."""
+
+    file_offset: int
+    expected: bytes
+    replacement: bytes
+    label: str
+
+    def __post_init__(self) -> None:
+        """Validate offset and enforce size-neutral replacement."""
+        if self.file_offset < 0:
+            raise EntropyRuntimeError(f"{self.label}: negative file offset")
+        if len(self.expected) != len(self.replacement):
+            raise EntropyRuntimeError(f"{self.label}: patch changed size")
+
+    @property
+    def cpu_address(self) -> int:
+        """Return the loaded CPU address of the first patched byte."""
+        return NOV2_LOAD_ADDRESS + self.file_offset
+
+    def apply(self, data: bytearray) -> None:
+        """Apply the patch, accepting an already-patched buffer idempotently."""
+        end = self.file_offset + len(self.expected)
+        if end > len(data):
+            raise EntropyRuntimeError(
+                f"{self.label}: NOV2 ends before file 0x{end:04X}"
+            )
+        current = bytes(data[self.file_offset : end])
+        if current == self.replacement:
+            return
+        if current != self.expected:
+            raise EntropyRuntimeError(
+                f"{self.label}: source mismatch at file 0x{self.file_offset:04X} "
+                f"/ CPU ${self.cpu_address:04X}: got {current.hex(' ').upper()}"
+            )
+        data[self.file_offset : end] = self.replacement
+
+
+def _hex(value: str) -> bytes:
+    """Parse a compact hexadecimal patch literal."""
+    return bytes.fromhex(value)
+
+
+# Proven English-renderer fixes that entropy builds still require. These are
+# not a second codec: they repair native renderer behavior before the entropy
+# decoder itself is installed.
+BASE_RUNTIME_PATCHES = (
+    RuntimePatch(
+        file_offset=0x21D3,
+        expected=_hex("A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82"),
+        replacement=_hex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
+        label="extended dictionary entry-point fix",
+    ),
+    RuntimePatch(
+        file_offset=0x2378,
+        expected=_hex("AC"),
+        replacement=_hex("B0"),
+        label="extended code 63 dollar-sign tile redirect",
+    ),
+    RuntimePatch(
+        file_offset=0x34BC,
+        expected=_hex("A9 06"),
+        replacement=_hex("A9 08"),
+        label="eight-glyph menu renderer first row",
+    ),
+    RuntimePatch(
+        file_offset=0x34E7,
+        expected=_hex("A9 06"),
+        replacement=_hex("A9 08"),
+        label="eight-glyph menu renderer second row",
+    ),
+    RuntimePatch(
+        file_offset=0x38A3,
+        expected=_hex("38"),
+        replacement=_hex("48"),
+        label="eight-glyph selection bracket span",
+    ),
+)
 
 
 class _Assembler:
@@ -532,10 +607,9 @@ ENTROPY_RUNTIME_PATCHES = (
     ),
 )
 
-# These are the only Adaptive255-era semantics retained by entropy: the native
-# dictionary expander already saves the text pointer triplet on the CPU stack,
-# so a depth counter allows nested backward references to unwind correctly.
-# Everything else in the Adaptive255 runtime is superseded by entropy code.
+# The native dictionary expander already saves the text pointer triplet on the
+# CPU stack, so these two depth-counter patches are the only prerequisites for
+# nested backward entropy references.
 ENTROPY_PREREQUISITE_PATCHES = (
     RuntimePatch(
         file_offset=0x22C5,
@@ -568,15 +642,16 @@ def patch_entropy_nov2(data: bytes) -> bytes:
 
     The operation is size-neutral, source-verified, and idempotent. The caller
     applies :func:`time_twist.ui.patched_nov2_ui`; this function then applies
-    the proven non-Adaptive production runtime fixes, the two nested-dictionary
-    prerequisites, and the entropy runtime itself. No Adaptive255 scanner,
-    escape decoder, or $E000 scan-limit staging is installed.
+    the proven renderer fixes, the two nested-dictionary prerequisites, and the
+    entropy runtime itself. No alternate decoder or scan-limit mode exists.
     """
     if len(data) != NOV2_SIZE:
         raise EntropyRuntimeError(
             f"NOV2 must be {NOV2_SIZE} bytes, got {len(data)}"
         )
-    result = bytearray(patch_nov2(data))
+    result = bytearray(data)
+    for base_patch in BASE_RUNTIME_PATCHES:
+        base_patch.apply(result)
     for prerequisite_patch in ENTROPY_PREREQUISITE_PATCHES:
         prerequisite_patch.apply(result)
     _guard_entropy_prerequisites(result)

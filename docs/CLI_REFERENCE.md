@@ -85,9 +85,9 @@ Without `--update`, verifies the Japanese baselines, all 13 playable scenario
 maps, and both title assets against the source lock. The default is
 `PROJECT/work/release_sources.json`.
 
-Source-lock schema v2 hashes translation JSON after CRLF/bare-CR to LF
-normalization, while FDS baselines and PNG artwork remain byte-exact `raw`
-inputs. The lock document's identity is also LF-normalized, so the same
+Source-lock schema v3 hashes base translation, reviewed production, and
+production-override JSON after CRLF/bare-CR to LF normalization, while FDS
+baselines and PNG artwork remain byte-exact `raw` inputs. The lock document's identity is also LF-normalized, so the same
 approved checkout has one `source_lock_sha256` on Windows and Unix.
 
 `--update` rewrites the lock from the current project inputs. It approves input
@@ -101,13 +101,13 @@ Python file, project metadata, or the release target. The canonical
 Rebuilds all 13 scenario banks, applies fixed UI/font/title patches, produces
 Zenpen and Kouhen, combines four sides, and writes `release_manifest.json`.
 
-For the 11 banks with scenario menu tables, this canonical path packs the
-unabbreviated labels together with dialogue, uses the guarded 68-entry English
-dictionary decoder, regenerates the menu page pointers, and preserves the
-overlay's original fixed suffix. Use `release-build` for the full-word playable
-result; inspection commands do not produce release candidates.
+The command first materializes the reviewed production English from the locked
+base maps, editorial review JSON, and explicit overrides. It then uses the
+single frozen entropy codec/runtime for all decoder-reachable scenario and
+fixed-text streams, preserving native byte-addressed entry points, menu page
+boundaries, fixed suffixes, and the `$D7B5` NOV3 ceiling.
 
-Release manifest schema v4 is a complete audit record. It includes source-lock
+Release manifest schema v5 is a complete audit record. It includes source-lock
 and release-code provenance, Python/Pillow environment versions, all
 scenario-bank capacity/hash reports, fixed-component hashes, target state, and
 canonical final-output records. Generated manifests are structurally validated
@@ -136,7 +136,7 @@ the executing package is identical to the checkout release-code tree, and
 checks the reviewed candidate files against their manifest records.
 
 Promotion then performs an **independent candidate-mode rebuild** from the
-validated source lock and current release code. The fresh rebuild's complete
+validated source lock and current release code. The fresh rebuild's codec contract, fixed-stream coverage, complete
 `scenario_banks`, `component_sha256`, and `outputs` records must exactly equal
 the reviewed manifest. This means a hand-edited manifest cannot promote
 arbitrary bytes merely by supplying matching hand-edited hashes.

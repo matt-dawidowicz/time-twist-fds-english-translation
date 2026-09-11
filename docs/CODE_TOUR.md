@@ -76,7 +76,9 @@ saves, or scene progression. Those require the routes in
 | `charmap.py` | Defines the available English symbol values and visible widths. | Unsupported characters fail before any packed data is written. |
 | `english.py` | Encodes English, validates controls, line widths, and word breaks. | Translation wording is not allowed to rearrange recovered control codes. |
 | `textcodec.py` | Reads/writes the native bitstream records, dictionary symbols, controls, and alignment. | It is the only layer that should reason directly about packed symbol bits. |
-| `compression.py` | Chooses a legal 31-entry native or 68-entry patched-English dictionary and compresses scenario/menu groups. | Compression must decompress to the exact intended symbol stream. |
+| `compression.py` | Provides native/flat compression for source analysis and legacy-format diagnostics. | It is not the playable release codec. |
+| `entropy_codec.py` / `entropy_compression.py` | Encode the frozen production prefix grammar and optimize its nested dictionary. | Every candidate must round-trip to the exact intended symbols. |
+| `entropy_scenario.py` | Places entropy scenario/menu streams without crossing resident NOV3. | Independently addressed native entry points remain independently addressable. |
 | `scenario.py` | Parses recovered scenario-bank layout and rebuilds a bank. | Fixed record addresses and tails are preserved unless a recovered layout says otherwise. |
 | `scenario_validation.py` | Shares the policy used by tools and release building. | A text change is rejected if it breaks ID, glyph, control, or display rules. |
 | `project.py` | Stores named bank facts, component locations, and approved dictionary reservations. | Project constants express recovered Time Twist facts, not configurable defaults. |
@@ -109,7 +111,8 @@ can actually be fixed.
 | Module | Responsibility | Important boundary |
 | --- | --- | --- |
 | `release_metadata.py` | Defines source locks, code provenance, manifests, and strict validation. | Metadata records current facts only; unsupported schemas fail rather than being silently upgraded. |
-| `release.py` | Builds scenario banks, patches components, creates candidate images, and promotes reviewed output. | A promotion rebuilds independently and compares hashes before it writes a target. |
+| `release_build.py` | Owns the single entropy image-construction path for all 13 banks plus NOV2/NOV4/SON-KOUH. | It does not approve or publish output. |
+| `release.py` | Materializes reviewed production English, delegates image construction, publishes candidates, and promotes reviewed output. | A promotion rebuilds independently and compares hashes before it writes a target. |
 | `cli_parser.py` | Defines commands and human-facing command help. | Parsing has no FDS-writing side effects. |
 | `cli_commands.py` | Connects parsed arguments to the narrow project transforms. | Command handlers report known validation failures without misleading tracebacks. |
 | `cli.py` | Provides the stable command-line public API. | Tools should import the facade, not depend on internal module placement. |
