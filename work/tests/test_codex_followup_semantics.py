@@ -58,6 +58,16 @@ class CodexFollowupSemanticTests(unittest.TestCase):
         text = _production("TT3A")["TT3A/g1/r9"]
         self.assertIn("A pendant.{CTRL:2}Frankie: From Grandma,", text)
 
+    def test_bethlehem_inn_turn_keeps_its_ctrl2_boundary(self) -> None:
+        """Keep Joseph's plea separate from the host's next reply."""
+        text = _production("TT6B")["TT6B/g1/r13"]
+        self.assertIn("Joseph: Please...{CTRL:2}Host: Sleep by the road", text)
+
+    def test_angel_reveal_keeps_narration_to_joseph_ctrl2(self) -> None:
+        """Keep the reveal pause before Joseph recognizes the apparent angel."""
+        text = _production("TT6C")["TT6C/g1/r10"]
+        self.assertIn("back again...!{CTRL:0}{CTRL:2}Joseph: Angel!", text)
+
     def test_quoted_dr_simon_heading_stays_whole(self) -> None:
         """Periods inside a quoted heading must not create a fake speaker label."""
         text = _production("TT1B")["TT1B/g2/r12"]
