@@ -216,7 +216,10 @@ def _is_strong_semantic_break(words: list[str], end_word: int) -> bool:
             "SR",
             "U.S",
         }
-        return not (token.endswith(".") and (len(stem) <= 2 or stem.upper() in abbreviations))
+        return not (
+            token.endswith(".")
+            and (len(stem) <= 2 or stem.upper() in abbreviations)
+        )
     return False
 
 
