@@ -264,6 +264,8 @@ def _speaker_label_spans(text: str) -> tuple[tuple[int, int], ...]:
             while boundary >= 0 and text[boundary] not in ".!?…:":
                 boundary -= 1
             raw = text[boundary + 1 : colon]
+            if raw.lstrip(" \t\n\r").startswith(('"', "“", "‘")):
+                continue
             stripped = raw.lstrip(" \t\n\r\"“”'‘’()[]")
             start = boundary + 1 + len(raw) - len(stripped)
             candidate = stripped.rstrip(" \t\n\r\"“”'‘’()[]")
@@ -868,7 +870,8 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
         validate_renderer_buffer_layout(output)
     except ProductionTranslationError as error:
         raise ProductionTranslationError(f"{record_id}: {error}") from error
-    if CONTROL_RE.sub(" ", output).split() != reviewed.split():
+    reviewed_visible_words = CONTROL_RE.sub(" ", reviewed).split()
+    if CONTROL_RE.sub(" ", output).split() != reviewed_visible_words:
         raise ProductionTranslationError(
             f"{record_id}: layout changed reviewed prose"
         )
@@ -894,6 +897,7 @@ def merged_translation_map(
         label=f"{bank_name} base translation",
     )
     selected = dict(base)
+    explicit_control_overrides: set[str] = set()
 
     if review_directory is not None:
         review = _review_map(bank_name, review_directory)
@@ -922,13 +926,22 @@ def merged_translation_map(
                     f"{unknown[:3]}"
                 )
             selected.update(overrides)
+            explicit_control_overrides.update(
+                record_id
+                for record_id, override_text in overrides.items()
+                if CONTROL_RE.search(override_text)
+            )
 
     laid_out: dict[str, str] = {}
     for record_id, selected_text in selected.items():
-        prose = " ".join(CONTROL_RE.sub(" ", selected_text).split())
+        reviewed_text = selected_text
+        if record_id not in explicit_control_overrides:
+            reviewed_text = " ".join(
+                CONTROL_RE.sub(" ", selected_text).split()
+            )
         laid_out[record_id] = layout_review_text(
             record_id,
-            prose,
+            reviewed_text,
             base[record_id],
         )
     return laid_out

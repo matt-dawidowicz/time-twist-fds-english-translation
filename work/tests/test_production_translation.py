@@ -286,6 +286,72 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
             )
             self.assertEqual(merged[record_id], "Override.")
 
+    def test_explicit_review_controls_preserve_visible_prose(self) -> None:
+        """Allow final editorial overrides to pin source-matching control sites."""
+        template = "Alpha{CTRL:1}Beta{CTRL:0}Gamma"
+        reviewed = (
+            "First thought.{CTRL:1}Second thought.{CTRL:0}Third thought."
+        )
+
+        output = layout_review_text("TEST/g0/r4", reviewed, template)
+
+        self.assertIn("First thought.{CTRL:1}Second thought.", output)
+        self.assertIn("{CTRL:0}Third thought.", output)
+        self.assertEqual(
+            re.sub(r"\{CTRL:[0-7]\}", " ", output).split(),
+            re.sub(r"\{CTRL:[0-7]\}", " ", reviewed).split(),
+        )
+
+    def test_codex_semantic_control_regressions(self) -> None:
+        """Keep reviewed semantic boundaries stable across the playtest fixes."""
+
+        def production(bank_name: str) -> dict[str, str]:
+            return merged_translation_map(
+                bank_name,
+                base_directory=ROOT / "work" / "translations",
+                override_directory=ROOT / "work" / "production_overrides",
+                review_directory=ROOT / "review" / "production_retranslation",
+            )
+
+        tt1b = production("TT1B")
+        self.assertTrue(
+            tt1b["TT1B/g0/r14"].startswith('"Sabbath Box"{CTRL:0}{CTRL:2}')
+        )
+        for record_id in (
+            "TT1B/g0/r15",
+            "TT1B/g0/r16",
+            "TT1B/g0/r17",
+            "TT1B/g0/r18",
+        ):
+            self.assertRegex(tt1b[record_id], r'^"[^"]+":\{CTRL:2\}')
+
+        tt1a = production("TT1A")
+        self.assertNotIn("Dr.{CTRL:2}Simon", tt1a["TT1A/g0/r1"])
+        self.assertNotIn("a{CTRL:2}cool-headed", tt1a["TT1A/g0/r23"])
+
+        tt4 = production("TT4")
+        self.assertIn("underworld.{CTRL:2}Very well.", tt4["TT4/g3/r23"])
+
+        tt3a = production("TT3A")
+        self.assertIn(
+            "{CTRL:0}{CTRL:0}Signed, Rebecca.",
+            tt3a["TT3A/g3/r13"],
+        )
+
+        t25 = production("T25")
+        self.assertTrue(
+            t25["T25/g0/r5"].startswith("Where to now, Devil?{CTRL:1}")
+        )
+
+        t22 = production("T22")
+        self.assertIn("depraved{CTRL:6}The Church", t22["T22/g1/r7"])
+
+        tt6c = production("TT6C")
+        self.assertIn(
+            "{CTRL:3}Me: Right. Jesus Christ.",
+            tt6c["TT6C/g3/r8"],
+        )
+
     def test_entire_reviewed_corpus_materializes_buffer_safe(self) -> None:
         """Prove all 1,299 reviewed records preserve controls and row state."""
         with tempfile.TemporaryDirectory(
