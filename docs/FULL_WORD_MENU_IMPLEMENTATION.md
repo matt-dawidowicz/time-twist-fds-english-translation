@@ -8,16 +8,13 @@ general license to move arbitrary packed text.
 ## The original limitation
 
 The first English menu patch preserved every Japanese record's byte length.
-That was safe, but many source slots were only two to six bytes long. The
-native packed-text decoder also exposed only 31 one-based dictionary entries.
-Even with better dictionary search, those two constraints could not encode all
-full labels simultaneously. The readable fallback table therefore still
-contained abbreviations such as `BOD`, `TRGH`, and `JORDN`.
+That was safe, but many source slots were only two to six bytes long. Later
+flat-codec work reclaimed additional dictionary values, but that representation
+was still a transitional implementation and is no longer a release path.
 
-Exact size modeling proved that a different search over the same 31-entry,
-fixed-slot representation could recover bytes but could not remove every
-abbreviation. The solution required using more of the format already present
-in the game.
+The current solution combines the recovered page-addressing model with the
+single frozen entropy codec used by all text reachable through the patched NOV2
+decoder.
 
 ## Recovered menu addressing
 
@@ -32,80 +29,77 @@ The 11 scenario banks with large fixed menu tables do not contain one absolute
 | `$001A` | `$A21A` | Menu page-pointer table |
 
 The renderer starts records 0-31 from `$A214`. The table addressed by `$A21A`
-contains the starts of records 32, 64, and 96 when those pages exist. The code
-then scans byte-aligned record separators within the selected 32-record page.
+contains the starts of records 32, 64, and 96 when those pages exist. Within a
+page the decoder advances through separators rather than consulting one pointer
+per label.
 
-This means individual records inside a page may change length. The release
+This means individual records inside a page may change length. The canonical
 builder can safely repack the table when it also:
 
 1. regenerates every record-32/64/96 page pointer;
 2. moves the two following secondary tables by the same delta;
 3. updates their `$A210` and `$A212` base pointers;
 4. shifts scenario group zero and all scenario pointers by that delta; and
-5. leaves the original fixed suffix and complete overlay size unchanged.
+5. preserves every fixed tail and the bank's NOV3 load boundary.
 
-Every source table is SHA-256 guarded. The relocation also rejects a bank if
-the recovered secondary block contains an internal absolute pointer into
-itself, because such a pointer would need an additional relocation rule.
+Every source table is guarded. Relocation also rejects a bank if a recovered
+secondary block contains an internal absolute pointer that would require an
+unmodeled relocation rule.
 
-## Extending the English dictionary to 68 entries
+## Canonical entropy packing
 
-Native dictionary references use the nine-bit `1110xxxxx` form and name
-entries 1-31. English extended literals use the nine-bit `110xxxxxx` form, but
-the installed English character map needs only values 37-62. Values 0-36 are
-otherwise unreachable in translated English.
+`release-build` encodes scenario dialogue and full-word menu labels through
+`entropy_compression.py` and `entropy_scenario.py`. The generated dictionary may
+contain up to 255 entries; dictionary definitions can reference earlier entries
+only, keeping expansion acyclic and bounded.
 
-The release reclaims those 37 values as dictionary entries 32-68:
+Entropy records are **not** the byte-aligned native format. Records inside one
+independently addressed stream are bit-contiguous and pad only at the stream
+boundary. The large scenario menu tables therefore use one independently
+addressed stream per 32-record page, because the recovered page index stores
+byte addresses.
 
-| Encoded form | Native meaning | Patched English meaning |
-| --- | --- | --- |
-| `1110xxxxx` | Dictionary 1-31 | Dictionary 1-31 |
-| `110000000` through `110100100` | Extended glyph 0-36 | Dictionary 32-68 |
-| `110100101` through `110111111` | Extended glyph 37-63 | Extended glyph 37-63 |
+The NOV2 entropy runtime decodes the same semantic token classes as the native
+engine but through the frozen prefix grammar. There is no second Adaptive255 or
+68-entry release decoder to select at build time.
 
-NOV2's decoder change is an exact 13-byte replacement at file `$21D3`, loaded
-at CPU `$81D3`:
+## Dynamic selection brackets
 
-```text
-source:      A5 3A C9 04 90 07 C9 20 B0 09 4C ED 81
-replacement: A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82
-```
+Menu labels can now have different visible widths. The entropy runtime records
+the decoded width of each menu label in the existing staging area and derives
+the selected label's right-bracket coordinate from that width. This replaces
+the old fixed six/eight-glyph span without placing code or scratch state in the
+live `$9390-$93AF` palette region.
 
-Values below 37 add 32 and enter the existing dictionary expander at `$82BE`.
-Values 37 and above retain the existing extended-glyph path at `$8226`. The
-patch does not grow or relocate NOV2. Native Japanese parsing remains the
-default in the tools; patched interpretation is enabled only for rebuilt
-English release data.
+The text blitter still caps visible menu labels at the recovered eight-glyph
+surface. Full-word here means the complete configured label, not arbitrary
+unbounded menu prose.
 
-## Joint menu/dialogue packing
+## Fixed decoder-visible text
 
-For a menu-bearing bank, `release-build` encodes the complete menu table as an
-additional compression group beside the scenario groups. It gives the
-compressor the combined recovered menu-plus-scenario reservation, subtracting
-the scenario group-pointer and menu page-pointer bytes before compression.
+The entropy-only runtime creates a global format contract: every packed-text
+stream that can reach it must also be entropy encoded. The canonical builder
+therefore owns more than the 11 large menu tables:
 
-The resulting dictionary is shared by dialogue and menu labels. The canonical
-release permits up to 68 entries, then verifies the exact packed size before
-writing. There is no abbreviated fallback in the release path.
+- NOV4 title/start-menu and internal fixed text;
+- NOV4's local dictionary;
+- TT1A's fixed blood-type/month/confirmation selector records; and
+- the TT1A renderer copy required by the generic sequential scanner.
 
-## Current measurements
+TT1A is special because native code can jump directly to individual selector
+records. Those native byte addresses remain independently aligned entropy
+streams; the separate renderer copy supplies the sequential traversal contract.
 
-The [generated progress report](../outputs/Time_Twist_translation_progress.md)
-recomputes conservative fits for the current text. Exact optimized sizes and
-output SHA-256 identities belong to the freshly built candidate's
-`release_manifest.json`, as described in the
-[maintainer release process](MAINTAINER_RELEASE_PROCESS.md).
+## Current measurements and audit
+
+The public workbook still reports a conservative flat/native fit diagnostic for
+editorial review. It is not the release codec. Exact entropy dictionary sizes,
+spill placement, loaded-end addresses, NOV3 headroom, component hashes, and
+final image SHA-256 identities belong to a fresh `release_manifest.json`.
 
 The source defines 721 menu labels. The candidate audit must decode every label
-back to its canonical full text with no mismatches or width failures. A shortened
-label is a mismatch; retired fallback labels are not accepted. Reports reject
-nonmatching audits before writing candidate summaries.
-
-## Verification and remaining gate
-
-Regression coverage locks the native/patched token distinction, the exact
-NOV2 patch bytes and address, deterministic release output, relocated menu
-page pointers, and full-label decode equality. The audit tool is:
+back to its configured full text with no mismatches or width failures. A
+shortened label is a mismatch; retired fallback labels are not accepted.
 
 ```powershell
 python work/tools/audit_fixed_menu_labels.py `
@@ -113,8 +107,8 @@ python work/tools/audit_fixed_menu_labels.py `
   --output-csv build/candidate/fixed_menu_label_audit.csv
 ```
 
-Static and binary checks prove that the full labels fit and decode exactly.
-They cannot prove every runtime call site. Manual playtesting must still open
-menus on every page boundary, move the cursor through them, select entries,
-use Back/Cancel, save/load, and complete the Zenpen-to-Kouhen disk flow before
+Static and binary checks prove that the labels encode and decode exactly. They
+cannot prove every runtime call site. Manual playtesting must still open menus
+across page boundaries, move the cursor through them, select entries, use
+Back/Cancel, save/load, and complete the Zenpen-to-Kouhen disk flow before
 promotion.

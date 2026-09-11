@@ -23,13 +23,16 @@ AUDIT_FIELDNAMES = (
     "candidate_fds_sha256",
     "bank_sha256",
 )
-COMPRESSION_FIELDNAMES = (
+ENTROPY_LAYOUT_FIELDNAMES = (
     "bank",
     "records",
     "dictionary_entries",
-    "packed_bytes",
-    "capacity_bytes",
-    "remaining_bytes",
+    "scenario_bytes",
+    "menu_bytes",
+    "dictionary_bytes",
+    "spill_bytes",
+    "loaded_end",
+    "nov3_headroom",
     "sha256",
 )
 REPORTABLE_STATUSES = frozenset({"full-word"})
@@ -220,26 +223,29 @@ def report(
         json.dumps(summary, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
     )
-    compression_rows = []
+    layout_rows = []
     scenario_banks = manifest["scenario_banks"]
     assert isinstance(scenario_banks, dict)
     for bank, result in sorted(scenario_banks.items()):
         assert isinstance(result, dict)
-        compression_rows.append(
+        layout_rows.append(
             {
                 "bank": bank,
                 "records": str(result["records"]),
                 "dictionary_entries": str(result["dictionary_entries"]),
-                "packed_bytes": str(result["packed_bytes"]),
-                "capacity_bytes": str(result["capacity_bytes"]),
-                "remaining_bytes": str(result["remaining_bytes"]),
+                "scenario_bytes": str(result["scenario_bytes"]),
+                "menu_bytes": str(result["menu_bytes"]),
+                "dictionary_bytes": str(result["dictionary_bytes"]),
+                "spill_bytes": str(result["spill_bytes"]),
+                "loaded_end": str(result["loaded_end"]),
+                "nov3_headroom": str(result["nov3_headroom"]),
                 "sha256": str(result["sha256"]),
             }
         )
     _write_csv(
-        output_dir / "compression_report_by_bank.csv",
-        COMPRESSION_FIELDNAMES,
-        compression_rows,
+        output_dir / "entropy_layout_report_by_bank.csv",
+        ENTROPY_LAYOUT_FIELDNAMES,
+        layout_rows,
     )
     return summary
 

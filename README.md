@@ -37,10 +37,12 @@ from those pages.
   complete configured wording: no abbreviated fallbacks and no mismatches.
 - Scenario, fixed UI, font, title, and FDS-container changes are built by one
   source-locked release pipeline.
-- The release jointly packs dialogue and menus with a guarded 68-entry English
-  dictionary extension while preserving every overlay's fixed suffix.
-- The workbook's patch-safe field mirrors the actual playable sources;
-  alternative editorial rewrites remain in the natural-translation field.
+- The release uses one entropy-only text pipeline for scenario dialogue, menus,
+  NOV4 fixed text, and TT1A selectors while preserving native entry points and
+  the resident NOV3 boundary.
+- The workbook's patch-safe field remains the certified base-map/conservative
+  analysis view; the release materializer applies the locked production-review
+  layer before entropy encoding.
 - The generated images remain **playtest builds**. A complete emulator
   playthrough is still required before calling the translation final.
 
@@ -48,12 +50,13 @@ from those pages.
 
 | Material | Authority |
 | --- | --- |
-| `work/translations/*.json` | Playable scenario dialogue and narration |
+| `work/translations/*.json` | Certified base scenario dialogue and native control topology |
+| `review/production_retranslation/*.json` + `work/production_overrides/*.json` | Reviewed production wording layered over the base maps |
 | `work/time_twist/ui_fixed_tables.py` and `ui.py` | Playable full-word menu and fixed-interface text |
 | `work/time_twist/font.py` and `title.py` | Playable font/title transformations |
 | `work/release_sources.json` | Approved non-code release inputs and hashes |
 | `work/release_target.json` | Created only by promotion; reviewed v2 output/provenance authority |
-| `outputs/Time_Twist_complete_translation_workbook.*` | Review surface; patch-safe text mirrors the playable sources |
+| `outputs/Time_Twist_complete_translation_workbook.*` | Review surface; patch-safe scenario text mirrors the certified base maps |
 
 Do not edit generated ROMs or rebuilt banks as source material.
 
@@ -64,7 +67,7 @@ Do not edit generated ROMs or rebuilt banks as source material.
 | Dialogue, narration, or a scenario choice | `work/translations/<BANK>.json` and [translation contributor guide](CONTRIBUTING_TRANSLATION.md) |
 | A fixed menu, disk prompt, Save/Load label, or other shared UI | `work/time_twist/ui.py`, `ui_fixed_tables.py`, and [full-word menu implementation](docs/FULL_WORD_MENU_IMPLEMENTATION.md) |
 | Font glyphs or the title sequence | `work/time_twist/font.py`, `work/time_twist/title.py`, and [title sequence](docs/TITLE_SEQUENCE.md) |
-| Candidate creation, source locks, or reproducibility | `work/time_twist/release.py`, `release_metadata.py`, and [release commands](docs/CLI_REFERENCE.md#release-commands) |
+| Candidate creation, source locks, or reproducibility | `work/time_twist/release.py`, `release_build.py`, `release_metadata.py`, and [release commands](docs/CLI_REFERENCE.md#release-commands) |
 | A problem seen while playing | [playtesting guide](PLAYTESTING.md) |
 | Binary/format concepts | [architecture](docs/ARCHITECTURE.md) and [format reference](docs/FORMATS.md) |
 
@@ -78,7 +81,8 @@ Git history preserves retired implementation notes, commands, and candidate snap
 | `work/time_twist/` | FDS parsing, compression, text, font, title, UI, and release code |
 | `work/tests/` | Fixture-free public unit tests |
 | `work/integration_tests/` | ROM-derived integration tests for maintainers |
-| `work/translations/` | Authoritative playable scenario maps |
+| `work/translations/` | Certified base scenario maps and native control topology |
+| `review/production_retranslation/` | Registered reviewed production wording |
 | `work/source_records/` | Decoded Japanese/source-structure records; no English authority |
 | `work/translation_workbook_banks/` | Per-bank linguistic review checkpoints |
 | `work/title_assets/` | Contributor-created English title reference art |
@@ -93,11 +97,10 @@ CSV and JSON versions sit beside it.
 The workbook deliberately preserves two English versions when hardware limits
 force a scenario-line compromise. `final_natural_english_translation` is the complete,
 unconstrained translation that a future engine expansion or bank-optimization
-effort should aim to display. `patch_safe_english_translation` is the exact
-wording used by the current playable build after accounting for line width,
-control-code layout, compression, and fixed bank footprints. A shortened
-patch-safe scenario line therefore does **not** mean that the full translation
-was lost. The canonical release now installs the complete configured fixed-menu
+effort should aim to display. `patch_safe_english_translation` is the certified base-map rendering used by
+the workbook's conservative validation. The canonical release then materializes
+the separately registered production-review layer, regenerates safe English
+row/scroll geometry, and entropy-encodes the complete configured fixed-menu
 labels through the recovered page-indexed layout.
 See [`docs/WORKBOOK_PIPELINE.md`](docs/WORKBOOK_PIPELINE.md#preserving-the-full-translation)
 before moving natural-field text into the ROM.

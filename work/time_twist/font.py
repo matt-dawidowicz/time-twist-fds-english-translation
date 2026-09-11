@@ -1,8 +1,9 @@
 """Generate and install the translated 8x8 dialogue font in NOV4.
 
-The game expands inverse one-bit glyph rows stored in NOV4.  Each deterministic
-5x7 pattern is inset one pixel inside an 8x8 tile, avoiding desktop-font
-antialiasing and ensuring the same binary output on every machine.
+The game expands inverse one-bit glyph rows stored in NOV4.  The production
+font uses deterministic five-pixel-wide patterns on an explicit eight-row
+cell so capitals, digits, lowercase letters, descenders, and punctuation share
+stable vertical metrics on real NES hardware.
 
 Tile IDs are derived from the common/extended runtime lookup tables used by
 the packed text renderer.  Updating a character map therefore also requires a
@@ -16,6 +17,7 @@ import hashlib
 from .english import (
     COMMON_CHARACTERS,
     EXTENDED_CHARACTERS,
+    TYPOGRAPHIC_ALIASES,
 )
 
 NOV4_FONT_BASE_OFFSET = 0x1B7D
@@ -36,12 +38,12 @@ SUPPORTED_NOV4_FONT_SOURCE_SHA256 = frozenset(
     }
 )
 
-# A deterministic 5x7 pixel alphabet.  The previous milestone rasterized an
-# antialiased desktop font at only eight pixels high, leaving broken diagonals
-# and one-pixel fragments on real game screens.  Uppercase and lowercase codes
-# have distinct glyphs so dialogue, menus, and disk-change strings can use
-# natural mixed case.
-PIXEL_FONT_5X7 = {
+# Deterministic five-pixel-wide patterns in an eight-row cell.  Most glyphs
+# occupy seven rows and leave row 7 blank.  True descenders use row 7 instead
+# of being squeezed upward, which keeps their x-height aligned with ordinary
+# lowercase text.  The historical PIXEL_FONT_5X7 name remains as an alias for
+# callers that imported it directly.
+PIXEL_FONT_5X8 = {
     "A": ("01110", "10001", "10001", "11111", "10001", "10001", "10001"),
     "B": ("11110", "10001", "10001", "11110", "10001", "10001", "11110"),
     "C": ("01111", "10000", "10000", "10000", "10000", "10000", "01111"),
@@ -83,17 +85,54 @@ PIXEL_FONT_5X7 = {
         "01110",
     ),
     "f": ("00110", "01001", "01000", "11100", "01000", "01000", "01000"),
-    "g": ("00000", "01111", "10001", "10001", "01111", "00001", "01110"),
+    # Descenders use row 7 rather than lifting the whole glyph one pixel.
+    "g": (
+        "00000",
+        "00000",
+        "01111",
+        "10001",
+        "10001",
+        "01111",
+        "00001",
+        "01110",
+    ),
     "h": ("10000", "10000", "10110", "11001", "10001", "10001", "10001"),
     "i": ("00100", "00000", "01100", "00100", "00100", "00100", "01110"),
-    "j": ("00010", "00000", "00110", "00010", "00010", "10010", "01100"),
+    "j": (
+        "00010",
+        "00000",
+        "00110",
+        "00010",
+        "00010",
+        "00010",
+        "10010",
+        "01100",
+    ),
     "k": ("10000", "10000", "10010", "10100", "11000", "10100", "10010"),
     "l": ("01100", "00100", "00100", "00100", "00100", "00100", "01110"),
     "m": ("00000", "00000", "11010", "10101", "10101", "10101", "10101"),
     "n": ("00000", "00000", "10110", "11001", "10001", "10001", "10001"),
     "o": ("00000", "00000", "01110", "10001", "10001", "10001", "01110"),
-    "p": ("00000", "00000", "11110", "10001", "11110", "10000", "10000"),
-    "q": ("00000", "01111", "10001", "10001", "01111", "00001", "00001"),
+    "p": (
+        "00000",
+        "00000",
+        "11110",
+        "10001",
+        "10001",
+        "11110",
+        "10000",
+        "10000",
+    ),
+    "q": (
+        "00000",
+        "00000",
+        "01111",
+        "10001",
+        "10001",
+        "01111",
+        "00001",
+        "00001",
+    ),
     "r": ("00000", "00000", "10110", "11001", "10000", "10000", "10000"),
     "s": ("00000", "00000", "01111", "10000", "01110", "00001", "11110"),
     "t": ("01000", "01000", "11100", "01000", "01000", "01001", "00110"),
@@ -101,7 +140,16 @@ PIXEL_FONT_5X7 = {
     "v": ("00000", "00000", "10001", "10001", "10001", "01010", "00100"),
     "w": ("00000", "00000", "10001", "10001", "10101", "10101", "01010"),
     "x": ("00000", "00000", "10001", "01010", "00100", "01010", "10001"),
-    "y": ("00000", "10001", "10001", "10001", "01111", "00001", "01110"),
+    "y": (
+        "00000",
+        "00000",
+        "10001",
+        "10001",
+        "10001",
+        "01111",
+        "00001",
+        "01110",
+    ),
     "z": ("00000", "00000", "11111", "00010", "00100", "01000", "11111"),
     "0": ("01110", "10001", "10011", "10101", "11001", "10001", "01110"),
     "1": ("00100", "01100", "00100", "00100", "00100", "00100", "01110"),
@@ -113,12 +161,16 @@ PIXEL_FONT_5X7 = {
     "7": ("11111", "00001", "00010", "00100", "01000", "01000", "01000"),
     "8": ("01110", "10001", "10001", "01110", "10001", "10001", "01110"),
     "9": ("01110", "10001", "10001", "01111", "00001", "00001", "01110"),
+    "$": ("00100", "01111", "10100", "01110", "00101", "11110", "00100"),
     ",": ("00000", "00000", "00000", "00000", "00100", "00100", "01000"),
     ".": ("00000", "00000", "00000", "00000", "00000", "00100", "00100"),
     "(": ("00010", "00100", "01000", "01000", "01000", "00100", "00010"),
     ")": ("01000", "00100", "00010", "00010", "00010", "00100", "01000"),
-    "-": ("00000", "00000", "00000", "11111", "00000", "00000", "00000"),
+    # Keep the hyphen visibly shorter than the em dash.
+    "-": ("00000", "00000", "00000", "01110", "00000", "00000", "00000"),
     "/": ("00001", "00010", "00010", "00100", "01000", "01000", "10000"),
+    "—": ("00000", "00000", "00000", "11111", "00000", "00000", "00000"),
+    "…": ("00000", "00000", "00000", "00000", "00000", "00000", "10101"),
     "!": ("00100", "00100", "00100", "00100", "00100", "00000", "00100"),
     '"': ("01010", "01010", "01010", "00000", "00000", "00000", "00000"),
     "'": ("00100", "00100", "01000", "00000", "00000", "00000", "00000"),
@@ -126,9 +178,14 @@ PIXEL_FONT_5X7 = {
     "?": ("01110", "10001", "00001", "00010", "00100", "00000", "00100"),
 }
 
-# Runtime tile IDs used by extended codes 37-63.  These are NOV2's original
-# lookup-table values at $835E-$8378; retaining them also retains the original
-# digit and punctuation semantics for non-scenario displays.
+# Backwards-compatible public name used by existing tests/tools.
+PIXEL_FONT_5X7 = PIXEL_FONT_5X8
+
+# Runtime tile IDs used by extended codes 37-63. Most retain NOV2's original
+# lookup-table values at $835E-$8378. Code 63 is the sole production remap:
+# its native $AC destination aliases title graphics, so the runtime hardening
+# redirects it to recovered font tile $B0. The Start$ diagnostic build proved
+# that mapping renders correctly without disturbing the protected graphics.
 EXTENDED_TILE_IDS = {
     37: 0xF2,
     38: 0xF3,
@@ -156,7 +213,7 @@ EXTENDED_TILE_IDS = {
     60: 0xB2,
     61: 0xB4,
     62: 0xFE,
-    63: 0xAC,
+    63: 0xB0,
 }
 
 
@@ -199,38 +256,57 @@ def render_glyph(char: str) -> bytes:
     """Render one crisp glyph in the inverse 1bpp format expanded by NOV4.
 
     Args:
-        char: Exactly one supported English character.
+        char: Exactly one supported English or typographic-alias character.
 
     Returns:
         Eight inverse one-bit rows in NOV4's stored format.
 
     Raises:
-        FontPatchError: If ``char`` is not exactly one character or has no
-            pattern in :data:`PIXEL_FONT_5X7`.
+        FontPatchError: If ``char`` is not exactly one character, has no
+            approved glyph, or declares an invalid five-pixel/eight-row shape.
 
-    A blank stored row is ``$FF``. Every ``1`` in the human-readable 5x7
-    pattern clears the corresponding stored bit, producing an ink pixel when
-    NOV4 expands the table into NES CHR. Visible patterns begin at x=1 and use
-    rows 0 through 6, leaving deterministic horizontal spacing and a blank
-    bottom row. Space bypasses the pattern table and returns eight blank rows.
+    A blank stored row is ``$FF``. Every ``1`` in the human-readable pattern
+    clears the corresponding stored bit, producing an ink pixel when NOV4
+    expands the table into NES CHR. Visible patterns begin at x=1. Capitals and
+    digits occupy rows 0-6; ordinary lowercase shares row 6 as a baseline; true
+    descenders may use row 7.
     """
     if len(char) != 1:
         raise FontPatchError(f"expected one character, got {char!r}")
     if char == " ":
         return b"\xff" * 8
-    key = char
+    key = TYPOGRAPHIC_ALIASES.get(char, char)
     try:
-        pattern = PIXEL_FONT_5X7[key]
+        pattern = PIXEL_FONT_5X8[key]
     except KeyError as error:
         raise FontPatchError(
             f"pixel font has no glyph for {char!r}"
         ) from error
+    if len(pattern) > 8:
+        raise FontPatchError(f"glyph {char!r} exceeds eight rows")
     rows = bytearray(b"\xff" * 8)
     for y, source_row in enumerate(pattern):
+        if len(source_row) != 5 or set(source_row) - {"0", "1"}:
+            raise FontPatchError(
+                f"glyph {char!r} has an invalid row {source_row!r}"
+            )
         for x, pixel in enumerate(source_row, start=1):
             if pixel == "1":
                 rows[y] &= ~(1 << (7 - x))
     return bytes(rows)
+
+
+def glyph_ink_bounds(char: str) -> tuple[int, int] | None:
+    """Return the first and last ink rows for a rendered glyph.
+
+    Space returns ``None``.  This small metrics helper lets tests enforce the
+    baseline/descender contract without duplicating bit-level rendering logic.
+    """
+    glyph = render_glyph(char)
+    ink_rows = [index for index, row in enumerate(glyph) if row != 0xFF]
+    if not ink_rows:
+        return None
+    return ink_rows[0], ink_rows[-1]
 
 
 def patched_nov4_font(

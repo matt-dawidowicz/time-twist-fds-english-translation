@@ -1,8 +1,8 @@
 # Python module map
 
-Start with the row that matches the behavior you want to understand. Public
-facade modules retain the established import paths; their focused companion
-modules hold the implementation details.
+Start with the row that matches the behavior you want to understand. Public facade modules retain the established import paths; focused companion
+modules hold implementation details. Release construction has one implementation:
+`release_build.py` is the entropy image builder used by both release and runtime-debug commands.
 
 For the project objective, binary safety model, data flow, and a plain-language
 explanation of each module's responsibility, read the [code tour](CODE_TOUR.md)
@@ -12,7 +12,7 @@ need to change.
 | Area | Start here | Companion modules | Main tests |
 | --- | --- | --- | --- |
 | Command line | `work/time_twist/cli.py` | `cli_commands.py`, `cli_parser.py` | `work/tests/test_release_unit.py` |
-| Release build and promotion | `work/time_twist/release.py` | `release_metadata.py` | `work/tests/test_release_unit.py`, `test_release_integrity_polish.py` |
+| Release build and promotion | `work/time_twist/release.py` | `release_build.py`, `release_metadata.py` | `work/tests/test_release_unit.py`, `test_release_integrity_polish.py` |
 | Fixed UI and input behavior | `work/time_twist/ui.py` | `ui_fixed_tables.py` | `work/tests/test_ui_unit.py`, `test_ui_fixed_tables.py` |
 | English title | `work/time_twist/title.py` | `title_layout.py`, `title_assets.py`, `title_patch.py` | `work/tests/test_title_unit.py` and private title integration tests |
 | Packed scenario text | `work/time_twist/scenario.py` | `textcodec.py`, `compression.py`, `scenario_validation.py` | `work/tests/test_textcodec.py`, `test_scenario_validation_hardening.py` |

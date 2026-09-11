@@ -21,9 +21,13 @@ from .textcodec import PackedSymbol, SymbolKind
 # the 19 most frequent uppercase letters, and the two most common marks.
 COMMON_CHARACTERS = " " "etaoinshrdlucmfwypvbgkjqxz" "ETAOINSHRDLUCMFWYPV" ",."
 
-# Extended codes 37-63 cost nine bits and use the engine's existing lookup
-# table.  Keeping digits and punctuation on their original tile IDs avoids
-# disrupting hard-coded numeric and punctuation displays elsewhere.
+# Extended codes 37-63 cost nine bits and use the engine's lookup table. Code
+# 63 is redirected by the entropy runtime from its unsafe native $AC tile to
+# recovered font tile $B0, where it carries the dollar sign. Code 45 is a safe
+# slot used for the colon; code 61 restores the native ellipsis; and code 57 is
+# repurposed from the Japanese display-slash mark as a true em dash. Production
+# English does not use the slash, so unsupported slashes fail validation rather
+# than silently displaying the wrong punctuation.
 EXTENDED_CHARACTERS: dict[int, str] = {
     37: "B",
     38: "G",
@@ -37,6 +41,8 @@ EXTENDED_CHARACTERS: dict[int, str] = {
     # translated record uses parentheses.  Reusing the same existing lookup
     # slot keeps NOV2's table and every loaded file exactly the same size.
     44: "é",
+    # Code 45 is the other inactive small-kana slot and is safe font storage.
+    45: ":",
     46: "1",
     47: "2",
     48: "3",
@@ -48,12 +54,31 @@ EXTENDED_CHARACTERS: dict[int, str] = {
     54: "9",
     55: "0",
     56: "-",
-    57: "/",
+    # Japanese code 57 was the display-slash emphasis mark.  All production
+    # English uses normal punctuation instead, so this safe tile becomes an
+    # em dash rather than reserving a glyph for an unused slash.
+    57: "—",
     58: "!",
     59: '"',
     60: "'",
-    61: ":",
+    # Code 61 is the original Japanese ellipsis slot; restore that semantic.
+    61: "…",
     62: "?",
+    # Runtime-tested production mapping: NOV2 redirects this code from $AC to
+    # safe font tile $B0. The diagnostic Start$ screen rendered cleanly without
+    # disturbing the protected title-background source region.
+    63: "$",
+}
+
+# At 8x8 resolution, curly quote variants do not benefit from separate tiles.
+# Accept polished editorial typography while encoding the established quote
+# glyphs.  En dash is normalized to the dedicated em-dash glyph.
+TYPOGRAPHIC_ALIASES: dict[str, str] = {
+    "‘": "'",
+    "’": "'",
+    "“": '"',
+    "”": '"',
+    "–": "—",
 }
 
 CONTROL_PATTERN = re.compile(r"\{CTRL:([0-7])\}")
@@ -77,16 +102,17 @@ def _character_symbols() -> dict[str, PackedSymbol]:
         A new mapping for every character supported by the English font.
 
     Common codes are installed first because they cost six bits. Extended
-    duplicates, currently only space, use :meth:`dict.setdefault` and cannot
-    replace the cheaper representation.
+    duplicates cannot replace a cheaper common representation. Typographic
+    aliases then point at an already-established canonical symbol.
     """
     result = {
         char: PackedSymbol(SymbolKind.COMMON, value, 0, 0)
         for value, char in enumerate(COMMON_CHARACTERS)
     }
     for value, char in EXTENDED_CHARACTERS.items():
-        # Space intentionally uses the shorter common code.
         result.setdefault(char, PackedSymbol(SymbolKind.EXTENDED, value, 0, 0))
+    for alias, canonical in TYPOGRAPHIC_ALIASES.items():
+        result[alias] = result[canonical]
     return result
 
 
@@ -119,7 +145,8 @@ def encode_english(text: str) -> tuple[PackedSymbol, ...]:
             match = CONTROL_PATTERN.match(text, position)
             if not match:
                 raise EnglishTextError(
-                    f"invalid tag at character {position}: {text[position:position + 16]!r}"
+                    f"invalid tag at character {position}: "
+                    f"{text[position:position + 16]!r}"
                 )
             value = int(match.group(1))
             if value == 5:

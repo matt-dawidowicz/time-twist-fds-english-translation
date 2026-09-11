@@ -9,6 +9,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from time_twist.production_translation import REVIEW_FILES
 from time_twist.project import KNOWN_SCENARIO_BANKS
 from time_twist.release import (
     BUILD_ENVIRONMENT_SCHEMA,
@@ -31,10 +32,14 @@ def make_synthetic_project(root: Path) -> Path:
     translations = work / "translations"
     title_assets = work / "title_assets"
     baseline = work / "baseline"
+    overrides = work / "production_overrides"
+    review = root / "review" / "production_retranslation"
     code = work / "time_twist"
     translations.mkdir(parents=True)
     title_assets.mkdir()
     baseline.mkdir()
+    overrides.mkdir()
+    review.mkdir(parents=True)
     code.mkdir()
     (root / "pyproject.toml").write_text(
         "[project]\nname='test'\n", encoding="utf-8"
@@ -42,6 +47,10 @@ def make_synthetic_project(root: Path) -> Path:
     (code / "__init__.py").write_text('"""Synthetic package."""\n')
     for bank in KNOWN_SCENARIO_BANKS:
         (translations / f"{bank}.json").write_text("{}\n", encoding="utf-8")
+        review_name, review_field = REVIEW_FILES[bank]
+        (review / review_name).write_text(
+            json.dumps({review_field: {}}) + "\n", encoding="utf-8"
+        )
     (title_assets / "Time Twist approved native title.png").write_bytes(
         b"title"
     )
@@ -69,9 +78,17 @@ def valid_manifest(root: Path, candidate: Path) -> dict[str, object]:
         bank: {
             "records": 1,
             "dictionary_entries": 0,
-            "packed_bytes": 1,
-            "capacity_bytes": 2,
-            "remaining_bytes": 1,
+            "scenario_bytes": 1,
+            "menu_bytes": 0,
+            "dictionary_bytes": 0,
+            "optimizer_bytes": 1,
+            "source_bytes": 1,
+            "grown_bytes": 0,
+            "resident_groups": [0],
+            "spilled_groups": [],
+            "spill_bytes": 0,
+            "loaded_end": "0xD7B4",
+            "nov3_headroom": 1,
             "sha256": "A" * 64,
         }
         for bank in KNOWN_SCENARIO_BANKS
@@ -89,6 +106,18 @@ def valid_manifest(root: Path, candidate: Path) -> dict[str, object]:
         "release_target_sha256": None,
         "release_id": None,
         "subtitle": "On the Outskirts of History...",
+        "codec": "frozen-entropy-v1",
+        "decoder_format": "entropy-only",
+        "record_framing": "bit-contiguous test framing",
+        "fixed_decoder_surfaces": {
+            "synthetic": {
+                "records": 1,
+                "streams": 1,
+                "packed_bytes": 1,
+                "capacity_bytes": 1,
+            }
+        },
+        "nov3_exclusive_boundary": "0xD7B5",
         "scenario_banks": scenario_banks,
         "component_sha256": {
             "NOV2": "B" * 64,
@@ -146,7 +175,8 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             code_root = root / "work" / "time_twist"
             with (
                 mock.patch(
-                    "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 self.assertRaisesRegex(
                     ReleaseBuildError, "subtitle does not match"
@@ -173,7 +203,8 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             code_root = root / "work" / "time_twist"
             with (
                 mock.patch(
-                    "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 mock.patch(
                     "time_twist.release.build_release", return_value=rebuilt
@@ -200,7 +231,8 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             code_root = root / "work" / "time_twist"
             with (
                 mock.patch(
-                    "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 mock.patch(
                     "time_twist.release.build_release", return_value=manifest
@@ -243,7 +275,8 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
 
             with (
                 mock.patch(
-                    "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 mock.patch(
                     "time_twist.release.build_release", return_value=manifest
@@ -292,7 +325,8 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             code_root = root / "work" / "time_twist"
             with (
                 mock.patch(
-                    "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 self.assertRaisesRegex(
                     ReleaseBuildError, "candidate manifest"

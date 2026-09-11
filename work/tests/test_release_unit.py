@@ -12,6 +12,7 @@ from pathlib import Path
 from unittest import mock
 
 from time_twist.cli import build_parser, main
+from time_twist.production_translation import REVIEW_FILES
 from time_twist.project import KNOWN_SCENARIO_BANKS
 from time_twist.release import (
     RELEASE_FILENAMES,
@@ -46,10 +47,14 @@ def make_synthetic_project(root: Path) -> Path:
     translations = work / "translations"
     title_assets = work / "title_assets"
     baseline = work / "baseline"
+    overrides = work / "production_overrides"
+    review = root / "review" / "production_retranslation"
     code = work / "time_twist"
     translations.mkdir(parents=True)
     title_assets.mkdir()
     baseline.mkdir()
+    overrides.mkdir()
+    review.mkdir(parents=True)
     code.mkdir()
     (root / "pyproject.toml").write_text(
         "[project]\nname='test'\n", encoding="utf-8"
@@ -57,6 +62,10 @@ def make_synthetic_project(root: Path) -> Path:
     (code / "__init__.py").write_text('"""Synthetic package."""\n')
     for bank in KNOWN_SCENARIO_BANKS:
         (translations / f"{bank}.json").write_text("{}\n", encoding="utf-8")
+        review_name, review_field = REVIEW_FILES[bank]
+        (review / review_name).write_text(
+            json.dumps({review_field: {}}) + "\n", encoding="utf-8"
+        )
     (title_assets / "Time Twist approved native title.png").write_bytes(
         b"title"
     )
@@ -179,6 +188,34 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             self.assertEqual(record["normalization"], SOURCE_NORMALIZATION_LF)
             translation.write_bytes(b'{\r\n  "line": "approved"\r\n}\r\n')
 
+            self.assertEqual(validate_source_lock(project_root=root), payload)
+
+    def test_source_lock_covers_review_and_optional_override_inputs(
+        self,
+    ) -> None:
+        """Lock every editable layer that can change materialized production text."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_synthetic_project(Path(directory) / "project")
+            override = root / "work" / "production_overrides" / "TT1A.json"
+            override.write_text(
+                '{"TT1A/g0/r0": "Override."}\n', encoding="utf-8"
+            )
+            payload = write_source_lock(project_root=root)
+
+            review_name, _ = REVIEW_FILES["TT1A"]
+            review_key = f"review/production_retranslation/{review_name}"
+            override_key = "work/production_overrides/TT1A.json"
+            self.assertEqual(
+                payload["files"][review_key]["normalization"],
+                SOURCE_NORMALIZATION_LF,
+            )
+            self.assertEqual(
+                payload["files"][override_key]["normalization"],
+                SOURCE_NORMALIZATION_LF,
+            )
+
+            review = root / review_key
+            review.write_bytes(review.read_bytes().replace(b"\n", b"\r\n"))
             self.assertEqual(validate_source_lock(project_root=root), payload)
 
     def test_source_lock_rejects_changed_normalized_translation(self) -> None:
@@ -355,6 +392,80 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
                 )
             lock.assert_not_called()
 
+    def test_release_build_delegates_to_canonical_entropy_images(self) -> None:
+        """Materialize reviewed prose once and call the single image builder."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = make_synthetic_project(Path(directory) / "project")
+            write_source_lock(project_root=root)
+            output_bytes = {
+                "zenpen": b"zenpen candidate",
+                "kouhen": b"kouhen candidate",
+                "four_side": b"zenpen candidatekouhen candidate",
+            }
+            scenario_banks = {
+                bank: {
+                    "records": 1,
+                    "dictionary_entries": 0,
+                    "scenario_bytes": 1,
+                    "menu_bytes": 0,
+                    "dictionary_bytes": 0,
+                    "optimizer_bytes": 1,
+                    "source_bytes": 1,
+                    "grown_bytes": 0,
+                    "resident_groups": [0],
+                    "spilled_groups": [],
+                    "spill_bytes": 0,
+                    "loaded_end": "0xD7B4",
+                    "nov3_headroom": 1,
+                    "sha256": "A" * 64,
+                }
+                for bank in KNOWN_SCENARIO_BANKS
+            }
+            audit = {
+                "codec": "frozen-entropy-v1",
+                "decoder_format": "entropy-only",
+                "record_framing": "bit-contiguous test framing",
+                "fixed_decoder_surfaces": {
+                    "synthetic": {
+                        "records": 1,
+                        "streams": 1,
+                        "packed_bytes": 1,
+                        "capacity_bytes": 1,
+                    }
+                },
+                "nov3_exclusive_boundary": "0xD7B5",
+                "scenario_banks": scenario_banks,
+                "components": {
+                    "NOV2": "B" * 64,
+                    "NOV4": "C" * 64,
+                    "SON-KOUH": "D" * 64,
+                },
+            }
+            code_root = root / "work" / "time_twist"
+            with (
+                mock.patch(
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
+                ),
+                mock.patch(
+                    "time_twist.release.materialize_production_maps"
+                ) as materialize,
+                mock.patch(
+                    "time_twist.release.build_release_images",
+                    return_value=(output_bytes, audit),
+                ) as image_builder,
+            ):
+                manifest = build_release(
+                    Path(directory) / "candidate",
+                    project_root=root,
+                    verify_target=False,
+                )
+
+            materialize.assert_called_once()
+            image_builder.assert_called_once()
+            self.assertEqual(manifest["codec"], "frozen-entropy-v1")
+            self.assertEqual(manifest["decoder_format"], "entropy-only")
+
     def test_code_tree_hash_binds_normalized_path_identity(self) -> None:
         """Verify the current contract described by this regression test."""
         with tempfile.TemporaryDirectory() as directory:
@@ -375,7 +486,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             code.mkdir(parents=True)
             (code / "module.py").write_bytes(b"value = 1\n")
             with mock.patch(
-                "time_twist.release.subprocess.run",
+                "time_twist.release_metadata.subprocess.run",
                 side_effect=FileNotFoundError,
             ):
                 provenance = build_code_provenance(
@@ -566,13 +677,33 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
                 "release_target_sha256": None,
                 "release_id": None,
                 "subtitle": "On the Outskirts of History...",
+                "codec": "frozen-entropy-v1",
+                "decoder_format": "entropy-only",
+                "record_framing": "bit-contiguous test framing",
+                "fixed_decoder_surfaces": {
+                    "synthetic": {
+                        "records": 1,
+                        "streams": 1,
+                        "packed_bytes": 1,
+                        "capacity_bytes": 1,
+                    }
+                },
+                "nov3_exclusive_boundary": "0xD7B5",
                 "scenario_banks": {
                     bank: {
                         "records": 1,
                         "dictionary_entries": 0,
-                        "packed_bytes": 1,
-                        "capacity_bytes": 2,
-                        "remaining_bytes": 1,
+                        "scenario_bytes": 1,
+                        "menu_bytes": 0,
+                        "dictionary_bytes": 0,
+                        "optimizer_bytes": 1,
+                        "source_bytes": 1,
+                        "grown_bytes": 0,
+                        "resident_groups": [0],
+                        "spilled_groups": [],
+                        "spill_bytes": 0,
+                        "loaded_end": "0xD7B4",
+                        "nov3_headroom": 1,
                         "sha256": "A" * 64,
                     }
                     for bank in KNOWN_SCENARIO_BANKS
@@ -591,7 +722,8 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             target_path = work / "release_target.json"
             with (
                 mock.patch(
-                    "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 mock.patch(
                     "time_twist.release.build_release",
@@ -617,7 +749,8 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             )
             with (
                 mock.patch(
-                    "time_twist.release.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 self.assertRaisesRegex(ReleaseBuildError, "canonical path"),
             ):
