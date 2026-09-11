@@ -837,7 +837,7 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
     """Fit approved prose using greedy English geometry and native semantics."""
     reviewed = " ".join(reviewed.split())
     reviewed_controls = [int(value) for value in CONTROL_RE.findall(reviewed)]
-    demoted_ctrl2_ordinals = frozenset()
+    demoted_ctrl2_ordinals: frozenset[int] = frozenset()
     if reviewed_controls:
         _template_segments, controls = _template_parts(template)
         if reviewed_controls != controls:
