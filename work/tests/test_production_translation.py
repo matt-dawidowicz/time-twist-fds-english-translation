@@ -54,13 +54,36 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
 
         self.assertEqual(
             output,
-            "Newscaster: Late last{CTRL:0}night, Dr.{CTRL:0}"
-            "Simon—the physicist{CTRL:0}known as{CTRL:2}"
-            "a reclusive genius—made{CTRL:0}a remarkable statement{CTRL:4}"
-            "about time travel.",
+            "Newscaster: Late last{CTRL:0}night, Dr. Simon—the{CTRL:2}"
+            "physicist known as a{CTRL:0}reclusive genius—made a{CTRL:4}"
+            "remarkable statement{CTRL:4}about time travel.",
         )
         validate_renderer_buffer_layout(output)
         validate_production_control_sequence(template, output)
+
+    def test_greedy_wrap_uses_maximum_available_width(self) -> None:
+        """Fill each row greedily instead of balancing two short rows."""
+        output = layout_review_text(
+            "TEST/g0/r0",
+            "Whatever… No time like the present!",
+            "Short source.",
+        )
+        self.assertEqual(
+            output,
+            "Whatever… No time like{CTRL:0}the present!",
+        )
+
+    def test_new_speaker_starts_on_fresh_row(self) -> None:
+        """Never append a new speaker label to the previous speaker's line."""
+        output = layout_review_text(
+            "TEST/g0/r1",
+            "Resident: I'm staying. Me: I understand.",
+            "Resident: Staying. Me: Fine.",
+        )
+        self.assertEqual(
+            output,
+            "Resident: I'm staying.{CTRL:0}Me: I understand.",
+        )
 
     def test_long_prose_uses_only_native_layout_continuations(self) -> None:
         """Extend long prose with CTRL0/CTRL4 without truncating approved words."""
@@ -82,7 +105,7 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
         """Reject invented semantic controls other than row advance and scroll."""
         with self.assertRaisesRegex(
             ProductionTranslationError,
-            "non-layout control",
+            "semantic controls",
         ):
             validate_production_control_sequence(
                 "Alpha{CTRL:0}beta",

@@ -24,6 +24,31 @@ TEXT_BUFFER_BYTES = TEXT_ROW_BYTES * TEXT_BUFFER_ROWS
 LINE_ADVANCE_CONTROL = 0
 SCROLL_CONTROL = 4
 INSERTABLE_LAYOUT_CONTROLS = frozenset({LINE_ADVANCE_CONTROL, SCROLL_CONTROL})
+SEMANTIC_CONTROLS = frozenset({1, 2, 3, 6})
+NON_SPEAKER_LABELS = frozenset(
+    {
+        "TIME",
+        "NAME",
+        "PLACE",
+        "OCCUPATION",
+        "Password",
+        "Memo",
+        "Right",
+        "Middle",
+        "Left",
+        "Both",
+        "Name",
+        "LOCATION",
+        "Pierre Trade",
+        "Chino Trade",
+        "2",
+    }
+)
+OVERWRITE_REENTRY_LIMIT = {
+    1: TEXT_ROW_BYTES,
+    2: TEXT_ROW_BYTES * 2,
+    6: TEXT_ROW_BYTES * 3,
+}
 CONTROL_REENTRY_CURSOR = {
     1: TEXT_ROW_BYTES,
     2: TEXT_ROW_BYTES * 2,
@@ -111,37 +136,172 @@ def _template_parts(template: str) -> tuple[list[str], list[int]]:
     return segments, controls
 
 
-def _wrapped_rows(
-    text: str, *, columns: int = DISPLAY_COLUMNS
-) -> tuple[str, ...]:
-    """Wrap prose at word boundaries without relying on implicit row overflow.
+def _semantic_template_parts(template: str) -> tuple[list[str], list[int]]:
+    """Collapse source-only line geometry while retaining semantic boundaries.
 
-    NOV2 stores four contiguous 24-glyph rows, but merely letting the output
-    index cross a 24-glyph boundary does not update the renderer's row-state
-    variables. Every physical row transition must therefore be represented by
-    an explicit native control in the encoded stream. This helper only chooses
-    the visible words for each row; :func:`_layout_chunk_at_cursor` inserts the
-    required controls.
+    Controls 1, 2, 3, and 6 carry native timing/continuation semantics and must
+    remain in order. Interior controls 0 and 4 are Japanese presentation
+    geometry, so production English regenerates them from its own 24-column
+    layout. Leading/trailing presentation controls are retained because they can
+    position record entry/exit even when no source glyph surrounds them.
     """
-    if not text:
+    segments, controls = _template_parts(template)
+    visible = [index for index, segment in enumerate(segments) if segment]
+    if not visible:
+        return segments, controls
+    first_visible = visible[0]
+    last_visible = visible[-1]
+
+    collapsed = [segments[0]]
+    kept_controls: list[int] = []
+    for index, control in enumerate(controls):
+        keep = (
+            control in SEMANTIC_CONTROLS
+            or index < first_visible
+            or index >= last_visible
+        )
+        if keep:
+            kept_controls.append(control)
+            collapsed.append(segments[index + 1])
+        else:
+            collapsed[-1] += segments[index + 1]
+    return collapsed, kept_controls
+
+
+def _speaker_label_spans(text: str) -> tuple[tuple[int, int], ...]:
+    """Locate compact English speaker labels without mistaking prior prose.
+
+    A label is the one- or two-word title-cased fragment immediately following
+    sentence punctuation (or the record start) and ending in a colon. This
+    recognizes the reviewed corpus's character/role labels while excluding
+    prose such as ``How terrible… Meyer:`` from the label itself.
+    """
+    spans: list[tuple[int, int]] = []
+    for match in re.finditer(":", text):
+        colon = match.start()
+        if colon >= 1 and text[colon - 1] == "…":
+            start = colon - 1
+            candidate = "…"
+        elif colon >= 3 and text[colon - 3 : colon] == "...":
+            start = colon - 3
+            candidate = "..."
+        else:
+            boundary = colon - 1
+            while boundary >= 0 and text[boundary] not in ".!?…:":
+                boundary -= 1
+            raw = text[boundary + 1 : colon]
+            stripped = raw.lstrip(" \t\n\r\"“”'‘’()[]")
+            start = boundary + 1 + len(raw) - len(stripped)
+            candidate = stripped.rstrip(" \t\n\r\"“”'‘’()[]")
+        words = candidate.split()
+        if (
+            not candidate
+            or candidate in NON_SPEAKER_LABELS
+            or len(candidate) > DISPLAY_COLUMNS
+            or len(words) > 2
+        ):
+            continue
+        if not all(
+            word in {"…", "..."}
+            or (word and (word[0].isupper() or word[0].isdigit()))
+            for word in words
+        ):
+            continue
+        spans.append((start, colon + 1))
+    return tuple(spans)
+
+
+def _speaker_turns(text: str) -> tuple[str, ...]:
+    """Split prose so every recognized speaker begins a fresh layout unit."""
+    spans = _speaker_label_spans(text)
+    if not spans:
+        return (text,) if text else ()
+    starts = [start for start, _end in spans]
+    turns: list[str] = []
+    if starts[0] > 0:
+        prefix = text[: starts[0]]
+        if prefix.strip(" \t\n\r\"“”'‘’()[]"):
+            turns.append(prefix.strip())
+        else:
+            starts[0] = 0
+    for index, start in enumerate(starts):
+        end = starts[index + 1] if index + 1 < len(starts) else len(text)
+        turn = text[start:end].strip()
+        if turn:
+            turns.append(turn)
+    return tuple(turns)
+
+
+def _forbidden_speaker_breaks(text: str) -> frozenset[int]:
+    """Return word-boundary indices that would orphan a speaker label."""
+    forbidden: set[int] = set()
+    for _start, end in _speaker_label_spans(text):
+        word_boundary = len(text[:end].split())
+        if word_boundary < len(text.split()):
+            forbidden.add(word_boundary)
+    return frozenset(forbidden)
+
+
+def _greedy_turn_rows(text: str, columns: int) -> tuple[str, ...]:
+    """Return maximum-width rows, correcting only tiny final-word orphans."""
+    words = text.split()
+    if not words:
         return ()
-    words = text.split(" ")
     if any(len(word) > columns for word in words):
         longest = max(words, key=len)
         raise ProductionTranslationError(
             f"word {longest!r} exceeds the {columns}-column renderer"
         )
-
     rows: list[str] = []
     current = words[0]
     for word in words[1:]:
         candidate = f"{current} {word}"
         if len(candidate) <= columns:
             current = candidate
-            continue
-        rows.append(current)
-        current = word
+        else:
+            rows.append(current)
+            current = word
     rows.append(current)
+
+    # Greedy fill is authoritative. The only aesthetic exception is a final
+    # one- or two-character word stranded by itself; borrow the previous row's
+    # last word when that produces two legal rows.
+    if len(rows) >= 2 and len(rows[-1]) <= 2:
+        previous_words = rows[-2].split()
+        if len(previous_words) >= 2:
+            borrowed = previous_words[-1]
+            revised_last = f"{borrowed} {rows[-1]}"
+            revised_previous = " ".join(previous_words[:-1])
+            if revised_previous and len(revised_last) <= columns:
+                rows[-2] = revised_previous
+                rows[-1] = revised_last
+    return tuple(rows)
+
+
+def _wrapped_rows(
+    text: str, *, columns: int = DISPLAY_COLUMNS
+) -> tuple[str, ...]:
+    """Greedily fill rows while forcing recognized speaker turns to fresh rows.
+
+    Each row takes the longest word-boundary prefix that fits. This deliberately
+    favors full use of the 24-column dialogue box over visually balanced rows.
+    A speaker label may never be stranded on a row without its first spoken word.
+    """
+    if not text:
+        return ()
+    rows: list[str] = []
+    for turn in _speaker_turns(text):
+        turn_rows = _greedy_turn_rows(turn, columns)
+        spans = _speaker_label_spans(turn)
+        if spans and len(turn.split()) > len(
+            turn[spans[0][0] : spans[0][1]].split()
+        ):
+            label = turn[spans[0][0] : spans[0][1]]
+            if turn_rows and turn_rows[0] == label:
+                raise ProductionTranslationError(
+                    f"speaker label {label!r} cannot be orphaned from its dialogue"
+                )
+        rows.extend(turn_rows)
     return tuple(rows)
 
 
@@ -155,6 +315,27 @@ def _break_score(text: str, position: int) -> int:
     if before in ",—":
         return 2
     return 3
+
+
+def _semantic_boundary_penalty(template: str, text: str, position: int) -> int:
+    """Score a reviewed split against the source segment's semantic cadence."""
+    source = template.rstrip()
+    before = text[position - 1] if position else ""
+    if not source:
+        return 0
+    if source[-1] in ".!?…":
+        source_mark = "…" if source[-1] in ".…" else source[-1]
+        target_mark = "…" if before in ".…" else before
+        if target_mark == source_mark:
+            return 0
+        if before in ".!?…":
+            return 500
+        return 10000
+    if source[-1] in ";:":
+        return 0 if before in ".!?…;:" else 1000
+    if source[-1] in ",—":
+        return 0 if before in ".!?…;:,—" else 500
+    return _break_score(text, position)
 
 
 def _cursor_after_control(cursor: int, control: int) -> int:
@@ -215,61 +396,63 @@ def validate_renderer_buffer_layout(text: str) -> None:
             )
         cursor = end_cursor
         if index < len(controls):
-            cursor = _cursor_after_control(cursor, controls[index])
+            control = controls[index]
+            overwrite_limit = OVERWRITE_REENTRY_LIMIT.get(control)
+            if overwrite_limit is not None and cursor > overwrite_limit:
+                raise ProductionTranslationError(
+                    f"renderer control {control} re-enters at X=${overwrite_limit:02X} "
+                    f"and would overwrite staged prose through X=${cursor:02X}"
+                )
+            cursor = _cursor_after_control(cursor, control)
 
 
 def validate_production_control_sequence(source: str, production: str) -> None:
-    """Preserve source controls while allowing only native row/scroll insertions."""
-    _source_segments, source_controls = _template_parts(source)
+    """Preserve semantic native controls while regenerating English line geometry."""
+    _source_segments, source_controls = _semantic_template_parts(source)
     _production_segments, production_controls = _template_parts(production)
-
-    # A greedy subsequence check is insufficient because source controls 0 and
-    # 4 are themselves also legal layout insertions. Track every possible count
-    # of source controls consumed so an inserted 0/4 cannot accidentally steal
-    # the identity of a later source control with the same value.
-    states = {0}
-    for control in production_controls:
-        next_states: set[int] = set()
-        for source_index in states:
-            if (
-                source_index < len(source_controls)
-                and control == source_controls[source_index]
-            ):
-                next_states.add(source_index + 1)
-            if control in INSERTABLE_LAYOUT_CONTROLS:
-                next_states.add(source_index)
-        if not next_states:
-            raise ProductionTranslationError(
-                f"production layout introduced non-layout control {control}"
-            )
-        states = next_states
-
-    if len(source_controls) not in states:
+    required = [
+        value for value in source_controls if value in SEMANTIC_CONTROLS
+    ]
+    actual_semantic = [
+        value for value in production_controls if value in SEMANTIC_CONTROLS
+    ]
+    if actual_semantic != required:
         raise ProductionTranslationError(
-            "production layout lost or reordered one or more source controls"
+            "production layout lost or reordered one or more semantic controls"
+        )
+    unexpected = [
+        value
+        for value in production_controls
+        if value not in SEMANTIC_CONTROLS | INSERTABLE_LAYOUT_CONTROLS
+    ]
+    if unexpected:
+        raise ProductionTranslationError(
+            f"production layout introduced unsupported controls: {unexpected}"
         )
 
 
-def _layout_chunk_at_cursor(text: str, cursor: int) -> tuple[str, int, int]:
+def _layout_chunk_at_cursor(
+    text: str, cursor: int
+) -> tuple[str, int, int, int]:
     """Lay out prose with explicit native row advances and row-four scrolling."""
     if not text:
-        return "", cursor, 0
+        return "", cursor, 0, 0
 
     output: list[str] = []
+    inserted_controls = 0
     inserted_scrolls = 0
     rows = _wrapped_rows(text)
     for row_index, row in enumerate(rows):
         row_end = _row_end_for_cursor(cursor)
         remaining_cells = (row_end - cursor) // 2
         if len(row) > remaining_cells:
-            # Segment boundaries normally begin at row starts. If a reviewed
-            # chunk reaches a partially used row, advance using the same native
-            # line/scroll rule rather than crossing the boundary implicitly.
             if cursor < TEXT_ROW_BYTES * (TEXT_BUFFER_ROWS - 1):
                 output.append(f"{{CTRL:{LINE_ADVANCE_CONTROL}}}")
+                inserted_controls += 1
                 cursor = _cursor_after_control(cursor, LINE_ADVANCE_CONTROL)
             else:
                 output.append(f"{{CTRL:{SCROLL_CONTROL}}}")
+                inserted_controls += 1
                 inserted_scrolls += 1
                 cursor = CONTROL_REENTRY_CURSOR[SCROLL_CONTROL]
             row_end = _row_end_for_cursor(cursor)
@@ -286,13 +469,15 @@ def _layout_chunk_at_cursor(text: str, cursor: int) -> tuple[str, int, int]:
 
         if cursor < TEXT_ROW_BYTES * (TEXT_BUFFER_ROWS - 1):
             output.append(f"{{CTRL:{LINE_ADVANCE_CONTROL}}}")
+            inserted_controls += 1
             cursor = _cursor_after_control(cursor, LINE_ADVANCE_CONTROL)
         else:
             output.append(f"{{CTRL:{SCROLL_CONTROL}}}")
+            inserted_controls += 1
             inserted_scrolls += 1
             cursor = CONTROL_REENTRY_CURSOR[SCROLL_CONTROL]
 
-    return "".join(output), cursor, inserted_scrolls
+    return "".join(output), cursor, inserted_controls, inserted_scrolls
 
 
 def _split_visible_text(
@@ -300,13 +485,11 @@ def _split_visible_text(
     template_segments: list[str],
     controls: list[int],
 ) -> list[str]:
-    """Distribute prose across source controls without overrunning the renderer.
+    """Distribute reviewed prose across preserved semantic control boundaries.
 
-    Empty source slots remain empty because adjacent controls can carry scene
-    semantics. Dynamic programming moves only word boundaries, minimizes added
-    control-4 scrolls first, then stays close to the source segment proportions
-    and prefers punctuation boundaries. Every candidate is simulated against
-    NOV2's four-row staging-buffer cursor before it can be selected.
+    Dynamic programming moves only word boundaries around controls 1/2/3/6.
+    English line/scroll controls are regenerated by the greedy 24-column wrapper.
+    A semantic boundary may not strand a speaker label without spoken text.
     """
     active = [
         index for index, segment in enumerate(template_segments) if segment
@@ -321,8 +504,9 @@ def _split_visible_text(
     words = text.split(" ")
     if len(words) < len(active):
         raise ProductionTranslationError(
-            "reviewed English has fewer words than nonempty control slots"
+            "reviewed English has fewer words than nonempty semantic slots"
         )
+    forbidden_breaks = _forbidden_speaker_breaks(text)
 
     target_total = sum(
         max(1, len(template_segments[index])) for index in active
@@ -334,49 +518,67 @@ def _split_visible_text(
             prefix_chars[-1] + len(word) + (1 if word_index else 0)
         )
 
-    # (next word, decoder cursor) -> (inserted scrolls, editorial score, chunks)
-    states: dict[tuple[int, int], tuple[int, int, tuple[str, ...]]] = {
-        (0, 0): (0, 0, ())
+    # (next word, decoder cursor) -> (layout controls, scrolls, score, chunks)
+    states: dict[tuple[int, int], tuple[int, int, int, tuple[str, ...]]] = {
+        (0, 0): (0, 0, 0, ())
     }
     for segment_index, template_segment in enumerate(template_segments):
         remaining_active = sum(
             1 for segment in template_segments[segment_index + 1 :] if segment
         )
         next_states: dict[
-            tuple[int, int], tuple[int, int, tuple[str, ...]]
+            tuple[int, int], tuple[int, int, int, tuple[str, ...]]
         ] = {}
         for (start_word, cursor), (
-            inserted,
+            inserted_controls,
+            inserted_scrolls,
             score,
             chunks,
         ) in states.items():
             if template_segment:
                 minimum_end = start_word + 1
                 maximum_end = len(words) - remaining_active
-                ends = range(minimum_end, maximum_end + 1)
+                ends: range | tuple[int, ...] = range(
+                    minimum_end, maximum_end + 1
+                )
             else:
                 ends = (start_word,)
 
             for end_word in ends:
+                if end_word in forbidden_breaks:
+                    continue
                 chunk = (
                     " ".join(words[start_word:end_word])
                     if template_segment
                     else ""
                 )
+                if (
+                    template_segment
+                    and not any(
+                        character.isalnum() for character in template_segment
+                    )
+                    and any(character.isalnum() for character in chunk)
+                ):
+                    continue
                 try:
-                    rendered, end_cursor, added_scrolls = (
-                        _layout_chunk_at_cursor(
-                            chunk,
-                            cursor,
-                        )
+                    rendered, end_cursor, added_controls, added_scrolls = (
+                        _layout_chunk_at_cursor(chunk, cursor)
                     )
                 except ProductionTranslationError:
                     continue
 
                 if segment_index < len(controls):
+                    source_control = controls[segment_index]
+                    overwrite_limit = OVERWRITE_REENTRY_LIMIT.get(
+                        source_control
+                    )
+                    if (
+                        overwrite_limit is not None
+                        and end_cursor > overwrite_limit
+                    ):
+                        continue
                     next_cursor = _cursor_after_control(
-                        end_cursor,
-                        controls[segment_index],
+                        end_cursor, source_control
                     )
                 else:
                     next_cursor = end_cursor
@@ -384,26 +586,28 @@ def _split_visible_text(
                 if template_segment:
                     start_char = prefix_chars[start_word]
                     end_char = prefix_chars[end_word]
-                    segment_length = end_char - start_char
-                    if start_word:
-                        segment_length -= 1
+                    segment_length = (
+                        end_char - start_char - (1 if start_word else 0)
+                    )
                     expected = (
                         len(template_segment) * text_total / target_total
                     )
                     boundary_penalty = (
-                        _break_score(text, end_char)
+                        _semantic_boundary_penalty(
+                            template_segment, text, end_char
+                        )
                         if end_word < len(words)
                         else 0
                     )
-                    wrap_penalty = max(0, len(_wrapped_rows(chunk)) - 1) * 8
                     trial_score = score + int((segment_length - expected) ** 2)
-                    trial_score += boundary_penalty * 32 + wrap_penalty
+                    trial_score += boundary_penalty
                 else:
                     trial_score = score
 
                 key = (end_word, next_cursor)
                 trial = (
-                    inserted + added_scrolls,
+                    inserted_controls + added_controls,
+                    inserted_scrolls + added_scrolls,
                     trial_score,
                     (*chunks, rendered),
                 )
@@ -414,7 +618,7 @@ def _split_visible_text(
         states = next_states
         if not states:
             raise ProductionTranslationError(
-                "cannot distribute reviewed English inside the native text buffer"
+                "cannot distribute reviewed English inside native semantic boundaries"
             )
 
     complete = [
@@ -426,29 +630,38 @@ def _split_visible_text(
         raise ProductionTranslationError(
             "cannot place all reviewed English inside the native text buffer"
         )
-    return list(min(complete)[2])
+    return list(min(complete)[3])
 
 
 def _layout_fixed_segments(
     segments: list[str], controls: list[int]
 ) -> list[str]:
-    """Add native row/scroll controls to explicitly pre-segmented reviewed prose."""
+    """Lay out explicitly controlled prose while enforcing re-entry barriers."""
     cursor = 0
     laid_out: list[str] = []
     for index, segment in enumerate(segments):
-        rendered, cursor, _inserted = _layout_chunk_at_cursor(segment, cursor)
+        rendered, cursor, _inserted_controls, _inserted_scrolls = (
+            _layout_chunk_at_cursor(segment, cursor)
+        )
         laid_out.append(rendered)
         if index < len(controls):
-            cursor = _cursor_after_control(cursor, controls[index])
+            source_control = controls[index]
+            overwrite_limit = OVERWRITE_REENTRY_LIMIT.get(source_control)
+            if overwrite_limit is not None and cursor > overwrite_limit:
+                raise ProductionTranslationError(
+                    f"source control {source_control} would overwrite staged prose "
+                    f"at X=${cursor:02X}; must end by X=${overwrite_limit:02X}"
+                )
+            cursor = _cursor_after_control(cursor, source_control)
     return laid_out
 
 
 def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
-    """Fit approved prose to NOV2 while preserving source-control semantics."""
+    """Fit approved prose using greedy English geometry and native semantics."""
     reviewed = " ".join(reviewed.split())
-    template_segments, controls = _template_parts(template)
     reviewed_controls = [int(value) for value in CONTROL_RE.findall(reviewed)]
     if reviewed_controls:
+        template_segments, controls = _template_parts(template)
         if reviewed_controls != controls:
             raise ProductionTranslationError(
                 f"{record_id}: reviewed control sequence differs from template"
@@ -456,6 +669,7 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
         reviewed_segments, _ = _template_parts(reviewed)
         laid_out = _layout_fixed_segments(reviewed_segments, controls)
     else:
+        template_segments, controls = _semantic_template_parts(template)
         laid_out = _split_visible_text(reviewed, template_segments, controls)
 
     output = laid_out[0]
@@ -467,6 +681,10 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
         validate_renderer_buffer_layout(output)
     except ProductionTranslationError as error:
         raise ProductionTranslationError(f"{record_id}: {error}") from error
+    if CONTROL_RE.sub(" ", output).split() != reviewed.split():
+        raise ProductionTranslationError(
+            f"{record_id}: layout changed reviewed prose"
+        )
     return output
 
 
@@ -477,17 +695,18 @@ def merged_translation_map(
     override_directory: Path | None = None,
     review_directory: Path | None = None,
 ) -> dict[str, str]:
-    """Return one complete production map with source-safe stable IDs.
+    """Return one complete production map with ROM-wide English reflow.
 
-    Preexisting production overrides remain supported for compatibility, but
-    the reviewed editorial layer has final precedence. Review prose is laid
-    out against each base record so its ordered control values are preserved.
+    Editorial overrides choose the visible prose, but every scenario record is
+    then re-laid out against the certified base record's native semantic-control
+    topology. This keeps unchanged baseline lines from retaining obsolete
+    Japanese-era spacing while preserving the exact selected English words.
     """
     base = _load_string_map(
         base_directory / f"{bank_name}.json",
         label=f"{bank_name} base translation",
     )
-    merged = dict(base)
+    selected = dict(base)
 
     if override_directory is not None:
         override_path = override_directory / f"{bank_name}.json"
@@ -502,7 +721,7 @@ def merged_translation_map(
                     f"{bank_name} production overrides contain unknown IDs: "
                     f"{unknown[:3]}"
                 )
-            merged.update(overrides)
+            selected.update(overrides)
 
     if review_directory is not None:
         review = _review_map(bank_name, review_directory)
@@ -511,13 +730,17 @@ def merged_translation_map(
             raise ProductionTranslationError(
                 f"{bank_name} production review contains unknown IDs: {unknown[:3]}"
             )
-        for record_id, reviewed in review.items():
-            merged[record_id] = layout_review_text(
-                record_id,
-                reviewed,
-                base[record_id],
-            )
-    return merged
+        selected.update(review)
+
+    laid_out: dict[str, str] = {}
+    for record_id, selected_text in selected.items():
+        prose = " ".join(CONTROL_RE.sub(" ", selected_text).split())
+        laid_out[record_id] = layout_review_text(
+            record_id,
+            prose,
+            base[record_id],
+        )
+    return laid_out
 
 
 def materialize_production_maps(
