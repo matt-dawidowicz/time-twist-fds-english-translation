@@ -8,17 +8,17 @@ lossless by default: parsing and serializing an unmodified input must reproduce
 the original bytes, and patch functions reject inputs that do not match the
 recovered source layout.
 
-The main pipeline is:
+The canonical playable pipeline is:
 
 ```text
-FDS image
-  -> FDS side
-    -> named FDS file / loaded overlay
-      -> scenario records or fixed assets
-        -> English encoding and dictionary compression
-      -> rebuilt overlay with original tail/address constraints
-    -> replaced FDS file
-  -> rebuilt two-side or combined four-side image
+locked base maps + reviewed production JSON + explicit overrides
+  -> deterministic 24-column production layout
+  -> frozen entropy encoding and dictionary optimization
+locked Japanese FDS images
+  -> entropy scenario/menu placement below resident NOV3 ($D7B5)
+  -> entropy-owned NOV4 fixed text + TT1A selector streams
+  -> entropy NOV2 decoder/runtime + font/title/boot patches
+  -> rebuilt Zenpen, Kouhen, and combined four-side image
 ```
 
 The playable ROM is an output of the pipeline, not a source file. Original and
@@ -32,8 +32,15 @@ patched `.fds` files are intentionally excluded from Git.
 | `textcodec.py` | Read and write native packed symbols at bit granularity | Map symbols to Japanese or English |
 | `charmap.py` | Render recovered Japanese common/extended codes | Re-encode English |
 | `english.py` | Map supported English glyphs and `{CTRL:n}` tags to symbols | Pack groups or modify ROM bytes |
-| `compression.py` | Build a flat, native-compatible English dictionary | Move code or expand RAM |
-| `scenario.py` | Parse group pointers/dictionary and rebuild scenario regions | Patch fixed-address UI tables |
+| `compression.py` | Native/flat compression used by analysis tooling | Define the playable release codec |
+| `scenario.py` | Parse recovered native group pointers and dictionaries | Own production entropy placement |
+| `entropy_codec.py` | Encode/decode the frozen production prefix grammar | Choose dictionary phrases |
+| `entropy_compression.py` | Optimize the production entropy dictionary | Modify FDS containers |
+| `entropy_scenario.py` | Place entropy scenario/menu streams under NOV3 | Change native entry-point contracts |
+| `entropy_runtime.py` | Install the one NOV2 production decoder/runtime | Expose alternate decoder modes |
+| `release_build.py` | Construct every playable entropy image component | Lock, publish, or promote releases |
+| `release_metadata.py` | Lock non-code inputs and validate provenance/manifests | Construct ROM bytes |
+| `release.py` | Materialize, build, publish, and promote through one path | Maintain alternate build implementations |
 | `font.py` | Generate/install the 8x8 translated dialogue font | Change text records |
 | `ui.py` | Apply source-verified, size-neutral fixed text and code patches | Rebuild normal scenario groups |
 | `title.py` | Convert, relocate, and verify the NOV4 English title assets | Translate story dialogue |
@@ -78,16 +85,19 @@ followed by data or code that must remain at its original CPU address.
 
 ### Rebuild
 
-1. `encode_english()` converts visible text and control tags to packed symbols.
-2. `compress_english_groups()` selects useful repeated literal sequences for
-   31 native slots or 68 slots in a patched English release bank.
-3. For the 11 menu-bearing banks, the release compressor treats the full-word
-   menu table as an additional group and shares its byte budget with dialogue.
-4. `rebuild_scenario_bank()` repacks groups, writes new pointers, and preserves
-   the original fixed tail address.
-5. The release layer regenerates the fixed-menu page index and shifts only the
-   recovered pointer-addressed prefix data.
-5. `replace-file` writes the rebuilt overlay back into an FDS image.
+1. `production_translation.py` merges the locked base, review JSON, and explicit
+   overrides, then regenerates English row/scroll geometry without changing the
+   approved words or native semantic controls.
+2. `encode_english()` converts the materialized text to semantic symbols.
+3. `entropy_compression.py` chooses a deterministic nested dictionary under the
+   frozen entropy cost model; source-analysis flat compression is not consulted.
+4. `entropy_scenario.py` repacks dialogue and page-indexed menus while keeping
+   every recovered byte-addressed entry point valid and every loaded bank below
+   `$D7B5`, the resident NOV3 address.
+5. `release_build.py` converts the remaining decoder-visible fixed streams,
+   installs the matching NOV2 entropy runtime, and applies font/title/boot fixes.
+6. `release.py` validates the source lock and code provenance before publishing
+   the rebuilt images transactionally.
 
 ## Patch layers
 
@@ -134,8 +144,9 @@ The following are architectural requirements, not optional style preferences:
 - An unmodified FDS image must round-trip byte-identically.
 - Packed record separator control `5` is structural and cannot appear as an
   ordinary translated control code.
-- Dictionary references are one-based and limited to 31 in native data or 68
-  in guarded English release data.
+- Dictionary references are one-based. Native source decoding retains the
+  recovered native range; the canonical entropy runtime supports the frozen
+  production dictionary range through 255 with bounded backward nesting.
 - Control-code order must match the Japanese record.
 - All visible English glyphs must exist in the installed font.
 - Ordinary dialogue segments must fit the 24-column renderer unless a
@@ -167,11 +178,12 @@ When adding a constant, document:
 
 The release layer separates four approvals that were previously conflated:
 
-1. `work/release_sources.json` approves non-code inputs: both Japanese
-   baselines, all playable scenario maps, and the title reference asset.
-   Schema v2 declares LF-normalized identity for translation JSON and raw-byte
-   identity for FDS/PNG inputs. The lock document is itself hashed after LF
-   normalization, so Windows checkout policy cannot change its release
+1. `work/release_sources.json` approves every non-code input that can affect
+   the playable image: both Japanese baselines, base scenario maps, registered
+   production-review JSON, optional explicit override JSON, and both title
+   assets. Schema v3 declares LF-normalized identity for editable JSON and
+   raw-byte identity for FDS/PNG inputs. The lock document is itself hashed
+   after LF normalization, so Windows checkout policy cannot change its release
    identity.
 2. Code provenance records the checkout Git commit/dirty state when available.
    It computes the same authoritative digest for the imported/executing

@@ -71,56 +71,51 @@ fixed tail / code / data
 The group streams and dictionary may shrink or grow inside the reservation,
 but the fixed tail cannot move.
 
-## Packed symbol prefix tree
+## Native packed symbol prefix tree
 
-Bits are read most-significant bit first. A symbol's prefix determines its
-kind and total encoded width:
+`textcodec.py` models the recovered Japanese/native stream. Bits are read
+most-significant bit first. A symbol's prefix determines its kind and width:
 
 | Prefix | Total bits | Kind | Value range |
 | --- | ---: | --- | --- |
 | `0xxxxx` or `10xxxx` | 6 | Common glyph | `0..47` |
-| `110xxxxxx` | 9 | Extended glyph / patched dictionary escape | `0..63` |
-| `1110xxxxx` | 9 | Dictionary reference | `1..31` in valid text |
+| `110xxxxxx` | 9 | Extended glyph | `0..63` |
+| `1110xxxxx` | 9 | Dictionary reference | `1..31` in valid native text |
 | `1111xxx` | 7 | Control | `0..7` |
 
-Control value `5` is reserved as the record separator. After it is decoded,
-the engine discards the rest of that byte and starts the next record at a byte
-boundary. `pack_records()` and `split_records()` reproduce that behavior.
+Control value `5` is the record separator. Native streams discard the rest of
+that byte after a separator, so the next record begins at a byte boundary.
+`pack_records()` and `split_records()` reproduce that source format. Historical
+English flat-codec experiments also reused otherwise-unneeded extended values
+for dictionary references 32-68; those helpers remain analysis behavior, not the
+canonical release representation.
 
-Unmodified Japanese code interprets every `110xxxxxx` value as an extended
-glyph. The English NOV2 patch keeps values `37..63` as glyphs and maps the
-otherwise-unused English values `0..36` to dictionary references `32..68`.
-Native source parsing remains in 31-entry mode unless the caller explicitly
-enables the patched English interpretation.
-
-`PackedSymbol.start_bit` and `end_bit` record the original bit positions during
+`PackedSymbol.start_bit` and `end_bit` record original bit positions during
 decoding. Newly encoded symbols use zeroes for those fields because positions
-are assigned only when the final stream is written.
+are assigned only when a final stream is written.
 
-## Dictionary
+## Canonical production entropy grammar
 
-Dictionary references are one-based: value `1` selects the first entry. A
-bank may use no dictionary, a flat dictionary, or references that require
-recursive expansion while analyzing Japanese source data.
+The playable release uses `entropy_codec.py`, not the native byte-aligned
+representation above. A frozen prefix table selects one of 16 semantic ranges
+for separators, controls, common glyphs, extended glyphs, or dictionary
+references. Dictionary values span 1-255.
 
-The English compressor deliberately creates a **flat** dictionary:
+Records remain bit-contiguous inside each independently addressed stream and
+pad only at that stream's end. Scenario groups and dictionaries are therefore
+continuous streams; page-indexed menu tables begin a fresh stream every 32
+records; native fixed entry points such as TT1A selectors each begin their own
+stream. This framing rule is part of the runtime ABI.
 
-- entries contain only common or extended literal glyphs;
-- controls and existing references form candidate boundaries;
-- explicitly supplied required entries retain their order;
-- the native decoder permits 31 entries;
-- the guarded English release decoder permits 68 entries;
-- a candidate is accepted only if the complete packed size decreases.
+`entropy_compression.py` chooses a deterministic nested dictionary. Dictionary
+entries may reference only earlier entries, making the grammar acyclic; build
+search also caps nesting depth. Every selected layout is round-tripped to the
+intended semantic symbols and must fit below resident NOV3 at `$D7B5`.
 
-The release builder compares greedy selection with bounded beam search and
-dictionary reordering. It jointly compresses dialogue and full-word menus with
-up to 68 entries.
-Every alternative retains a flat dictionary and is accepted only after exact
-packed-size and round-trip checks.
-
-Dialogue and relocated menus share one generated dictionary. Original Japanese
-menu references still determine how far the source dictionary extends, so source
-parsing must include entries used only by menus.
+Original Japanese menu references still determine how far the source dictionary
+extends during native parsing, so source recovery must include entries used only
+by menus even though the rebuilt release uses a newly optimized entropy
+dictionary.
 
 ## English character map
 

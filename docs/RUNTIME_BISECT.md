@@ -39,8 +39,8 @@ per-item subprocesses would be slower.
 
 ## Runtime regression findings
 
-The discarded Adaptive255 crash and the entropy blank-gameplay failure are
-separate bugs. Adaptive255 allowed scenario data to cross `$D7B5`, the load
+Historical diagnosis established that the discarded Adaptive255 crash and the
+entropy blank-gameplay failure were separate bugs. Adaptive255 allowed scenario data to cross `$D7B5`, the load
 address of resident NOV3. The entropy layout enforces `$D7B5` as the exclusive
 ceiling, and the generic spill allocator now also defaults to that boundary. The
 old `$E000` ceiling exists only as an explicitly named legacy diagnostic constant.
@@ -140,18 +140,14 @@ The direct NOV2 path is:
 ```text
 Japanese NOV2
   -> patched_nov2_ui
-  -> proven non-Adaptive production runtime fixes
+  -> proven renderer fixes
   -> two nested-dictionary depth patches ($82C5 / $8311)
   -> frozen entropy scanner/frontend/category runtime
 ```
 
-The five other Adaptive255 runtime changes were dead staging: the entropy scanner,
-top-level initializer, frontend, and category decoder overwrite those regions
-immediately. They are no longer installed or accepted as entropy source state.
-
-The only retained Adaptive-era semantics are the four-byte dictionary-depth
-increment/decrement patches. Those are explicit entropy prerequisites rather than
-an implicit dependency on `patch_nov2(..., adaptive_dictionary=True)`.
+`entropy_runtime.py` owns this sequence directly. The former Adaptive255 runtime
+and its `$E000` scan-limit/escape staging modules have been removed, so there is
+no compatibility flag or alternate decoder path to invoke accidentally.
 
 Do not create another R1/R2/R3/R4/C0/C1/C2 candidate family for this issue. The
 older runtime artifacts remain useful as binary observations only. New work

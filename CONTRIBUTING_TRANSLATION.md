@@ -5,7 +5,9 @@ without modifying the FDS engine or working with game-image bytes.
 
 ## Start with the right source
 
-The playable scenario text is in `work/translations/<BANK>.json`.
+The playable scenario text is composed from `work/translations/<BANK>.json`
+plus the bank's registered file under `review/production_retranslation/`; an
+optional `work/production_overrides/<BANK>.json` is the final explicit layer.
 The searchable workbook in
 [`outputs/Time_Twist_complete_translation_workbook.html`](outputs/Time_Twist_complete_translation_workbook.html)
 is the best review surface, but it is generated. Do not edit a workbook row as
@@ -28,8 +30,10 @@ footprints that are not visible in ordinary prose.
 
 1. Find the stable record ID in the workbook and read its Japanese source,
    scene context, and existing notes.
-2. Edit the matching entry in `work/translations/<BANK>.json`.
-3. Keep the exact Japanese source and the sequence of control tags unchanged.
+2. Edit the source layer that actually owns the wording: the registered
+   production-review JSON for current reviewed prose, the base map for a deliberate
+   base/topology correction, or a narrowly scoped final override.
+3. Keep the exact Japanese source and native semantic-control sequence unchanged.
 4. Keep the patch-safe text within the existing display, packing, and capacity
    limits. If the natural wording does not fit, retain it in the natural field
    and explain the tradeoff instead of silently weakening the translation.

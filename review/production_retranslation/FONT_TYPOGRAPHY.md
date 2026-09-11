@@ -1,6 +1,6 @@
 # Production font and typography contract
 
-**Status:** Font-engine work for the production localization branch. The production retranslation itself remains review-only and is not yet imported into `work/translations`.
+**Status:** Font-engine evidence for the canonical production localization. The reviewed production layer is consumed directly by `release-build` and intentionally remains separate from the certified base maps in `work/translations`.
 
 ## Vertical metrics
 
@@ -25,7 +25,7 @@ The patch-facing English map now has dedicated in-game glyphs for:
 - `—` em dash — extended code 57 / tile `$FC`, repurposing the Japanese display-slash slot because production English does not use that slash mark.
 - `:` colon — extended code 45 / tile `$FA`, a recovered safe font slot that was previously inactive in English.
 - `é` — extended code 44 / tile `$F9`, retained for words and names such as `consommé` and `Pépé`.
-- `$` — extended code 63 / tile `$B0`. The native code-63 lookup pointed to unsafe tile `$AC`; the production runtime redirects that one lookup byte to `$B0`.
+- `$` — extended code 63 / tile `$B0`. The native code-63 lookup pointed to unsafe tile `$AC`; the canonical entropy runtime redirects that one lookup byte to `$B0`.
 - Straight apostrophe and quotation-mark glyphs remain the physical 8x8 forms. Curly review typography (`‘ ’ “ ”`) is accepted by the encoder and aliases to those established tiles; at this resolution separate curly quote tiles would consume scarce codes without a meaningful visual gain.
 - En dash `–` normalizes to the em-dash tile.
 
@@ -35,7 +35,7 @@ Hyphen and em dash have distinct pixel forms: the hyphen is shorter, while the e
 
 Extended code 63 originally resolved to tile `$AC`, and NOV4 source slot `$AC` overlaps title graphics. The production font still does **not** write an English glyph there.
 
-Instead, the runtime-tested mapping changes the final NOV2 extended lookup byte from `$AC` to `$B0`. Tile `$B0` is the first recovered 1bpp font-source slot, immediately after the protected direct-graphics range `$98-$AF`. The diagnostic `Start$` build rendered the dollar sign correctly and showed no title-background corruption, so this mapping is now part of production runtime hardening.
+Instead, the runtime-tested mapping changes the final NOV2 extended lookup byte from `$AC` to `$B0`. Tile `$B0` is the first recovered 1bpp font-source slot, immediately after the protected direct-graphics range `$98-$AF`. The diagnostic `Start$` build rendered the dollar sign correctly and showed no title-background corruption, so this mapping is now part of the canonical entropy runtime.
 
 All active extended English glyphs resolve to recovered font-source tiles in `$B0-$FE`. The title-background safety rule remains in force: no production glyph may target `$98-$AF`.
 

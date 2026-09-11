@@ -1,8 +1,8 @@
 """Validate materialized production prose without reimposing legacy brevity.
 
 The review layer is unconstrained English. ``production_translation`` preserves
-every source control in order, inserts control 0 for explicit native row advances,
-and may insert control 4 as a native one-row scroll. Production validation
+native semantic controls in order while regenerating control 0/4 row and scroll
+geometry for English. Production validation
 therefore rejects implicit row crossing and enforces source-control compatibility,
 four-row staging-buffer safety, and renderer width for every record.
 

@@ -1,7 +1,8 @@
 # Translation workflow
 
 This is the maintained path from Japanese source evidence to a reviewable English
-candidate. Scenario English has one authority: `work/translations/*.json`.
+candidate. Playable scenario English is a deterministic composition of locked
+base maps, registered production-review JSON, and any intentional final override.
 
 ## 1. Provide private source images
 
@@ -39,18 +40,20 @@ time-twist scenario-extract `
 The checked-in source record contains stable IDs, exact decoded Japanese, and raw
 symbol metadata. It is not a translation file.
 
-## 3. Edit the authoritative English map
+## 3. Edit the correct English source layer
 
-Edit the matching ID-keyed map directly:
+`work/translations/BANK.json` is the certified base layer: stable IDs, playable
+baseline English, and native semantic-control topology. The registered files under
+`review/production_retranslation/` supply the reviewed production wording used by
+the current build. An intentionally created `work/production_overrides/BANK.json`
+is the final per-record layer and should be used only for a narrow reviewed
+last-mile correction.
 
-```text
-work/translations/TT1A.json
-```
-
-Preserve source control-event order, supported characters, character voice,
-terminology, and renderer limits. The shared validators enforce the technical
-contracts; translation review still requires reading the Japanese and gameplay
-context.
+Preserve source semantic-control order, supported characters, character voice,
+terminology, and renderer limits. The canonical materializer regenerates ordinary
+English row/scroll controls after composing those layers. The shared validators
+enforce the technical contracts; translation review still requires reading the
+Japanese and gameplay context.
 
 ## 4. Optionally generate a merged review document
 
@@ -74,6 +77,9 @@ time-twist scenario-footprint `
   --translations work/translations/TT1A.json
 ```
 
+This is a conservative native/flat analysis diagnostic, not the canonical entropy
+release footprint.
+
 ## 5. Regenerate public review artifacts
 
 ```powershell
@@ -89,9 +95,10 @@ canonical aggregate progress report.
 
 ## 6. Build one canonical candidate
 
-There is no separate maintained scenario/UI construction path. The release builder
-encodes dialogue, shared menus, fixed UI, font, title, and container changes under
-one source lock:
+There is no separate maintained scenario/UI construction path. `release-build`
+first materializes the locked base/review/override composition, then encodes
+dialogue, shared menus, fixed UI, font, title, and container changes through the
+single frozen entropy builder under one source lock:
 
 ```powershell
 time-twist release-lock
@@ -135,5 +142,6 @@ time-twist release-build
 ```
 
 Promotion independently rebuilds and verifies the candidate before establishing a
-strict release target. Never edit generated ROMs, merged review JSON, workbooks, or
-archived documents as a substitute for changing the authoritative source.
+strict release target. Never edit generated ROMs, materialized build maps,
+workbooks, or archived documents as a substitute for changing a locked source
+layer.

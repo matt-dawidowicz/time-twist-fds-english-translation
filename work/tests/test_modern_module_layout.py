@@ -10,6 +10,7 @@ from time_twist import (
     cli,
     cli_parser,
     release,
+    release_build,
     release_metadata,
     title,
     title_assets,
@@ -38,6 +39,21 @@ class ModernModuleLayoutTests(unittest.TestCase):
         ):
             with self.subTest(name=name):
                 self.assertFalse(hasattr(cli, name))
+
+    def test_release_facade_uses_the_single_entropy_image_builder(self) -> None:
+        """Expose one release image implementation and remove superseded modules."""
+        self.assertIs(release.build_release_images, release_build.build_release_images)
+        package_root = PROJECT_ROOT / "work" / "time_twist"
+        for filename in (
+            "entropy_release.py",
+            "production_release.py",
+            "production_codec.py",
+            "production_runtime.py",
+            "production_scenario.py",
+            "release_compression.py",
+        ):
+            with self.subTest(filename=filename):
+                self.assertFalse((package_root / filename).exists())
 
     def test_release_facade_exports_metadata_validation_helpers(self) -> None:
         """Keep release callers independent of metadata-module placement."""

@@ -1,6 +1,6 @@
 {
-  "schema": "Time Twist release source lock v2",
-  "authority": "The locked scenario maps, fixed UI/font/title code in this revision, and the locked title asset are the playable release authority. Workbook patch-safe fields mirror this authority; editorial alternatives remain in the natural-translation fields.",
+  "schema": "Time Twist release source lock v3",
+  "authority": "The locked Japanese baselines, base scenario maps, reviewed production English, production overrides, and title assets are the non-code release authority. The canonical builder materializes the game-facing English from those locked sources before entropy encoding.",
   "subtitle": "On the Outskirts of History...",
   "files": {
     "work/baseline/time_twist_zenpen_japan.fds": {
@@ -87,6 +87,71 @@
       "normalization": "lf",
       "sha256": "9D9D20A66216FB7466C229F9A9F9E66F4548C828292A4E656893F2FB07A4896A",
       "bytes": 786
+    },
+    "review/production_retranslation/TT1A_proposal.json": {
+      "normalization": "lf",
+      "sha256": "86F9BE77EB1428699463F94BD2DF1A164644DA91F75B0A0FBD1B51872E51F496",
+      "bytes": 4521
+    },
+    "review/production_retranslation/TT1B_proposal.json": {
+      "normalization": "lf",
+      "sha256": "509FDE57EC8CBD30F0FC78F8ED1C299FAE7DDBD76544BD3F1EC86F24A7669F05",
+      "bytes": 10887
+    },
+    "review/production_retranslation/TT2_changes.json": {
+      "normalization": "lf",
+      "sha256": "86C853148B9F7498BA6E9AF83ECBE90C77B22D46A3EB40936E1E3F7A08F2CCDA",
+      "bytes": 7002
+    },
+    "review/production_retranslation/T22_changes.json": {
+      "normalization": "lf",
+      "sha256": "89ED16ED66064B78149F8D51CB9A08CB4E1D3453A59C67B5EFE221A3BA2642A0",
+      "bytes": 3608
+    },
+    "review/production_retranslation/TT3A_changes.json": {
+      "normalization": "lf",
+      "sha256": "E0255DD58ACAD56EC8E41C65FB17DABA6D5F3354729968FEBE5CD59D85CB8F33",
+      "bytes": 7415
+    },
+    "review/production_retranslation/TT3B_changes.json": {
+      "normalization": "lf",
+      "sha256": "8EEB2EA7D50AB22AF0BAE5F566688CBC1CA71DF22A42427D309C34D6EA191503",
+      "bytes": 3510
+    },
+    "review/production_retranslation/TT4_changes.json": {
+      "normalization": "lf",
+      "sha256": "96EF0BF45BE1C42CEE17B6091DDE4B97E50591F4F8801421E4AFD977F2BDAA55",
+      "bytes": 8879
+    },
+    "review/production_retranslation/TT5_changes.json": {
+      "normalization": "lf",
+      "sha256": "5B3B3A75980A544E9C35887725824D79D4F2EC2D58B3ED037EC4A6B736B92026",
+      "bytes": 7542
+    },
+    "review/production_retranslation/T25_changes.json": {
+      "normalization": "lf",
+      "sha256": "7F6E92116D05753E765FF500DBE004029E33CFCFC9244236E7CF4EE432382BE8",
+      "bytes": 4737
+    },
+    "review/production_retranslation/TT6A_changes.json": {
+      "normalization": "lf",
+      "sha256": "D8D867A1EE49E6BD0DA997A2086A751820E6EF8F20EB62F75E2D889B866FB23E",
+      "bytes": 6044
+    },
+    "review/production_retranslation/TT6B_changes.json": {
+      "normalization": "lf",
+      "sha256": "708E935DA1DBE9536705C7B45F9A492E2EF857F70B6AAB2B184410E96E475ED2",
+      "bytes": 5297
+    },
+    "review/production_retranslation/TT6C_changes.json": {
+      "normalization": "lf",
+      "sha256": "0F788D4D80E950BF40863A3076BB903CB932D477645733EFD6C1D382155CA6E0",
+      "bytes": 8404
+    },
+    "review/production_retranslation/TT6D_proposal.json": {
+      "normalization": "lf",
+      "sha256": "7B1841F18112B538472CC589291BDE30D1CB31F3EF4F84BB142801B6894146D3",
+      "bytes": 770
     }
   }
 }

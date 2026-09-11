@@ -320,7 +320,7 @@ def command_scenario_merge(args: argparse.Namespace) -> None:
 
 
 def command_scenario_footprint(args: argparse.Namespace) -> None:
-    """Report capacity using the same boundary and validation as insertion."""
+    """Report the conservative native/flat analysis footprint for one bank."""
     bank_name, bank = _parse_source_bank(args)
     text_start_offset = bank.group_addresses[0] - bank.load_address
     capacity = bank.dictionary_end_offset - text_start_offset
@@ -382,7 +382,7 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
     )
 
     if len(translations) != len(bank.records):
-        print("final compressed footprint: pending complete translation")
+        print("analysis compressed footprint: pending complete translation")
         return
 
     groups = tuple(
@@ -407,7 +407,7 @@ def command_scenario_footprint(args: argparse.Namespace) -> None:
     )
     used = packed_size(compressed_groups, dictionary) + pointer_bytes
     print(
-        f"final compressed footprint: {used}/{capacity} bytes; "
+        f"analysis compressed footprint: {used}/{capacity} bytes; "
         f"remaining: {capacity - used} bytes"
     )
     if used > capacity:

@@ -1,13 +1,10 @@
-"""Materialize the production-localization layer over reviewed base maps.
+"""Materialize canonical production English over the certified base maps.
 
-The maintained ``work/translations`` files remain the last certified playable
-baseline. Production builds layer the reviewed retranslation over that base,
-then adapt it to the native 24-column, four-row text buffer. Source controls
-remain in order, while control 0 may be inserted for native row advances and control 4 may be
-inserted as the native one-row scroll continuation when approved prose needs
-more display space. Editorial prose
-therefore remains authoritative while the integration layer owns presentation
-syntax.
+The base maps supply stable record IDs and native semantic-control topology.
+Reviewed retranslation JSON and explicit overrides choose the visible English;
+this module then regenerates 24-column row/scroll geometry for the NOV2
+four-row renderer. Semantic controls remain in order while source-only Japanese
+presentation breaks are replaced by English layout controls.
 """
 
 from __future__ import annotations
@@ -708,6 +705,19 @@ def merged_translation_map(
     )
     selected = dict(base)
 
+    if review_directory is not None:
+        review = _review_map(bank_name, review_directory)
+        unknown = sorted(set(review) - set(base))
+        if unknown:
+            raise ProductionTranslationError(
+                f"{bank_name} production review contains unknown IDs: "
+                f"{unknown[:3]}"
+            )
+        selected.update(review)
+
+    # Explicit overrides are the final editorial layer. Keeping this narrow
+    # hook permits a reviewed last-mile correction without creating another
+    # translation or build pipeline.
     if override_directory is not None:
         override_path = override_directory / f"{bank_name}.json"
         if override_path.exists():
@@ -722,15 +732,6 @@ def merged_translation_map(
                     f"{unknown[:3]}"
                 )
             selected.update(overrides)
-
-    if review_directory is not None:
-        review = _review_map(bank_name, review_directory)
-        unknown = sorted(set(review) - set(base))
-        if unknown:
-            raise ProductionTranslationError(
-                f"{bank_name} production review contains unknown IDs: {unknown[:3]}"
-            )
-        selected.update(review)
 
     laid_out: dict[str, str] = {}
     for record_id, selected_text in selected.items():

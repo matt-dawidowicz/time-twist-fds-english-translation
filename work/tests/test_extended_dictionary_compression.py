@@ -1,4 +1,4 @@
-"""Regression tests for extended English dictionary optimization."""
+"""Regression tests for the historical flat English analysis codec."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ from time_twist.textcodec import (
 
 
 class ExtendedDictionaryCompressionTests(unittest.TestCase):
-    """Keep offline optimization compatible with the patched NOV2 decoder."""
+    """Keep the 68-entry native-format analysis model deterministic."""
 
     def test_dictionary_order_accepts_more_than_31_entries(self) -> None:
         """Allow hill-climbing across dictionaries that use extended slots."""
