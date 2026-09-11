@@ -49,7 +49,18 @@ jobs:
             work/build/production_translations
             work/build/production-source.zip
           if-no-files-found: error
-      - run: python -m black --check work
+      - run: python -m black work
+      - if: matrix.python-version == '3.14'
+        name: Upload canonical Black formatting
+        uses: actions/upload-artifact@v4
+        with:
+          name: black-formatted-playtest-layout
+          path: |
+            work/time_twist/production_translation.py
+            work/tests/test_production_translation.py
+            work/tests/test_production_typography.py
+          if-no-files-found: error
+          retention-days: 1
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
