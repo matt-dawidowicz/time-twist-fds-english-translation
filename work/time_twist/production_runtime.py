@@ -26,6 +26,15 @@ NOV2_FILENAME = "NOV2"
 PALETTE_DATA_RANGE = range(0x3390, 0x33B0)
 
 
+def __getattr__(name: str):
+    """Lazily preserve the historical adaptive patch-table export."""
+    if name == "ADAPTIVE_DICTIONARY_RUNTIME_PATCHES":
+        from .adaptive_runtime import ADAPTIVE_DICTIONARY_RUNTIME_PATCHES
+
+        return ADAPTIVE_DICTIONARY_RUNTIME_PATCHES
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 def patch_nov2(data: bytes, *, adaptive_dictionary: bool = False) -> bytes:
     """Return NOV2 with proven fixes and optional historical adaptive patches."""
     result = bytearray(patch_proven_nov2(data))
