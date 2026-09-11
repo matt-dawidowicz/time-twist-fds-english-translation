@@ -79,7 +79,8 @@ class PixelFontTests(unittest.TestCase):
             frozenset({source_hash}),
         ):
             patched = patched_nov4_font(source)
-        tile_id = EXTENDED_TILE_IDS[63]
+        # Code 63 is deliberately remapped to $B0; protect the title tile itself.
+        tile_id = 0xAC
         offset = NOV4_FONT_BASE_OFFSET + tile_id * 8
         self.assertEqual(
             patched[offset : offset + 8], source[offset : offset + 8]

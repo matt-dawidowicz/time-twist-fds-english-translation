@@ -46,8 +46,10 @@ Include:
 - any nuance retained only in the natural-translation field;
 - footprint/display validation results.
 
-The patch-safe workbook field is generated from the playable sources. To
-change in-game scenario text, edit `work/translations/BANK.json`; do not edit a
+The patch-safe workbook field is generated from the playable source composition.
+Change the registered production-review JSON for current reviewed wording, the
+base map only when its certified baseline/topology is intentionally changing, or
+an explicit final override for a narrow last-mile correction. Do not edit a
 generated workbook row as the sole source change.
 
 ## Code changes

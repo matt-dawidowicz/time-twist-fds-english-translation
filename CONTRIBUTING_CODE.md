@@ -73,7 +73,7 @@ for the overlay layout.
 | Scenario parsing/recompression | `work/time_twist/scenario.py`, `compression.py` |
 | Fixed UI patches and data | `work/time_twist/ui.py`, `ui_fixed_tables.py` |
 | Font and title patches | `work/time_twist/font.py`, `title.py`, `title_layout.py`, `title_assets.py`, `title_patch.py` |
-| Candidate/release assembly | `work/time_twist/release.py`, `release_metadata.py` |
+| Candidate/release assembly | `work/time_twist/release.py`, `release_build.py`, `release_metadata.py` |
 
 See the [full module map](docs/MODULE_MAP.md) for the public-facade rule and
 matching test files.

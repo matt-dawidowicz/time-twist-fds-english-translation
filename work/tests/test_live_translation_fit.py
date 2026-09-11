@@ -39,10 +39,10 @@ class LiveTranslationFitTests(unittest.TestCase):
         Recovered native capacities describe the scenario region.
         Relocated full-word menu banks add
         a source-verified movable prefix to that scenario reservation; current
-        usage is recomputed from scenario plus menu with the same 68-entry
-        greedy baseline used by the canonical release builder. The release
-        builder additionally compares deterministic optimized candidates, so a
-        baseline that fits proves every selected optimized result fits as well.
+        usage is recomputed from scenario plus menu with the conservative
+        68-entry flat baseline used by workbook analysis. The canonical release
+        uses the separate frozen entropy pipeline and reports its actual layout
+        and NOV3 headroom in the candidate manifest.
         """
         self.assertEqual(
             set(NATIVE_SCENARIO_CAPACITY_BYTES), set(KNOWN_SCENARIO_BANKS)
@@ -82,7 +82,7 @@ class LiveTranslationFitTests(unittest.TestCase):
             self.assertLessEqual(
                 used,
                 capacity,
-                f"{bank_name} exceeds its canonical English footprint by "
+                f"{bank_name} exceeds its conservative analysis footprint by "
                 f"{used - capacity} bytes",
             )
 

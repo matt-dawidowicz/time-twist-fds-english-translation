@@ -21,10 +21,13 @@ extracted retail payloads, emulator states, or other private fixtures.
 3. [Cross-bank editorial decisions](../work/audits/final_cross_bank_consistency.md)
 4. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
 
-`work/translations/*.json` is the only scenario-English authority.
-`work/source_records/*.json` contains decoded Japanese, stable record IDs, and
-source structure only. Generated workbooks are review surfaces, not replacement
-sources.
+Scenario English is composed from locked source layers: `work/translations/*.json`
+provides stable IDs and certified native control topology, registered
+`review/production_retranslation/*.json` provides the reviewed production wording,
+and an optional `work/production_overrides/*.json` file is the final explicit
+last-mile layer. `work/source_records/*.json` contains decoded Japanese, stable
+record IDs, and source structure only. Generated workbooks are review surfaces,
+not replacement sources.
 
 ## Binary and release architecture
 
@@ -51,7 +54,9 @@ bank/UI construction commands are no longer part of the public CLI.
 
 | Representation | Purpose |
 | --- | --- |
-| `work/translations/*.json` | Authoritative playable scenario English |
+| `work/translations/*.json` | Certified base scenario English and native control topology |
+| `review/production_retranslation/*.json` | Registered reviewed production wording layered over the base maps |
+| `work/production_overrides/*.json` | Optional final explicit per-record overrides, when intentionally present |
 | `work/source_records/*.json` | Decoded Japanese/source structure; no English authority |
 | `work/time_twist/ui.py` and `ui_fixed_tables.py` | Playable fixed/interface text and guarded patch logic |
 | `work/title_assets/Time Twist approved native title.png` | Native ROM-bound title geometry |
