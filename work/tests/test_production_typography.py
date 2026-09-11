@@ -32,7 +32,9 @@ class ProductionTypographyTests(unittest.TestCase):
 
     def test_materialized_corpus_has_no_em_or_en_dashes(self) -> None:
         """Require ordinary punctuation unless a future source case is reviewed."""
-        with tempfile.TemporaryDirectory(prefix="time_twist_typography_") as directory:
+        with tempfile.TemporaryDirectory(
+            prefix="time_twist_typography_"
+        ) as directory:
             output_directory = Path(directory)
             counts = materialize_production_maps(
                 BANK_NAMES,
@@ -46,7 +48,9 @@ class ProductionTypographyTests(unittest.TestCase):
             offenders: list[str] = []
             for bank_name in BANK_NAMES:
                 records = json.loads(
-                    (output_directory / f"{bank_name}.json").read_text(encoding="utf-8")
+                    (output_directory / f"{bank_name}.json").read_text(
+                        encoding="utf-8"
+                    )
                 )
                 offenders.extend(
                     record_id

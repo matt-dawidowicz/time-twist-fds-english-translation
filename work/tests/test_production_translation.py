@@ -71,7 +71,7 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
         )
         reviewed = (
             'We sincerely apologize. The correct phrase is: "When you smile, '
-            'it\'s as though the sun rises." Thank you for using our service.'
+            "it's as though the sun rises.\" Thank you for using our service."
         )
 
         output = layout_review_text("TT1A/g1/r0", reviewed, template)

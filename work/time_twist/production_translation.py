@@ -195,8 +195,8 @@ def _is_strong_semantic_break(words: list[str], end_word: int) -> bool:
     if end_word <= 0 or end_word >= len(words):
         return True
     raw_token = words[end_word - 1]
-    closes_quote = raw_token.endswith(("\"", "”", "’"))
-    token = raw_token.rstrip('\"”’)]}')
+    closes_quote = raw_token.endswith(('"', "”", "’"))
+    token = raw_token.rstrip('"”’)]}')
     next_is_dash = words[end_word].startswith(("—", "–"))
     if (
         (closes_quote and not next_is_dash)
@@ -205,7 +205,7 @@ def _is_strong_semantic_break(words: list[str], end_word: int) -> bool:
     ):
         return True
     if token.endswith((".", ";", ":")):
-        stem = token[:-1].lstrip('\"“‘([')
+        stem = token[:-1].lstrip('"“‘([')
         abbreviations = {
             "DR",
             "MR",
