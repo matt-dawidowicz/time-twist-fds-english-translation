@@ -47,6 +47,18 @@ For every scenario record:
 
 A line is not acceptable merely because it is semantically correct. Translationese, omitted subjects that sound unnatural in English, forced noun phrases, and word order chosen only to fit a byte slot are defects.
 
+## Punctuation and typography
+
+Ordinary American-English punctuation is the default. Use periods, commas, colons, question marks, exclamation marks, and true ellipses according to the source's actual speech or narrative function.
+
+An em dash is exceptional, not house style. Use one only when a source-justified interruption or abrupt broken turn cannot be represented naturally with ordinary punctuation. Do not use em dashes for apposition, routine contrast, parenthetical explanation, labels, exhibit names, dates, headings, signatures, report text, or generic rhetorical emphasis.
+
+The Japanese display mark `／` is an emphatic beat, not an em dash. Translate its communicative function with normal English punctuation or timing controls rather than mechanically mapping it to a dash.
+
+Formal labels and exhibit descriptions should normally use a colon or the existing source-supported display/control boundary. Dates, locations, names, ranks, and occupations should use normal sentence punctuation or field separators rather than decorative dashes.
+
+The current materialized 1,299-record production corpus intentionally contains no em dash or en dash. `work/tests/test_production_typography.py` enforces that state. If a future record genuinely requires an em dash, it must receive record-specific source justification and an explicit regression-test exception.
+
 ## UI standard
 
 Menu labels must be the natural English concept a commercial localization would use. They may not be abbreviated merely because the original Japanese record was short.
