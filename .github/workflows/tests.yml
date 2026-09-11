@@ -1,123 +1,84 @@
-name: apply codex semantic-control fixes
+name: tests
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
 
-permissions:
-  contents: write
+# PR validation is intentionally read-only.
+concurrency:
+  group: tests-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
-  apply-fixes:
+  unit-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.14"]
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: fix/production-em-dash-audit-20260911
-          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
-          python-version: "3.14"
+          python-version: ${{ matrix.python-version }}
           cache: pip
+      - run: python work/tools/check_public_tree.py
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt
-      - name: Apply reviewed semantic-control fixes
-        run: |
-          python - <<'PY'
-          import hashlib
-          import json
-          from pathlib import Path
-
-          root = Path('.')
-          production = root / 'work/time_twist/production_translation.py'
-          text = production.read_text(encoding='utf-8')
-
-          old = '''            raw = text[boundary + 1 : colon]\n            stripped = raw.lstrip(" \\t\\n\\r\\\"“”'‘’()[]")\n            start = boundary + 1 + len(raw) - len(stripped)\n            candidate = stripped.rstrip(" \\t\\n\\r\\\"“”'‘’()[]")\n        words = candidate.split()\n'''
-          new = '''            raw = text[boundary + 1 : colon]\n            if raw.lstrip(" \\t\\n\\r").startswith(("\\\"", "“", "‘")):\n                continue\n            stripped = raw.lstrip(" \\t\\n\\r\\\"“”'‘’()[]")\n            start = boundary + 1 + len(raw) - len(stripped)\n            candidate = stripped.rstrip(" \\t\\n\\r\\\"“”'‘’()[]")\n        words = candidate.split()\n'''
-          assert text.count(old) == 1
-          text = text.replace(old, new, 1)
-
-          old = '''    if CONTROL_RE.sub(" ", output).split() != reviewed.split():\n        raise ProductionTranslationError(\n            f"{record_id}: layout changed reviewed prose"\n        )\n'''
-          new = '''    reviewed_visible_words = CONTROL_RE.sub(" ", reviewed).split()\n    if CONTROL_RE.sub(" ", output).split() != reviewed_visible_words:\n        raise ProductionTranslationError(\n            f"{record_id}: layout changed reviewed prose"\n        )\n'''
-          assert text.count(old) == 1
-          text = text.replace(old, new, 1)
-
-          old = '''    selected = dict(base)\n\n    if review_directory is not None:\n'''
-          new = '''    selected = dict(base)\n    explicit_control_overrides: set[str] = set()\n\n    if review_directory is not None:\n'''
-          assert text.count(old) == 1
-          text = text.replace(old, new, 1)
-
-          old = '''            selected.update(overrides)\n\n    laid_out: dict[str, str] = {}\n    for record_id, selected_text in selected.items():\n        prose = " ".join(CONTROL_RE.sub(" ", selected_text).split())\n        laid_out[record_id] = layout_review_text(\n            record_id,\n            prose,\n            base[record_id],\n        )\n'''
-          new = '''            selected.update(overrides)\n            explicit_control_overrides.update(\n                record_id\n                for record_id, override_text in overrides.items()\n                if CONTROL_RE.search(override_text)\n            )\n\n    laid_out: dict[str, str] = {}\n    for record_id, selected_text in selected.items():\n        reviewed_text = selected_text\n        if record_id not in explicit_control_overrides:\n            reviewed_text = " ".join(\n                CONTROL_RE.sub(" ", selected_text).split()\n            )\n        laid_out[record_id] = layout_review_text(\n            record_id,\n            reviewed_text,\n            base[record_id],\n        )\n'''
-          assert text.count(old) == 1
-          text = text.replace(old, new, 1)
-          production.write_text(text, encoding='utf-8', newline='\n')
-
-          overrides = {
-              'TT1B.json': {
-                  'TT1B/g0/r14': '"Sabbath Box"{CTRL:0}{CTRL:2}Used in witches\' rites{CTRL:6}in medieval Europe.{CTRL:3}Said to hold soul pacts{CTRL:4}made with devils.',
-              },
-              'TT4.json': {
-                  'TT4/g3/r23': 'Hades: Correct.{CTRL:0}I guard the underworld.{CTRL:2}Very well. You may enter.',
-              },
-              'TT3A.json': {
-                  'TT3A/g3/r13': '"4 km southwest of here.{CTRL:0}Wait at old watermill.{CTRL:0}{CTRL:0}Signed, Rebecca."',
-              },
-              'T25.json': {
-                  'T25/g0/r5': "Where to now, Devil?{CTRL:1}I'll follow you even{CTRL:0}to the ends of Hell!",
-              },
-              'T22.json': {
-                  'T22/g1/r7': "Bishop: Jeanne d'Arc,{CTRL:0}Lugot's granddaughter,{CTRL:0}Devil-baptized, depraved{CTRL:6}The Church sentences her to death.",
-              },
-              'TT6C.json': {
-                  'TT6C/g3/r8': "Mary: Thank you so much.{CTRL:0}Joseph: You saved Demon.{CTRL:2}Me: He's not Demon.{CTRL:0}Joseph: Ah… right.{CTRL:3}Me: Yes.{CTRL:3}Both: Yes…{CTRL:3}Me: Right. Jesus Christ.",
-              },
-          }
-          override_dir = root / 'work/production_overrides'
-          for filename, changes in overrides.items():
-              path = override_dir / filename
-              payload = json.loads(path.read_text(encoding='utf-8'))
-              payload.update(changes)
-              path.write_text(
-                  json.dumps(payload, ensure_ascii=False, indent=2) + '\n',
-                  encoding='utf-8',
-                  newline='\n',
-              )
-
-          tests = root / 'work/tests/test_production_translation.py'
-          test_text = tests.read_text(encoding='utf-8')
-          marker = '''    def test_entire_reviewed_corpus_materializes_buffer_safe(self) -> None:\n'''
-          insertion = '''    def test_explicit_review_controls_preserve_visible_prose(self) -> None:\n        \"\"\"Allow final editorial overrides to pin source-matching control sites.\"\"\"\n        template = \"Alpha{CTRL:1}Beta{CTRL:0}Gamma\"\n        reviewed = \"First thought.{CTRL:1}Second thought.{CTRL:0}Third thought.\"\n\n        output = layout_review_text(\"TEST/g0/r4\", reviewed, template)\n\n        self.assertIn(\"First thought.{CTRL:1}Second thought.\", output)\n        self.assertIn(\"{CTRL:0}Third thought.\", output)\n        self.assertEqual(\n            re.sub(r\"\\{CTRL:[0-7]\\}\", \" \", output).split(),\n            re.sub(r\"\\{CTRL:[0-7]\\}\", \" \", reviewed).split(),\n        )\n\n    def test_codex_semantic_control_regressions(self) -> None:\n        \"\"\"Keep reviewed semantic boundaries stable across the playtest fixes.\"\"\"\n\n        def production(bank_name: str) -> dict[str, str]:\n            return merged_translation_map(\n                bank_name,\n                base_directory=ROOT / \"work\" / \"translations\",\n                override_directory=ROOT / \"work\" / \"production_overrides\",\n                review_directory=ROOT / \"review\" / \"production_retranslation\",\n            )\n\n        tt1b = production(\"TT1B\")\n        self.assertTrue(\n            tt1b[\"TT1B/g0/r14\"].startswith(\n                '\"Sabbath Box\"{CTRL:0}{CTRL:2}'\n            )\n        )\n        for record_id in (\n            \"TT1B/g0/r15\",\n            \"TT1B/g0/r16\",\n            \"TT1B/g0/r17\",\n            \"TT1B/g0/r18\",\n        ):\n            self.assertRegex(tt1b[record_id], r'^\"[^\"]+\":\\{CTRL:2\\}')\n\n        tt1a = production(\"TT1A\")\n        self.assertNotIn(\"Dr.{CTRL:2}Simon\", tt1a[\"TT1A/g0/r1\"])\n        self.assertNotIn(\"a{CTRL:2}cool-headed\", tt1a[\"TT1A/g0/r23\"])\n\n        tt4 = production(\"TT4\")\n        self.assertIn(\n            \"underworld.{CTRL:2}Very well.\", tt4[\"TT4/g3/r23\"]\n        )\n\n        tt3a = production(\"TT3A\")\n        self.assertIn(\n            \"{CTRL:0}{CTRL:0}Signed, Rebecca.\",\n            tt3a[\"TT3A/g3/r13\"],\n        )\n\n        t25 = production(\"T25\")\n        self.assertTrue(\n            t25[\"T25/g0/r5\"].startswith(\"Where to now, Devil?{CTRL:1}\")\n        )\n\n        t22 = production(\"T22\")\n        self.assertIn(\n            \"depraved{CTRL:6}The Church\", t22[\"T22/g1/r7\"]\n        )\n\n        tt6c = production(\"TT6C\")\n        self.assertIn(\n            \"{CTRL:3}Me: Right. Jesus Christ.\",\n            tt6c[\"TT6C/g3/r8\"],\n        )\n\n'''
-          assert test_text.count(marker) == 1
-          assert 'test_codex_semantic_control_regressions' not in test_text
-          tests.write_text(
-              test_text.replace(marker, insertion + marker, 1),
-              encoding='utf-8',
-              newline='\n',
-          )
-
-          lock_path = root / 'work/release_sources.json'
-          lock = json.loads(lock_path.read_text(encoding='utf-8'))
-          for filename in overrides:
-              path = override_dir / filename
-              data = path.read_bytes().replace(b'\r\n', b'\n').replace(b'\r', b'\n')
-              key = f'work/production_overrides/{filename}'
-              lock['files'][key]['sha256'] = hashlib.sha256(data).hexdigest().upper()
-              lock['files'][key]['bytes'] = len(data)
-          lock_path.write_text(
-              json.dumps(lock, indent=2) + '\n', encoding='utf-8', newline='\n'
-          )
-          PY
-      - run: python -m black work/time_twist/production_translation.py work/tests/test_production_translation.py
-      - run: python -m ruff check work/time_twist/production_translation.py work/tests/test_production_translation.py
-      - run: python -m pydocstyle --convention=pep257 work/time_twist/production_translation.py work/tests/test_production_translation.py
+      - name: Run focused canonical runtime tests
+        run: time-twist-runtime smoke
+      - run: python work/generate_bilingual_comparison_ci.py
+      - run: python work/generate_translation_workbook.py
+      - name: Verify generated translation review artifacts are current
+        run: git diff --exit-code -- outputs work/translation_workbook_banks
+      - if: matrix.python-version == '3.14'
+        name: Materialize production translation maps
+        run: >-
+          python work/tools/materialize_production_translations.py
+          --repo-root . --output work/build/production_translations
+      - if: matrix.python-version == '3.14'
+        name: Archive production source snapshot
+        run: git archive --format=zip --output=work/build/production-source.zip HEAD
+      - if: matrix.python-version == '3.14'
+        name: Upload production integration inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-integration-inputs
+          path: |
+            work/build/production_translations
+            work/build/production-source.zip
+          if-no-files-found: error
+      - run: python -m black --check work
+      - run: python -m ruff check work
+      - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
-      - run: python -m unittest work.tests.test_production_translation work.tests.test_production_typography
-        env:
-          PYTHONPATH: work
-      - name: Commit tested fixes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add work/time_twist/production_translation.py work/tests/test_production_translation.py work/production_overrides work/release_sources.json
-          git commit -m "Stabilize reviewed semantic control boundaries"
-          git push origin HEAD:fix/production-em-dash-audit-20260911
+      - run: python work/run_tests.py unit
+      - if: matrix.python-version == '3.14'
+        run: python -m build
+      - if: matrix.python-version == '3.14'
+        run: python -m pip install --force-reinstall dist/*.whl
+      - if: matrix.python-version == '3.14'
+        name: Prove smoke test imports the installed wheel
+        run: >-
+          python -c "from pathlib import Path; import time_twist;
+          from time_twist.release import build_code_provenance;
+          imported = Path(time_twist.__file__).resolve();
+          checkout = Path('work/time_twist').resolve(); print(imported);
+          assert checkout not in imported.parents,
+          f'import leaked from checkout: {imported}';
+          build_code_provenance(Path.cwd())"
+      - if: matrix.python-version == '3.14'
+        run: time-twist --help
+      - if: matrix.python-version == '3.14'
+        run: time-twist release-build --help
+
+  required-unit-tests:
+    name: unit-tests
+    needs: unit-tests
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every supported Python version to pass
+        run: test "${{ needs.unit-tests.result }}" = "success"
