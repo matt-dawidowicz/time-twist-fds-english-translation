@@ -34,13 +34,13 @@ jobs:
       - if: matrix.python-version == '3.14'
         name: Apply canonical formatter and lint fix
         run: |
-          python -m black work/time_twist/production_translation.py work/tests/test_production_translation.py work/tests/test_production_typography.py
           python -m ruff check --fix --unsafe-fixes work/time_twist/production_translation.py work/tests/test_production_translation.py work/tests/test_production_typography.py
+          python -m black work/time_twist/production_translation.py work/tests/test_production_translation.py work/tests/test_production_typography.py
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add work/time_twist/production_translation.py work/tests/test_production_translation.py work/tests/test_production_typography.py
           if ! git diff --cached --quiet; then
-            git commit -m "Apply canonical lint fix to playtest layout"
+            git commit -m "Format canonical lint fix for playtest layout"
             git push origin HEAD:${{ github.head_ref }}
           fi
       - name: Run focused canonical runtime tests
