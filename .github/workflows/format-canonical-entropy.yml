@@ -1,0 +1,33 @@
+name: format canonical entropy cleanup
+
+on:
+  push:
+    branches:
+      - tmp/black-canonical-entropy-20260911
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Install pinned formatter
+        run: python -m pip install 'black==25.1.0'
+      - name: Format work tree
+        run: python -m black work
+      - name: Commit formatting
+        run: |
+          set -euo pipefail
+          git config user.name "starlight_world"
+          git config user.email "43389528+matt-dawidowicz@users.noreply.github.com"
+          git status --short
+          git add work
+          git commit -m "Apply Black formatting"
+          git push origin HEAD:refs/heads/tmp/black-canonical-entropy-20260911
