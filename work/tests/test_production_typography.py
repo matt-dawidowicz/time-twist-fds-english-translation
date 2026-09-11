@@ -46,9 +46,7 @@ class ProductionTypographyTests(unittest.TestCase):
             offenders: list[str] = []
             for bank_name in BANK_NAMES:
                 records = json.loads(
-                    (output_directory / f"{bank_name}.json").read_text(
-                        encoding="utf-8"
-                    )
+                    (output_directory / f"{bank_name}.json").read_text(encoding="utf-8")
                 )
                 offenders.extend(
                     record_id
