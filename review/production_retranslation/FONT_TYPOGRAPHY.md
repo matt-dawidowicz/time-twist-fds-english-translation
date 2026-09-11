@@ -19,17 +19,21 @@ This removes the previous visual unevenness where descender letters had to be sq
 
 ## Production punctuation glyphs
 
-The patch-facing English map now has dedicated in-game glyphs for:
+The patch-facing English map has dedicated in-game glyphs for:
 
 - `…` ellipsis — extended code 61 / tile `$B4`, restoring the native ellipsis slot.
-- `—` em dash — extended code 57 / tile `$FC`, repurposing the Japanese display-slash slot because production English does not use that slash mark.
+- `—` em dash — extended code 57 / tile `$FC`, retained as an available English glyph for a future source-justified genuine interruption. The current production script intentionally does not use it.
 - `:` colon — extended code 45 / tile `$FA`, a recovered safe font slot that was previously inactive in English.
 - `é` — extended code 44 / tile `$F9`, retained for words and names such as `consommé` and `Pépé`.
 - `$` — extended code 63 / tile `$B0`. The native code-63 lookup pointed to unsafe tile `$AC`; the canonical entropy runtime redirects that one lookup byte to `$B0`.
 - Straight apostrophe and quotation-mark glyphs remain the physical 8x8 forms. Curly review typography (`‘ ’ “ ”`) is accepted by the encoder and aliases to those established tiles; at this resolution separate curly quote tiles would consume scarce codes without a meaningful visual gain.
-- En dash `–` normalizes to the em-dash tile.
+- En dash `–` still normalizes to the em-dash tile at the encoder level, but current production policy permits neither dash without record-specific source justification.
 
 Hyphen and em dash have distinct pixel forms: the hyphen is shorter, while the em dash spans the full five-pixel glyph width. The dollar sign uses the same rows 0-6 vertical box as capitals and digits.
+
+The Japanese code-57 source glyph was the display-slash mark `／`. That mark often functions as an emphatic visual beat in the Japanese script; it is **not** semantically an em dash. Repurposing its safe font slot does not license a mechanical `／` -> `—` translation. Production English should normally express that beat with ordinary punctuation or the preserved control/timing structure.
+
+The materialized 1,299-record production corpus currently contains no em dash or en dash. The glyph remains available so the engine does not lose expressive capability, while `work/tests/test_production_typography.py` prevents it from becoming a default stylistic crutch. A future exception requires source evidence and an explicit test update.
 
 ## Source-ownership safety
 
@@ -41,7 +45,7 @@ All active extended English glyphs resolve to recovered font-source tiles in `$B
 
 ## Deliberately unsupported characters
 
-A slash `/` is not part of production prose and is intentionally rejected by the English encoder after code 57 became the em dash. This is preferable to rendering an incorrect glyph silently.
+A slash `/` is not part of production prose and is intentionally rejected by the English encoder after code 57 became the reserved em-dash slot. This is preferable to rendering an incorrect glyph silently.
 
 The Civil War money puzzle may now use normal forms such as `$120`; it no longer needs the spelled-out `120 dollars` workaround.
 
