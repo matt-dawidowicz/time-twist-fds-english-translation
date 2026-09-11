@@ -40,12 +40,12 @@ from .entropy_scenario import (
 from .entropy_title import patched_nov4_entropy_title
 from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
-from .production_release import (
+from .production_build_support import (
     ProductionBuildError,
-    _encoded_groups,
-    _load_translation_map,
-    _semantic_record,
-    _sha256,
+    encoded_groups as _encoded_groups,
+    load_translation_map as _load_translation_map,
+    semantic_record as _semantic_record,
+    sha256 as _sha256,
 )
 from .project import source_dictionary_reference_floor
 from .release_metadata import SCENARIO_LOCATIONS
