@@ -83,7 +83,7 @@ class CodexFollowupSemanticTests(unittest.TestCase):
     def test_bishop_pact_signature_keeps_final_ctrl3_field(self) -> None:
         """Keep the pact signer visually and semantically separate from prose."""
         text = _production("T22")["T22/g0/r10"]
-        self.assertIn("every evil.{CTRL:3}Bishop\"", text)
+        self.assertIn('every evil.{CTRL:3}Bishop"', text)
         self.assertEqual(
             [1, 0, 6, 4, 3],
             [
