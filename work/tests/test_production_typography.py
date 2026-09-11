@@ -32,9 +32,7 @@ class ProductionTypographyTests(unittest.TestCase):
 
     def test_materialized_corpus_has_no_em_or_en_dashes(self) -> None:
         """Require ordinary punctuation unless a future source case is reviewed."""
-        with tempfile.TemporaryDirectory(
-            prefix="time_twist_typography_"
-        ) as directory:
+        with tempfile.TemporaryDirectory(prefix="time_twist_typography_") as directory:
             output_directory = Path(directory)
             counts = materialize_production_maps(
                 BANK_NAMES,
