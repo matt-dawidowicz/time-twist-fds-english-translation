@@ -165,6 +165,65 @@ def _semantic_template_parts(template: str) -> tuple[list[str], list[int]]:
     return collapsed, kept_controls
 
 
+def _semantic_anchor_ordinals(template: str) -> frozenset[int]:
+    """Return source section controls that followed an explicit row break.
+
+    A source ``{CTRL:0}{CTRL:2}`` pair marks a header/instruction boundary: the
+    Japanese script ended a display row and then entered the next semantic
+    section. Production English drops the Japanese row geometry but should
+    still place that section transition at a natural phrase boundary.
+    """
+    segments, controls = _template_parts(template)
+    semantic_ordinal = -1
+    anchored: set[int] = set()
+    for index, control in enumerate(controls):
+        if control not in SEMANTIC_CONTROLS:
+            continue
+        semantic_ordinal += 1
+        if (
+            control == 2
+            and index > 0
+            and controls[index - 1] in INSERTABLE_LAYOUT_CONTROLS
+            and not segments[index]
+        ):
+            anchored.add(semantic_ordinal)
+    return frozenset(anchored)
+
+
+def _is_strong_semantic_break(words: list[str], end_word: int) -> bool:
+    """Return whether a word boundary cleanly ends a section phrase."""
+    if end_word <= 0 or end_word >= len(words):
+        return True
+    raw_token = words[end_word - 1]
+    closes_quote = raw_token.endswith(("\"", "”", "’"))
+    token = raw_token.rstrip('\"”’)]}')
+    next_is_dash = words[end_word].startswith(("—", "–"))
+    if (
+        (closes_quote and not next_is_dash)
+        or token in {"—", "–"}
+        or token.endswith(("…", "...", "!", "?"))
+    ):
+        return True
+    if token.endswith((".", ";", ":")):
+        stem = token[:-1].lstrip('\"“‘([')
+        abbreviations = {
+            "DR",
+            "MR",
+            "MRS",
+            "MS",
+            "ST",
+            "JR",
+            "SR",
+            "U.S",
+        }
+        if token.endswith(".") and (
+            len(stem) <= 2 or stem.upper() in abbreviations
+        ):
+            return False
+        return True
+    return False
+
+
 def _speaker_label_spans(text: str) -> tuple[tuple[int, int], ...]:
     """Locate compact English speaker labels without mistaking prior prose.
 
@@ -464,9 +523,15 @@ def _layout_chunk_at_cursor(
         if row_index == len(rows) - 1:
             continue
 
-        if cursor < TEXT_ROW_BYTES * (TEXT_BUFFER_ROWS - 1):
+        row_four_start = TEXT_ROW_BYTES * (TEXT_BUFFER_ROWS - 1)
+        if cursor <= row_four_start:
             output.append(f"{{CTRL:{LINE_ADVANCE_CONTROL}}}")
             inserted_controls += 1
+            # At the exact row-three boundary the corrected control no longer
+            # scrolls, but retain the old ranking penalty so the presentation
+            # fix does not reshuffle unrelated semantic-control assignments.
+            if cursor == row_four_start:
+                inserted_scrolls += 1
             cursor = _cursor_after_control(cursor, LINE_ADVANCE_CONTROL)
         else:
             output.append(f"{{CTRL:{SCROLL_CONTROL}}}")
@@ -481,6 +546,8 @@ def _split_visible_text(
     text: str,
     template_segments: list[str],
     controls: list[int],
+    *,
+    anchored_semantic_ordinals: frozenset[int] = frozenset(),
 ) -> list[str]:
     """Distribute reviewed prose across preserved semantic control boundaries.
 
@@ -515,18 +582,26 @@ def _split_visible_text(
             prefix_chars[-1] + len(word) + (1 if word_index else 0)
         )
 
-    # (next word, decoder cursor) -> (layout controls, scrolls, score, chunks)
-    states: dict[tuple[int, int], tuple[int, int, int, tuple[str, ...]]] = {
-        (0, 0): (0, 0, 0, ())
-    }
+    # (next word, decoder cursor) ->
+    # (anchor violations, layout controls, scrolls, score, chunks)
+    states: dict[
+        tuple[int, int], tuple[int, int, int, int, tuple[str, ...]]
+    ] = {(0, 0): (0, 0, 0, 0, ())}
+    semantic_ordinal_by_control: dict[int, int] = {}
+    semantic_ordinal = -1
+    for control_index, control in enumerate(controls):
+        if control in SEMANTIC_CONTROLS:
+            semantic_ordinal += 1
+            semantic_ordinal_by_control[control_index] = semantic_ordinal
     for segment_index, template_segment in enumerate(template_segments):
         remaining_active = sum(
             1 for segment in template_segments[segment_index + 1 :] if segment
         )
         next_states: dict[
-            tuple[int, int], tuple[int, int, int, tuple[str, ...]]
+            tuple[int, int], tuple[int, int, int, int, tuple[str, ...]]
         ] = {}
         for (start_word, cursor), (
+            anchor_violations,
             inserted_controls,
             inserted_scrolls,
             score,
@@ -601,8 +676,20 @@ def _split_visible_text(
                 else:
                     trial_score = score
 
+                anchor_violation = 0
+                semantic_ordinal = semantic_ordinal_by_control.get(
+                    segment_index
+                )
+                if (
+                    semantic_ordinal in anchored_semantic_ordinals
+                    and end_word < len(words)
+                    and not _is_strong_semantic_break(words, end_word)
+                ):
+                    anchor_violation = 1
+
                 key = (end_word, next_cursor)
                 trial = (
+                    anchor_violations + anchor_violation,
                     inserted_controls + added_controls,
                     inserted_scrolls + added_scrolls,
                     trial_score,
@@ -615,7 +702,8 @@ def _split_visible_text(
         states = next_states
         if not states:
             raise ProductionTranslationError(
-                "cannot distribute reviewed English inside native semantic boundaries"
+                "cannot distribute reviewed English inside native "
+                "semantic boundaries"
             )
 
     complete = [
@@ -627,7 +715,7 @@ def _split_visible_text(
         raise ProductionTranslationError(
             "cannot place all reviewed English inside the native text buffer"
         )
-    return list(min(complete)[3])
+    return list(min(complete)[4])
 
 
 def _layout_fixed_segments(
@@ -667,7 +755,12 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
         laid_out = _layout_fixed_segments(reviewed_segments, controls)
     else:
         template_segments, controls = _semantic_template_parts(template)
-        laid_out = _split_visible_text(reviewed, template_segments, controls)
+        laid_out = _split_visible_text(
+            reviewed,
+            template_segments,
+            controls,
+            anchored_semantic_ordinals=_semantic_anchor_ordinals(template),
+        )
 
     output = laid_out[0]
     for value, segment in zip(controls, laid_out[1:], strict=True):
