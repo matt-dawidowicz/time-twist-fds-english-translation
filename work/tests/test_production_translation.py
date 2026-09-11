@@ -306,6 +306,7 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
         """Keep reviewed semantic boundaries stable across the playtest fixes."""
 
         def production(bank_name: str) -> dict[str, str]:
+            """Materialize one production bank for semantic-control assertions."""
             return merged_translation_map(
                 bank_name,
                 base_directory=ROOT / "work" / "translations",
