@@ -259,6 +259,11 @@ def _speaker_label_spans(text: str) -> tuple[tuple[int, int], ...]:
         elif colon >= 3 and text[colon - 3 : colon] == "...":
             start = colon - 3
             candidate = "..."
+        elif colon >= 1 and text[colon - 1] in ('"', "”", "’"):
+            # A colon after a closing quote is a heading/content delimiter, not
+            # a speaker label. Checking the closing quote directly also handles
+            # abbreviations such as ``"DR. SIMON VANISHES":``.
+            continue
         else:
             boundary = colon - 1
             while boundary >= 0 and text[boundary] not in ".!?…:":
@@ -285,6 +290,63 @@ def _speaker_label_spans(text: str) -> tuple[tuple[int, int], ...]:
             continue
         spans.append((start, colon + 1))
     return tuple(spans)
+
+
+def _source_speaker_ctrl2_labels(template: str) -> tuple[str | None, ...]:
+    """Return the source speaker label, if any, following each CTRL:2.
+
+    Japanese row controls may sit between the section control and the next
+    visible label, so look through source-only 0/4 geometry. This classification
+    is deliberately based on the certified source topology rather than a
+    provisional English layout, which may already have moved the control.
+    """
+    segments, controls = _template_parts(template)
+    labels: list[str | None] = []
+    for index, control in enumerate(controls):
+        if control != 2:
+            continue
+        visible_after = [segments[index + 1]]
+        following = index + 1
+        while (
+            following < len(controls)
+            and controls[following] in INSERTABLE_LAYOUT_CONTROLS
+        ):
+            visible_after.append(segments[following + 1])
+            following += 1
+        after = " ".join(
+            part.strip() for part in visible_after if part.strip()
+        ).lstrip()
+        spans = _speaker_label_spans(after)
+        if spans and spans[0][0] == 0:
+            labels.append(after[: spans[0][1]])
+        else:
+            labels.append(None)
+    return tuple(labels)
+
+
+def _validate_source_speaker_ctrl2_boundaries(
+    template: str, production: str
+) -> None:
+    """Require source speaker-changing CTRL:2 controls to remain at the turn.
+
+    A semantic speaker change must never be converted into pagination or slid
+    into the preceding speaker's English merely to satisfy the two-row re-entry
+    ceiling. If the reviewed first turn is too long, the build must fail closed
+    so the wording can be shortened explicitly.
+    """
+    cursor = 0
+    for label in _source_speaker_ctrl2_labels(template):
+        if label is None:
+            continue
+        pattern = re.compile(
+            r"\{CTRL:2\}(?:\{CTRL:[04]\})*" + re.escape(label)
+        )
+        match = pattern.search(production, cursor)
+        if match is None:
+            raise ProductionTranslationError(
+                f"source CTRL:2 speaker boundary before {label!r} was moved or lost"
+            )
+        cursor = match.end()
 
 
 def _speaker_turns(text: str) -> tuple[str, ...]:
@@ -784,14 +846,18 @@ def _layout_fixed_segments(
     return laid_out
 
 
-def _weak_non_speaker_ctrl2_ordinals(text: str) -> frozenset[int]:
+def _weak_non_speaker_ctrl2_ordinals(
+    text: str, template: str
+) -> frozenset[int]:
     """Find CTRL:2 page breaks that interrupt continuous English prose.
 
     A weak break falls inside a sentence or phrase rather than after normal
-    terminal punctuation. If the following chunk begins with a speaker label,
-    the control remains semantic even when the preceding phrase is incomplete.
+    terminal punctuation. Source CTRL:2 controls that introduce a new speaker
+    remain semantic even if provisional English layout has already slid the
+    control into the preceding turn.
     """
     segments, controls = _template_parts(text)
+    source_speaker_labels = _source_speaker_ctrl2_labels(template)
     visible_before = ""
     ctrl2_ordinal = -1
     demoted: set[int] = set()
@@ -807,11 +873,66 @@ def _weak_non_speaker_ctrl2_ordinals(text: str) -> frozenset[int]:
         next_visible = after.lstrip()
         speaker_spans = _speaker_label_spans(next_visible)
         starts_new_speaker = bool(speaker_spans and speaker_spans[0][0] == 0)
-        if not starts_new_speaker and not _is_strong_semantic_break(
-            combined_words, end_word
+        source_starts_new_speaker = (
+            ctrl2_ordinal < len(source_speaker_labels)
+            and source_speaker_labels[ctrl2_ordinal] is not None
+        )
+        if (
+            not starts_new_speaker
+            and not source_starts_new_speaker
+            and not _is_strong_semantic_break(combined_words, end_word)
         ):
             demoted.add(ctrl2_ordinal)
     return frozenset(demoted)
+
+
+def _relayout_after_ctrl2_demotion(
+    initial: str, demoted_ctrl2_ordinals: frozenset[int]
+) -> tuple[list[str], list[int]]:
+    """Drop weak CTRL:2 pagination without moving surviving semantics.
+
+    The first semantic layout has already chosen phrase boundaries for controls
+    1/2/3/6. Remove only generated row geometry and selected weak CTRL:2 tokens,
+    then rewrap those fixed semantic segments. This keeps controls such as
+    CTRL:3 from drifting into a phrase merely because an earlier page break was
+    removed.
+    """
+    segments, controls = _template_parts(initial)
+    visible = [index for index, segment in enumerate(segments) if segment]
+    if not visible:
+        return segments, controls
+    first_visible = visible[0]
+    last_visible = visible[-1]
+
+    collapsed = [segments[0]]
+    kept_controls: list[int] = []
+    ctrl2_ordinal = -1
+    for index, control in enumerate(controls):
+        if control == 2:
+            ctrl2_ordinal += 1
+        demoted_ctrl2 = (
+            control == 2 and ctrl2_ordinal in demoted_ctrl2_ordinals
+        )
+        keep = (
+            (control in SEMANTIC_CONTROLS and not demoted_ctrl2)
+            or index < first_visible
+            or index >= last_visible
+        )
+        next_segment = segments[index + 1]
+        if keep:
+            kept_controls.append(control)
+            collapsed.append(next_segment)
+            continue
+
+        left = collapsed[-1].strip()
+        right = next_segment.strip()
+        if left and right:
+            collapsed[-1] = f"{left} {right}"
+        else:
+            collapsed[-1] = left + right
+
+    collapsed = [" ".join(segment.split()) for segment in collapsed]
+    return _layout_fixed_segments(collapsed, kept_controls), kept_controls
 
 
 def _layout_semantic_review(
@@ -853,12 +974,12 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
         initial = laid_out[0]
         for value, segment in zip(controls, laid_out[1:], strict=True):
             initial += f"{{CTRL:{value}}}{segment}"
-        demoted_ctrl2_ordinals = _weak_non_speaker_ctrl2_ordinals(initial)
+        demoted_ctrl2_ordinals = _weak_non_speaker_ctrl2_ordinals(
+            initial, template
+        )
         if demoted_ctrl2_ordinals:
-            laid_out, controls = _layout_semantic_review(
-                reviewed,
-                template,
-                demoted_ctrl2_ordinals=demoted_ctrl2_ordinals,
+            laid_out, controls = _relayout_after_ctrl2_demotion(
+                initial, demoted_ctrl2_ordinals
             )
 
     output = laid_out[0]
@@ -868,6 +989,7 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
     try:
         validate_production_control_sequence(template, output)
         validate_renderer_buffer_layout(output)
+        _validate_source_speaker_ctrl2_boundaries(template, output)
     except ProductionTranslationError as error:
         raise ProductionTranslationError(f"{record_id}: {error}") from error
     reviewed_visible_words = CONTROL_RE.sub(" ", reviewed).split()
