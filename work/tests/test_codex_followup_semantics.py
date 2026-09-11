@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import unittest
 from pathlib import Path
 
@@ -72,7 +73,7 @@ class CodexFollowupSemanticTests(unittest.TestCase):
             [1, 0, 6, 4, 3],
             [
                 int(value)
-                for value in __import__("re").findall(r"\{CTRL:([0-7])\}", text)
+                for value in re.findall(r"\{CTRL:([0-7])\}", text)
                 if int(value) in {0, 1, 3, 4, 6}
             ],
         )
