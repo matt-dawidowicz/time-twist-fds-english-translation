@@ -10,6 +10,10 @@ local PRIMARY_CALL = 0x6008
 local PRIMARY_RETURN = 0x600F
 local SECONDARY_CALL = 0x606D
 local SECONDARY_RETURN = 0x6074
+local DYNAMIC_LIST = 0x60DF
+local DYNAMIC_TABLE = 0x7BA5
+local DYNAMIC_ENTRIES = 15
+local DYNAMIC_WIDTH = 4
 local MAX_FILE_IDS = 20
 
 local sequence = 0
@@ -56,6 +60,27 @@ local function readFileIds(address)
     return table.concat(values, ",")
 end
 
+local function selectorIndex(listPtr)
+    if listPtr ~= DYNAMIC_LIST then
+        return -1
+    end
+    for index = 0, DYNAMIC_ENTRIES - 1 do
+        local matched = true
+        for offset = 0, DYNAMIC_WIDTH - 1 do
+            if read8(DYNAMIC_LIST + offset) ~= read8(
+                DYNAMIC_TABLE + index * DYNAMIC_WIDTH + offset
+            ) then
+                matched = false
+                break
+            end
+        end
+        if matched then
+            return index
+        end
+    end
+    return -1
+end
+
 local function currentCycle()
     local state = emu.getState()
     return state["cpu.cycleCount"] or 0
@@ -69,6 +94,7 @@ local function beginLoad(kind, callAddress)
     local diskSide = read8(diskPtr + 6)
     local diskNumber = read8(diskPtr + 7)
     local ids = readFileIds(listPtr)
+    local selector = selectorIndex(listPtr)
     active = {
         seq = sequence,
         kind = kind,
@@ -81,9 +107,10 @@ local function beginLoad(kind, callAddress)
         diskSide = diskSide,
         diskNumber = diskNumber,
         ids = ids,
+        selector = selector,
     }
     emu.log(string.format(
-        "TTLOAD\tSTART\tseq=%d\tframe=%d\tcycle=%d\tkind=%s\tcall=$%04X\tgame=%s\tside=%d\tdisk=%d\tdisk_ptr=$%04X\tlist_ptr=$%04X\tids=%s",
+        "TTLOAD\tSTART\tseq=%d\tframe=%d\tcycle=%d\tkind=%s\tcall=$%04X\tgame=%s\tside=%d\tdisk=%d\tselector=%d\tdisk_ptr=$%04X\tlist_ptr=$%04X\tids=%s",
         active.seq,
         active.frame,
         active.cycle,
@@ -92,6 +119,7 @@ local function beginLoad(kind, callAddress)
         active.diskGame,
         active.diskSide,
         active.diskNumber,
+        active.selector,
         active.diskPtr,
         active.listPtr,
         active.ids
@@ -112,7 +140,7 @@ local function endLoad(expectedKind)
     local errorCode = state["cpu.a"] or 0
     local loadedCount = state["cpu.y"] or 0
     emu.log(string.format(
-        "TTLOAD\tEND\tseq=%d\tframe=%d\tcycle=%d\tframes=%d\tcycles=%d\tkind=%s\terror=$%02X\tloaded=%d\tgame=%s\tside=%d\tdisk=%d\tids=%s",
+        "TTLOAD\tEND\tseq=%d\tframe=%d\tcycle=%d\tframes=%d\tcycles=%d\tkind=%s\terror=$%02X\tloaded=%d\tgame=%s\tside=%d\tdisk=%d\tselector=%d\tids=%s",
         active.seq,
         frame,
         finishCycle,
@@ -124,6 +152,7 @@ local function endLoad(expectedKind)
         active.diskGame,
         active.diskSide,
         active.diskNumber,
+        active.selector,
         active.ids
     ))
     active = nil
