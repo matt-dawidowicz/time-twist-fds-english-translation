@@ -8,8 +8,6 @@ title assets, and disk boot behavior.
 
 from __future__ import annotations
 
-import hashlib
-import json
 import tempfile
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -19,6 +17,13 @@ from .compression import compress_english_groups, expand_dictionary_symbols
 from .english import encode_english
 from .fds import FdsImage, combine_images
 from .font import patched_nov4_font
+from .production_build_support import (
+    ProductionBuildError,
+    encoded_groups as _encoded_groups,
+    load_translation_map as _load_translation_map,
+    semantic_record as _semantic_record,
+    sha256 as _sha256,
+)
 from .production_codec import (
     PRODUCTION_DICTIONARY_ENTRY_COUNT,
     ScenarioDictionary,
@@ -33,12 +38,10 @@ from .production_scenario import (
     relocate_production_fixed_record_table,
     validate_spill_scenario_bank,
 )
-from .production_validation import encode_production_english
 from .project import source_dictionary_reference_floor
 from .release_metadata import SCENARIO_LOCATIONS, SCENARIO_UI_PATCHERS
-from .scenario import ScenarioBank, parse_scenario_bank, render_symbols
-from .scenario_validation import scenario_record_id
-from .textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT, PackedSymbol
+from .scenario import parse_scenario_bank
+from .textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT
 from .title import DEFAULT_SUBTITLE, patched_nov4_title
 from .ui import (
     FIXED_RECORD_TABLE_SPECS,
@@ -46,10 +49,6 @@ from .ui import (
     patched_nov2_ui,
     patched_nov4_ui,
 )
-
-
-class ProductionBuildError(ValueError):
-    """Report a failed production source guard, translation, or round-trip."""
 
 
 @dataclass(frozen=True)
@@ -66,83 +65,6 @@ class ProductionBankResult:
     spill_bytes: int
     dictionary_bytes: int
     loaded_end: int
-
-
-def _sha256(data: bytes) -> str:
-    """Return the SHA-256 digest for the supplied data."""
-    return hashlib.sha256(data).hexdigest().upper()
-
-
-def _semantic_record(
-    record: tuple[PackedSymbol, ...] | list[PackedSymbol],
-) -> tuple[tuple[object, int], ...]:
-    """Drop decoder bit positions while preserving token kind and value."""
-    return tuple((symbol.kind, symbol.value) for symbol in record)
-
-
-def _load_translation_map(path: Path) -> dict[str, str]:
-    """Load translation map."""
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
-        raise ProductionBuildError(
-            f"cannot load production map: {path}"
-        ) from error
-    if not isinstance(payload, dict):
-        raise ProductionBuildError(f"production map is not an object: {path}")
-    result: dict[str, str] = {}
-    for key, value in payload.items():
-        if not isinstance(key, str) or not isinstance(value, str) or not value:
-            raise ProductionBuildError(
-                f"production map must contain nonempty string pairs: {path}"
-            )
-        result[key] = value
-    return result
-
-
-def _encoded_groups(
-    bank: ScenarioBank,
-    bank_name: str,
-    translations: dict[str, str],
-) -> ScenarioGroups:
-    """Support the encoded groups operation for this module."""
-    records_by_id = {
-        scenario_record_id(
-            bank_name, record.group_index, record.record_index
-        ): record
-        for record in bank.records
-    }
-    unknown = sorted(set(translations) - set(records_by_id))
-    missing = sorted(set(records_by_id) - set(translations))
-    if unknown or missing:
-        raise ProductionBuildError(
-            f"{bank_name} production IDs differ from source; "
-            f"unknown={unknown[:1]}, missing={missing[:1]}"
-        )
-
-    encoded: dict[str, tuple[PackedSymbol, ...]] = {}
-    for record_id, record in records_by_id.items():
-        japanese = render_symbols(record.symbols, bank.dictionary)
-        encoded[record_id] = encode_production_english(
-            record_id,
-            translations[record_id],
-            japanese,
-        )
-
-    return tuple(
-        tuple(
-            encoded[
-                scenario_record_id(
-                    bank_name,
-                    group_index,
-                    record.record_index,
-                )
-            ]
-            for record in bank.records
-            if record.group_index == group_index
-        )
-        for group_index in range(len(bank.group_addresses))
-    )
 
 
 def _compress(
