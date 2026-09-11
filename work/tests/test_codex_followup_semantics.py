@@ -53,6 +53,11 @@ class CodexFollowupSemanticTests(unittest.TestCase):
         self.assertIn("so I came.{CTRL:2}Member 2:", text)
         self.assertNotIn("all{CTRL:2}morning", text)
 
+    def test_frankie_pendant_handoff_keeps_its_timing_boundary(self) -> None:
+        """Keep the source handoff break before Frankie's second utterance."""
+        text = _production("TT3A")["TT3A/g1/r9"]
+        self.assertIn("A pendant.{CTRL:2}Frankie: From Grandma,", text)
+
     def test_quoted_dr_simon_heading_stays_whole(self) -> None:
         """Periods inside a quoted heading must not create a fake speaker label."""
         text = _production("TT1B")["TT1B/g2/r12"]
@@ -63,7 +68,7 @@ class CodexFollowupSemanticTests(unittest.TestCase):
         """Preserve the scholar/result boundary during full-box pagination."""
         text = _production("TT1A")["TT1A/g0/r24"]
         self.assertNotIn("scholar{CTRL:3}type", text)
-        self.assertIn("scholar type.{CTRL:3}", text)
+        self.assertIn("serious,{CTRL:3}stubborn scholar type.", text)
 
     def test_bishop_pact_signature_keeps_final_ctrl3_field(self) -> None:
         """Keep the pact signer visually and semantically separate from prose."""
