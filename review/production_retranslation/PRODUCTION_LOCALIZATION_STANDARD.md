@@ -65,13 +65,17 @@ Only lightly rustic/comic where the Japanese itself marks their speech. Do not m
 
 ## Punctuation and typography — review copy
 
-- Use the ellipsis character `…` for a true spoken/narrative ellipsis.
-- Use an em dash `—` for interruption, apposition, or an intentionally sharp rhetorical turn.
+- Prefer ordinary American-English punctuation: periods, commas, colons, question marks, exclamation marks, and true ellipses.
+- Use the ellipsis character `…` for a true spoken or narrative ellipsis.
+- An em dash is **exceptional**, not house style. Use one only for a genuine interruption or abrupt broken turn that ordinary punctuation cannot represent faithfully.
+- Do **not** use em dashes for apposition, ordinary contrast, parenthetical explanation, labels, exhibit names, dates, headings, signatures, report text, or generic rhetorical emphasis. Rewrite those with commas, periods, colons, or the source-supported display/control boundary.
+- Japanese `／` is an emphatic display/beat mark, not an em dash. Translate its communicative function with normal English punctuation or timing rather than mapping the glyph mechanically.
+- A future production em dash requires a record-specific source justification and an explicit regression-test exception. The current production corpus intentionally requires none.
 - Use curly apostrophes and quotation marks in human-facing review copy.
 - Use sentence-final punctuation unless the lack of it is an intentional interruption or trailing thought.
 - Preserve multiple exclamation marks only where the performance is intentionally extreme.
 - Use commas around direct address where natural in English.
-- Use a colon or em dash to introduce formal labels, exhibit descriptions, dates, and report text when that improves readability.
+- Use a colon to introduce formal labels, exhibit descriptions, dates, and report text when punctuation is useful; otherwise let the existing display/control boundary carry the separation.
 - Do not use repeated ASCII periods as editorial prose. A game-safe export may later map `…` to supported glyphs or timing controls.
 
 ## Names and terminology
