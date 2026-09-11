@@ -81,7 +81,9 @@ def _load_translation_map(path: Path) -> dict[str, str]:
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as error:
-        raise ReleaseBuildError(f"cannot load production map: {path}") from error
+        raise ReleaseBuildError(
+            f"cannot load production map: {path}"
+        ) from error
     if not isinstance(payload, dict):
         raise ReleaseBuildError(f"production map is not an object: {path}")
     result: dict[str, str] = {}
@@ -101,7 +103,9 @@ def _encoded_groups(
 ) -> ScenarioGroups:
     """Validate and encode every reviewed record in source order."""
     records_by_id = {
-        scenario_record_id(bank_name, record.group_index, record.record_index): record
+        scenario_record_id(
+            bank_name, record.group_index, record.record_index
+        ): record
         for record in bank.records
     }
     unknown = sorted(set(translations) - set(records_by_id))

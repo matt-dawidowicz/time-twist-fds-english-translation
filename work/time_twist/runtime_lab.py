@@ -183,7 +183,9 @@ def command_build(args: argparse.Namespace) -> int:
             materialize_production_maps(
                 tuple(KNOWN_SCENARIO_BANKS),
                 base_directory=project_root / "work" / "translations",
-                override_directory=project_root / "work" / "production_overrides",
+                override_directory=project_root
+                / "work"
+                / "production_overrides",
                 review_directory=(
                     project_root / "review" / "production_retranslation"
                 ),
@@ -240,7 +242,9 @@ def build_parser() -> argparse.ArgumentParser:
     smoke = sub.add_parser("smoke", help="run focused runtime tests once")
     smoke.set_defaults(function=command_smoke)
 
-    build = sub.add_parser("build", help="build through the canonical entropy path")
+    build = sub.add_parser(
+        "build", help="build through the canonical entropy path"
+    )
     build.add_argument("--zenpen", type=Path, required=True)
     build.add_argument("--kouhen", type=Path, required=True)
     build.add_argument(

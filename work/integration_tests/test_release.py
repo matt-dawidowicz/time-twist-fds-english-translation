@@ -127,15 +127,22 @@ class ReleaseBuildTests(unittest.TestCase):
                 source_image = source_images[image_name]
                 actual_changed: set[tuple[int, str]] = set()
                 actual_resized: set[tuple[int, str]] = set()
-                self.assertEqual(len(candidate_image.sides), len(source_image.sides))
+                self.assertEqual(
+                    len(candidate_image.sides), len(source_image.sides)
+                )
                 for side_index, (source_side, candidate_side) in enumerate(
                     zip(source_image.sides, candidate_image.sides, strict=True)
                 ):
-                    self.assertEqual(candidate_side.disk_info, source_side.disk_info)
                     self.assertEqual(
-                        candidate_side.file_count_block, source_side.file_count_block
+                        candidate_side.disk_info, source_side.disk_info
                     )
-                    self.assertEqual(len(candidate_side.files), len(source_side.files))
+                    self.assertEqual(
+                        candidate_side.file_count_block,
+                        source_side.file_count_block,
+                    )
+                    self.assertEqual(
+                        len(candidate_side.files), len(source_side.files)
+                    )
                     growth = 0
                     for source_file, candidate_file in zip(
                         source_side.files, candidate_side.files, strict=True
@@ -147,13 +154,17 @@ class ReleaseBuildTests(unittest.TestCase):
                         if candidate_file.size != source_file.size:
                             actual_resized.add(identity)
                             self.assertEqual(
-                                candidate_file.header[:13], source_file.header[:13]
+                                candidate_file.header[:13],
+                                source_file.header[:13],
                             )
                             self.assertEqual(
-                                candidate_file.header[15:], source_file.header[15:]
+                                candidate_file.header[15:],
+                                source_file.header[15:],
                             )
                         else:
-                            self.assertEqual(candidate_file.header, source_file.header)
+                            self.assertEqual(
+                                candidate_file.header, source_file.header
+                            )
                         growth += candidate_file.size - source_file.size
                     expected_padding = len(source_side.padding) - growth
                     self.assertEqual(

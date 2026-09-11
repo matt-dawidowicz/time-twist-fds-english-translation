@@ -983,7 +983,9 @@ def validate_release_manifest_metadata(
         raise ReleaseBuildError(f"{label} has invalid fixed decoder coverage")
     for surface, record in surfaces.items():
         if not isinstance(surface, str) or not isinstance(record, dict):
-            raise ReleaseBuildError(f"{label} has invalid fixed decoder coverage")
+            raise ReleaseBuildError(
+                f"{label} has invalid fixed decoder coverage"
+            )
         required = {"records", "streams", "packed_bytes", "capacity_bytes"}
         if set(record) != required:
             raise ReleaseBuildError(

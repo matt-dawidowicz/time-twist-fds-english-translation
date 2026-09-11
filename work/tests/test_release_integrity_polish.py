@@ -175,7 +175,8 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             code_root = root / "work" / "time_twist"
             with (
                 mock.patch(
-                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 self.assertRaisesRegex(
                     ReleaseBuildError, "subtitle does not match"
@@ -202,7 +203,8 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             code_root = root / "work" / "time_twist"
             with (
                 mock.patch(
-                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 mock.patch(
                     "time_twist.release.build_release", return_value=rebuilt
@@ -229,7 +231,8 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             code_root = root / "work" / "time_twist"
             with (
                 mock.patch(
-                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 mock.patch(
                     "time_twist.release.build_release", return_value=manifest
@@ -272,7 +275,8 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
 
             with (
                 mock.patch(
-                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 mock.patch(
                     "time_twist.release.build_release", return_value=manifest
@@ -321,7 +325,8 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
             code_root = root / "work" / "time_twist"
             with (
                 mock.patch(
-                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 self.assertRaisesRegex(
                     ReleaseBuildError, "candidate manifest"

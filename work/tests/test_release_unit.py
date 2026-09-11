@@ -190,12 +190,16 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
 
             self.assertEqual(validate_source_lock(project_root=root), payload)
 
-    def test_source_lock_covers_review_and_optional_override_inputs(self) -> None:
+    def test_source_lock_covers_review_and_optional_override_inputs(
+        self,
+    ) -> None:
         """Lock every editable layer that can change materialized production text."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             override = root / "work" / "production_overrides" / "TT1A.json"
-            override.write_text('{"TT1A/g0/r0": "Override."}\n', encoding="utf-8")
+            override.write_text(
+                '{"TT1A/g0/r0": "Override."}\n', encoding="utf-8"
+            )
             payload = write_source_lock(project_root=root)
 
             review_name, _ = REVIEW_FILES["TT1A"]
@@ -440,7 +444,8 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             code_root = root / "work" / "time_twist"
             with (
                 mock.patch(
-                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 mock.patch(
                     "time_twist.release.materialize_production_maps"
@@ -717,7 +722,8 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             target_path = work / "release_target.json"
             with (
                 mock.patch(
-                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 mock.patch(
                     "time_twist.release.build_release",
@@ -743,7 +749,8 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             )
             with (
                 mock.patch(
-                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT", code_root
+                    "time_twist.release_metadata.EXECUTING_PACKAGE_ROOT",
+                    code_root,
                 ),
                 self.assertRaisesRegex(ReleaseBuildError, "canonical path"),
             ):

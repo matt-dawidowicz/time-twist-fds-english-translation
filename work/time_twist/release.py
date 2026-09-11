@@ -66,6 +66,7 @@ from .release_metadata import (
 )
 from .title import DEFAULT_SUBTITLE
 
+
 def _validate_release_code_stable(
     initial: Mapping[str, object], project_root: Path
 ) -> None:
@@ -318,7 +319,9 @@ def build_release(
             display_path(target_path, root) if verify_target else None
         ),
         "release_target_sha256": target_sha256 if verify_target else None,
-        "release_id": target_payload.get("release_id") if target_payload else None,
+        "release_id": (
+            target_payload.get("release_id") if target_payload else None
+        ),
         "subtitle": subtitle,
         "codec": build_audit["codec"],
         "decoder_format": build_audit["decoder_format"],

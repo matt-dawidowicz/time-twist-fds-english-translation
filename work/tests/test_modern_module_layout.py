@@ -40,9 +40,13 @@ class ModernModuleLayoutTests(unittest.TestCase):
             with self.subTest(name=name):
                 self.assertFalse(hasattr(cli, name))
 
-    def test_release_facade_uses_the_single_entropy_image_builder(self) -> None:
+    def test_release_facade_uses_the_single_entropy_image_builder(
+        self,
+    ) -> None:
         """Expose one release image implementation and remove superseded modules."""
-        self.assertIs(release.build_release_images, release_build.build_release_images)
+        self.assertIs(
+            release.build_release_images, release_build.build_release_images
+        )
         package_root = PROJECT_ROOT / "work" / "time_twist"
         for filename in (
             "entropy_release.py",
