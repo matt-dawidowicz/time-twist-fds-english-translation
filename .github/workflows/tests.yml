@@ -22,13 +22,15 @@ jobs:
       - name: Canonical formatting and lint fixes
         run: |
           python -m black work/time_twist/production_translation.py work/tests/test_production_translation.py
-          python -m ruff check --fix work/time_twist/production_translation.py work/tests/test_production_translation.py
+          sed -i 's/        template_segments, controls = _template_parts(template)/        _template_segments, controls = _template_parts(template)/' work/time_twist/production_translation.py
+          python -m black work/time_twist/production_translation.py work/tests/test_production_translation.py
+          python -m ruff check work/time_twist/production_translation.py work/tests/test_production_translation.py
       - name: Restore normal CI and commit only final changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout HEAD^ -- .github/workflows/tests.yml
+          git checkout HEAD^^ -- .github/workflows/tests.yml
           rm .github/apply_pagination_fix.py
-          git add .github/workflows/tests.yml work/time_twist/production_translation.py work/tests/test_production_translation.py work/production_overrides/TT1A_pagination_policy.json .github/apply_pagination_fix.py
+          git add -A .github/workflows/tests.yml .github/apply_pagination_fix.py work/time_twist/production_translation.py work/tests/test_production_translation.py work/production_overrides/TT1A_pagination_policy.json
           git commit -m "Fill English dialogue boxes before weak page breaks"
           git push origin HEAD:fix/production-em-dash-audit-20260911
