@@ -22,7 +22,7 @@ from .textcodec import PackedSymbol, SymbolKind
 COMMON_CHARACTERS = " " "etaoinshrdlucmfwypvbgkjqxz" "ETAOINSHRDLUCMFWYPV" ",."
 
 # Extended codes 37-63 cost nine bits and use the engine's lookup table. Code
-# 63 is redirected by the production runtime from its unsafe native $AC tile to
+# 63 is redirected by the entropy runtime from its unsafe native $AC tile to
 # recovered font tile $B0, where it carries the dollar sign. Code 45 is a safe
 # slot used for the colon; code 61 restores the native ellipsis; and code 57 is
 # repurposed from the Japanese display-slash mark as a true em dash. Production

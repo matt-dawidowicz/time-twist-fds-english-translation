@@ -13,6 +13,7 @@ import hashlib
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from collections.abc import Iterable
 from dataclasses import dataclass
@@ -25,8 +26,7 @@ CODE_PATHS = ("work/time_twist", "work/tools", "pyproject.toml")
 FOCUSED_TESTS = (
     "test_entropy_fixed_ui",
     "test_entropy_production",
-    "test_production_runtime",
-    "test_production_scenario",
+    "test_production_translation",
     "test_textcodec",
 )
 
@@ -161,8 +161,10 @@ def command_smoke(_args: argparse.Namespace) -> int:
 
 
 def command_build(args: argparse.Namespace) -> int:
-    """Build the current entropy candidate in-process."""
-    from .entropy_release import build_entropy_images
+    """Build the canonical entropy image path without release publication."""
+    from .production_translation import materialize_production_maps
+    from .project import KNOWN_SCENARIO_BANKS
+    from .release import build_release_images
     from .title import DEFAULT_SUBTITLE
 
     project_root = Path(__file__).resolve().parents[2]
@@ -172,15 +174,29 @@ def command_build(args: argparse.Namespace) -> int:
     slide = args.slide_title or (
         project_root / "work/title_assets/Time Twist approved native slide.png"
     )
-    translations = args.translations or project_root / "work/translations"
-    outputs, manifest = build_entropy_images(
-        args.zenpen.read_bytes(),
-        args.kouhen.read_bytes(),
-        translations_directory=translations,
-        title_asset=title,
-        slide_title_asset=slide,
-        subtitle=args.subtitle or DEFAULT_SUBTITLE,
-    )
+    with tempfile.TemporaryDirectory(
+        prefix="time_twist_runtime_text_"
+    ) as directory:
+        translations = args.translations
+        if translations is None:
+            translations = Path(directory)
+            materialize_production_maps(
+                tuple(KNOWN_SCENARIO_BANKS),
+                base_directory=project_root / "work" / "translations",
+                override_directory=project_root / "work" / "production_overrides",
+                review_directory=(
+                    project_root / "review" / "production_retranslation"
+                ),
+                output_directory=translations,
+            )
+        outputs, manifest = build_release_images(
+            args.zenpen.read_bytes(),
+            args.kouhen.read_bytes(),
+            translations_directory=translations,
+            title_asset=title,
+            slide_title_asset=slide,
+            subtitle=args.subtitle or DEFAULT_SUBTITLE,
+        )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(outputs["four_side"])
     if args.all_images:
@@ -224,10 +240,14 @@ def build_parser() -> argparse.ArgumentParser:
     smoke = sub.add_parser("smoke", help="run focused runtime tests once")
     smoke.set_defaults(function=command_smoke)
 
-    build = sub.add_parser("build", help="build the current entropy candidate")
+    build = sub.add_parser("build", help="build through the canonical entropy path")
     build.add_argument("--zenpen", type=Path, required=True)
     build.add_argument("--kouhen", type=Path, required=True)
-    build.add_argument("--translations", type=Path)
+    build.add_argument(
+        "--translations",
+        type=Path,
+        help="pre-materialized translation directory for diagnostics",
+    )
     build.add_argument(
         "--output",
         type=Path,

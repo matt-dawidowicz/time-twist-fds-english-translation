@@ -1,8 +1,8 @@
-"""Reproducible end-to-end release builder for the English translation.
+"""Release-source locks, provenance, manifests, and promotion metadata.
 
 Release commands operate on a project checkout rather than package data. This
-keeps the installable Python wheel free of ROMs and large project artifacts while
-still allowing ``time-twist`` to drive a checkout from any working directory.
+keeps the installable wheel free of ROMs and large project artifacts while still
+allowing ``time-twist`` to drive a checkout from any working directory.
 """
 
 from __future__ import annotations
@@ -13,19 +13,14 @@ import os
 import platform
 import subprocess
 import tempfile
-from collections.abc import Callable, Mapping
+from collections.abc import Mapping
 from dataclasses import dataclass
 from importlib.metadata import version as package_version
 from pathlib import Path, PurePosixPath
 
-from .project import (
-    KNOWN_SCENARIO_BANKS,
-)
-from .textcodec import EXTENDED_DICTIONARY_ENTRY_COUNT
+from .production_translation import REVIEW_FILES
+from .project import KNOWN_SCENARIO_BANKS
 from .title import DEFAULT_SUBTITLE
-from .ui import (
-    patched_tt1a_ui,
-)
 
 SOURCE_CHECKOUT_ROOT = Path(__file__).resolve().parents[2]
 EXECUTING_PACKAGE_ROOT = Path(__file__).resolve().parent
@@ -72,7 +67,7 @@ DEFAULT_KOUHEN_BASELINE = (
 )
 
 RELEASE_OUTPUT_KEYS = ("zenpen", "kouhen", "four_side")
-SOURCE_LOCK_SCHEMA = "Time Twist release source lock v2"
+SOURCE_LOCK_SCHEMA = "Time Twist release source lock v3"
 SOURCE_NORMALIZATION_RAW = "raw"
 SOURCE_NORMALIZATION_LF = "lf"
 CODE_PROVENANCE_SCHEMA = "Time Twist release code provenance v1"
@@ -81,7 +76,7 @@ CODE_TREE_HASH_ALGORITHM = (
 )
 CODE_LOGICAL_ROOT = "work/time_twist"
 BUILD_ENVIRONMENT_SCHEMA = "Time Twist build environment v1"
-RELEASE_MANIFEST_SCHEMA = "Time Twist reproducible release manifest v4"
+RELEASE_MANIFEST_SCHEMA = "Time Twist reproducible release manifest v5"
 RELEASE_TARGET_SCHEMA = "Time Twist release target v2"
 RELEASE_FILENAMES = {
     "zenpen": "Time Twist Zenpen - reproducible English playtest.fds",
@@ -105,10 +100,6 @@ SCENARIO_LOCATIONS: dict[str, tuple[str, int]] = {
     "T25": ("kouhen", 1),
 }
 
-SCENARIO_UI_PATCHERS: dict[str, Callable[[bytes], bytes]] = {
-    "TT1A": patched_tt1a_ui,
-}
-
 
 class ReleaseBuildError(ValueError):
     """Report an unapproved input, invalid translation, or release mismatch."""
@@ -127,6 +118,8 @@ class ReleasePaths:
     zenpen_baseline: Path
     kouhen_baseline: Path
     translations: Path
+    production_overrides: Path
+    production_review: Path
 
     @classmethod
     def from_project_root(cls, project_root: Path) -> ReleasePaths:
@@ -147,18 +140,9 @@ class ReleasePaths:
             zenpen_baseline=work / "baseline" / "time_twist_zenpen_japan.fds",
             kouhen_baseline=work / "baseline" / "time_twist_kouhen_japan.fds",
             translations=work / "translations",
+            production_overrides=work / "production_overrides",
+            production_review=root / "review" / "production_retranslation",
         )
-
-
-@dataclass(frozen=True)
-class ScenarioBuildResult:
-    """One rebuilt scenario bank and its compression statistics."""
-
-    data: bytes
-    records: int
-    dictionary_entries: int
-    packed_bytes: int
-    capacity_bytes: int
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -426,16 +410,23 @@ def display_path(path: Path, project_root: Path) -> str:
 
 
 def authoritative_source_paths(paths: ReleasePaths) -> tuple[Path, ...]:
-    """Return all non-code files that intentionally define a release build."""
+    """Return every non-code file that can affect the canonical release bytes."""
     translations = tuple(
         paths.translations / f"{bank}.json" for bank in KNOWN_SCENARIO_BANKS
     )
+    reviews = tuple(
+        paths.production_review / REVIEW_FILES[bank][0]
+        for bank in KNOWN_SCENARIO_BANKS
+    )
+    overrides = tuple(sorted(paths.production_overrides.glob("*.json")))
     return (
         paths.zenpen_baseline,
         paths.kouhen_baseline,
         paths.title_asset,
         paths.slide_title_asset,
         *translations,
+        *reviews,
+        *overrides,
     )
 
 
@@ -471,10 +462,10 @@ def _validate_destination_collision(
 def _source_normalization(relative: str) -> str:
     """Return the established content policy for one locked source path."""
     logical_path = PurePosixPath(relative)
-    if (
-        len(logical_path.parts) == 3
-        and logical_path.parts[:2] == ("work", "translations")
-        and logical_path.suffix == ".json"
+    if logical_path.suffix == ".json" and (
+        logical_path.parts[:2] == ("work", "translations")
+        or logical_path.parts[:2] == ("work", "production_overrides")
+        or logical_path.parts[:2] == ("review", "production_retranslation")
     ):
         return SOURCE_NORMALIZATION_LF
     return SOURCE_NORMALIZATION_RAW
@@ -515,10 +506,10 @@ def build_source_lock_payload(
     return {
         "schema": SOURCE_LOCK_SCHEMA,
         "authority": (
-            "The locked scenario maps, fixed UI/font/title code in this revision, "
-            "and the locked title asset are the playable release authority. "
-            "Workbook patch-safe fields mirror this authority; editorial alternatives "
-            "remain in the natural-translation fields."
+            "The locked Japanese baselines, base scenario maps, reviewed production "
+            "English, production overrides, and title assets are the non-code release "
+            "authority. The canonical builder materializes the game-facing English "
+            "from those locked sources before entropy encoding."
         ),
         "subtitle": DEFAULT_SUBTITLE,
         "files": files,
@@ -658,7 +649,7 @@ def validate_source_lock_metadata(payload: object) -> dict[str, object]:
             or logical_path.is_absolute()
             or logical_path.as_posix() != relative
             or not logical_path.parts
-            or logical_path.parts[0] != "work"
+            or logical_path.parts[0] not in {"work", "review"}
             or ".." in logical_path.parts
         ):
             raise ReleaseBuildError(
@@ -811,7 +802,7 @@ def _validated_scenario_report(
     *,
     label: str,
 ) -> dict[str, dict[str, object]]:
-    """Validate the complete per-bank audit summary in a release manifest."""
+    """Validate the entropy layout audit for every scenario bank."""
     if not isinstance(payload, dict) or set(payload) != set(
         SCENARIO_LOCATIONS
     ):
@@ -819,15 +810,23 @@ def _validated_scenario_report(
             f"{label} scenario banks must contain exactly "
             f"{sorted(SCENARIO_LOCATIONS)}"
         )
-    output: dict[str, dict[str, object]] = {}
     required_fields = {
         "records",
         "dictionary_entries",
-        "packed_bytes",
-        "capacity_bytes",
-        "remaining_bytes",
+        "scenario_bytes",
+        "menu_bytes",
+        "dictionary_bytes",
+        "optimizer_bytes",
+        "source_bytes",
+        "grown_bytes",
+        "resident_groups",
+        "spilled_groups",
+        "spill_bytes",
+        "loaded_end",
+        "nov3_headroom",
         "sha256",
     }
+    output: dict[str, dict[str, object]] = {}
     for bank_name in SCENARIO_LOCATIONS:
         record = payload[bank_name]
         if not isinstance(record, dict) or set(record) != required_fields:
@@ -836,37 +835,58 @@ def _validated_scenario_report(
                 f"{sorted(required_fields)}"
             )
         records = record.get("records")
-        dictionary_entries = record.get("dictionary_entries")
-        packed_bytes = record.get("packed_bytes")
-        capacity_bytes = record.get("capacity_bytes")
-        remaining_bytes = record.get("remaining_bytes")
+        entries = record.get("dictionary_entries")
         if type(records) is not int or records <= 0:
             raise ReleaseBuildError(
                 f"{label} scenario bank {bank_name} has invalid record count"
             )
-        if (
-            type(dictionary_entries) is not int
-            or dictionary_entries < 0
-            or dictionary_entries > EXTENDED_DICTIONARY_ENTRY_COUNT
-        ):
+        if type(entries) is not int or not 0 <= entries <= 255:
             raise ReleaseBuildError(
                 f"{label} scenario bank {bank_name} has invalid dictionary count"
             )
-        for field, value in (
-            ("packed_bytes", packed_bytes),
-            ("capacity_bytes", capacity_bytes),
-            ("remaining_bytes", remaining_bytes),
+        for field in (
+            "scenario_bytes",
+            "menu_bytes",
+            "dictionary_bytes",
+            "optimizer_bytes",
+            "source_bytes",
+            "grown_bytes",
+            "spill_bytes",
+            "nov3_headroom",
         ):
+            value = record.get(field)
             if type(value) is not int or value < 0:
                 raise ReleaseBuildError(
                     f"{label} scenario bank {bank_name} has invalid {field}"
                 )
-        assert isinstance(packed_bytes, int)
-        assert isinstance(capacity_bytes, int)
-        assert isinstance(remaining_bytes, int)
-        if remaining_bytes != capacity_bytes - packed_bytes:
+        for field in ("resident_groups", "spilled_groups"):
+            groups = record.get(field)
+            if not isinstance(groups, list) or any(
+                type(group) is not int or group < 0 for group in groups
+            ):
+                raise ReleaseBuildError(
+                    f"{label} scenario bank {bank_name} has invalid {field}"
+                )
+        loaded_end = record.get("loaded_end")
+        if (
+            not isinstance(loaded_end, str)
+            or len(loaded_end) != 6
+            or not loaded_end.startswith("0x")
+        ):
             raise ReleaseBuildError(
-                f"{label} scenario bank {bank_name} has inconsistent capacity"
+                f"{label} scenario bank {bank_name} has invalid loaded_end"
+            )
+        try:
+            loaded_end_value = int(loaded_end, 16)
+        except ValueError as error:
+            raise ReleaseBuildError(
+                f"{label} scenario bank {bank_name} has invalid loaded_end"
+            ) from error
+        headroom = record["nov3_headroom"]
+        assert isinstance(headroom, int)
+        if loaded_end_value + headroom != 0xD7B5:
+            raise ReleaseBuildError(
+                f"{label} scenario bank {bank_name} has inconsistent NOV3 headroom"
             )
         if not _is_sha256(record.get("sha256")):
             raise ReleaseBuildError(
@@ -923,6 +943,11 @@ def validate_release_manifest_metadata(
         "release_target_sha256",
         "release_id",
         "subtitle",
+        "codec",
+        "decoder_format",
+        "record_framing",
+        "fixed_decoder_surfaces",
+        "nov3_exclusive_boundary",
         "scenario_banks",
         "component_sha256",
         "outputs",
@@ -944,6 +969,36 @@ def validate_release_manifest_metadata(
     subtitle = payload.get("subtitle")
     if not isinstance(subtitle, str) or not subtitle:
         raise ReleaseBuildError(f"{label} has invalid subtitle")
+    if payload.get("codec") != "frozen-entropy-v1":
+        raise ReleaseBuildError(f"{label} has unsupported text codec")
+    if payload.get("decoder_format") != "entropy-only":
+        raise ReleaseBuildError(f"{label} has unsupported decoder format")
+    framing = payload.get("record_framing")
+    if not isinstance(framing, str) or not framing.strip():
+        raise ReleaseBuildError(f"{label} has invalid record framing")
+    if payload.get("nov3_exclusive_boundary") != "0xD7B5":
+        raise ReleaseBuildError(f"{label} has invalid NOV3 boundary")
+    surfaces = payload.get("fixed_decoder_surfaces")
+    if not isinstance(surfaces, dict) or not surfaces:
+        raise ReleaseBuildError(f"{label} has invalid fixed decoder coverage")
+    for surface, record in surfaces.items():
+        if not isinstance(surface, str) or not isinstance(record, dict):
+            raise ReleaseBuildError(f"{label} has invalid fixed decoder coverage")
+        required = {"records", "streams", "packed_bytes", "capacity_bytes"}
+        if set(record) != required:
+            raise ReleaseBuildError(
+                f"{label} fixed decoder surface {surface} has invalid fields"
+            )
+        for field in required:
+            value = record[field]
+            if type(value) is not int or value < 0:
+                raise ReleaseBuildError(
+                    f"{label} fixed decoder surface {surface} has invalid {field}"
+                )
+        if record["packed_bytes"] > record["capacity_bytes"]:
+            raise ReleaseBuildError(
+                f"{label} fixed decoder surface {surface} exceeds capacity"
+            )
     _validated_scenario_report(payload.get("scenario_banks"), label=label)
     _validated_component_hashes(payload.get("component_sha256"), label=label)
     _validated_output_records(

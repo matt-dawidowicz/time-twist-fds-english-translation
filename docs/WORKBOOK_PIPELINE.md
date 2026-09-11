@@ -1,15 +1,17 @@
 # Translation workbook pipeline
 
 The workbook is the complete review surface for 2,058 extracted records. It is
-not the packed byte stream inserted into the game, but its patch-safe field is
-generated from and must mirror the playable sources.
+not the packed byte stream inserted into the game. Its patch-safe scenario field
+tracks the certified base maps and conservative native-layout analysis; the
+canonical release separately composes the registered production-review layer and
+any explicit final overrides before entropy encoding.
 
 ## Data flow
 
 ```text
-decoded Japanese records             playable English sources
-          |                         scenario maps + fixed UI code
-          +-------------------------+--------------------------+
+decoded Japanese records             workbook/base English sources
+          |                         base scenario maps + fixed UI code
+          +-------------------------+-------------------------------+
                                     |
                  generate_bilingual_comparison.py
                                     |
@@ -37,7 +39,9 @@ byte-exact.
 | Path | Role |
 | --- | --- |
 | `work/source_records/BANK.json` | Decoded scenario records and stable IDs |
-| `work/translations/BANK.json` | Authoritative playable scenario English |
+| `work/translations/BANK.json` | Certified base scenario English and native control topology |
+| `review/production_retranslation/*.json` | Registered production wording consumed by `release-build` |
+| `work/production_overrides/BANK.json` | Optional final explicit release override when intentionally present |
 | `work/time_twist/ui_fixed_tables.py` | Authoritative full-word scenario menu labels |
 | `work/time_twist/ui.py` | Fixed-interface/graphics text and menu relocation logic |
 | `outputs/Time Twist Japanese-English script comparison.json` | Ordered comparison corpus |
@@ -65,26 +69,28 @@ The workbook generator applies editorial layers such as:
 - conservative reconstructed Japanese;
 - fixed-address explanations.
 
-It then derives patch-safe text under this policy:
+It then derives workbook patch-safe text under this policy:
 
-- scenario rows come directly from `work/translations/*.json`;
-- fixed-address and graphics rows retain the exact installed English from the
+- scenario rows come directly from the certified base maps in
+  `work/translations/*.json`;
+- fixed-address and graphics rows retain the configured English from the
   full-word menu definitions or fixed-interface patch definitions;
-- natural-translation alternatives stay editorial and cannot silently enter a
-  ROM build.
+- natural-translation alternatives remain editorial workbook data. The
+  registered production-review JSON is a separate locked source layer and enters
+  a ROM only through the canonical materializer used by `release-build`.
 
-## Preserving the full translation
+## Preserving editorial and base-map views
 
-The workbook is also the preservation layer for scenario English that is
-accurate but cannot yet be installed within renderer or control-layout
-constraints. The fixed-menu expansion solved the former menu-slot
-abbreviations, but it does not add line/page controls to dialogue. Two fields
-must remain distinct:
+The workbook preserves both an unconstrained editorial reading and the certified
+base-map rendering used for conservative analysis. The current production release
+may display fuller reviewed prose because `production_translation.py` can
+regenerate safe row/scroll geometry before entropy encoding. Two workbook fields
+still remain distinct:
 
 | Field | Meaning |
 | --- | --- |
 | `final_natural_english_translation` | The complete natural English reading, without treating the current row width or compressed-bank budget as an editorial limit |
-| `patch_safe_english_translation` | The exact English currently safe to encode and use in the playable ROM |
+| `patch_safe_english_translation` | The certified base-map rendering used by workbook validation and conservative native/flat fit checks |
 
 This distinction lets future contributors improve the renderer, recover
 compressed space, or relocate data without having to translate the Japanese
@@ -106,34 +112,32 @@ headroom cannot solve that display-layout constraint by itself. Inserting a new
 control is not merely punctuation, so that larger change would require testing
 the object's rendering, clearing, and repeat-inspection behavior.
 
-### Using a full translation in a future build
+### Promoting editorial wording into the playable build
 
 Do not copy a natural-field value directly into a generated ROM or workbook
 artifact. Instead:
 
-1. Copy the intended wording into the authoritative playable source in
-   `work/translations/BANK.json` (or the relevant fixed-UI definition).
-2. Check every visible segment against the renderer's width limit.
-3. Preserve the source control sequence unless a source-verified engine change
-   deliberately supports a new layout.
-4. Recompress the entire affected bank and prove that it stays within its
-   original footprint, or implement and document a safe relocation.
-5. Rebuild a candidate and playtest entry, clearing, repetition, progression,
-   save/reload, and disk switching where applicable.
-6. Regenerate the workbook so the patch-safe field mirrors the newly proven
-   playable source while the natural field retains the editorial target.
+1. Put reviewed current-production wording in the bank's registered file under
+   `review/production_retranslation/`; change `work/translations/BANK.json` only
+   when the certified base wording or native semantic-control topology itself is
+   intentionally changing.
+2. Use `work/production_overrides/BANK.json` only for a narrow, explicit final
+   correction that should supersede both base and review text.
+3. Preserve native semantic-control order. Ordinary English row/scroll geometry
+   is regenerated by `production_translation.py`.
+4. Build the complete entropy candidate and prove every bank remains below NOV3.
+5. Run private integration checks and playtest the changed scene.
+6. Refresh the source lock only after the source-layer change is reviewed.
 
-If those checks cannot yet pass, keep the full wording in
-`final_natural_english_translation` and use the best accurate compact wording
-in `patch_safe_english_translation`. That is a documented hardware compromise,
-not an incomplete translation.
+The workbook can therefore remain a stable base/editorial review surface while
+the canonical release consumes the separately registered production layer.
 
 The generator validates:
 
 - exactly 2,058 unique rows;
 - byte-for-byte exact Japanese source retention;
-- complete playable scenario coverage;
-- patch-safe/playable equality;
+- complete certified base-map scenario coverage;
+- patch-safe/base-map equality;
 - ordered control-code retention;
 - nonempty natural and patch-safe translations;
 - nonempty glossary output;
@@ -167,10 +171,12 @@ Choose the true source layer:
 
 1. If decoded Japanese is wrong, fix extraction/parsing and investigate the
    binary evidence.
-2. If the in-game scenario line is wrong, edit `work/translations/BANK.json`.
+2. If current production wording is wrong, edit the registered review JSON (or
+   an intentional final override); edit the base map only for a deliberate
+   baseline/topology correction.
 3. If fixed UI text is wrong, edit the source-verified definition in `ui.py`.
-4. If only the unconstrained interpretation changes, update the editorial
-   natural-translation decision.
+4. If only the unconstrained workbook interpretation changes, update the
+   editorial natural-translation decision.
 5. If a term recurs, update the glossary and all affected records.
 6. Regenerate the workbook and inspect the affected bank checkpoint.
 7. Run tests, rebuild a candidate, and playtest.
@@ -214,7 +220,7 @@ Then confirm:
 - 2,058 rows were emitted;
 - no source fingerprint changed unexpectedly;
 - the affected checkpoint contains the intended natural and patch-safe text;
-- every scenario patch-safe field equals its playable map;
+- every scenario patch-safe field equals its certified base map;
 - controls, terminology, width, and bank recompression remain valid.
 
 A playable revision becomes an approved release only through the source-lock,

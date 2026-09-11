@@ -1,8 +1,6 @@
 # Production retranslation review index
 
-**Branch:** `retranslation/production-pass-20260908`
-
-**Critical status:** This directory is editorial review material only. It is not imported by `release-build`, and no playable `work/translations/*.json` source has been replaced by these proposals.
+**Current status:** The canonical `release-build` locks and imports the registered JSON in this directory as the reviewed production-English layer. `work/translations/*.json` remains the certified base/control-topology layer; it is not overwritten by these review files.
 
 ## Coverage
 
@@ -33,17 +31,15 @@ TT1A and TT1B were the most visibly compromised runtime material and establish t
 
 For the larger historical banks, the previous authenticity audit already made many lines semantically correct and naturally usable. Rewriting those lines for the sake of generating churn would make the localization less disciplined. Their `*_changes.json` files therefore list only records whose production English should change. Every record in those banks was reviewed; omission is an explicit editorial decision to retain the current source-audited wording.
 
-## What has not happened yet
+## Integration status
 
-- No review proposal has been copied into `work/translations`.
-- No control tags have been re-authored around the new prose.
-- No 24-column or special-screen wrapping has been imposed on the review English.
-- No dictionary/compression search has been run against the new prose.
-- No text has been shortened to satisfy the current ROM.
-- No candidate FDS has been built from these proposals.
+The editorial pass is integrated without copying proposals into the base
+translation maps. `production_translation.py` starts from the base maps, applies
+these registered review records, then applies any intentionally present
+`work/production_overrides/*.json` as the final layer. It regenerates
+renderer-safe English row/scroll geometry, and the canonical entropy release
+builder encodes that materialized result.
 
-Those are deliberately separate engineering steps. The English should be approved on editorial merit before the game is changed to accommodate it.
+## Editorial gate
 
-## Next editorial gate
-
-Review the proposals for voice, terminology, and tone. Once approved, create a machine-readable approved-English layer and then solve control layout, punctuation glyph coverage, compression, relocation, and renderer requirements without silently degrading the approved prose.
+Future wording changes still require editorial review before the source lock is intentionally refreshed. Engineering changes must preserve the approved words and the recovered semantic-control topology unless a new runtime behavior is explicitly reviewed.
