@@ -180,8 +180,8 @@
     },
     "work/production_overrides/TT3A.json": {
       "normalization": "lf",
-      "sha256": "24AEE8D70A7A1448DDD206D892CA247EDAB5F2BC2684D889CA74CC8B4CD3CB10",
-      "bytes": 790
+      "sha256": "2D907E8562145A448309D7434C05F95A7F9F66DF45F27D8706A25586F125970F",
+      "bytes": 1006
     },
     "work/production_overrides/TT3B.json": {
       "normalization": "lf",
