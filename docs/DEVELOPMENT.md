@@ -141,18 +141,12 @@ After changing text:
 
 ## Dictionary debugging
 
-When a bank no longer fits:
-
-- compare literal and compressed sizes from `scenario-footprint`;
-- inspect repeated complete words and speaker prefixes;
-- check bank-specific required dictionary entries;
-- remember that a dictionary reference costs 9 bits;
-- remember that the encoded dictionary entry consumes bytes;
-- avoid nested English entries, which the compressor forbids;
-- verify that fixed tables still have the words they require.
-
-A dictionary change can save scenario space while making a tiny fixed record
-impossible to encode. Treat scenario and fixed-table use as one budget.
+`scenario-footprint` and the flat 68-entry compressor are source-analysis tools;
+they are not the release codec. The canonical release uses the frozen entropy
+optimizer and enforces the `$D7B5` NOV3 ceiling on the complete rebuilt bank.
+When a release bank no longer fits, inspect the entropy manifest's dictionary,
+scenario/menu, spill, loaded-end, and headroom metrics together. Fixed tables and
+byte-addressed entry points remain part of the same runtime contract.
 
 ## Display debugging
 
@@ -186,9 +180,10 @@ shutdown, or the next game state.
 
 ## Release lifecycle
 
-`work/release_sources.json` locks all approved non-code inputs. Schema v2
-declares `lf` normalization for `work/translations/*.json` and `raw` for the
-Japanese FDS baselines and indexed title PNG. This makes equivalent LF/CRLF
+`work/release_sources.json` locks all approved non-code inputs. Schema v3
+declares `lf` normalization for base translation JSON, reviewed production JSON,
+and explicit production overrides, while Japanese FDS baselines and indexed
+title PNGs remain `raw`. This makes equivalent LF/CRLF
 translation checkouts portable while retaining byte-exact binary guards. The
 lock document's own SHA-256 is likewise calculated after LF normalization.
 `.gitattributes` reinforces this representation, but validation does not

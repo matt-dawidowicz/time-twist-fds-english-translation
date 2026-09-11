@@ -12,6 +12,7 @@ from time_twist.production_translation import (
     ProductionTranslationError,
     layout_review_text,
     materialize_production_maps,
+    merged_translation_map,
     validate_production_control_sequence,
     validate_renderer_buffer_layout,
 )
@@ -133,6 +134,36 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
             "crosses a 24-column row",
         ):
             validate_renderer_buffer_layout(unsafe)
+
+    def test_explicit_override_is_the_final_editorial_layer(self) -> None:
+        """Let a deliberate last-mile override supersede reviewed prose."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            base = root / "base"
+            review = root / "review"
+            overrides = root / "overrides"
+            base.mkdir()
+            review.mkdir()
+            overrides.mkdir()
+            record_id = "TT1A/g0/r0"
+            (base / "TT1A.json").write_text(
+                json.dumps({record_id: "Base."}) + "\n", encoding="utf-8"
+            )
+            (review / "TT1A_proposal.json").write_text(
+                json.dumps({"records": {record_id: "Reviewed."}}) + "\n",
+                encoding="utf-8",
+            )
+            (overrides / "TT1A.json").write_text(
+                json.dumps({record_id: "Override."}) + "\n", encoding="utf-8"
+            )
+
+            merged = merged_translation_map(
+                "TT1A",
+                base_directory=base,
+                review_directory=review,
+                override_directory=overrides,
+            )
+            self.assertEqual(merged[record_id], "Override.")
 
     def test_entire_reviewed_corpus_materializes_buffer_safe(self) -> None:
         """Prove all 1,299 reviewed records preserve controls and row state."""
