@@ -83,9 +83,7 @@ class LoadProfileTests(unittest.TestCase):
         primary = PRIMARY_LOAD_CALL - 0x6000
         secondary = SECONDARY_LOAD_CALL - 0x6000
         data[primary : primary + 7] = bytes.fromhex("20 F8 E1 CB 60 DF 60")
-        data[secondary : secondary + 7] = bytes.fromhex(
-            "20 F8 E1 CB 60 E4 60"
-        )
+        data[secondary : secondary + 7] = bytes.fromhex("20 F8 E1 CB 60 E4 60")
         copy = 0x7A3D - 0x6000
         data[copy : copy + 24] = bytes.fromhex(
             "BD A5 7B 8D DF 60 BD A6 7B 8D E0 60 "
