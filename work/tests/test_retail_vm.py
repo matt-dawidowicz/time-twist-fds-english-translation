@@ -6,8 +6,8 @@ import unittest
 
 from time_twist.retail_vm import (
     RETAIL_VM_OPCODE_BY_VALUE,
-    RETAIL_VM_OPCODES,
     RETAIL_VM_OPCODE_VALUES,
+    RETAIL_VM_OPCODES,
     retail_vm_opcode,
 )
 
