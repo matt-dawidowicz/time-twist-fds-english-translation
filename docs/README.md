@@ -9,6 +9,7 @@ release pipeline. Retired implementation snapshots and commands remain in Git hi
 - **Set up a checkout:** [Quickstart](../QUICKSTART.md)
 - **Improve English text:** [Translation contributor guide](../CONTRIBUTING_TRANSLATION.md)
 - **Change Python tooling or tests:** [Code contributor guide](../CONTRIBUTING_CODE.md)
+- **Reverse-engineer or fix runtime behavior:** [Text and graphics reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md)
 - **Tour the implementation:** [Code tour](CODE_TOUR.md)
 
 The public repository contains no original or patched FDS images, BIOS files,
@@ -31,13 +32,19 @@ not replacement sources.
 
 ## Binary and release architecture
 
-1. [Architecture](ARCHITECTURE.md)
-2. [Formats](FORMATS.md)
-3. [Development guide](DEVELOPMENT.md)
-4. [Module map](MODULE_MAP.md)
-5. [CLI reference](CLI_REFERENCE.md)
-6. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
-7. [Private fixtures](PRIVATE_FIXTURES.md)
+1. [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md)
+2. [Architecture](ARCHITECTURE.md)
+3. [Formats](FORMATS.md)
+4. [Development guide](DEVELOPMENT.md)
+5. [Module map](MODULE_MAP.md)
+6. [CLI reference](CLI_REFERENCE.md)
+7. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
+8. [Private fixtures](PRIVATE_FIXTURES.md)
+
+The reverse-engineering guide is the maintainer-level runtime map: it connects FDS
+file offsets, CPU load addresses, packed-text streams, NOV2 renderer behavior,
+scenario/menu addressing, font/CHR ownership, NOV4 title PPU/NMI sequencing, known
+failure modes, debugger breakpoints, and a repeatable evidence-to-fix workflow.
 
 Candidate and strict release builds use the single source-locked release builder.
 Low-level parsing and inspection commands remain available, but obsolete standalone
@@ -46,6 +53,7 @@ bank/UI construction commands are no longer part of the public CLI.
 ## Menus, fixed UI, title, and font
 
 - [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md)
+- [English dialogue pagination policy](ENGLISH_PAGINATION_POLICY.md)
 - [NOV4 font-source safety](NOV4_FONT_SOURCE_SAFETY.md)
 - [Title sequence](TITLE_SEQUENCE.md)
 - [Runtime playtest matrix](PLAYTEST_MATRIX.md)
