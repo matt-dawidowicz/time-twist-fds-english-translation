@@ -2,13 +2,13 @@
 
 The review layer is unconstrained English. ``production_translation`` preserves
 native semantic controls in order while regenerating control 0/4 row and scroll
-geometry for English. Production validation
-therefore rejects implicit row crossing and enforces source-control compatibility,
-four-row staging-buffer safety, and renderer width for every record.
+geometry for English. Production validation therefore rejects implicit row
+crossing and enforces source-control compatibility, four-row staging-buffer
+safety, and renderer width for every record.
 
-This proves token/layout safety, not scene aesthetics. Runtime certification
-still reviews every changed record because added row/scroll continuations can alter timing even when the native
-text buffer remains structurally safe.
+A small audited set of source CTRL:1 waits is presentation-only in production
+English. Record-aware validation applies only those explicit exceptions; all
+other native semantic controls remain mandatory.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ from __future__ import annotations
 from .english import EnglishTextError, encode_english, validate_display_width
 from .production_translation import (
     ProductionTranslationError,
-    validate_production_control_sequence,
+    validate_record_production_control_sequence,
     validate_renderer_buffer_layout,
 )
 from .textcodec import PackedSymbol
@@ -33,7 +33,7 @@ def encode_production_english(
             f"{record_id}: English translation must be a nonempty string"
         )
     try:
-        validate_production_control_sequence(japanese, english)
+        validate_record_production_control_sequence(record_id, japanese, english)
         validate_renderer_buffer_layout(english)
         validate_display_width(english, allow_wrap=True)
     except (EnglishTextError, ProductionTranslationError) as error:
