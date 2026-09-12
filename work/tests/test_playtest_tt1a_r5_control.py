@@ -86,10 +86,11 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
     def test_personality_intro_preserves_reviewed_words(self) -> None:
         """Retain the exact reviewed prose that exposed the playtest problem."""
         text = self.production_by_bank["TT1A"]["TT1A/g0/r5"]
-        self.assertEqual(
-            CONTROL_RE.sub(" ", text).split(),
-            "First, we'll begin with a personality test. Please answer each question.".split(),
+        expected = (
+            "First, we'll begin with a personality test. "
+            "Please answer each question."
         )
+        self.assertEqual(CONTROL_RE.sub(" ", text).split(), expected.split())
 
     def test_unrelated_ctrl1_timing_remains_intact(self) -> None:
         """Keep dramatic, speaker-change, and intentional timing waits semantic."""
