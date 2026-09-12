@@ -39,6 +39,7 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        """Materialize each affected bank once for the ROM-wide policy checks."""
         cls.production_by_bank: dict[str, dict[str, str]] = {}
         for record_id in EXPECTED_RECORDS:
             bank = record_id.split("/", 1)[0]
