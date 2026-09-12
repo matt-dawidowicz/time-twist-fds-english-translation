@@ -66,11 +66,15 @@ class SceneLoadSet:
 def _read_word(data: bytes, offset: int) -> int:
     """Read one bounded little-endian word."""
     if offset < 0 or offset + 2 > len(data):
-        raise EngineSurfaceAuditError(f"word offset 0x{offset:04X} is outside data")
+        raise EngineSurfaceAuditError(
+            f"word offset 0x{offset:04X} is outside data"
+        )
     return int.from_bytes(data[offset : offset + 2], "little")
 
 
-def _files_by_id(images: dict[str, FdsImage]) -> dict[int, tuple[FdsFile, ...]]:
+def _files_by_id(
+    images: dict[str, FdsImage],
+) -> dict[int, tuple[FdsFile, ...]]:
     """Map each game FDS file ID to every file carrying that ID."""
     values: defaultdict[int, list[FdsFile]] = defaultdict(list)
     for image in images.values():
@@ -90,7 +94,9 @@ def _scene_load_sets(
 ) -> tuple[SceneLoadSet, ...]:
     """Decode NOV2's 15-entry four-file scene load table."""
     start = SCENE_LOAD_TABLE_CPU - NOV2_LOAD_ADDRESS
-    raw = nov2[start : start + SCENE_LOAD_TABLE_RECORDS * SCENE_LOAD_TABLE_WIDTH]
+    raw = nov2[
+        start : start + SCENE_LOAD_TABLE_RECORDS * SCENE_LOAD_TABLE_WIDTH
+    ]
     if len(raw) != SCENE_LOAD_TABLE_RECORDS * SCENE_LOAD_TABLE_WIDTH:
         raise EngineSurfaceAuditError("NOV2 ends inside the scene load table")
     result = []
@@ -98,9 +104,11 @@ def _scene_load_sets(
         begin = index * SCENE_LOAD_TABLE_WIDTH
         ids = tuple(raw[begin : begin + SCENE_LOAD_TABLE_WIDTH])
         names = tuple(
-            tuple(file.name for file in files_by_id.get(file_id, ()))
-            if file_id not in (0, 0xFF)
-            else ()
+            (
+                tuple(file.name for file in files_by_id.get(file_id, ()))
+                if file_id not in (0, 0xFF)
+                else ()
+            )
             for file_id in ids
         )
         result.append(SceneLoadSet(index, ids, names))
@@ -123,7 +131,9 @@ def _compose_program_overlay(
             if file.kind != 0 or file.load_address != OVERLAY_LOAD_ADDRESS:
                 continue
             if file.size > size:
-                raise EngineSurfaceAuditError(f"{file.name}: overlay crosses NOV3")
+                raise EngineSurfaceAuditError(
+                    f"{file.name}: overlay crosses NOV3"
+                )
             programs.append(file.name)
             memory[: file.size] = file.data
             owners[: file.size] = [file.name] * file.size
@@ -132,7 +142,9 @@ def _compose_program_overlay(
     return bytes(memory), tuple(owners), tuple(programs)
 
 
-def _graphics_inventory(images: dict[str, FdsImage]) -> tuple[GraphicsComponent, ...]:
+def _graphics_inventory(
+    images: dict[str, FdsImage],
+) -> tuple[GraphicsComponent, ...]:
     """Return and validate every recovered gameplay CHR component."""
     result = []
     for image_name, image in images.items():
@@ -150,7 +162,9 @@ def _graphics_inventory(images: dict[str, FdsImage]) -> tuple[GraphicsComponent,
                     or file.size % 16
                     or not low <= file.load_address < end <= high
                 ):
-                    raise EngineSurfaceAuditError(f"{file.name}: invalid {role} CHR")
+                    raise EngineSurfaceAuditError(
+                        f"{file.name}: invalid {role} CHR"
+                    )
                 result.append(
                     GraphicsComponent(
                         image_name,
@@ -177,13 +191,15 @@ def _graphics_inventory(images: dict[str, FdsImage]) -> tuple[GraphicsComponent,
     return tuple(result)
 
 
-def _range_owner(owners: tuple[str, ...], start: int, end: int) -> tuple[str, bool]:
+def _range_owner(
+    owners: tuple[str, ...], start: int, end: int
+) -> tuple[str, bool]:
     """Resolve ownership of one composed table range."""
     if start == end:
         return "", False
-    names = (
-        set(owners[start - OVERLAY_LOAD_ADDRESS : end - OVERLAY_LOAD_ADDRESS]) - {""}
-    )
+    names = set(
+        owners[start - OVERLAY_LOAD_ADDRESS : end - OVERLAY_LOAD_ADDRESS]
+    ) - {""}
     if len(names) != 1:
         raise EngineSurfaceAuditError(
             f"table range ${start:04X}-${end:04X} has owners {sorted(names)}"
@@ -210,13 +226,18 @@ def _scene_report(
     actors = parse_actor_spawn_records(data, actor, actor_end)
     hotspots = parse_hotspot_records(data, hotspot, hotspot_end)
     map_records = parse_background_map_records(data, maps, metasprite)
-    rectangles = [rectangle for record in hotspots for rectangle in record.rectangles]
+    rectangles = [
+        rectangle for record in hotspots for rectangle in record.rectangles
+    ]
     streams = [stream for record in map_records for stream in record.streams]
 
     def owned(start: int, end: int) -> dict[str, object]:
         """Return source ownership metadata for one table."""
         owner, nonempty = _range_owner(owners, start, end)
-        return {"owner": owner, "inherited": bool(nonempty and owner != programs[-1])}
+        return {
+            "owner": owner,
+            "inherited": bool(nonempty and owner != programs[-1]),
+        }
 
     return {
         "scene_index": scene.index,
@@ -247,8 +268,12 @@ def _scene_report(
             "end": hotspot_end,
             "records": len(hotspots),
             "rectangles": len(rectangles),
-            "fd_markers": sum(item.bottom_or_special == 0xFD for item in rectangles),
-            "fe_markers": sum(item.bottom_or_special == 0xFE for item in rectangles),
+            "fd_markers": sum(
+                item.bottom_or_special == 0xFD for item in rectangles
+            ),
+            "fe_markers": sum(
+                item.bottom_or_special == 0xFE for item in rectangles
+            ),
             **owned(hotspot, hotspot_end),
         },
         "background_maps": {
@@ -257,9 +282,12 @@ def _scene_report(
             "records": len(map_records),
             "streams": len(streams),
             "maximum_tile": max(
-                (tile for stream in streams for tile in stream.tiles), default=0
+                (tile for stream in streams for tile in stream.tiles),
+                default=0,
             ),
-            "shapes": sorted({f"{stream.width}x{stream.height}" for stream in streams}),
+            "shapes": sorted(
+                {f"{stream.width}x{stream.height}" for stream in streams}
+            ),
             **owned(maps, metasprite),
         },
         "palette_pointer": palette,
@@ -272,11 +300,15 @@ def _source_control_counts(
     """Count controls in scenario groups, dictionaries, and fixed-menu tables."""
     counts: Counter[int] = Counter()
     surfaces: Counter[str] = Counter()
-    with tempfile.TemporaryDirectory(prefix="time_twist_control_audit_") as directory:
+    with tempfile.TemporaryDirectory(
+        prefix="time_twist_control_audit_"
+    ) as directory:
         root = Path(directory)
         for bank_name in KNOWN_SCENARIO_BANKS:
             image_name, side_index = SCENARIO_LOCATIONS[bank_name]
-            data = images[image_name].sides[side_index].find_file(bank_name).data
+            data = (
+                images[image_name].sides[side_index].find_file(bank_name).data
+            )
             path = root / f"{bank_name}.bin"
             path.write_bytes(data)
             bank = parse_scenario_bank(
@@ -302,7 +334,9 @@ def _source_control_counts(
                 data, offset=spec.start, limit=len(spec.records)
             )
             if end != spec.end:
-                raise EngineSurfaceAuditError(f"{bank_name}: fixed-menu extent drift")
+                raise EngineSurfaceAuditError(
+                    f"{bank_name}: fixed-menu extent drift"
+                )
             for record in records:
                 for symbol in record:
                     if symbol.kind is SymbolKind.CONTROL:
@@ -336,7 +370,9 @@ def audit_engine_surfaces(zenpen: Path, kouhen: Path) -> dict[str, object]:
             "gameplay_ppuctrl": "0x10",
             "object_pattern_table": "0x0000-0x0FFF",
             "background_pattern_table": "0x1000-0x1FFF",
-            "components": [asdict(item) for item in _graphics_inventory(images)],
+            "components": [
+                asdict(item) for item in _graphics_inventory(images)
+            ],
             "scene_load_table_cpu": f"0x{SCENE_LOAD_TABLE_CPU:04X}",
             "scene_load_list_cpu": f"0x{SCENE_LOAD_LIST_CPU:04X}",
             "scene_load_sets": [asdict(scene) for scene in scenes],
