@@ -163,7 +163,9 @@ def merged_translation_map(
     for record_id, selected_text in selected.items():
         reviewed_text = selected_text
         if record_id not in explicit_control_overrides:
-            reviewed_text = " ".join(CONTROL_RE.sub(" ", selected_text).split())
+            reviewed_text = " ".join(
+                CONTROL_RE.sub(" ", selected_text).split()
+            )
         laid_out[record_id] = layout_review_text(
             record_id,
             reviewed_text,
