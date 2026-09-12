@@ -28,7 +28,7 @@ class GameplayGraphicsFormatTests(unittest.TestCase):
         definitions = parse_metasprite_definitions(
             data,
             LOAD,
-            LOA + len(data),
+            LOAD + len(data),
         )
         self.assertEqual(len(definitions), 1)
         definition = definitions[0]
