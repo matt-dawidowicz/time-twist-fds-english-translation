@@ -15,7 +15,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from time_twist.fds import FdsFile, FdsImage
-from time_twist.retail_vm import RETAIL_VM_OPCODES, RETAIL_VM_OPCODE_VALUES
+from time_twist.retail_vm import RETAIL_VM_OPCODE_VALUES, RETAIL_VM_OPCODES
 
 NOV2_LOAD = 0x6000
 OVERLAY_LOAD = 0xA200
@@ -212,10 +212,8 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
         hotspot_table = _word(data, 0x0C)
         if predicate_base != 0:
             raise RetailVmAuditError(
-                (
-                    f"scene {index}: $A20E predicate base became "
-                    f"${predicate_base:04X}"
-                )
+                f"scene {index}: $A20E predicate base became "
+                f"${predicate_base:04X}"
             )
         if not (
             OVERLAY_LOAD <= entry < label_table <= hotspot_table < NOV3_LOAD
