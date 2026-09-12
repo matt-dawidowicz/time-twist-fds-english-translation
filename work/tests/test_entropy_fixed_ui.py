@@ -112,9 +112,9 @@ class EntropyFixedUiTests(unittest.TestCase):
         menu, group, dictionary = nov4_entropy_payloads()
         tt1a = tt1a_entropy_payload()
         self.assertEqual(
-            _sha256(menu, NOV4_MENU_END - NOV4_MENU_START)),
+            _sha256(_pad(menu, NOV4_MENU_END - NOV4_MENU_START)),
             "4EA71F675D0700196173AB571E4E4083F0B5F6C7AB68E0B22F45A04008D9B8A1",
-       )
+        )
         self.assertEqual(
             _sha256(_pad(group, NOV4_GROUP_END - NOV4_GROUP_START)),
             "48977FA6BF9B9A949BEE06F9E353D28D598A396B34B4F5DD27CB319A262178B9",

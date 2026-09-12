@@ -344,31 +344,18 @@ TT3A_FIXED_TEXT_RECORDS = (
     "Roosevelt",
     "Churchill",
     "MacArthur",
-    "Roosevelt",
-    "Churchill",
-    "MacArthur",
-    "Gaulle",
-    "Open",
-    "Hitler",
-    "Lenin",
-    "Saddam",
-    "Cot",
-    "March",
-    "January",
-    "January",
-    "2",
-    "5",
-    "10",
-    "20",
-    "Male",
-    "Female",
+    "Yes",
+    "No",
+    "Broom",
+    "Lamp",
+    "Woman",
 )
 
-# TT3B's resistance outpost table is shorter, but it uses the same structure.
-TT3B_FIXED_TEXT_START_OFFSET = 0x050C
-TT3B_FIXED_TEXT_END_OFFSET = 0x056E
+# TT3B's menu table contains action, object, and battle labels.
+TT3B_FIXED_TEXT_START_OFFSET = 0x0420
+TT3B_FIXED_TEXT_END_OFFSET = 0x0477
 TT3B_FIXED_TEXT_SOURCE_SHA256 = (
-    "4556F9CDEC6A59584A1F253CCA08B2F7B75E0C9DA9CA1D67034C0A07DEC65F3F"
+    "999B38FD507E1B5777D893C1009551E63FBD9153DCDB59A383BAC72313A9D8E4"
 )
 TT3B_FIXED_TEXT_RECORDS = (
     "Look",
@@ -377,37 +364,29 @@ TT3B_FIXED_TEXT_RECORDS = (
     "Use",
     "Move",
     "Area",
-    "Hide",
-    "Fight",
-    "Woman",
-    "Nicholas",
+    "Mill",
     "Simon",
-    "Fire",
+    "Woman",
+    "Gun",
+    "Charm",
+    "Schmidt",
     "Out",
     "Fight",
     "Guard",
     "Run",
-    "Save",
-    "Leave",
-    "BadenBdn",
-    "River",
-    "Venti",
-    "Meat",
-    "Olive",
-    "Salon",
-    "Praise",
-    "Resistance",
-    "Gestapo",
+    "Ask",
+    "Read",
+    "Text",
     "Hitler",
-    "Destroy",
+    "Cougar",
 )
 
-# TT4's menu table contains verbs, objects, status, and items for the
-# ancient-mediterranean combat/healing chapter.
-TT4_FIXED_TEXT_START_OFFSET = 0x0BE4
-TT4'_FIXED_TEXT_END_OFFSET = 0x0D34
-TT4'_FIXED_TEXT_SOURCE_SHA256 = (
-    "925422225284C0D76D963510395A1BA3D0FD29ECCC4A61A536C7FF77EFCCC418"
+# TT4's menu table contains commands, medical-treatment choices, characters,
+# objects, the five-sages logic puzzle, and Greek history-quiz answers.
+TT4_FIXED_TEXT_START_OFFSET = 0x0CD3
+TT4_FIXED_TEXT_END_OFFSET = 0x0E8B
+TT4_FIXED_TEXT_SOURCE_SHA256 = (
+    "B28692367059E8AB5396FF23552FDD2E2279130845EA2964F05E1F7EA19D377C"
 )
 TT4_FIXED_TEXT_RECORDS = (
     "Look",
@@ -417,9 +396,9 @@ TT4_FIXED_TEXT_RECORDS = (
     "Silver coin",
     "Move",
     "In",
-    "Out",
-    "Sky",
-    "Walk",
+    "Statue",
+    "Priest",
+    "Head",
     "Slap",
     "Press",
     "Chin",
@@ -735,7 +714,7 @@ TT6A_FIXED_TEXT_RECORDS = (
     "Kids",
 )
 
-# TT6B's fixed table contains travel, stable-animal, history-quiz, and animal
+# TT6B's menu table contains travel, stable-animal, history-quiz, and animal
 # interaction labels.
 TT6B_FIXED_TEXT_START_OFFSET = 0x0580
 TT6B_FIXED_TEXT_END_OFFSET = 0x0687
@@ -812,7 +791,7 @@ TT6B_FIXED_TEXT_RECORDS = (
 TT6C_FIXED_TEXT_START_OFFSET = 0x08B8
 TT6C_FIXED_TEXT_END_OFFSET = 0x0A4F
 TT6C_FIXED_TEXT_SOURCE_SHA256 = (
-    "580A8C4548D3D468FA446DC6D4294A32D5CF78DFB76C630E63D8BB6282606BD"
+    "580A8C45C48A3D468FA446DC6D4294A32D5CF78DFB76C630E63D8BB6282606BD"
 )
 TT6C_FIXED_TEXT_RECORDS = (
     "Look",
