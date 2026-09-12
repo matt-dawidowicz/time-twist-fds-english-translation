@@ -33,7 +33,9 @@ def encode_production_english(
             f"{record_id}: English translation must be a nonempty string"
         )
     try:
-        validate_record_production_control_sequence(record_id, japanese, english)
+        validate_record_production_control_sequence(
+            record_id, japanese, english
+        )
         validate_renderer_buffer_layout(english)
         validate_display_width(english, allow_wrap=True)
     except (EnglishTextError, ProductionTranslationError) as error:
