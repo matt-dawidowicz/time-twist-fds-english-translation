@@ -14,7 +14,9 @@ NOV3_LOAD = 0xD7B5
 AUDIO_LATCHES = tuple(range(0x07E0, 0x07E4))
 
 NOV2_GUARDS = {
-    0x717E: bytes.fromhex("A0 00 B1 C5 29 0F AA C8 B1 C5 9D E0 07 85 D1 A9 02 4C"),
+    0x717E: bytes.fromhex(
+        "A0 00 B1 C5 29 0F AA C8 B1 C5 9D E0 07 85 D1 A9 02 4C"
+    ),
     0x7192: bytes.fromhex("A0 00 B1 C5 29 0F AA C8 B1 C5 9D E0 07 A9 02 4C"),
 }
 NOV3_GUARDS = {
@@ -23,7 +25,9 @@ NOV3_GUARDS = {
         "20 04 D8 20 7E D8 20 3C DA A9 00 8D E3 07"
     ),
     0xD804: bytes.fromhex("AD E5 07 AC E0 07 30 60 4A B0 51 4E E0 07"),
-    0xD87E: bytes.fromhex("AD E7 07 29 70 D0 4B AD E2 07 D0 06 AD E8 07 D0 25 60"),
+    0xD87E: bytes.fromhex(
+        "AD E7 07 29 70 D0 4B AD E2 07 D0 06 AD E8 07 D0 25 60"
+    ),
     0xDA3C: bytes.fromhex("AD E3 07 30 F8 D0 06 AD E7 07 D0 EE 60 20 3E DB"),
 }
 
@@ -41,14 +45,18 @@ class AudioLatchAuditError(ValueError):
     """Report drift in the recovered VM-to-audio contract."""
 
 
-def _guard(data: bytes, load: int, address: int, expected: bytes, label: str) -> None:
+def _guard(
+    data: bytes, load: int, address: int, expected: bytes, label: str
+) -> None:
     """Verify one exact instruction prefix at an absolute CPU address."""
     offset = address - load
     if offset < 0 or data[offset : offset + len(expected)] != expected:
         raise AudioLatchAuditError(f"{label} changed at CPU ${address:04X}")
 
 
-def _absolute_references(data: bytes, load: int, target: int) -> tuple[int, ...]:
+def _absolute_references(
+    data: bytes, load: int, target: int
+) -> tuple[int, ...]:
     """Return static absolute-address instruction references to one target."""
     low = target & 0xFF
     high = target >> 8
@@ -86,7 +94,9 @@ def audit_audio_latches(zenpen: Path, kouhen: Path) -> dict[str, object]:
         or not resident_refs["0x07E2"]
         or not resident_refs["0x07E3"]
     ):
-        raise AudioLatchAuditError("NOV3 lost a recovered audio-latch consumer")
+        raise AudioLatchAuditError(
+            "NOV3 lost a recovered audio-latch consumer"
+        )
 
     overlay_refs: Counter[int] = Counter()
     overlay_files: dict[str, list[str]] = {
@@ -98,14 +108,18 @@ def audit_audio_latches(zenpen: Path, kouhen: Path) -> dict[str, object]:
                 if file.kind != 0 or file.load_address != 0xA200:
                     continue
                 for target in AUDIO_LATCHES:
-                    refs = _absolute_references(file.data, file.load_address, target)
+                    refs = _absolute_references(
+                        file.data, file.load_address, target
+                    )
                     if refs:
                         overlay_refs[target] += len(refs)
                         overlay_files[f"0x{target:04X}"].append(
                             f"{image_name}:side{side.index}:{file.name}"
                         )
     if not overlay_refs[0x07E1]:
-        raise AudioLatchAuditError("no overlay-local $07E1 audio consumers found")
+        raise AudioLatchAuditError(
+            "no overlay-local $07E1 audio consumers found"
+        )
 
     return {
         "vm_writers": {
