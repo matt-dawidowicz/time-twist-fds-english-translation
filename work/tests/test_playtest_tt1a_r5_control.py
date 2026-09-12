@@ -61,13 +61,16 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
     def test_certified_base_topology_remains_unchanged(self) -> None:
         """Keep CTRL:1 in the certified base maps; demotion is production-only."""
         by_bank: dict[str, dict[str, str]] = {}
-        for record_id, expected_template in PRESENTATION_ONLY_CTRL1_TEMPLATES.items():
+        for (
+            record_id,
+            expected_template,
+        ) in PRESENTATION_ONLY_CTRL1_TEMPLATES.items():
             bank = record_id.split("/", 1)[0]
             if bank not in by_bank:
                 by_bank[bank] = json.loads(
-                    (ROOT / "work" / "translations" / f"{bank}.json").read_text(
-                        encoding="utf-8"
-                    )
+                    (
+                        ROOT / "work" / "translations" / f"{bank}.json"
+                    ).read_text(encoding="utf-8")
                 )
             self.assertEqual(by_bank[bank][record_id], expected_template)
             self.assertEqual(expected_template.count("{CTRL:1}"), 1)
@@ -108,13 +111,17 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
                     bank,
                     base_directory=ROOT / "work" / "translations",
                     override_directory=ROOT / "work" / "production_overrides",
-                    review_directory=ROOT / "review" / "production_retranslation",
+                    review_directory=ROOT
+                    / "review"
+                    / "production_retranslation",
                 )
             for record_id in record_ids:
                 with self.subTest(record_id=record_id):
                     self.assertIn("{CTRL:1}", production[record_id])
 
-    def test_policy_fails_closed_if_audited_base_template_changes(self) -> None:
+    def test_policy_fails_closed_if_audited_base_template_changes(
+        self,
+    ) -> None:
         """Require a fresh audit instead of carrying an exception onto new text."""
         with self.assertRaisesRegex(
             ProductionTranslationError,
