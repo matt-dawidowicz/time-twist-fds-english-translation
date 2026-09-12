@@ -36,11 +36,14 @@ not replacement sources.
 2. [Architecture](ARCHITECTURE.md)
 3. [Formats](FORMATS.md)
 4. [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md)
-5. [Development guide](DEVELOPMENT.md)
-6. [Module map](MODULE_MAP.md)
-7. [CLI reference](CLI_REFERENCE.md)
-8. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
-9. [Private fixtures](PRIVATE_FIXTURES.md)
+5. [Gameplay script and event VM](GAMEPLAY_SCRIPT_ENGINE.md)
+6. [Retail gameplay VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md)
+7. [Gameplay VM completion pass](GAMEPLAY_VM_COMPLETION_20260912.md)
+8. [Development guide](DEVELOPMENT.md)
+9. [Module map](MODULE_MAP.md)
+10. [CLI reference](CLI_REFERENCE.md)
+11. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
+12. [Private fixtures](PRIVATE_FIXTURES.md)
 
 The reverse-engineering guide is the maintainer-level runtime map: it connects FDS
 file offsets, CPU load addresses, packed-text streams, NOV2 renderer behavior,
@@ -48,9 +51,13 @@ scenario/menu addressing, font/CHR ownership, NOV4 title PPU/NMI sequencing, kno
 failure modes, debugger breakpoints, and a repeatable evidence-to-fix workflow.
 
 The gameplay graphics reference records the recovered `OB*`/`OBJ*`/`BG*` raw-CHR
-format, PPU destinations, NOV2 scene file-ID table, and partial-overlay behavior. It
-also separates those verified file-level facts from the still-unrecovered
-nametable/metasprite/palette metadata that consumes the tiles.
+format, PPU destinations, NOV2 scene file-ID table, same-address overlay inheritance,
+metasprites, static placements, actor spawns, hotspots, palette structures, and the
+runtime nametable patch engine. The gameplay-script references document the recovered
+NOV2 bytecode interpreter, route/call-stack model, persistent event flags, actor and
+presentation controls, audio-command latches, and the source-reachable retail opcode
+language. The opcode reference deliberately separates shipped script usage from extra
+forms implemented by the native interpreter.
 
 Candidate and strict release builds use the single source-locked release builder.
 Low-level parsing and inspection commands remain available, but obsolete standalone
