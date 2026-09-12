@@ -1,8 +1,10 @@
 # Title sequence architecture
 
 > **Advanced title reference.** Routine translation contributors can skip this
-> document. See [Architecture](ARCHITECTURE.md) for the conceptual model and
-> [Contributing code](../CONTRIBUTING_CODE.md) before changing title tooling.
+> document. See [Architecture](ARCHITECTURE.md) for the conceptual model,
+> [the reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md#13-title-graphics-engine)
+> for the CPU/PPU runtime map, and [Contributing code](../CONTRIBUTING_CODE.md)
+> before changing title tooling.
 
 The English opening is derived from the reviewed animation in
 `work/title_assets/Time Twist approved English opening.gif`. The GIF is a
@@ -49,21 +51,22 @@ palette, or ownership range.
 
 The builder copies the final authority through row 96, clears rows 97-111, and
 draws `On the Outskirts of History...` at `(42,102)` with the deterministic
-5x7 font. This leaves five blank rows below the logo and three blank rows above
-the original `PUSH START`, which begins at row 112. The time machine, copyright
-line, attributes, and lower title art continue to come from the supported NOV4.
+translated 5x8-in-an-8x8-cell glyph source used by the current font model. The
+remaining cleared band separates the subtitle from the original `PUSH START`,
+which begins at row 112. The time machine, copyright line, attributes, and
+lower title art continue to come from the supported NOV4.
 
 ## Exact two-phase CHR allocation
 
 NOV4's title pattern table reserves IDs `$EC-$FF` for the original animated
 clock-hand source. The 236 IDs `$00-$EB` are available to the upper background.
-The union of the exact swipe and final upper patterns needs 291 IDs, 55 more
+The union of the exact swipe and final upper patterns needs 289 IDs, 53 more
 than can coexist.
 
-The allocator therefore gives 55 contiguous IDs two temporal meanings:
+The allocator therefore gives 53 contiguous IDs two temporal meanings:
 
 1. NOV4 initially contains the exact slide patterns in those IDs.
-2. The final-title transition uploads 55 replacement patterns (880 bytes) to
+2. The final-title transition uploads 53 replacement patterns (848 bytes) to
    the same IDs while rendering and NMI are blanked.
 3. Every other upper pattern keeps one fixed ID across both phases.
 
@@ -93,7 +96,7 @@ rendering returns.
 At the final transition, the 97-byte helper:
 
 1. blanks rendering and disables NMI;
-2. uploads the 55-tile final delta to pattern table 1;
+2. uploads the 53-tile final delta to pattern table 1;
 3. uploads the 55 lower-title patterns to pattern table 0;
 4. enables the recovered raster split and restores rendering state.
 
@@ -120,7 +123,7 @@ pixel and file hashes. Separate semantic masks lock the four clock numerals,
 the `TM`, and the white letter boundary. Private-overlay integration tests
 additionally verify:
 
-- both exact phase renders and the 55-tile reconstruction identity;
+- both exact phase renders and the 53-tile reconstruction identity;
 - all 21 native swipe origins and per-nametable attribute masking;
 - Nintendo overlay/restoration and final-delta upload addresses;
 - the relocated two-nametable RLE stream and single `$FF` terminator;

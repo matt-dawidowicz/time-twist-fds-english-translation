@@ -1,9 +1,85 @@
 # English dialogue pagination policy
 
-Production English uses the full four-row NOV2 dialogue buffer before requiring a continuation whenever the source control is only Japanese page geometry.
+Production English uses the recovered four-row NOV2 dialogue buffer efficiently
+instead of preserving Japanese presentation breaks mechanically. The renderer has 24
+visible columns, two staging bytes per glyph, and four `$30`-byte rows. English layout
+regenerates ordinary row advances and row-four scrolling while preserving controls
+that still carry timing, section, or speaker semantics.
 
-`CTRL:2` has mixed behavior in the recovered script: it can represent an ordinary page/box transition or a meaningful speaker/timing boundary. Production layout therefore demotes a `CTRL:2` only when the first English layout proves that it interrupts a continuous phrase and the following chunk does not begin a new speaker. Strong sentence/section breaks and speaker transitions remain preserved.
+For the complete runtime model, see the
+[text and graphics reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md#9-dialogue-renderer-geometry).
 
-Controls `1`, `3`, and `6` remain mandatory semantic controls and must stay in source order. The production validator permits only source `CTRL:2` values to be omitted; it rejects invented or reordered semantic controls.
+## Regenerated presentation geometry
 
-Regression coverage includes the TT1A personality-result case that previously stopped after two visible rows and the Maradul Barao Garadura chant, whose strong `CTRL:2` pause remains intact.
+Interior `CTRL:0` and `CTRL:4` values are Japanese presentation geometry. Production
+layout discards those source row choices and greedily reflows the reviewed English.
+It inserts `CTRL:0` while advancing through the first four physical rows and uses
+`CTRL:4` when another visible row requires the native scroll behavior. Leading and
+trailing layout controls are retained when they affect record entry or exit.
+
+## `CTRL:2`: mixed semantic/page behavior
+
+`CTRL:2` can represent an ordinary page transition or a meaningful speaker/timing
+boundary. Production layout may omit a source `CTRL:2` only when the English layout
+proves that it interrupts continuous prose. It must not demote a speaker-changing
+`CTRL:2`, invent a new `CTRL:2`, or reorder surviving semantic controls.
+
+Strong sentence/section boundaries and source speaker transitions remain preserved.
+If a speaker-changing boundary cannot fit within the native two-row re-entry limit,
+the build fails closed so the wording can be shortened explicitly instead of moving
+the control into the wrong turn.
+
+## `CTRL:1`: mandatory by default, ten exact audited exceptions
+
+`CTRL:1` normally remains a mandatory semantic/input wait. Playtesting exposed one
+narrow failure mode, however: several Japanese records used `CTRL:1` as a short
+presentation pause even though the corresponding English is one continuous thought
+and the four-row box still has unused space.
+
+The production layer therefore demotes `CTRL:1` **only** for these ten audited stable
+record IDs:
+
+- `TT1A/g0/r5`
+- `TT1B/g0/r6`
+- `TT1B/g2/r11`
+- `TT1B/g2/r29`
+- `T25/g0/r24`
+- `T25/g1/r12`
+- `TT3A/g0/r1`
+- `TT4/g0/r30`
+- `TT6B/g0/r6`
+- `TT6C/g2/r5`
+
+This exception does **not** modify the certified base translation maps. Each record is
+registered in `production_translation.py` together with its exact certified base
+template. During production layout that one `CTRL:1` is treated as regenerable row
+geometry. If the stable ID's base template changes, contains a different number of
+`CTRL:1` values, or otherwise drifts from the audited source, the build fails and
+requires a fresh audit.
+
+All non-audited `CTRL:1` values remain mandatory. This record-scoped, source-locked
+pattern is the required model for any future control exception; do not generalize an
+exception from one record to every occurrence of the same control number.
+
+## Other semantic controls
+
+`CTRL:3` and `CTRL:6` remain mandatory and preserve source order. `CTRL:5` is the
+record separator in the packed stream and is never an ordinary translated control.
+`CTRL:7` is representable by the decoder but has no generic production-layout rule;
+a future edit must recover the specific call-site behavior before relying on it.
+
+## Regression intent
+
+Coverage protects both sides of the policy:
+
+- the ten audited presentation-only `CTRL:1` waits disappear only in production;
+- unrelated dramatic, speaker-change, and timing `CTRL:1` waits remain intact;
+- a source-template change invalidates the corresponding exception;
+- source speaker-changing `CTRL:2` boundaries remain attached to the correct turn;
+- the Maradul Barao Garadura chant retains its intentional strong pause;
+- every production record is checked against the four-row renderer staging model.
+
+Manual playtesting remains necessary because static layout checks cannot determine the
+narrative intent of a newly encountered wait. When a suspicious pause is found,
+record the stable ID and source topology first, then decide whether it is semantic or
+presentation-only from runtime context.

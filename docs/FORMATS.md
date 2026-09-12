@@ -4,6 +4,10 @@ All hexadecimal offsets in the source are file-relative unless a name
 explicitly says `address` or the documentation uses a dollar-prefixed CPU/PPU
 address such as `$A200` or `$2000`.
 
+For the runtime relationships between these formats, loaded overlays, NOV2 renderer
+state, PPU destinations, and safe debugging points, see the
+[reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md).
+
 ## Archival FDS image
 
 The parser supports both common forms:
@@ -139,15 +143,24 @@ The tools intentionally treat controls as structural tokens instead of
 guessing a universal linguistic meaning for every value. Their effect can
 depend on the calling routine and scene.
 
-The safe editing rule is:
+There are two related but different editing contracts:
 
-- preserve the ordered control values from the Japanese record;
-- do not translate, remove, duplicate, or reorder them;
-- preserve intended page/line/pause timing when rewriting the visible text.
+1. **Certified source/base topology:** extraction, source records, and the base
+   `work/translations/*.json` maps preserve the recovered ordered control values.
+   Do not casually remove, duplicate, or reorder controls in those authority layers.
+2. **Production materialization:** `production_translation.py` may regenerate
+   interior `CTRL:0`/`CTRL:4` presentation geometry, omit `CTRL:2` only under the
+   documented continuity/speaker rules, and demote `CTRL:1` only for the exact
+   source-locked audited record set. Other semantic controls remain in source order.
+
+The distinction is deliberate: source evidence stays intact while English-specific
+layout policy is explicit, reviewable, and fail-closed. See
+[English dialogue pagination policy](ENGLISH_PAGINATION_POLICY.md) and the
+[reverse-engineering renderer model](REVERSE_ENGINEERING_GUIDE.md#9-dialogue-renderer-geometry).
 
 The detailed workbook uses `⟦CTRL:n⟧` for editorial display in some fields;
-patch-oriented scenario JSON uses `{CTRL:n}`. Conversion code must keep the
-numeric sequence identical.
+patch-oriented scenario JSON uses `{CTRL:n}`. Conversion code must preserve the
+intended numeric control topology for the layer it represents.
 
 ## Fixed-address packed text
 
@@ -186,9 +199,16 @@ NOV4 stores inverse one-bit glyph rows at:
 NOV4 file offset $1B7D + tile_id * 8
 ```
 
-`font.py` uses a deterministic 5x7 design inside each 8x8 tile. A set pixel in
-the source pattern clears a bit in the inverse stored row. Uppercase and
+`font.py` uses a deterministic five-pixel-wide design in an explicit 8x8 cell.
+Most glyphs occupy seven rows; true lowercase descenders may use the eighth row so
+they can keep the same x-height as ordinary lowercase text. A set pixel in the
+logical source pattern clears a bit in the inverse stored row. Uppercase and
 lowercase have separate glyphs.
+
+Not every apparent eight-byte slot in that geometry is writable font storage. The
+post-title graphics loader also consumes slots `$98-$AF` as direct 2bpp graphics;
+active English font-source writes are restricted to the recovered `$B0-$FE` range.
+See [NOV4 font-source safety](NOV4_FONT_SOURCE_SAFETY.md).
 
 ### NES CHR
 
@@ -228,8 +248,8 @@ hand tiles, frame layouts, or animation timing.
 
 Background IDs `$00-$EB` belong to the title; `$EC-$FF` remain the original
 hand source. Nintendo temporarily owns `$B0-$D5`, which are restored from base
-CHR immediately before the swipe. Sixty IDs below `$EC` are then replaced by
-a contiguous 880-byte CHR upload at the final transition, converting the exact
+CHR immediately before the swipe. Fifty-three IDs below `$EC` are then replaced
+by a contiguous 848-byte CHR upload at the final transition, converting the exact
 slide table into the exact final table without lossy pattern merging.
 
 ## Source guards

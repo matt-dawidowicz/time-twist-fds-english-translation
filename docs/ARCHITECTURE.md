@@ -8,6 +8,12 @@ lossless by default: parsing and serializing an unmodified input must reproduce
 the original bytes, and patch functions reject inputs that do not match the
 recovered source layout.
 
+For the engine-level runtime model behind these transforms, including FDS/CPU/PPU
+coordinate systems, NOV2 decoder entry points, renderer cursor behavior, menu page
+addressing, font/CHR ownership, title NMI sequencing, debugger checkpoints, and the
+recommended evidence-to-fix workflow, see the
+[reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md).
+
 The canonical playable pipeline is:
 
 ```text
@@ -87,7 +93,9 @@ followed by data or code that must remain at its original CPU address.
 
 1. `production_translation.py` merges the locked base, review JSON, and explicit
    overrides, then regenerates English row/scroll geometry without changing the
-   approved words or native semantic controls.
+   approved words. Native semantic controls are retained under the explicit
+   production policy, including the small source-locked set of audited
+   presentation-only waits.
 2. `encode_english()` converts the materialized text to semantic symbols.
 3. `entropy_compression.py` chooses a deterministic nested dictionary under the
    frozen entropy cost model; source-analysis flat compression is not consulted.
@@ -147,7 +155,11 @@ The following are architectural requirements, not optional style preferences:
 - Dictionary references are one-based. Native source decoding retains the
   recovered native range; the canonical entropy runtime supports the frozen
   production dictionary range through 255 with bounded backward nesting.
-- Control-code order must match the Japanese record.
+- Semantic controls must remain compatible with the certified source topology
+  and explicit production policy. Interior `CTRL:0`/`CTRL:4` presentation
+  geometry may be regenerated, `CTRL:2` may be omitted only by the documented
+  continuity rules, and `CTRL:1` may be demoted only for the exact source-locked
+  audited record set. Other semantic controls remain in source order.
 - All visible English glyphs must exist in the installed font.
 - Ordinary dialogue segments must fit the 24-column renderer unless a
   specifically tested record uses safe wrapping.
@@ -173,6 +185,10 @@ When adding a constant, document:
 - how the source bytes were established;
 - what must remain fixed after the patch; and
 - which test detects a mismatch.
+
+For newly recovered engine behavior, also record the caller/pointer chain, relevant
+runtime state, emulator evidence, and remaining unknowns using the template in the
+[reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md#18-what-to-document-when-a-new-engine-fact-is-discovered).
 
 ## Release-control architecture
 
