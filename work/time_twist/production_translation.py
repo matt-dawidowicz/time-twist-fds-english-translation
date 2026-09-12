@@ -51,9 +51,7 @@ PRESENTATION_ONLY_CTRL1_TEMPLATES: dict[str, str] = {
     "TT6B/g0/r6": "Joints ache. Hungry...{CTRL:1}Throat's bone-dry...",
     "TT6C/g2/r5": "Pencil in its hand.{CTRL:1}Died while writing.",
 }
-PRESENTATION_ONLY_CTRL1_RECORDS = frozenset(
-    PRESENTATION_ONLY_CTRL1_TEMPLATES
-)
+PRESENTATION_ONLY_CTRL1_RECORDS = frozenset(PRESENTATION_ONLY_CTRL1_TEMPLATES)
 _TEMPLATE_TO_PRESENTATION_ONLY_RECORD = {
     template: record_id
     for record_id, template in PRESENTATION_ONLY_CTRL1_TEMPLATES.items()
@@ -103,11 +101,10 @@ def validate_production_control_sequence(source: str, production: str) -> None:
     of the ten locked certified base templates above.
     """
     record_id = _TEMPLATE_TO_PRESENTATION_ONLY_RECORD.get(source)
-    effective_source = (
-        _demote_single_ctrl1(record_id, source)
-        if record_id is not None
-        else source
-    )
+    if record_id is None:
+        effective_source = source
+    else:
+        effective_source = _demote_single_ctrl1(record_id, source)
     _core.validate_production_control_sequence(effective_source, production)
 
 
