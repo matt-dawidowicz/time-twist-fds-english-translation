@@ -112,6 +112,35 @@ The retail scripts use the following forms from the shared `$0x/$Fx` VM memory/A
 
 No source-reachable `$Fx` command occurs in the recovered gameplay programs.
 
+## `D2` dynamically clones and flips background CHR tiles
+
+`D2` is the only source-reachable class-D opcode. Its payload is a count followed by three-byte records:
+
+```text
+D2 count
+repeat count times:
+    source_tile
+    destination_tile
+    transform_flags
+```
+
+The native path is **VERIFIED** from NOV2 `$78F6`, `$7972`, `$95F2`, and `$9671`:
+
+1. the byte after `D2` becomes the record count at `$078C`;
+2. each record is staged as source tile `$0789`, destination tile `$078A`, and flags `$078B`;
+3. `$95F2` reads the source background-pattern tile from PPU pattern table 1 into a 16-byte scratch tile at `$06F0-$06FF`;
+4. `$9671` clones that tile into `$0700-$070F` and applies the requested transformations;
+5. `$95F2` writes the resulting 16-byte tile to the destination tile in pattern table 1.
+
+The transformation bits have exact geometric meanings:
+
+- `$40` reverses the bits in every CHR row byte, producing a **horizontal flip**;
+- `$80` reverses the eight row bytes independently in both bitplanes, producing a **vertical flip**;
+- `$C0` applies both transformations;
+- with neither bit set, the record is an unflipped runtime tile clone.
+
+This command therefore avoids storing redundant mirrored background tiles in CHR data and permits scripts to synthesize transformed copies directly in background pattern memory.
+
 ## Retail VM is narrower than the interpreter
 
 The native interpreter implements sixteen high-nibble classes, but shipped source usage is much narrower. In particular:
@@ -130,7 +159,7 @@ This distinction matters: engine capability and retail source language are not i
 The gameplay VM is structurally recovered. The remaining work is refinement rather than discovery:
 
 1. correlate individual `$07E0-$07E3` values with exact music/SFX identities;
-2. finish stable low-level names for the remaining source-used `Bx` forms and `D2` payload semantics;
+2. finish stable low-level names for the remaining source-used `Bx` forms;
 3. identify the real runtime conditions that enter the 327 bytes of non-reached source islands, if any;
 4. assign human-facing world directions to the already-verified opposing `$FD/$FE` hotspot sentinels;
 5. finish the few high-bit palette-animation control semantics.
