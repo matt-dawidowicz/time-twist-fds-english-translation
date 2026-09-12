@@ -35,26 +35,33 @@ not replacement sources.
 1. [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md)
 2. [Architecture](ARCHITECTURE.md)
 3. [Formats](FORMATS.md)
-4. [Development guide](DEVELOPMENT.md)
-5. [Module map](MODULE_MAP.md)
-6. [CLI reference](CLI_REFERENCE.md)
-7. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
-8. [Private fixtures](PRIVATE_FIXTURES.md)
+4. [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md)
+5. [Development guide](DEVELOPMENT.md)
+6. [Module map](MODULE_MAP.md)
+7. [CLI reference](CLI_REFERENCE.md)
+8. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
+9. [Private fixtures](PRIVATE_FIXTURES.md)
 
 The reverse-engineering guide is the maintainer-level runtime map: it connects FDS
 file offsets, CPU load addresses, packed-text streams, NOV2 renderer behavior,
 scenario/menu addressing, font/CHR ownership, NOV4 title PPU/NMI sequencing, known
 failure modes, debugger breakpoints, and a repeatable evidence-to-fix workflow.
 
+The gameplay graphics reference records the recovered `OB*`/`OBJ*`/`BG*` raw-CHR
+format, PPU destinations, NOV2 scene file-ID table, and partial-overlay behavior. It
+also separates those verified file-level facts from the still-unrecovered
+nametable/metasprite/palette metadata that consumes the tiles.
+
 Candidate and strict release builds use the single source-locked release builder.
 Low-level parsing and inspection commands remain available, but obsolete standalone
 bank/UI construction commands are no longer part of the public CLI.
 
-## Menus, fixed UI, title, and font
+## Menus, fixed UI, title, font, and graphics
 
 - [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md)
 - [English dialogue pagination policy](ENGLISH_PAGINATION_POLICY.md)
 - [NOV4 font-source safety](NOV4_FONT_SOURCE_SAFETY.md)
+- [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md)
 - [Title sequence](TITLE_SEQUENCE.md)
 - [Runtime playtest matrix](PLAYTEST_MATRIX.md)
 
