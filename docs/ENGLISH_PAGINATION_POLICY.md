@@ -61,12 +61,30 @@ All non-audited `CTRL:1` values remain mandatory. This record-scoped, source-loc
 pattern is the required model for any future control exception; do not generalize an
 exception from one record to every occurrence of the same control number.
 
+## `CTRL:7`: runtime alias recovered, but absent from source text
+
+The native NOV2 control dispatcher at CPU `$8242` explicitly branches on values
+`1, 2, 4, 3, 5, 6`. Values `0` and `7` both fall through to the same row-advance
+routine at `$826E`. At the decoder/runtime level, `CTRL:7` is therefore a verified
+operational alias of `CTRL:0` for this text path.
+
+A complete audit of the 13 recovered scenario banks, their reachable source
+dictionaries, and the 11 large fixed-menu tables finds **zero source `CTRL:7`
+occurrences**. There is therefore no evidence that the game script assigns a distinct
+narrative or timing meaning to control 7.
+
+Production policy intentionally remains stricter than the low-level decoder: it does
+not invent or normalize text to `CTRL:7`. If a newly recovered fixed stream contains a
+7, treat its runtime geometry as known but its authorial intent as a fresh call-site
+audit.
+
+The repeatable binary/source check lives in
+`work/tools/audit_recovered_engine_surfaces.py`.
+
 ## Other semantic controls
 
 `CTRL:3` and `CTRL:6` remain mandatory and preserve source order. `CTRL:5` is the
 record separator in the packed stream and is never an ordinary translated control.
-`CTRL:7` is representable by the decoder but has no generic production-layout rule;
-a future edit must recover the specific call-site behavior before relying on it.
 
 ## Regression intent
 
@@ -76,6 +94,8 @@ Coverage protects both sides of the policy:
 - unrelated dramatic, speaker-change, and timing `CTRL:1` waits remain intact;
 - a source-template change invalidates the corresponding exception;
 - source speaker-changing `CTRL:2` boundaries remain attached to the correct turn;
+- `CTRL:7` remains absent from the recovered scenario/menu corpus and is not invented
+  by production layout;
 - the Maradul Barao Garadura chant retains its intentional strong pause;
 - every production record is checked against the four-row renderer staging model.
 
