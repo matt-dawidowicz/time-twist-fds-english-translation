@@ -90,14 +90,14 @@ class EntropyFixedUiTests(unittest.TestCase):
         self.assertEqual(len(tt1a), 80)
         self.assertEqual(
             _sha256(tt1a),
-            "25D9B9DFF381D2E16D17F336FA5EBDF405D8215BF979CF5558EA388553492F25",
+            "BF7C34AF7A86CA0AF9DD6E4704DEA10960CC65BF673C76BCAFFA5B034734E18C",
         )
-        self.assertEqual(sum(map(len, tt1a_entropy_payloads())), 67)
+        self.assertEqual(sum(map(len, tt1a_entropy_payloads())), 62)
         renderer = tt1a_renderer_entropy_payload()
-        self.assertEqual(len(renderer), 60)
+        self.assertEqual(len(renderer), 56)
         self.assertEqual(
             _sha256(renderer),
-            "CA96AE920B0E22B467469180A49D6E342779695B3B0B719CF89C842112E50308",
+            "F6AD97625AEF65DDC48932AA5440939660935B6E2AE929AB30AA7BB0366672D1",
         )
 
         self.assertLessEqual(len(menu), NOV4_MENU_END - NOV4_MENU_START)
@@ -112,9 +112,9 @@ class EntropyFixedUiTests(unittest.TestCase):
         menu, group, dictionary = nov4_entropy_payloads()
         tt1a = tt1a_entropy_payload()
         self.assertEqual(
-            _sha256(_pad(menu, NOV4_MENU_END - NOV4_MENU_START)),
+            _sha256(menu, NOV4_MENU_END - NOV4_MENU_START)),
             "4EA71F675D0700196173AB571E4E4083F0B5F6C7AB68E0B22F45A04008D9B8A1",
-        )
+       )
         self.assertEqual(
             _sha256(_pad(group, NOV4_GROUP_END - NOV4_GROUP_START)),
             "48977FA6BF9B9A949BEE06F9E353D28D598A396B34B4F5DD27CB319A262178B9",
@@ -130,7 +130,7 @@ class EntropyFixedUiTests(unittest.TestCase):
         )
         self.assertEqual(
             _sha256(tt1a),
-            "25D9B9DFF381D2E16D17F336FA5EBDF405D8215BF979CF5558EA388553492F25",
+            "BF7C34AF7A86CA0AF9DD6E4704DEA10960CC65BF673C76BCAFFA5B034734E18C",
         )
 
     def test_nov4_streams_round_trip_to_english_semantics(self) -> None:
@@ -262,7 +262,7 @@ class EntropyFixedUiTests(unittest.TestCase):
         source[TT1A_TABLE_START:TT1A_TABLE_END] = tt1a_entropy_payload()
 
         patched = patched_tt1a_entropy_ui(bytes(source))
-        self.assertEqual(len(patched), len(source) + 60)
+        self.assertEqual(len(patched), len(source) + 56)
         self.assertEqual(patched_tt1a_entropy_ui(patched), patched)
         for offset, address in TT1A_STATIC_POINTERS.items():
             self.assertEqual(
@@ -326,14 +326,14 @@ class EntropyFixedUiTests(unittest.TestCase):
                 "TT1A_choices": {
                     "records": 19,
                     "streams": 19,
-                    "packed_bytes": 67,
+                    "packed_bytes": 62,
                     "capacity_bytes": 80,
                 },
                 "TT1A_renderer": {
                     "records": 19,
                     "streams": 1,
-                    "packed_bytes": 60,
-                    "capacity_bytes": 60,
+                    "packed_bytes": 56,
+                    "capacity_bytes": 56,
                 },
             },
         )
