@@ -136,7 +136,6 @@ class BackgroundMapRecord:
     streams: tuple[BackgroundMapStream, ...]
 
 
-
 def _offset(address: int, *, load_address: int, size: int) -> int:
     """Convert one absolute overlay address to a validated file/RAM offset."""
     offset = address - load_address
@@ -248,7 +247,9 @@ def parse_static_placement_records(
         cursor += 1
         payload_end = cursor + count * 3
         if payload_end > limit:
-            raise GameplayGraphicsError("static placement record crosses table end")
+            raise GameplayGraphicsError(
+                "static placement record crosses table end"
+            )
         placements = tuple(
             StaticPlacement(*data[offset : offset + 3])
             for offset in range(cursor, payload_end, 3)
@@ -324,7 +325,9 @@ def decode_background_map_stream(
         data, start_address, end_address, load_address=load_address
     )
     if cursor + 3 > limit:
-        raise GameplayGraphicsError("background map stream header is truncated")
+        raise GameplayGraphicsError(
+            "background map stream header is truncated"
+        )
     left = data[cursor]
     right = data[cursor + 1]
     start_row = data[cursor + 2]
@@ -344,7 +347,9 @@ def decode_background_map_stream(
                     f"decoded map length {len(tiles)} is not divisible by width {width}"
                 )
             if not tiles and (left, right, start_row) != (0, 0, 0):
-                raise GameplayGraphicsError("noncanonical empty background map stream")
+                raise GameplayGraphicsError(
+                    "noncanonical empty background map stream"
+                )
             return BackgroundMapStream(
                 address=start_address,
                 left=left,
@@ -364,7 +369,9 @@ def decode_background_map_stream(
         tile = data[cursor]
         cursor += 1
         tiles.extend((tile,) * count)
-    raise GameplayGraphicsError("background map stream lacks an $FF terminator")
+    raise GameplayGraphicsError(
+        "background map stream lacks an $FF terminator"
+    )
 
 
 def parse_background_map_records(
@@ -382,7 +389,9 @@ def parse_background_map_records(
     while cursor < limit:
         record_start = cursor
         if cursor + 2 > limit:
-            raise GameplayGraphicsError("background descriptor header is truncated")
+            raise GameplayGraphicsError(
+                "background descriptor header is truncated"
+            )
         byte_length = data[cursor] + ((data[cursor + 1] & 0x3F) << 8)
         variant_count = data[cursor + 1] >> 6
         if byte_length < 2 or variant_count not in (1, 2, 3):
@@ -392,7 +401,9 @@ def parse_background_map_records(
         record_end = record_start + byte_length
         prefix_end = record_start + variant_count * 2
         if record_end > limit or prefix_end > record_end:
-            raise GameplayGraphicsError("background descriptor crosses table end")
+            raise GameplayGraphicsError(
+                "background descriptor crosses table end"
+            )
 
         stream_addresses = [load_address + prefix_end]
         stream_addresses.extend(
@@ -406,7 +417,11 @@ def parse_background_map_records(
         )
         streams: list[BackgroundMapStream] = []
         for stream_address in stream_addresses:
-            if not load_address + record_start <= stream_address < load_address + record_end:
+            if (
+                not load_address + record_start
+                <= stream_address
+                < load_address + record_end
+            ):
                 raise GameplayGraphicsError(
                     "background map pointer escapes its descriptor record"
                 )
