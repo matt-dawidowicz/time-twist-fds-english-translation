@@ -17,7 +17,6 @@ import hashlib
 from pathlib import Path
 
 from PIL import Image
-
 from time_twist.fds import FdsImage
 from time_twist.title import (
     FINAL_NAMETABLE_START,
