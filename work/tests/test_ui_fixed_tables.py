@@ -30,7 +30,7 @@ class FixedMenuCopyTests(unittest.TestCase):
                     11: "Fight",
                     12: "Poke",
                     13: "Walk",
-                    14: "Pot",
+                    14: "Jar",
                     15: "Case",
                     18: "Fiend",
                     20: "Hold",
@@ -47,7 +47,7 @@ class FixedMenuCopyTests(unittest.TestCase):
             ),
             (
                 ui.TT2_FIXED_TEXT_RECORDS,
-                {1: "Talk", 3: "Use", 6: "Move", 18: "Walk", 47: "Move"},
+                {1: "Talk", 3: "Use", 6: "Move", 18: "Walk", 47: "Offer"},
             ),
             (
                 ui.T22_FIXED_TEXT_RECORDS,
@@ -348,7 +348,7 @@ class FixedMenuCopyTests(unittest.TestCase):
                     44: "Cool",
                     48: "None",
                     49: "Oil",
-                    56: "Plant",
+                    56: "Plantain",
                     74: "Fisherman",
                     75: "Kid",
                     94: "Rice",
@@ -576,3 +576,13 @@ class FixedMenuCopyTests(unittest.TestCase):
         self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[4], "Silver coin")
         self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[19], "Olive")
         self.assertEqual(ui.T25_FIXED_TEXT_RECORDS[29], "Picture")
+
+    def test_contextual_menu_localization_audit_is_locked(self) -> None:
+        """Protect the seven source-reviewed contextual menu corrections."""
+        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[14], "Jar")
+        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[38], "Old man")
+        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[40], "Ground")
+        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[41], "Forward")
+        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[51], "Time Belt")
+        self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[47], "Offer")
+        self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[56], "Plantain")
