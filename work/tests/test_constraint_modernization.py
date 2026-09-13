@@ -118,13 +118,19 @@ class PolicyAndHistoryTests(unittest.TestCase):
             root / "docs" / "FORMATS.md",
             root / "docs" / "FULL_WORD_MENU_IMPLEMENTATION.md",
             root / "docs" / "GAMEPLAY_SCRIPT_ENGINE.md",
+            root / "docs" / "GAMEPLAY_GRAPHICS_ENGINE.md",
             root / "docs" / "REVERSE_ENGINEERING_GUIDE.md",
+            root / "docs" / "README.md",
         )
         retired_claims = (
             "TT2` is\ncapped at 96",
             "supports eight glyphs. The production runtime",
             "menu labels must fit six or eight visible glyphs",
             "engine parameter write; exact field semantics incomplete",
+            "exact distinction between hotspot markers `$FD` and `$FE`",
+            "room/sequence/presentation-state table; higher-level semantics still incomplete",
+            "script/event pointer table; higher-level semantics still incomplete",
+            "gameplay graphics are unknown",
         )
         for path in maintained:
             text = path.read_text(encoding="utf-8")
@@ -137,12 +143,16 @@ class PolicyAndHistoryTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[2]
         moved = {
             "RUNTIME_BISECT.md": "RUNTIME_BISECT_20260829.md",
-            "GAMEPLAY_VM_COMPLETION_20260912.md": "GAMEPLAY_VM_COMPLETION_20260912.md",
+            "GAMEPLAY_VM_COMPLETION_20260912.md": (
+                "GAMEPLAY_VM_COMPLETION_20260912.md"
+            ),
         }
         for old_name, history_name in moved.items():
             with self.subTest(old_name=old_name):
                 self.assertFalse((root / "docs" / old_name).exists())
-                self.assertTrue((root / "docs" / "history" / history_name).is_file())
+                self.assertTrue(
+                    (root / "docs" / "history" / history_name).is_file()
+                )
 
     def test_constraint_history_is_permanent_and_specific(self) -> None:
         """Fail if cleanup erases the architectural development record."""
