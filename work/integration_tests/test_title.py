@@ -98,8 +98,12 @@ class TitlePatchTests(unittest.TestCase):
 
     def test_definitive_authorities_are_exact(self) -> None:
         """Lock the checked-in IPS-derived final and monochrome authorities."""
-        self.assertEqual(_sha256(self.native_path.read_bytes()), NATIVE_FILE_SHA256)
-        self.assertEqual(_sha256(self.slide_path.read_bytes()), SLIDE_FILE_SHA256)
+        self.assertEqual(
+            _sha256(self.native_path.read_bytes()), NATIVE_FILE_SHA256
+        )
+        self.assertEqual(
+            _sha256(self.slide_path.read_bytes()), SLIDE_FILE_SHA256
+        )
         self.assertEqual(_sha256(self.native.tobytes()), NATIVE_PIXELS_SHA256)
         self.assertEqual(_sha256(self.slide.tobytes()), SLIDE_PIXELS_SHA256)
         self.assertEqual(
@@ -115,9 +119,13 @@ class TitlePatchTests(unittest.TestCase):
         assert final_pixels is not None and slide_pixels is not None
         for y in range(96):
             for x in range(256):
-                self.assertEqual(bool(slide_pixels[x, y]), bool(final_pixels[x, y]))
+                self.assertEqual(
+                    bool(slide_pixels[x, y]), bool(final_pixels[x, y])
+                )
 
-    def test_completed_title_is_pixel_exact_and_keeps_existing_subtitle(self) -> None:
+    def test_completed_title_is_pixel_exact_and_keeps_existing_subtitle(
+        self,
+    ) -> None:
         """Require IPS art above the unchanged subtitle and native lower art."""
         rendered = title._render_split_nametable(
             self.assets.final_nametable,
@@ -128,14 +136,18 @@ class TitlePatchTests(unittest.TestCase):
             self.source, title.FINAL_NAMETABLE_START
         )
         source_chr = self.source[
-            title.TITLE_CHR_OFFSET : title.TITLE_CHR_OFFSET + title.TITLE_CHR_SIZE
+            title.TITLE_CHR_OFFSET : title.TITLE_CHR_OFFSET
+            + title.TITLE_CHR_SIZE
         ]
         original = title._render_indexed_nametable(source_final, source_chr)
         expected = original.copy()
         expected.paste(self.native.crop((0, 0, 256, 97)), (0, 0))
         expected.paste(0, (0, 97, 256, 112))
         subtitle_width = (
-            sum(4 if character == " " else 6 for character in title.DEFAULT_SUBTITLE)
+            sum(
+                4 if character == " " else 6
+                for character in title.DEFAULT_SUBTITLE
+            )
             - 1
         )
         title._draw_text(
@@ -179,7 +191,11 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(len(title.SLIDE_SCROLL_ORIGINS), 21)
         self.assertEqual(title.SLIDE_SCROLL_ORIGINS[-1], 0x100)
         self.assertFalse(
-            any(title.render_slide_logo_frame(self.assets, 0x1F0).get_flattened_data())
+            any(
+                title.render_slide_logo_frame(
+                    self.assets, 0x1F0
+                ).get_flattened_data()
+            )
         )
         completed = title.render_slide_logo_frame(self.assets, 0x100)
         self.assertEqual(
@@ -194,11 +210,15 @@ class TitlePatchTests(unittest.TestCase):
             self.assertFalse(
                 any(
                     pixel != title.TITLE_PALETTE[0]
-                    for pixel in frame.crop((0, 96, 256, 240)).get_flattened_data()
+                    for pixel in frame.crop(
+                        (0, 96, 256, 240)
+                    ).get_flattened_data()
                 )
             )
 
-    def test_source_attribute_tables_and_clock_animation_are_preserved(self) -> None:
+    def test_source_attribute_tables_and_clock_animation_are_preserved(
+        self,
+    ) -> None:
         """Change logo geometry without rewriting native title control data."""
         source_final, _ = title.decode_title_rle(
             self.source, title.FINAL_NAMETABLE_START
@@ -207,20 +227,27 @@ class TitlePatchTests(unittest.TestCase):
             self.source, title.SECOND_NAMETABLE_START
         )
         self.assertEqual(self.assets.final_nametable[960:], source_final[960:])
-        self.assertEqual(self.assets.second_nametable[960:], source_second[960:])
+        self.assertEqual(
+            self.assets.second_nametable[960:], source_second[960:]
+        )
         self.assertEqual(
             _sha256(self.assets.final_nametable[960:]), FINAL_ATTRIBUTES_SHA256
         )
         self.assertEqual(
-            _sha256(self.assets.second_nametable[960:]), SECOND_ATTRIBUTES_SHA256
+            _sha256(self.assets.second_nametable[960:]),
+            SECOND_ATTRIBUTES_SHA256,
         )
         self.assertEqual(
             self.patched[title.CLOCK_SOURCE_OFFSET : title.CLOCK_SOURCE_END],
             self.source[title.CLOCK_SOURCE_OFFSET : title.CLOCK_SOURCE_END],
         )
         self.assertEqual(
-            self.patched[title.CLOCK_METASPRITE_START : title.CLOCK_METASPRITE_END],
-            self.source[title.CLOCK_METASPRITE_START : title.CLOCK_METASPRITE_END],
+            self.patched[
+                title.CLOCK_METASPRITE_START : title.CLOCK_METASPRITE_END
+            ],
+            self.source[
+                title.CLOCK_METASPRITE_START : title.CLOCK_METASPRITE_END
+            ],
         )
 
     def test_clock_origin_matches_definitive_ips(self) -> None:
@@ -235,7 +262,8 @@ class TitlePatchTests(unittest.TestCase):
         )
         self.assertEqual(
             self.patched[
-                title.CLOCK_HAND_ORIGINS_OFFSET : title.CLOCK_HAND_ORIGINS_OFFSET + 7
+                title.CLOCK_HAND_ORIGINS_OFFSET : title.CLOCK_HAND_ORIGINS_OFFSET
+                + 7
             ],
             title.CLOCK_HAND_ORIGINS_PATCH,
         )
@@ -244,7 +272,9 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual((new[0] - old[0], new[2] - old[2]), (-16, 2))
         self.assertEqual((new[4] - old[4], new[6] - old[6]), (-16, 2))
 
-    def test_relocated_stream_is_exact_legal_and_within_nov4_memory(self) -> None:
+    def test_relocated_stream_is_exact_legal_and_within_nov4_memory(
+        self,
+    ) -> None:
         """Lock deterministic RLE framing and the resident NOV3 boundary."""
         layout = self._layout()
         stream = layout["stream"]
@@ -257,7 +287,8 @@ class TitlePatchTests(unittest.TestCase):
         self.assertEqual(self.patched[terminator], 0xFF)
         self.assertEqual(end, len(self.patched))
         self.assertLess(
-            title.NOV4_LOAD_ADDRESS + len(self.patched), title.NOV3_LOAD_ADDRESS
+            title.NOV4_LOAD_ADDRESS + len(self.patched),
+            title.NOV3_LOAD_ADDRESS,
         )
         self.assertEqual(
             title.build_title_assets(
