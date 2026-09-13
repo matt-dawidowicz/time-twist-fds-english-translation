@@ -1,0 +1,37 @@
+name: regenerate-review-artifacts-temp
+
+on:
+  push:
+    branches:
+      - fix/contextual-menu-localization-20260912
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - run: python work/generate_bilingual_comparison_ci.py
+      - run: python work/generate_translation_workbook.py
+      - name: Collect generated diff
+        shell: bash
+        run: |
+          rm -rf /tmp/generated-diff
+          mkdir -p /tmp/generated-diff
+          git diff --name-only -- outputs work/translation_workbook_banks > /tmp/generated-files.txt
+          while IFS= read -r file; do
+            [ -n "$file" ] || continue
+            mkdir -p "/tmp/generated-diff/$(dirname "$file")"
+            cp "$file" "/tmp/generated-diff/$file"
+          done < /tmp/generated-files.txt
+          cat /tmp/generated-files.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: regenerated-review-artifacts
+          path: /tmp/generated-diff
+          if-no-files-found: error
