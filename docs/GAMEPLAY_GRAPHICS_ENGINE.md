@@ -12,9 +12,12 @@ The current model is now substantially recovered:
 - `$A202` selects actor spawn/layout records;
 - `$A208` selects palette-definition records;
 - `$A20C` selects hotspot rectangles;
-- `$A21E` selects direct background nametable-patch descriptors and RLE streams.
+- `$A21C` selects palette-animation sequences;
+- `$A21E` selects direct background nametable-patch descriptors and RLE streams;
+- `$A220` is the gameplay-script label/subroutine pointer table;
+- `$A22E/$A230` select actor animation and motion streams.
 
-The main remaining unknowns are now semantic rather than structural: the exact distinction between hotspot markers `$FD` and `$FE`, complete higher-level naming for several script/state tables, and the full meaning of palette tag bits beyond their verified destination-selection role.
+The main remaining unknowns are now value-level rather than structural: human-facing world-direction names for the verified opposing `$FD/$FE` hotspot sentinels, exact narrative names for a few source-used gameplay commands, and the full meaning of palette tag/control bits beyond their verified structural behavior.
 
 For a repeatable source audit, run:
 
@@ -133,20 +136,22 @@ The active `$A200` overlay begins with a dense pointer header. The following mea
 | `$A204` | metasprite-definition table start |
 | `$A208` | palette-definition table start |
 | `$A20C` | hotspot-rectangle table start |
+| `$A20E` | optional indexed predicate-expression table base; native capability, unused by recovered retail gameplay |
 | `$A210/$A212` | fixed-menu secondary table bases |
 | `$A214` | fixed-menu record-zero base; also hotspot-table end |
 | `$A216` | scenario dictionary |
 | `$A21A` | fixed-menu page-pointer table |
-| `$A21C` | room/sequence/presentation-state table; higher-level semantics still incomplete |
+| `$A21C` | palette-animation table base |
 | `$A21E` | gameplay background nametable-patch descriptor table |
-| `$A220` | script/event pointer table; higher-level semantics still incomplete |
-| `$A222` | active script/event stream start |
+| `$A220` | script label/subroutine pointer table |
+| `$A222` | initial/active script entry pointer |
 | `$A224` | scenario group-pointer table |
 | `$A226` | scenario group-zero pointer |
-| `$A22C` | actor-spawn table end; following animation/motion table start |
-| `$A22E/$A230` | additional animation/motion lookup tables; exact higher-level naming incomplete |
+| `$A22C` | actor-spawn table end; two packed animation/motion selectors per actor type begin here |
+| `$A22E` | metasprite-animation stream pointer table |
+| `$A230` | motion/velocity stream pointer table |
 
-`$A20E` is also consumed by the script/predicate/action machinery, but its full semantic name is intentionally left unresolved.
+The maintained gameplay-script reference contains the source-reachability and opcode semantics for these tables. `$A20E` is a real native engine capability, but every recovered retail scene composes it as `$0000` and no reachable retail command uses its indexed predicate forms.
 
 ## 6. OAM and metasprite engine
 
@@ -334,7 +339,7 @@ repeat count times:
 
 NOV2 converts the player/world position into grid coordinates, checks X and Y against the rectangle bounds, and masks the high bit of the left byte as a contextual flag.
 
-The fourth byte normally behaves as the inclusive bottom bound. Values `$FD` and `$FE` are explicitly recognized as special return markers instead of ordinary Y bounds. Their distinct higher-level meanings are still unknown and should remain labeled as such.
+The fourth byte normally behaves as the inclusive bottom bound. Values `$FD` and `$FE` are explicitly recognized as successful terminal results instead of ordinary Y bounds. The exploration state then accepts them in opposite direction/state cases: one path rejects `$FE` but permits `$FD`, while the opposite path rejects `$FD` but permits `$FE`. Their verified binary role is therefore **opposing directional/one-way boundary sentinels**. The human-facing world-direction names remain intentionally unassigned until controller/world-axis correlation is proven.
 
 Recovered nonempty tables include TT1B (23 rectangles), TT2 (11), T22 (23), TT3A (9), TT4 (9), and TT6B (7).
 
@@ -352,15 +357,15 @@ One selector path updates the half associated with staging flag `$30|=$80`; the 
 
 The binary structure and destination-selection mechanism are verified. The project does not yet assign more specific semantic names to every high-bit tag value because doing so is unnecessary for safe structural editing and has not been separately proven.
 
+`$A21C/$A21D` is a separate palette-animation table base. NOV2 `$90E8` expands the selected sequence and `$91AD` advances it frame by frame, feeding background/sprite palette record selectors back through the `$A208` palette loader. Normal durations use the low seven bits; `$7F` in the sequence repeat/control byte means indefinite cycling. `$7E` and high-bit duration/control forms remain the unrecovered value-level edge cases.
+
 ## 12. What is still unknown
 
 The old broad statement “gameplay graphics are unknown” is no longer accurate. The remaining unknowns are narrower:
 
-- exact gameplay meaning of hotspot special markers `$FD` versus `$FE`;
-- complete semantic naming of `$A20E`'s script/predicate/action table;
-- complete semantic naming of `$A21C`'s room/sequence/presentation-state table;
-- higher-level semantics of the `$A220` event pointers and `$A22E/$A230` animation/motion tables beyond their structural roles;
-- more specific naming of palette high-bit selector tags;
+- human-facing world-direction names for the verified opposing `$FD/$FE` one-way boundary sentinels;
+- higher-level narrative names for a few source-used exploration commands whose low-level state effects are already recovered;
+- more specific naming of palette high-bit selector tags and the remaining `$A21C` high-bit control forms;
 - whether any separate metatile abstraction exists in another path. The recovered `$A21E` background engine itself expands direct tile IDs and does not need one.
 
 These are now appropriate targets for later reverse engineering. None blocks ordinary size-neutral CHR corrections, metasprite edits, actor placement audits, direct map-tile fixes, or palette-table analysis.
