@@ -107,7 +107,9 @@ class PolicyAndHistoryTests(unittest.TestCase):
     def test_constraint_history_is_permanent_and_specific(self) -> None:
         """Fail if cleanup erases the architectural development record."""
         root = Path(__file__).resolve().parents[2]
-        history = root / "docs" / "history" / "CONSTRAINT_MODERNIZATION_20260913.md"
+        history = (
+            root / "docs" / "history" / "CONSTRAINT_MODERNIZATION_20260913.md"
+        )
         policy = root / "docs" / "history" / "README.md"
         index = root / "docs" / "README.md"
         self.assertTrue(history.is_file())
