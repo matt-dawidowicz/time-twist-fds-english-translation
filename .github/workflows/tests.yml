@@ -50,10 +50,7 @@ jobs:
             work/build/production_translations
             work/build/production-source.zip
           if-no-files-found: error
-      - name: Show exact Black diff
-        run: |
-          python -m black --diff work
-          exit 1
+      - run: python -m black --check work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
