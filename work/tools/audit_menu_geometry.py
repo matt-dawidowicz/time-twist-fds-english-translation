@@ -48,7 +48,9 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
                 "bank": bank_name,
                 "labels": len(labels),
                 "descriptors": len(descriptors),
-                "max_descriptor_choices": max(map(len, descriptors), default=0),
+                "max_descriptor_choices": max(
+                    map(len, descriptors), default=0
+                ),
                 "possible_compacted_pairs": len(named_pairs),
             }
         )
