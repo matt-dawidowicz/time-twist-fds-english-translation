@@ -214,9 +214,10 @@ runtime format and is not a harmless compressor tweak.
 | 15 | `11001` | 5 | extended 37-63 |
 
 The runtime ABI can address dictionary entries through 255. The current production
-optimizer is deliberately tighter: normal banks search up to 128 entries, `TT2` is
-capped at 96, dictionary phrases are capped at 12 grammar tokens, and nesting depth
-is capped at 4.
+optimizer searches up to 128 entries for every scenario bank, caps dictionary phrases
+at 12 grammar tokens, and caps nesting depth at 4. The former TT2-specific 96-entry
+exception was removed after source-backed benchmarking showed the normal 128-entry
+policy was safe and slightly smaller.
 
 ### The framing rule that caused several historical failures
 
