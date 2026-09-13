@@ -61,7 +61,11 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
             }
             for left, right in all_named_pairs
         ),
-        key=lambda row: (-int(row["combined_glyphs"]), str(row["left"]), str(row["right"])),
+        key=lambda row: (
+            -int(row["combined_glyphs"]),
+            str(row["left"]),
+            str(row["right"]),
+        ),
     )
     if total_labels != 721:
         raise ValueError(f"expected 721 fixed labels, audited {total_labels}")
