@@ -130,7 +130,7 @@ class PolicyAndHistoryTests(unittest.TestCase):
             "exact distinction between hotspot markers `$FD` and `$FE`",
             "room/sequence/presentation-state table; higher-level semantics still incomplete",
             "script/event pointer table; higher-level semantics still incomplete",
-            "gameplay graphics are unknown",
+            "still-unrecovered binary metadata",
         )
         for path in maintained:
             text = path.read_text(encoding="utf-8")
