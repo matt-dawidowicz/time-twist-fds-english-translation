@@ -17,8 +17,8 @@ from tempfile import TemporaryDirectory
 from time_twist import ui
 from time_twist.compression import expand_dictionary_symbols
 from time_twist.english import render_english
-from time_twist.menu_geometry import validate_menu_label
 from time_twist.fds import FdsImage
+from time_twist.menu_geometry import validate_menu_label
 from time_twist.release import SCENARIO_LOCATIONS
 from time_twist.scenario import parse_scenario_bank
 from time_twist.textcodec import SymbolKind, split_records
