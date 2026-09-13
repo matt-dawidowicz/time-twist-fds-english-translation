@@ -35,6 +35,7 @@ class FixedMenuAuditToolTests(unittest.TestCase):
         """Prevent a silent producer/consumer schema drift."""
         targets = audit_full_word_menu_targets.rows()
         self.assertGreater(len(targets), 0)
+        self.assertTrue(all(row["width_ok"] for row in targets))
         self.assertEqual(
             set(targets[0]),
             {

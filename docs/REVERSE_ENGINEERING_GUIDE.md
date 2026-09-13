@@ -358,15 +358,25 @@ safe to guess.
 
 ### Menu renderer width behavior
 
-The recovered visible menu surface supports eight glyphs. The production runtime
-patches two native six-glyph row limits to eight and replaces the fixed selection
-bracket width with a dynamic width:
+The native renderer used fixed six-glyph geometry. An early English patch raised two
+loop counts to eight, but later reverse engineering and MesenCE testing proved that
+eight was only a conservative implementation limit. The production renderer is now
+variable-width:
 
 - when a label finishes decoding, X is exactly twice its visible glyph count;
-- the runtime stores that width in the existing `$8758-$875F` staging area;
-- the selection helper uses the selected visual slot to derive the right bracket.
+- a width recorder converts that to pixels and stores it at Work RAM
+  `$042D+visual_index`;
+- the first-row draw count comes from that metadata with a nonzero fallback;
+- the paired row reuses the first-row count rather than a fixed literal;
+- the second column is positioned from the corresponding first-column label width;
+- leading and trailing selection cursors use the same width metadata; and
+- the staging clear spans 36 bytes, supporting up to 18 glyphs at two staging bytes
+  per glyph.
 
-Do not store scratch data in `$9390-$93AF`; that region is live palette state.
+For two-column rows, validate actual use-site geometry rather than applying a global
+eight-character rule. The conservative production model allows at most 20 combined
+glyphs and keeps the trailing cursor at or before x=`$F8`. Do not store code or
+scratch data in `$9390-$93AF`; that region is live palette state.
 
 ---
 
@@ -777,12 +787,13 @@ remain intact.
 
 ### Menu text leaves stale garbage at the right edge
 
-Check menu clear tile `$C0` and the eight-glyph renderer. Do not apply the same opaque
-clear to dialogue tails.
+Check menu clear tile `$C0`, the 36-byte variable-width staging clear, and the
+metadata-derived draw count. Do not apply the same opaque clear to dialogue tails.
 
 ### Selection brackets fit short labels but not long labels
 
-Break at `$946B` and `$989F`; inspect the captured width table at `$8758-$875F`.
+Break at `$946B` and `$989F`; inspect the selected width byte at
+`$042D+visual_index`, then verify the derived column/cursor coordinates.
 
 ### A repeating letter/pattern appears in the post-title background
 

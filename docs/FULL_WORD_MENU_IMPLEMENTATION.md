@@ -65,15 +65,19 @@ engine but through the frozen prefix grammar. There is no second Adaptive255 or
 
 ## Dynamic selection brackets
 
-Menu labels can now have different visible widths. The entropy runtime records
-the decoded width of each menu label in the existing staging area and derives
-the selected label's right-bracket coordinate from that width. This replaces
-the old fixed six/eight-glyph span without placing code or scratch state in the
-live `$9390-$93AF` palette region.
+Menu labels can now have different visible widths. The production runtime records
+each decoded label's pixel width at Work RAM `$042D+visual_index` and derives the
+draw count, dynamic second-column placement, and leading/trailing selector positions
+from that metadata. This replaces the old fixed six/eight-glyph span without placing
+code or scratch state in the live `$9390-$93AF` palette region.
 
-The text blitter still caps visible menu labels at the recovered eight-glyph
-surface. Full-word here means the complete configured label, not arbitrary
-unbounded menu prose.
+The reconstructed renderer clears 36 staging bytes, corresponding to **18 glyphs** at
+two staging bytes per glyph. The production validator therefore treats 18 visible
+glyphs as the conservative individual-label ceiling for this renderer architecture.
+Two-column rows are validated from their actual dynamic coordinates; the current
+conservative pair rule is at most 20 combined glyphs with the trailing cursor no
+farther right than x=`$F8`. The former eight-glyph limit was an implementation
+artifact, not an engine or NES hardware maximum.
 
 ## Fixed decoder-visible text
 
@@ -108,7 +112,17 @@ python work/tools/audit_fixed_menu_labels.py `
 ```
 
 Static and binary checks prove that the labels encode and decode exactly. They
-cannot prove every runtime call site. Manual playtesting must still open menus
-across page boundaries, move the cursor through them, select entries, use
-Back/Cancel, save/load, and complete the Zenpen-to-Kouhen disk flow before
-promotion.
+cannot prove every runtime call site. The source-backed geometry audit also parses the recovered `$A210-$A212`
+primary-menu descriptor tables from the original Zenpen and Kouhen images. Across
+the eleven menu banks, 367 descriptors reference all 721 configured labels. Because
+NOV2 `$9803` can compact predicate-surviving choices, the audit over-approximates
+runtime states by testing every order-preserving visible subset through eight
+choices; all resulting two-column pairings must fit the dynamic geometry. Run:
+
+```powershell
+python work/tools/audit_menu_geometry.py ORIGINAL_ZENPEN.fds ORIGINAL_KOUHEN.fds
+```
+
+Manual playtesting must still open menus across page boundaries, move the cursor
+through them, select entries, use Back/Cancel, save/load, and complete the
+Zenpen-to-Kouhen disk flow before promotion.

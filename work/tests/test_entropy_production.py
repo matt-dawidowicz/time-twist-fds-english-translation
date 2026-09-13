@@ -23,14 +23,15 @@ from time_twist.entropy_compression import (
 from time_twist.entropy_runtime import (
     BASE_RUNTIME_PATCHES,
     CATEGORY_CODE_BYTES,
+    DYNAMIC_MENU_LAYOUT_PATCHES,
     ENTROPY_MENU_INIT_CPU_ADDRESS,
-    ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS,
     ENTROPY_POINTER_INIT_CPU_ADDRESS,
     ENTROPY_PREREQUISITE_PATCHES,
     ENTROPY_RUNTIME_PATCHES,
     ENTROPY_SELECTION_SPAN_CPU_ADDRESS,
     FRONTEND_CODE_BYTES,
-    MENU_WIDTH_TABLE_CPU_ADDRESS,
+    MENU_MAX_STAGED_GLYPHS,
+    MENU_WIDTH_WORK_RAM_ADDRESS,
     NOV3_LOAD_ADDRESS,
     PALETTE_CPU_RANGE,
     SCANNER_CODE_BYTES,
@@ -202,18 +203,33 @@ class EntropyProductionTests(unittest.TestCase):
         """Keep the proven pre-entropy renderer repairs byte-identical."""
         self.assertEqual(
             tuple(patch.cpu_address for patch in BASE_RUNTIME_PATCHES),
-            (0x81D3, 0x8378, 0x94BC, 0x94E7, 0x98A3),
+            (0x81D3, 0x8378),
         )
         self.assertEqual(
             tuple(patch.replacement for patch in BASE_RUNTIME_PATCHES),
             (
                 bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
                 bytes.fromhex("B0"),
-                bytes.fromhex("A9 08"),
-                bytes.fromhex("A9 08"),
-                bytes.fromhex("48"),
             ),
         )
+
+    def test_dynamic_menu_layout_patches_are_source_locked(self) -> None:
+        """Freeze the variable-width renderer without touching palette RAM."""
+        self.assertEqual(
+            tuple(patch.cpu_address for patch in DYNAMIC_MENU_LAYOUT_PATCHES),
+            (0x6D8A, 0x6DDC, 0x945D, 0x9481, 0x94E5, 0x9885),
+        )
+        patches = {patch.label: patch for patch in DYNAMIC_MENU_LAYOUT_PATCHES}
+        self.assertEqual(
+            patches["expanded variable-width menu clear span"].replacement,
+            bytes.fromhex("24"),
+        )
+        self.assertIn(
+            bytes.fromhex("BD 2D 04 4A 4A 4A D0 02 A9 06 85 31"),
+            patches["metadata-driven menu renderer geometry"].replacement,
+        )
+        self.assertEqual(MENU_WIDTH_WORK_RAM_ADDRESS, 0x042D)
+        self.assertEqual(MENU_MAX_STAGED_GLYPHS, 18)
 
     def test_entropy_prerequisites_are_only_native_nested_depth(self) -> None:
         """Verify entropy prerequisites are only native nested depth."""
@@ -234,11 +250,10 @@ class EntropyProductionTests(unittest.TestCase):
         """Verify generated 6502 blocks fit and do not overlap."""
         self.assertEqual(SCANNER_CODE_BYTES, 159)
         self.assertEqual(FRONTEND_CODE_BYTES, 64)
-        self.assertEqual(CATEGORY_CODE_BYTES, 70)
+        self.assertEqual(CATEGORY_CODE_BYTES, 59)
         self.assertEqual(ENTROPY_POINTER_INIT_CPU_ADDRESS, 0x8124)
         self.assertEqual(ENTROPY_MENU_INIT_CPU_ADDRESS, 0x812E)
         self.assertEqual(ENTROPY_SELECTION_SPAN_CPU_ADDRESS, 0x8137)
-        self.assertEqual(ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS, 0x821B)
         occupied: set[int] = set()
         for patch in ENTROPY_RUNTIME_PATCHES:
             touched = set(
@@ -262,7 +277,7 @@ class EntropyProductionTests(unittest.TestCase):
         ]
         self.assertEqual(
             _sha256(scanner),
-            "0FCC20BD4DC6ABE4D03B4442009827F524D11BC9638ED0CA40E99F91C10856C6",
+            "7C276057F5E972C3E377AD54B8B7A2BD8FBA9757BF87F89DE219D7D875C61533",
         )
         self.assertEqual(
             _sha256(frontend),
@@ -270,51 +285,53 @@ class EntropyProductionTests(unittest.TestCase):
         )
         self.assertEqual(
             _sha256(category),
-            "5D405463C581155CDED03FBFAE748B6784A7DF09292BCB115DAC09E1DF2BB598",
+            "13BB5546C4DAA3C3D688F07F75FBFFD226725EB9BD72CD6238CBB662308485A2",
         )
 
-    def test_menu_selection_brackets_use_decoded_label_width(self) -> None:
-        """Verify entropy menus place the right bracket from each label width."""
+    def test_menu_selection_brackets_use_work_ram_width_metadata(self) -> None:
+        """Place both menu cursors from the same per-entry pixel width."""
         patches = {patch.label: patch for patch in ENTROPY_RUNTIME_PATCHES}
         scanner = patches["bit-contiguous entropy scanner"].replacement
-        category = patches["entropy prefix-category decoder"].replacement
 
         span_offset = ENTROPY_SELECTION_SPAN_CPU_ADDRESS - 0x80B1
         span_stub = scanner[span_offset : span_offset + 25]
         self.assertEqual(
             span_stub,
             bytes.fromhex(
-                "98 48 A5 98 38 E5 A8 A8 B9 57 87 0A 0A 18 69 08 "
-                "65 14 85 31 68 A8 A5 31 60"
+                "98 48 A4 A8 B9 2D 04 18 69 08 65 14 85 31 "
+                "68 A8 A5 31 60 EA EA EA EA EA EA"
             ),
         )
-        capture_offset = ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS - 0x81E0
-        capture_stub = category[capture_offset : capture_offset + 11]
-        self.assertEqual(
-            capture_stub,
-            bytes.fromhex("8A A4 99 99 57 87 A9 00 85 69 60"),
-        )
-        self.assertEqual(MENU_WIDTH_TABLE_CPU_ADDRESS, 0x8757)
+        self.assertEqual(MENU_WIDTH_WORK_RAM_ADDRESS, 0x042D)
 
-        capture = patches["capture decoded menu label width"]
+        capture = patches["capture decoded menu width in Work RAM"]
         self.assertEqual(capture.cpu_address, 0x946B)
-        self.assertEqual(capture.replacement, bytes.fromhex("20 1B 82 60 EA"))
-        dynamic = patches["dynamic menu selection bracket span"]
+        self.assertEqual(capture.replacement, bytes.fromhex("20 DF 6D 60 EA"))
+        dynamic = patches["dynamic menu trailing cursor span"]
         self.assertEqual(dynamic.cpu_address, 0x989F)
         self.assertEqual(
             dynamic.replacement,
             bytes.fromhex("20 37 81 24 48 85 14"),
         )
 
-        # X is two bytes per decoded glyph. The stub multiplies X by four and
-        # adds one eight-pixel bracket cell: 3 -> $20, 7 -> $40, 8 -> $48.
-        for glyphs, expected_span in ((3, 0x20), (7, 0x40), (8, 0x48)):
-            self.assertEqual((glyphs * 2) * 4 + 8, expected_span)
+        menu_patches = {
+            patch.label: patch for patch in DYNAMIC_MENU_LAYOUT_PATCHES
+        }
+        self.assertTrue(
+            menu_patches["width-aware leading menu cursor"].replacement.startswith(
+                bytes.fromhex("20 8D 6D")
+            )
+        )
+
+        # Pixel metadata stores glyph_count * 8. The trailing helper adds one
+        # tile after the text, so 3/7/18 glyph labels consume 32/64/152 pixels.
+        for glyphs, expected_span in ((3, 0x20), (7, 0x40), (18, 0x98)):
+            self.assertEqual(glyphs * 8 + 8, expected_span)
 
         palette = set(PALETTE_CPU_RANGE)
-        for patch in ENTROPY_RUNTIME_PATCHES:
+        for patch in (*DYNAMIC_MENU_LAYOUT_PATCHES, *ENTROPY_RUNTIME_PATCHES):
             touched = set(
-                range(patch.cpu_address, patch.cpu_address + patch.size)
+                range(patch.cpu_address, patch.cpu_address + len(patch.replacement))
             )
             self.assertTrue(palette.isdisjoint(touched), patch.label)
 

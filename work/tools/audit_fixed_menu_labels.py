@@ -16,7 +16,8 @@ from tempfile import TemporaryDirectory
 
 from time_twist import ui
 from time_twist.compression import expand_dictionary_symbols
-from time_twist.english import render_english, validate_display_width
+from time_twist.english import render_english
+from time_twist.menu_geometry import validate_menu_label
 from time_twist.fds import FdsImage
 from time_twist.release import SCENARIO_LOCATIONS
 from time_twist.scenario import parse_scenario_bank
@@ -150,7 +151,7 @@ def audit(
                 width_ok = True
                 width_error = ""
                 try:
-                    validate_display_width(decoded_label or label)
+                    validate_menu_label(decoded_label or label)
                 except (
                     Exception
                 ) as error:  # pragma: no cover - diagnostic text

@@ -1,7 +1,9 @@
 # Documentation index
 
 The maintained documentation describes the current source-only translation and
-release pipeline. Retired implementation snapshots and commands remain in Git history.
+release pipeline. Exact retired implementation snapshots remain in Git history, while
+important architectural transitions and superseded constraints are also preserved in
+`docs/history/` as permanent engineering records.
 
 ## Start here
 
@@ -41,6 +43,7 @@ not replacement sources.
 7. [CLI reference](CLI_REFERENCE.md)
 8. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
 9. [Private fixtures](PRIVATE_FIXTURES.md)
+10. [Permanent engineering history](history/README.md)
 
 The reverse-engineering guide is the maintainer-level runtime map: it connects FDS
 file offsets, CPU load addresses, packed-text streams, NOV2 renderer behavior,
@@ -93,4 +96,5 @@ archived or generated English string as the playable source.
   recorded edits, and scene checks used by the playtest matrix.
 - [`../audit/third_party/`](../audit/third_party/README.md): completed third-party
   comparison evidence.
+- [Permanent engineering history](history/README.md): preserved architectural transitions, failed experiments, and superseded constraints that must survive ordinary stale-documentation cleanup.
 - Git history: exact deleted code, old command implementations, and prior file states.

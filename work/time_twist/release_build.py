@@ -41,7 +41,7 @@ from .entropy_scenario import (
     validate_entropy_scenario_bank,
 )
 from .entropy_title import patched_nov4_entropy_title
-from .fds import FdsImage, combine_images
+from .fds import SIDE_SIZE, FdsImage, combine_images
 from .font import patched_nov4_font
 from .production_validation import encode_production_english
 from .project import source_dictionary_reference_floor
@@ -62,6 +62,28 @@ from .ui import (
 
 ScenarioGroups = tuple[tuple[tuple[PackedSymbol, ...], ...], ...]
 ScenarioDictionary = tuple[tuple[PackedSymbol, ...], ...]
+
+TWO_SIDE_RELEASE_BYTES = 2 * SIDE_SIZE
+FOUR_SIDE_RELEASE_BYTES = 4 * SIDE_SIZE
+RELEASE_OUTPUT_SIZES = {
+    "zenpen": TWO_SIDE_RELEASE_BYTES,
+    "kouhen": TWO_SIDE_RELEASE_BYTES,
+    "four_side": FOUR_SIDE_RELEASE_BYTES,
+}
+
+
+def _validate_release_output_sizes(output: dict[str, bytes]) -> None:
+    """Enforce the project's exact archival image-size release invariant."""
+    if set(output) != set(RELEASE_OUTPUT_SIZES):
+        raise ReleaseBuildError(
+            f"release outputs differ from required set: {sorted(output)}"
+        )
+    for name, expected in RELEASE_OUTPUT_SIZES.items():
+        actual = len(output[name])
+        if actual != expected:
+            raise ReleaseBuildError(
+                f"{name} must be exactly {expected} bytes, got {actual}"
+            )
 
 
 def _sha256(data: bytes) -> str:
@@ -215,9 +237,7 @@ def _build_variant_layout(
     return layout, menu_bytes
 
 
-ENTROPY_DICTIONARY_ENTRY_CAPS: dict[str, int] = {
-    "TT2": 96,
-}
+ENTROPY_DICTIONARY_ENTRY_CAPS: dict[str, int] = {}
 
 
 def _select_safe_variant(
@@ -518,7 +538,9 @@ def build_release_images(
         "kouhen": kouhen.to_bytes(),
     }
     output["four_side"] = combine_images([zenpen, kouhen]).to_bytes()
+    _validate_release_output_sizes(output)
     manifest: dict[str, object] = {
+        "release_size_invariant_bytes": FOUR_SIDE_RELEASE_BYTES,
         "schema": "Time Twist canonical entropy image build v1",
         "codec": "frozen-entropy-v1",
         "decoder_format": "entropy-only",
