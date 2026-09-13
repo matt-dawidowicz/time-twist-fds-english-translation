@@ -49,9 +49,11 @@ unmodeled relocation rule.
 ## Canonical entropy packing
 
 `release-build` encodes scenario dialogue and full-word menu labels through
-`entropy_compression.py` and `entropy_scenario.py`. The generated dictionary may
-contain up to 255 entries; dictionary definitions can reference earlier entries
-only, keeping expansion acyclic and bounded.
+`entropy_compression.py` and `entropy_scenario.py`. The frozen runtime ABI can
+represent dictionary references 1-255, but the current production optimizer uses
+one explicit **128-entry maximum for every scenario bank**. Dictionary definitions
+can reference earlier entries only, keeping expansion acyclic and bounded; candidate
+phrases are capped at 12 grammar tokens and nesting depth at 4.
 
 Entropy records are **not** the byte-aligned native format. Records inside one
 independently addressed stream are bit-contiguous and pad only at the stream
