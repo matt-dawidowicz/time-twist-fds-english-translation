@@ -117,18 +117,36 @@ class PolicyAndHistoryTests(unittest.TestCase):
             root / "docs" / "ARCHITECTURE.md",
             root / "docs" / "FORMATS.md",
             root / "docs" / "FULL_WORD_MENU_IMPLEMENTATION.md",
+            root / "docs" / "GAMEPLAY_SCRIPT_ENGINE.md",
             root / "docs" / "REVERSE_ENGINEERING_GUIDE.md",
         )
         retired_claims = (
             "TT2` is\ncapped at 96",
             "supports eight glyphs. The production runtime",
             "menu labels must fit six or eight visible glyphs",
+            "engine parameter write; exact field semantics incomplete",
         )
         for path in maintained:
             text = path.read_text(encoding="utf-8")
             for claim in retired_claims:
                 with self.subTest(path=path.name, claim=claim):
                     self.assertNotIn(claim, text)
+
+    def test_superseded_engineering_notes_live_only_in_history(self) -> None:
+        """Keep dated audit/bisect records out of the maintained docs root."""
+        root = Path(__file__).resolve().parents[2]
+        moved = {
+            "RUNTIME_BISECT.md": "RUNTIME_BISECT_20260829.md",
+            "GAMEPLAY_VM_COMPLETION_20260912.md": (
+                "GAMEPLAY_VM_COMPLETION_20260912.md"
+            ),
+        }
+        for old_name, history_name in moved.items():
+            with self.subTest(old_name=old_name):
+                self.assertFalse((root / "docs" / old_name).exists())
+                self.assertTrue(
+                    (root / "docs" / "history" / history_name).is_file()
+                )
 
     def test_constraint_history_is_permanent_and_specific(self) -> None:
         """Fail if cleanup erases the architectural development record."""
