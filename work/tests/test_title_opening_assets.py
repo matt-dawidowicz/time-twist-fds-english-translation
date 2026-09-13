@@ -67,7 +67,10 @@ class TitleOpeningAssetTests(unittest.TestCase):
 
     def test_slide_is_the_same_logo_silhouette_down_to_the_pixel(self) -> None:
         """Require the completed swipe to be the definitive logo in white."""
-        with Image.open(FINAL) as final_source, Image.open(SLIDE) as slide_source:
+        with (
+            Image.open(FINAL) as final_source,
+            Image.open(SLIDE) as slide_source,
+        ):
             final = final_source.copy()
             slide = slide_source.copy()
         self.assertEqual(slide.getbbox(), (9, 23, 246, 96))
