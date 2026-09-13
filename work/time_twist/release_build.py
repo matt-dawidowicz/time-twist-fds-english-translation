@@ -237,9 +237,6 @@ def _build_variant_layout(
     return layout, menu_bytes
 
 
-ENTROPY_DICTIONARY_ENTRY_CAPS: dict[str, int] = {}
-
-
 def _select_safe_variant(
     source: bytes,
     bank,
@@ -251,7 +248,7 @@ def _select_safe_variant(
     base = optimize_entropy_dictionary(
         literal_groups,
         literal_menu,
-        maximum_entries=ENTROPY_DICTIONARY_ENTRY_CAPS.get(bank_name, 128),
+        maximum_entries=128,
         maximum_grammar_tokens=12,
         maximum_nesting_depth=4,
         trial_candidates=8,
@@ -513,9 +510,9 @@ def build_release_images(
     zenpen.sides[0].find_file("NOV2").data = nov2
 
     # The font patch retains a strict whole-bank source whitelist, so keep it
-    # first.  Entropy conversion follows and owns every NOV4 packed-text stream
-    # consumed by NOV2.  Title expansion is last and validates only the title
-    # regions it owns.  The native patched_nov4_ui path is intentionally absent:
+    # first. Entropy conversion follows and owns every NOV4 packed-text stream
+    # consumed by NOV2. Title expansion is last and validates only the title
+    # regions it owns. The native patched_nov4_ui path is intentionally absent:
     # inserting byte-aligned native records here caused the R5 blank START menu.
     nov4 = zenpen.sides[0].find_file("NOV4").data
     nov4 = patched_nov4_font(nov4)
