@@ -16,14 +16,16 @@ from __future__ import annotations
 # retain their individual byte lengths.
 
 # TT1A keeps the blood-type choices in a fixed-address record table before
-# its normal scenario groups.  NOV2 directly references the fourth record at
-# $A465, so every replacement must retain its individual byte length.  The
-# trailing spaces are invisible but preserve all four original addresses.
+# its normal scenario groups. NOV2 directly references the fourth record at
+# $A465, so the fixed-address slots retain their original byte lengths. Keep
+# the semantic labels unpadded: the native and entropy builders pad the slot
+# bytes separately. Semantic trailing spaces are visible to NOV2's dynamic
+# selection-width capture and incorrectly push the right arrow outward.
 TT1A_BLOOD_TYPE_PATCHES = (
-    (0x025B, bytes.fromhex("0F 71 F4"), "A "),
-    (0x025E, bytes.fromhex("CD 6E 3E 80"), "B  "),
-    (0x0262, bytes.fromhex("13 71 F4"), "O "),
-    (0x0265, bytes.fromhex("0F 71 9A DC 7D"), "AB   "),
+    (0x025B, bytes.fromhex("0F 71 F4"), "A"),
+    (0x025E, bytes.fromhex("CD 6E 3E 80"), "B"),
+    (0x0262, bytes.fromhex("13 71 F4"), "O"),
+    (0x0265, bytes.fromhex("0F 71 9A DC 7D"), "AB"),
 )
 
 # The month selector immediately follows the blood-type table.  It first
