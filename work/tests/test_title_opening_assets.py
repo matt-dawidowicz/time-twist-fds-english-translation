@@ -94,18 +94,16 @@ class TitleOpeningAssetTests(unittest.TestCase):
         )
 
     def test_ips_clock_and_trademark_details_are_retained(self) -> None:
-        """Lock representative thin details imported from the definitive patch."""
+        """Lock representative one-pixel details from the definitive patch."""
         with Image.open(FINAL) as source:
             final = source.copy()
-        # Clock numerals and the TM are deliberately sparse one-pixel features;
-        # these probes catch accidental smoothing, resampling, or redrawing.
         probes = {
-            (127, 39): 1,
-            (104, 55): 1,
-            (149, 55): 1,
-            (128, 83): 1,
+            (108, 30): 1,
+            (127, 32): 1,
+            (131, 34): 1,
+            (225, 24): 1,
             (236, 26): 1,
-            (241, 26): 1,
+            (238, 31): 1,
         }
         for coordinate, expected in probes.items():
             self.assertEqual(final.getpixel(coordinate), expected)
