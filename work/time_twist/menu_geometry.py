@@ -74,7 +74,10 @@ def menu_pair_geometry(left: str, right: str) -> MenuPairGeometry:
     right_text_x = RIGHT_TEXT_BASE_AFTER_LEFT_X + GLYPH_PIXELS * left_glyphs
     right_leading = right_text_x - GLYPH_PIXELS
     right_trailing = right_text_x + GLYPH_PIXELS * right_glyphs
-    if combined > MENU_MAX_PAIRED_GLYPHS or right_trailing > RIGHTMOST_SAFE_CURSOR_X:
+    if (
+        combined > MENU_MAX_PAIRED_GLYPHS
+        or right_trailing > RIGHTMOST_SAFE_CURSOR_X
+    ):
         raise MenuGeometryError(
             f"paired menu labels {left!r} / {right!r} use {combined} glyphs; "
             f"right trailing cursor would be x={right_trailing} (safe <= "
