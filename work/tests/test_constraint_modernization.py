@@ -99,7 +99,9 @@ class ReleaseSizeInvariantTests(unittest.TestCase):
 class PolicyAndHistoryTests(unittest.TestCase):
     """Preserve current policy while retaining permanent development history."""
 
-    def test_release_builder_has_no_retired_per_bank_dictionary_caps(self) -> None:
+    def test_release_builder_has_no_retired_per_bank_dictionary_caps(
+        self,
+    ) -> None:
         """Keep the production optimizer on one explicit 128-entry policy."""
         root = Path(__file__).resolve().parents[2]
         source = (root / "work" / "time_twist" / "release_build.py").read_text(
@@ -135,7 +137,10 @@ class PolicyAndHistoryTests(unittest.TestCase):
             root / "docs" / "history" / "CONSTRAINT_MODERNIZATION_20260913.md"
         )
         amendment = (
-            root / "docs" / "history" / "POST_INTEGRATION_VALIDATION_20260913.md"
+            root
+            / "docs"
+            / "history"
+            / "POST_INTEGRATION_VALIDATION_20260913.md"
         )
         policy = root / "docs" / "history" / "README.md"
         index = root / "docs" / "README.md"
