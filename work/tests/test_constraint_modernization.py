@@ -137,16 +137,12 @@ class PolicyAndHistoryTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[2]
         moved = {
             "RUNTIME_BISECT.md": "RUNTIME_BISECT_20260829.md",
-            "GAMEPLAY_VM_COMPLETION_20260912.md": (
-                "GAMEPLAY_VM_COMPLETION_20260912.md"
-            ),
+            "GAMEPLAY_VM_COMPLETION_20260912.md": "GAMEPLAY_VM_COMPLETION_20260912.md",
         }
         for old_name, history_name in moved.items():
             with self.subTest(old_name=old_name):
                 self.assertFalse((root / "docs" / old_name).exists())
-                self.assertTrue(
-                    (root / "docs" / "history" / history_name).is_file()
-                )
+                self.assertTrue((root / "docs" / "history" / history_name).is_file())
 
     def test_constraint_history_is_permanent_and_specific(self) -> None:
         """Fail if cleanup erases the architectural development record."""
