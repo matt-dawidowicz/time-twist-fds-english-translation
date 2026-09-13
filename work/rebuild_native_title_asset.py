@@ -94,7 +94,9 @@ def _apply_ips(source: bytes, patch: bytes) -> bytes:
     return bytes(output)
 
 
-def _indexed_png(image: Image.Image, palette: tuple[tuple[int, int, int], ...]) -> Image.Image:
+def _indexed_png(
+    image: Image.Image, palette: tuple[tuple[int, int, int], ...]
+) -> Image.Image:
     """Return an indexed copy with the explicit production display palette."""
     result = Image.new("P", image.size, 0)
     result.putdata(image.get_flattened_data())
@@ -111,7 +113,9 @@ def build_native_titles(
     zenpen = zenpen_path.read_bytes()
     patch = ips_path.read_bytes()
     if _sha256(zenpen) != BASE_ZENPEN_SHA256:
-        raise ValueError("Zenpen image does not match the definitive logo source")
+        raise ValueError(
+            "Zenpen image does not match the definitive logo source"
+        )
     if _sha256(patch) != DEFINITIVE_IPS_SHA256:
         raise ValueError("IPS does not match the definitive logo patch")
 
@@ -123,7 +127,9 @@ def build_native_titles(
         if entry.name == "NOV4" and entry.load_address == 0xA200
     ]
     if len(matches) != 1:
-        raise ValueError(f"expected one patched NOV4 file, found {len(matches)}")
+        raise ValueError(
+            f"expected one patched NOV4 file, found {len(matches)}"
+        )
     nov4 = matches[0].data
     final_nametable, _ = decode_title_rle(nov4, FINAL_NAMETABLE_START)
     title_chr = nov4[TITLE_CHR_OFFSET : TITLE_CHR_OFFSET + TITLE_CHR_SIZE]
@@ -160,7 +166,9 @@ def _verify_output(final: Image.Image, slide: Image.Image) -> None:
 def main() -> None:
     """Regenerate both checked-in title authorities from maintainer inputs."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("zenpen", type=Path, help="untouched Japanese Zenpen FDS")
+    parser.add_argument(
+        "zenpen", type=Path, help="untouched Japanese Zenpen FDS"
+    )
     parser.add_argument("ips", type=Path, help="definitive new-logo IPS")
     parser.add_argument(
         "--output-dir",
