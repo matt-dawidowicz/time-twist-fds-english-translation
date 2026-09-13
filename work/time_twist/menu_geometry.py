@@ -45,7 +45,9 @@ def menu_glyph_count(text: str) -> int:
     if not text:
         raise MenuGeometryError("menu label must not be empty")
     if "{CTRL:" in text:
-        raise MenuGeometryError("menu labels cannot contain dialogue control tags")
+        raise MenuGeometryError(
+            "menu labels cannot contain dialogue control tags"
+        )
     return len(text)
 
 
@@ -74,7 +76,10 @@ def menu_pair_geometry(left: str, right: str) -> MenuPairGeometry:
     right_text_x = RIGHT_TEXT_BASE_AFTER_LEFT_X + GLYPH_PIXELS * left_glyphs
     right_leading = right_text_x - GLYPH_PIXELS
     right_trailing = right_text_x + GLYPH_PIXELS * right_glyphs
-    if combined > MENU_MAX_PAIRED_GLYPHS or right_trailing > RIGHTMOST_SAFE_CURSOR_X:
+    if (
+        combined > MENU_MAX_PAIRED_GLYPHS
+        or right_trailing > RIGHTMOST_SAFE_CURSOR_X
+    ):
         raise MenuGeometryError(
             f"paired menu labels {left!r} / {right!r} use {combined} glyphs; "
             f"right trailing cursor would be x={right_trailing} (safe <= "
@@ -103,7 +108,9 @@ def primary_menu_descriptors(
     runtime predicate filtering compacts the visible choice array.
     """
     if len(data) < 0x14:
-        raise MenuGeometryError("overlay is too short for menu header pointers")
+        raise MenuGeometryError(
+            "overlay is too short for menu header pointers"
+        )
     start = int.from_bytes(data[0x10:0x12], "little") - load_address
     end = int.from_bytes(data[0x12:0x14], "little") - load_address
     if not 0 <= start <= end <= len(data):
