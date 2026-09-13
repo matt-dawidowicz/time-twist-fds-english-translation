@@ -11,7 +11,7 @@
 
 ## Source fingerprints
 
-- `Time Twist Japanese-English script comparison.json` — LF-normalized SHA-256 `4EAFE4EA80A2545CF4786E56E55AA2A391571753FD51A7638692C4FB955F371D`
+- `Time Twist Japanese-English script comparison.json` — LF-normalized SHA-256 `636F5CBF7A7A063567D9AE92F8B4304DC7E0EE4F646C2A0113F600C9AB8A3B24`
 - Diagnostic review: not supplied (neutral diagnostics used)
 
 ## Bank coverage
@@ -39,12 +39,12 @@
 Recomputed from the current playable scenario maps and configured full-word menus using the 68-entry greedy baseline. Measurements include structural pointers and the recovered movable menu reservation where applicable. All 13 banks fit this public model:
 
 - TT1A: 1664/1669 bytes used; 5 bytes remain.
-- TT1B: 3899/4234 bytes used; 335 bytes remain.
-- TT2: 4041/4141 bytes used; 100 bytes remain.
+- TT1B: 3908/4234 bytes used; 326 bytes remain.
+- TT2: 4042/4141 bytes used; 99 bytes remain.
 - T22: 1894/1939 bytes used; 45 bytes remain.
 - TT3A: 4119/4169 bytes used; 50 bytes remain.
 - TT3B: 1875/1927 bytes used; 52 bytes remain.
-- TT4: 5137/5187 bytes used; 50 bytes remain.
+- TT4: 5139/5187 bytes used; 48 bytes remain.
 - TT5: 4120/4201 bytes used; 81 bytes remain.
 - T25: 2421/2561 bytes used; 140 bytes remain.
 - TT6A: 2785/3000 bytes used; 215 bytes remain.
