@@ -113,7 +113,9 @@ class EntropyProductionTests(unittest.TestCase):
                             _s(SymbolKind.DICTIONARY, rng.randrange(1, 256))
                         )
                     elif choice == 2:
-                        row.append(_s(SymbolKind.EXTENDED, rng.randrange(37, 64)))
+                        row.append(
+                            _s(SymbolKind.EXTENDED, rng.randrange(37, 64))
+                        )
                     else:
                         row.append(
                             _s(
@@ -138,7 +140,9 @@ class EntropyProductionTests(unittest.TestCase):
             end = starts[page + 1] if page + 1 < len(starts) else len(packed)
             expected = records[page * 32 : page * 32 + 32]
             self.assertEqual(
-                unpack_entropy_stream(packed[start:end], record_count=len(expected)),
+                unpack_entropy_stream(
+                    packed[start:end], record_count=len(expected)
+                ),
                 expected,
             )
 
@@ -146,7 +150,9 @@ class EntropyProductionTests(unittest.TestCase):
         """Verify optimizer is deterministic and lossless."""
         phrase = (_common(1), _common(2), _common(3), _common(4))
         groups = (
-            tuple((*phrase, _common(index % 8), *phrase) for index in range(18)),
+            tuple(
+                (*phrase, _common(index % 8), *phrase) for index in range(18)
+            ),
         )
         first = optimize_entropy_dictionary(
             groups, maximum_entries=24, trial_candidates=6
@@ -250,7 +256,9 @@ class EntropyProductionTests(unittest.TestCase):
         self.assertEqual(ENTROPY_SELECTION_SPAN_CPU_ADDRESS, 0x8137)
         occupied: set[int] = set()
         for patch in ENTROPY_RUNTIME_PATCHES:
-            touched = set(range(patch.cpu_address, patch.cpu_address + patch.size))
+            touched = set(
+                range(patch.cpu_address, patch.cpu_address + patch.size)
+            )
             self.assertTrue(occupied.isdisjoint(touched), patch.label)
             occupied.update(touched)
         self.assertLess(max(occupied), NOV3_LOAD_ADDRESS)
@@ -258,11 +266,15 @@ class EntropyProductionTests(unittest.TestCase):
     def test_generated_runtime_binary_is_frozen(self) -> None:
         """Verify generated runtime binary is frozen."""
         patches = {patch.label: patch for patch in ENTROPY_RUNTIME_PATCHES}
-        scanner = patches["bit-contiguous entropy scanner"].replacement[:SCANNER_CODE_BYTES]
+        scanner = patches["bit-contiguous entropy scanner"].replacement[
+            :SCANNER_CODE_BYTES
+        ]
         frontend = patches["entropy semantic dispatch frontend"].replacement[
             :FRONTEND_CODE_BYTES
         ]
-        category = patches["entropy prefix-category decoder"].replacement[:CATEGORY_CODE_BYTES]
+        category = patches["entropy prefix-category decoder"].replacement[
+            :CATEGORY_CODE_BYTES
+        ]
         self.assertEqual(
             _sha256(scanner),
             "7C276057F5E972C3E377AD54B8B7A2BD8FBA9757BF87F89DE219D7D875C61533",
@@ -331,7 +343,9 @@ class EntropyProductionTests(unittest.TestCase):
     ) -> None:
         """Verify entropy runtime preserves x and avoids native zero page 74."""
         patches = {patch.label: patch for patch in ENTROPY_RUNTIME_PATCHES}
-        scanner = patches["bit-contiguous entropy scanner"].replacement[:SCANNER_CODE_BYTES]
+        scanner = patches["bit-contiguous entropy scanner"].replacement[
+            :SCANNER_CODE_BYTES
+        ]
         frontend = patches["entropy semantic dispatch frontend"].replacement[
             :FRONTEND_CODE_BYTES
         ]
