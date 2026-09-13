@@ -7,9 +7,12 @@ which engine owns a symptom, find the relevant pointer or runtime state, prove t
 constraint, patch the narrowest layer, and add the right regression test without
 rediscovering the game from scratch.
 
-Read this with [Architecture](ARCHITECTURE.md), [Formats](FORMATS.md), and the
-[Code tour](CODE_TOUR.md). The specialized title, menu, and font documents remain
-authoritative for their subjects; this guide connects them into one runtime model.
+Read this with [Architecture](ARCHITECTURE.md), [Formats](FORMATS.md), the
+[Gameplay script engine](GAMEPLAY_SCRIPT_ENGINE.md), the
+[Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md), and the
+[Code tour](CODE_TOUR.md). The specialized title, menu, font, gameplay-VM, and
+graphics documents remain authoritative for their subjects; this guide connects them
+into one runtime model.
 
 ## Evidence labels
 
@@ -725,15 +728,31 @@ Japanese or garbled, the fix belongs here, not in the shared text decoder.
 
 ---
 
-## 15. Graphics files not yet modeled as a generic editable engine
+## 15. Gameplay graphics and scene data are now structurally recovered
 
-The game also contains `OB*`, `OBJ*`, and `BG*` graphics components. Their existence
-and FDS identities are known, but the public translation architecture does not yet
-claim one universal decoded object/background format or relocation model for all of
-them.
+The `OB*`, `OBJ*`, and `BG*` components are no longer an unknown graphics family.
+They are verified raw NES 2bpp CHR files loaded directly into CHR-RAM, with object
+files targeting pattern table 0 and background files targeting pattern table 1.
+NOV2's scene file-ID table determines which program and CHR overlays coexist, and
+same-address/partial overlays intentionally inherit untouched RAM or CHR from the
+previous base component.
 
-Treat these as **UNKNOWN unless a specific component has been recovered**. Before a
-future graphics edit becomes production code, document:
+The maintained [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) documents the
+recovered data architecture:
+
+- `$A200` static metasprite placements;
+- `$A202` actor spawn/layout records;
+- `$A204` packed metasprite definitions rendered into OAM;
+- `$A208` palette definitions;
+- `$A20C` hotspot rectangles and the opposing `$FD/$FE` one-way sentinels;
+- `$A21C` palette-animation sequences;
+- `$A21E` direct nametable tile-patch descriptors and RLE streams;
+- `$A22C/$A22E/$A230` actor animation/motion selectors and stream tables;
+- source-used `D2` runtime background-CHR clone/flip behavior.
+
+This does **not** make arbitrary relocation safe. Size-neutral CHR, metasprite,
+placement, map, and palette edits still require exact ownership/source guards and
+scene-composition awareness. For relocation or a new graphics path, document:
 
 - file load address and FDS file kind;
 - CHR/nametable/sprite/palette destination;
@@ -744,8 +763,9 @@ future graphics edit becomes production code, document:
 - exact free-space/relocation proof;
 - emulator evidence and a regression test.
 
-Do not extrapolate the title allocator or `SON-KOUH` RLE format to unrelated graphics
-without evidence.
+Do not extrapolate the title allocator or `SON-KOUH` RLE format to gameplay graphics;
+the recovered gameplay background-map path is a distinct `$A21E` descriptor/RLE
+engine.
 
 ---
 
@@ -815,6 +835,13 @@ shape; a `JSR` substituted for the production `JMP` is a prime suspect.
 ### Only the Kouhen direct-boot warning is wrong
 
 Inspect `SON-KOUH`; it is a private tile/RLE path, not the scenario text engine.
+
+### A gameplay sprite/background/map is wrong
+
+Start with the active NOV2 scene-load index and composed `$A200`/CHR state. Then use
+`GAMEPLAY_GRAPHICS_ENGINE.md` to identify the owning CHR file, metasprite/placement
+record, `$A21E` map descriptor, palette record, or `D2` runtime CHR transform before
+patching bytes.
 
 ---
 
@@ -953,7 +980,11 @@ The following should remain explicit so future work does not silently invent rul
 - Control codes are not assigned one universal narrative meaning. Production relies
   only on recovered geometry and record-specific semantic evidence.
 - `CTRL:7` is decoder-representable but has no generic production-layout rule.
-- `OB*`, `OBJ*`, and `BG*` files are not one proven universal graphics format.
+- Gameplay graphics structures are recovered, but arbitrary relocation is not a
+  generic safe operation; same-address overlays and partial CHR residency remain
+  scene-specific ownership constraints.
+- Human-facing direction names for the opposing `$FD/$FE` hotspot sentinels remain
+  unassigned even though their one-way/opposite binary behavior is verified.
 - Hardware-visible title behavior depends on NMI/PPU ordering that static asset tests
   cannot fully prove.
 - FDS BIOS calls can mutate staging state outside the immediate source buffer; title
@@ -980,6 +1011,8 @@ release builder.
 | Four-row English layout/control policy | `work/time_twist/production_translation_core.py` |
 | Record-scoped production exceptions | `work/time_twist/production_translation.py` |
 | Fixed prompts, special UI, Kouhen guard | `work/time_twist/ui.py`, `ui_fixed_tables.py` |
+| Gameplay script/event VM | `docs/GAMEPLAY_SCRIPT_ENGINE.md`, `work/tools/audit_recovered_engine_surfaces.py` |
+| Gameplay graphics/scene tables | `docs/GAMEPLAY_GRAPHICS_ENGINE.md`, `work/tools/audit_recovered_engine_surfaces.py` |
 | Dialogue font and tile ownership | `work/time_twist/font.py` |
 | NOV4 title memory map | `work/time_twist/title_layout.py` |
 | Exact title asset allocation | `work/time_twist/title_assets.py` |
