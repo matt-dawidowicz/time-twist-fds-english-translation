@@ -15,7 +15,6 @@ from time_twist.menu_geometry import (
     validate_menu_label,
 )
 from time_twist.release_build import (
-    ENTROPY_DICTIONARY_ENTRY_CAPS,
     FOUR_SIDE_RELEASE_BYTES,
     RELEASE_OUTPUT_SIZES,
     TWO_SIDE_RELEASE_BYTES,
@@ -98,11 +97,36 @@ class ReleaseSizeInvariantTests(unittest.TestCase):
 
 
 class PolicyAndHistoryTests(unittest.TestCase):
-    """Preserve benchmarked policy and the permanent development record."""
+    """Preserve current policy while retaining permanent development history."""
 
-    def test_tt2_no_longer_has_a_special_dictionary_cap(self) -> None:
-        """Use the common 128-entry policy after the source-backed benchmark."""
-        self.assertNotIn("TT2", ENTROPY_DICTIONARY_ENTRY_CAPS)
+    def test_release_builder_has_no_retired_per_bank_dictionary_caps(self) -> None:
+        """Keep the production optimizer on one explicit 128-entry policy."""
+        root = Path(__file__).resolve().parents[2]
+        source = (root / "work" / "time_twist" / "release_build.py").read_text(
+            encoding="utf-8"
+        )
+        self.assertNotIn("ENTROPY_DICTIONARY_ENTRY_CAPS", source)
+        self.assertIn("maximum_entries=128", source)
+
+    def test_maintained_docs_do_not_restate_retired_constraints(self) -> None:
+        """Keep obsolete limits in history only, never as current guidance."""
+        root = Path(__file__).resolve().parents[2]
+        maintained = (
+            root / "docs" / "ARCHITECTURE.md",
+            root / "docs" / "FORMATS.md",
+            root / "docs" / "FULL_WORD_MENU_IMPLEMENTATION.md",
+            root / "docs" / "REVERSE_ENGINEERING_GUIDE.md",
+        )
+        retired_claims = (
+            "TT2` is\ncapped at 96",
+            "supports eight glyphs. The production runtime",
+            "menu labels must fit six or eight visible glyphs",
+        )
+        for path in maintained:
+            text = path.read_text(encoding="utf-8")
+            for claim in retired_claims:
+                with self.subTest(path=path.name, claim=claim):
+                    self.assertNotIn(claim, text)
 
     def test_constraint_history_is_permanent_and_specific(self) -> None:
         """Fail if cleanup erases the architectural development record."""
@@ -110,13 +134,18 @@ class PolicyAndHistoryTests(unittest.TestCase):
         history = (
             root / "docs" / "history" / "CONSTRAINT_MODERNIZATION_20260913.md"
         )
+        amendment = (
+            root / "docs" / "history" / "POST_INTEGRATION_VALIDATION_20260913.md"
+        )
         policy = root / "docs" / "history" / "README.md"
         index = root / "docs" / "README.md"
         self.assertTrue(history.is_file())
+        self.assertTrue(amendment.is_file())
         self.assertTrue(policy.is_file())
         self.assertIn("history/README.md", index.read_text(encoding="utf-8"))
         text = history.read_text(encoding="utf-8")
         policy_text = policy.read_text(encoding="utf-8")
+        amendment_text = amendment.read_text(encoding="utf-8")
         for required in (
             "262,000 bytes",
             "$9390-$93AF",
@@ -127,6 +156,9 @@ class PolicyAndHistoryTests(unittest.TestCase):
             with self.subTest(required=required):
                 self.assertIn(required, text)
         self.assertIn("Do not delete", policy_text)
+        self.assertIn("run #1264", amendment_text)
+        self.assertIn("PR #60", amendment_text)
+        self.assertIn("PR #62", amendment_text)
 
 
 if __name__ == "__main__":
