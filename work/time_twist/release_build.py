@@ -40,7 +40,7 @@ from .entropy_scenario import (
     relocate_entropy_fixed_record_table,
     validate_entropy_scenario_bank,
 )
-from .entropy_title import patched_nov4_entropy_title
+from .exact_ips_title import patched_nov4_exact_ips_title
 from .fds import SIDE_SIZE, FdsImage, combine_images
 from .font import patched_nov4_font
 from .production_validation import encode_production_english
@@ -511,16 +511,17 @@ def build_release_images(
 
     # The font patch retains a strict whole-bank source whitelist, so keep it
     # first. Entropy conversion follows and owns every NOV4 packed-text stream
-    # consumed by NOV2. Title expansion is last and validates only the title
-    # regions it owns. The native patched_nov4_ui path is intentionally absent:
-    # inserting byte-aligned native records here caused the R5 blank START menu.
+    # consumed by NOV2. The title step then overlays the exact historical IPS
+    # bytes and injects only a final-phase subtitle CHR upload; it does not
+    # reconstruct or reinterpret the logo. The native patched_nov4_ui path is
+    # intentionally absent: inserting byte-aligned native records here caused
+    # the R5 blank START menu.
     nov4 = zenpen.sides[0].find_file("NOV4").data
     nov4 = patched_nov4_font(nov4)
     nov4 = patched_nov4_entropy_text(nov4)
-    nov4 = patched_nov4_entropy_title(
+    nov4 = patched_nov4_exact_ips_title(
         nov4,
-        title_asset,
-        slide_target=slide_title_asset,
+        zenpen_raw,
         subtitle=subtitle,
     )
     zenpen.sides[0].find_file("NOV4").data = nov4
