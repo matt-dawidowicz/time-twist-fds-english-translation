@@ -15,13 +15,13 @@
     },
     "work/title_assets/Time Twist approved native title.png": {
       "normalization": "raw",
-      "sha256": "1D4A5F7E66B29D042B250D1E6A72BC0E2811CF7576F766B75FAAEE5399506BB0",
-      "bytes": 2127
+      "sha256": "220E1755BEBFCEFCA408D5E18A323FC6AE9EDEB03C3B01CA22B30163A2E0016F",
+      "bytes": 2137
     },
     "work/title_assets/Time Twist approved native slide.png": {
       "normalization": "raw",
-      "sha256": "5B77F1E1080BC6A34AAB8B66420C2D53F025121285095ED142B481AD3C0C873C",
-      "bytes": 1527
+      "sha256": "5218681DB3BC8F7631DC69BFB0B6A3C242B55B8018D3319CF9EC94C14DF10CA8",
+      "bytes": 1709
     },
     "work/translations/TT1A.json": {
       "normalization": "lf",

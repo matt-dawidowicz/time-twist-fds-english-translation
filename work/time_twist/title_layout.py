@@ -42,16 +42,19 @@ CLOCK_METASPRITE_START = 0x047A
 CLOCK_METASPRITE_END = 0x059A
 CLOCK_HAND_ORIGINS_OFFSET = 0x03CA
 CLOCK_HAND_ORIGINS_SOURCE = bytes.fromhex("78 00 37 04 80 00 3F")
-CLOCK_HAND_ORIGINS_PATCH = bytes.fromhex("6A 00 3A 04 72 00 42")
+# Exact hand-origin bytes from the definitive historical English-logo IPS.
+# The reference logo and its clock geometry are now the visual authority, so
+# retain that patch's -16 X / +2 Y placement instead of the later reconstruction.
+CLOCK_HAND_ORIGINS_PATCH = bytes.fromhex("68 00 39 04 70 00 41")
 NOV3_LOAD_ADDRESS = 0xD7B5
 SPLIT_TILE_ROW = 16
 # Background slots below the clock-owned $EC-$FF tail are shared across two
-# non-overlapping title phases. Patterns common to neither phase may reuse one
-# ID because the final transition replaces their contiguous CHR delta. The
-# normalized production font changes two subtitle patterns relative to the old
-# 5x7 metrics, so the exact reviewed phases now require 53 delta tiles.
+# non-overlapping title phases. The monochrome slide is the exact visible
+# silhouette of the definitive IPS-derived final logo through row 95. Because
+# the two authorities now share almost all patterns, only three upper CHR slots
+# need temporal replacement at the final transition.
 TOP_TILE_COUNT = CLOCK_SOURCE_TILE
-FINAL_DELTA_TILE_COUNT = 0x35
+FINAL_DELTA_TILE_COUNT = 0x03
 FINAL_DELTA_CHR_SIZE = FINAL_DELTA_TILE_COUNT * 16
 BOTTOM_TILE_COUNT = 0x37
 BOTTOM_CHR_SIZE = BOTTOM_TILE_COUNT * 16
@@ -59,8 +62,8 @@ BACKGROUND_TAIL_SIZE = 0
 NINTENDO_FIRST_TILE = 0xB0
 NINTENDO_TILE_COUNT = 0x26
 NINTENDO_CHR_SIZE = NINTENDO_TILE_COUNT * 16
-# The slide nametable contains its own reviewed monochrome wordmark. Its
-# temporary Nintendo tile IDs are restored once, immediately before the swipe.
+# The slide nametable contains the definitive logo's exact monochrome silhouette.
+# Its temporary Nintendo tile IDs are restored once, immediately before the swipe.
 SLIDE_TITLE_TILE_COLUMNS = 32
 INITIAL_CHR_LOADER_SIZE = 12
 # The pre-slide helper restores the Nintendo-overlaid base-CHR range and the
@@ -155,9 +158,9 @@ SPRITE_PALETTE = (
 # palettes in the order the PPU actually sees them. Palette 1 is the moving
 # logo's attribute-selected monochrome palette. The one-byte ROM patch at
 # $AB95 makes all three nonzero pattern indices white, so the completed
-# monochrome logo has exactly the final colored logo's visible geometry. The
-# other three attribute palettes deliberately hide the still-unassembled parts
-# of the two scrolled nametables.
+# monochrome logo has exactly the final colored logo's visible geometry through
+# the native 96-pixel swipe viewport. The other three attribute palettes hide
+# the still-unassembled parts of the two scrolled nametables.
 SLIDE_BACKGROUND_PALETTES = (
     (0x0F, 0x0F, 0x0F, 0x0F),
     (0x0F, 0x30, 0x30, 0x30),
