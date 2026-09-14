@@ -232,15 +232,17 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
         raise TitlePatchError("title subtitle contains no drawable glyphs")
 
     runs: list[tuple[int, int]] = []
-    start = previous = None
+    start: int | None = None
+    previous: int | None = None
     for tile_id in reusable:
-        if start is None:
+        if start is None or previous is None:
             start = previous = tile_id
-        elif tile_id == previous + 1:
+            continue
+        if tile_id == previous + 1:
             previous = tile_id
-        else:
-            runs.append((start, previous + 1))
-            start = previous = tile_id
+            continue
+        runs.append((start, previous + 1))
+        start = previous = tile_id
     if start is not None and previous is not None:
         runs.append((start, previous + 1))
     selected = next(
