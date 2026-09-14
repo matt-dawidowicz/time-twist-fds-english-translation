@@ -38,7 +38,9 @@ class ExactIpsTitleContractTests(unittest.TestCase):
             path = Path(directory) / "wrong.ips"
             path.write_bytes(b"PATCHEOF")
             with patch.dict(os.environ, {DEFINITIVE_IPS_ENV: str(path)}):
-                with self.assertRaisesRegex(TitlePatchError, "hash does not match"):
+                with self.assertRaisesRegex(
+                    TitlePatchError, "hash does not match"
+                ):
                     _definitive_ips()
 
     @patch("time_twist.exact_ips_title.decode_title_rle")
