@@ -38,24 +38,29 @@ not replacement sources.
 2. [Architecture](ARCHITECTURE.md)
 3. [Formats](FORMATS.md)
 4. [Gameplay script and event VM](GAMEPLAY_SCRIPT_ENGINE.md)
-5. [Gameplay graphics and scene engine](GAMEPLAY_GRAPHICS_ENGINE.md)
-6. [Development guide](DEVELOPMENT.md)
-7. [Module map](MODULE_MAP.md)
-8. [CLI reference](CLI_REFERENCE.md)
-9. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
-10. [Private fixtures](PRIVATE_FIXTURES.md)
-11. [Permanent engineering history](history/README.md)
+5. [Retail gameplay VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md)
+6. [Gameplay graphics and scene engine](GAMEPLAY_GRAPHICS_ENGINE.md)
+7. [Development guide](DEVELOPMENT.md)
+8. [Module map](MODULE_MAP.md)
+9. [CLI reference](CLI_REFERENCE.md)
+10. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
+11. [Private fixtures](PRIVATE_FIXTURES.md)
+12. [Permanent engineering history](history/README.md)
 
 The reverse-engineering guide is the maintainer-level runtime map: it connects FDS
 file offsets, CPU load addresses, packed-text streams, NOV2 renderer behavior,
 scenario/menu addressing, font/CHR ownership, NOV4 title PPU/NMI sequencing, known
 failure modes, debugger breakpoints, and a repeatable evidence-to-fix workflow.
 
-The gameplay VM reference records the recovered high-nibble interpreter families,
+The gameplay script reference records the recovered high-nibble interpreter families,
 script label/subroutine table, persistent flag bank, predicate/control-flow model,
 audio command latches, exploration primitives, runtime CHR transform command,
-scene transitions, and the 98.6504% source-reachability baseline. Its remaining
-frontier is value-level semantic correlation rather than discovery of the VM skeleton.
+scene transitions, and the 98.6504% source-reachability baseline. The retail opcode
+reference is its canonical source-reachable language inventory: 61 shipped opcodes
+with stable low-level semantic names, operand grammars, native handlers, and evidence
+grades, kept explicitly separate from native interpreter forms that retail source does
+not reach. The remaining VM frontier is value-level semantic correlation rather than
+discovery of the VM skeleton.
 
 The gameplay graphics reference records the recovered `OB*`/`OBJ*`/`BG*` raw-CHR
 format, PPU destinations, NOV2 scene file-ID table, partial-overlay behavior,
