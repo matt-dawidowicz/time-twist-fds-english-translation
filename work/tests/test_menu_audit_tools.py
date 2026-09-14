@@ -41,15 +41,15 @@ class FixedMenuAuditToolTests(unittest.TestCase):
                 {("TT1B", 0): "Canonical"},
             )
 
-    def test_candidate_menu_decoder_uses_entropy_pages_and_dictionary(self) -> None:
+    def test_candidate_menu_decoder_uses_entropy_pages_and_dictionary(
+        self,
+    ) -> None:
         """Decode the production menu format rather than native packed text."""
         bank_name = "TT1B"
         load_address = 0xA200
         spec = ui.FIXED_RECORD_TABLE_SPECS[bank_name]
         dictionary = (encode_english("Look"),)
-        reference = (
-            PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0),
-        )
+        reference = (PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0),)
         menu = tuple(reference for _ in spec.records)
         packed_menu, page_starts = pack_entropy_pages(
             menu, records_per_page=ui.FIXED_RECORDS_PER_PAGE
@@ -59,19 +59,19 @@ class FixedMenuAuditToolTests(unittest.TestCase):
         dictionary_offset = page_index_offset + pointer_bytes
         packed_dictionary = pack_entropy_stream(dictionary)
         data = bytearray(dictionary_offset + len(packed_dictionary))
-        data[spec.start:page_index_offset] = packed_menu
+        data[spec.start : page_index_offset] = packed_menu
         data[
-            ui.FIXED_RECORD_PAGE_POINTER_OFFSET :
-            ui.FIXED_RECORD_PAGE_POINTER_OFFSET + 2
+            ui.FIXED_RECORD_PAGE_POINTER_OFFSET : ui.FIXED_RECORD_PAGE_POINTER_OFFSET
+            + 2
         ] = (load_address + page_index_offset).to_bytes(2, "little")
         for index, start in enumerate(page_starts[1:]):
             offset = page_index_offset + index * 2
             data[offset : offset + 2] = (
                 load_address + spec.start + start
             ).to_bytes(2, "little")
-        data[
-            DICTIONARY_POINTER_OFFSET : DICTIONARY_POINTER_OFFSET + 2
-        ] = (load_address + dictionary_offset).to_bytes(2, "little")
+        data[DICTIONARY_POINTER_OFFSET : DICTIONARY_POINTER_OFFSET + 2] = (
+            load_address + dictionary_offset
+        ).to_bytes(2, "little")
         data[dictionary_offset:] = packed_dictionary
 
         decoded_menu = audit_fixed_menu_labels._candidate_menu_records(

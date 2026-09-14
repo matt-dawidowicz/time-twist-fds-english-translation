@@ -14,7 +14,10 @@ import hashlib
 from pathlib import Path
 from time_twist import ui
 from time_twist.english import render_english
-from time_twist.entropy_codec import split_entropy_stream, unpack_entropy_stream
+from time_twist.entropy_codec import (
+    split_entropy_stream,
+    unpack_entropy_stream,
+)
 from time_twist.entropy_compression import (
     expand_entropy_dictionary,
     expand_entropy_record,
@@ -72,8 +75,8 @@ def _candidate_menu_records(
     spec = ui.FIXED_RECORD_TABLE_SPECS[bank_name]
     page_index_address = int.from_bytes(
         data[
-            ui.FIXED_RECORD_PAGE_POINTER_OFFSET :
-            ui.FIXED_RECORD_PAGE_POINTER_OFFSET + 2
+            ui.FIXED_RECORD_PAGE_POINTER_OFFSET : ui.FIXED_RECORD_PAGE_POINTER_OFFSET
+            + 2
         ],
         "little",
     )
