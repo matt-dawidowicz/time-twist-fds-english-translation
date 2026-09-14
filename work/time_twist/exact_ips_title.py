@@ -1,21 +1,22 @@
 """Install the definitive historical IPS title exactly, then add our subtitle.
 
-The external IPS is embedded byte-for-byte so production does not reconstruct or
-reinterpret the TIME TWIST logo. The pipeline applies the exact patch to the
-supported untouched Zenpen image, extracts the resulting NOV4 bytes, overlays
-only the IPS-owned NOV4 differences onto the already-localized NOV4 bank, and
-then adds ``On the Outskirts of History...`` in a final-phase-only CHR upload.
+The third-party IPS remains a maintainer-supplied private input and is never
+embedded in or redistributed with this package. The pipeline loads the external
+patch, verifies its SHA-256, applies it to the supported untouched Zenpen image,
+extracts the resulting NOV4 bytes, overlays only the IPS-owned NOV4 differences
+onto the already-localized NOV4 bank, and then adds
+``On the Outskirts of History...`` in a final-phase-only CHR upload.
 
-The subtitle deliberately reuses tile IDs that the IPS title uses only during
-the moving/Nintendo phase. Those tiles are replaced only at the final-title
-transition, so the IPS logo, swipe animation, clock geometry, and palette bytes
-remain byte-identical to the historical patch.
+Set ``TIME_TWIST_DEFINITIVE_TITLE_IPS`` to the patch path when running from an
+installed package. A source checkout also accepts the private fixture at
+``work/private/TimeTwist-Zenpen-newlogo.ips``.
 """
 
 from __future__ import annotations
 
-import base64
 import hashlib
+import os
+from pathlib import Path
 
 from PIL import Image
 
@@ -36,51 +37,8 @@ BASE_ZENPEN_SHA256 = "B9424DD29EE195A9FA9AC4F844F058C380E30F7ACA741218789FA8611F
 BASE_NOV4_SHA256 = "89F50DA5A0BD2CE318DD9DBBAF3CE976F353E5EC0AC6357FD91438CDAC927694"
 PATCHED_NOV4_SHA256 = "ABDD4C52BE8859B6A70AC02AC7388925696596611CE03C0628F73B5C59B4C8D5"
 DEFINITIVE_IPS_SHA256 = "915C0ED3600F5E560F9F588DC2100FE59772B5F7570E4F183565FBA9C77C6BA2"
-
-_DEFINITIVE_IPS_B64 = (
-    "UEFUQ0gAqXgAB2gAOQRwAEEArA4C7c//Gdf/AgMaxf8bCwzM/8HkweXF/wIDDRwBxf8dDg8LDM//AgMNEB4fICEEIsMEIyTB"
-    "/Q8lJsX/J8T+KML/KRAqACsFwf0swf0RBi0SLhgHLw4wMTIEMwQ0NTY3ODnC/zo7PAATBcH9PT4/QEHBz8HQwdHB0hRCQ0RF"
-    "RkfB/UgSSQABw/9Kwf8IABMFSwYHTBEGwdPB1MHVwdbB101OT1BRUlMVVAgAAcX/CAlVVglXWFkWWsHYwf/B2cH/wdrB/VvB"
-    "/Vy+v8HAwcEVwcIAAcX/F8QKwcMKwcQKCsHbw//B3MHFwcYWwcfByMHJFhbBysHLCQHP/8Hdwd7B38HgweEKwczGCsHNFwrB"
-    "ztD/weLB48Hm+v9mZ2hpwf9oX2prX/j/kJGSk9z/lJWWl9z/mJmam5ydntj/oKGio6SlpqfY/6ipqqusra6v2P+wsbKztLW2"
-    "t9n/uLm6u7y99v9lY2RkY8H/XV5dX2BdYWL+//7/7f/gAND/0AD+/8//Gdf/AgMaxf8bCwzT/wIDDRwBxf8dDg8LDM//AgMN"
-    "EB4fICEEIsMEIyTB/Q8lJsX/J8T+KML/KRAqACsFwf0swf0RBi0SLhgHLw4wMTIEMwQ0NTY3ODnC/zo7PAATBcH9PT4/QEHB"
-    "58HoGAcUQkNERUZHwf1IEkkAAcP/SsH/CAATBUsGB0wRBsHpwerB6wcUTU5PUFFSUxVUCAABxf8ICVVWCVdYWRZawxbB+xTB"
-    "/VvB/Vy+v8HAwcEVwcIAAcX/F8QKwcMKwcTGCsH8wcXBxhbBx8HIwckWFsHKwcsJAdP/CgrBzMYKwc0XCsHOyv9sbct9bm/R"
-    "/3zB/3BxcnN0dXZ3eHl6e3/R/4zB/4CBgoOEhYaHiImKwf+P0f+Ljct+jp/+//7//v/+//7//v/+/9f/2FXoqv8AAAAAAAAA"
-    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK+AABgDAwMDAwMDA/7+/v7+/v7+"
-    "gICAgICAgIAAr58ACQAAAAAAAAAAAQCvrwAJAAAAAAEHH3/8AK++AGoDDwAAAP///wAAAAAAAAD///88PDw8PDw8POfn5+fn"
-    "5+fnAAAAAICAwMD///////9/fwEBAQEBAQEB//////////8cHBwcHBwcHAcHBwcHBwcHAwMDAwMDA//+/v7+/v7+/v//AAAA"
-    "AAAAALAvAOkAAMDw/H8fBwEAAACA4Pj+/wAAAAAAwPD8AAAAAAAAAIAHH3/88MAAAAAAAw8/////AAAAAACA4Pj///////9/"
-    "H38fBwEAAAAA4Pj+///////wwAAAAAAAAD//////////Hh4PDwcHAwPz8/n5/Pz+/gAAAAD///8A//////8AAADAwMDAwMDA"
-    "wH9/f39/f39/8PDw8PDw8PAfHx8fHx8fHzgcDgcDAQAA4PD4/P7///8AAAAAAAAA////////////Hx8AAAAAAAAAAAAAAAAA"
-    "AA4ODg4ODg4OAwMDAwMDAwMAAAAAAAAADACxHgMMAAAAAACAgICAgAAAAAAAAAAADw8PDw4ODg4AAAIDAwMDA/PDAwMDAwMD"
-    "Pv7+/v7+/v4ODg4ODg8PAwMDAwMDAQAAAAAAAAMPP/////////zwwwMPP/////w8/vzwwAAn5+eAgID///8BAQAAAAAA/v//"
-    "AAAAh4fHx+cAAAAAAAEBAQAAAP///zw8AAAAAADP5+f+Pw/DwODg8AcBAAAAAICAAIDg+P4+Dg7//38fBwMDA4DA8Px/HwcB"
-    "AAAAgOD4/v8AAAAAAMDw8AAAAAAAAACAAD9//3BwODgAAAA/Hx8PDwCAgMDg4HBwAAAAAICAwMAHH398cHBwcAAAAw8fHx8f"
-    "AAAAAAAMPPz////////3x/zwwMDAwMDADz9/f39/f3/n93d3Pz8fH4GBwcHh4fHxAAAAAD8/Hxz//////+Dw8HB4ODj4+PgA"
-    "wMDg4PAAAAAAgOD4/v//8///fx8HARAccHBwf39/cHDAwMDAwM/PzwAAAP///wcHAAAAAAD8/PwAAAAPDx8cHAAAAAAABwcH"
-    "AAAAgMHh48MAAAAAAICAABwcD////wAABwcDAAD///8AAP////8AAP///wAA////AAD8/Pz8AAD///8HB////wAAAwMDAwMD"
-    "/////v7+/v4AAP///4CAgP///wAAAAAAODj8+PAAAADg4PAAAAAAAHBwcHBzf39+Hx8fHx8cEAADDz/++OCAAP/88MAAAAAA"
-    "/PycHBwcHBwHBwcHBwcHBw8PBwcDAwEB+fn9/f////8AAAAAAQEBAf//////////AQEAAAAAgID//////////+Dg8PB4eDw8"
-    "Pz+fn8/P5+cODgcHAwAAAPj4/Pz//////j8PDw8PDw4HwfD4+Pn5+3Dw8PDwMAAAz89PDw/P//8HBwcHBwcHB/z8/Pz8/Pz8"
-    "HDg4cHDg4MAHDw8fHz8/fwEDAwcHDg8f//7+/Pz4+PDHh44OHBz8/AEBAwMHBwcHAAAAAP///3D//////wCAwAAAAAD8/Pwc"
-    "//////8HBwd4AAAAAAAAAAAAALQwASACAgMDAwMDA//////+/v7+wMDg4PDw+Ph/fz8/Hx8PDw4MDAgIAAAA+/////////8A"
-    "AAAAAAQEDP//////////BwcHBwcGBgT8/Pz9/f///8CAgAAAAAABf/////////8fPDx4ePDw4PPn58/Pn58//gcDAwMHBw7z"
-    "+fz+/vz8+AAAgMDgcDgc////fz8fDwcAAAAAgMDgcAAAAAAAAIDAwMDAwMDAwP9/f39/f39/fzw8PDw8PDz/5+fn5+fn5+fg"
-    "4PCwuLi4vz8/Hx8PDw8PAQEBAQEBAf///////////9zczs7Hx8fDBwcDAwEBAADg4PDweHg8/z8/n5/Pz+fnDBwcPDx8fOz/"
-    "9/fn58fHhwEDAwcHDw8e//7+/Pz5+fMAu2AAWeDAwICAAAAAP39///////8OHBw4OH9///jw8ODgwMCfDgcDAQD///8DAQAA"
-    "AAAA/wAAgMDg8Pj4////fz8fD/8cHBwcnPz8fAcHBwcHB4fHv78AAAAAAAAAALvAAIfDwwAAAAAAAAAAAAAAAAAAAAEBAwMH"
-    "B/7////+/vz8+OzMzIyMDAwPhwcHBwcHBwcePDx4ePDw//Pn58/Pn58/AAEBAwMHB//////+/vz8+fDg4MDAgID/nz8/f3//"
-    "//8AAAAAAQMH/v///////vz4fHz8/PycHB/Hx4eHBwcHBw8PAAAAAAAAvE0AFQAAAPz4AAAAAAAAAAAAAAAAAACAgAC8aQBZ"
-    "AAAAAAAAAAAA////AAAAAAAAAP///v0AAPDBjz944AAAAQ6wR5ggDgAA//9fUUYDAP8A/wAAAAEBAYHx/B4H/3+Pcw3iGQT5"
-    "82dmDgwcGPqEycrS1KSowIAAvMgACkCAAAAAAAAAWF8AvNgACgAAAAAAAAAAAwEAvOgAygIBAAAAAAAAkMDgYHAwOBhfL5dX"
-    "SyslFRg4MD85OT8xqEhQUFBQUFAAAAAAMCAEDAAAAAAAGBwMGBwM/BxsHBwVEgoKCgoKCj8wOBgYHAwOUFBIKCgkFBL8DBwY"
-    "GDgwcwoKEhUVJStLBgcDAQAAAAAKCQQCAQAAAAAAgMDgeD8PAACAQCCYRzAAAD4gPiI+/wAAAAAAAAD/AAABAwce/PAAAAEC"
-    "BBniDGfnwIAAAAAAUJAgQIAAAAABAAAAAAAAAA4BAAAAAAAA/wAAvbgAAwD/AAC94ABJgAAAAAAAAABwgAAAAAAAAAAA////"
-    "AAAAAAAAAP////8AAPDw+DgcHAAAAADg4PDw//9wcDg/Hx//gMDA4ODw//78AAAA////+AC+LwAx/w4ODg4O////AwMDAwMA"
-    "APz////g4OBw+H8AAACAgMDgcHBwcHBwcH8fHx8fHx8fHwC+cAALAP///wAAAAAAAABFT0Y="
-)
+DEFINITIVE_IPS_ENV = "TIME_TWIST_DEFINITIVE_TITLE_IPS"
+DEFINITIVE_IPS_FILENAME = "TimeTwist-Zenpen-newlogo.ips"
 
 _ZERO_TILE = bytes(16)
 _SUBTITLE_TILE_ROW = 13
@@ -89,18 +47,42 @@ _MAX_ORIGINAL_TITLE_STREAM_END = 0x094D
 
 
 def _sha256(data: bytes) -> str:
+    """Return an uppercase SHA-256 digest."""
     return hashlib.sha256(data).hexdigest().upper()
 
 
+def _default_definitive_ips_path() -> Path:
+    """Return the private-checkout location for the maintainer-supplied IPS."""
+    return Path(__file__).resolve().parents[2] / "work" / "private" / DEFINITIVE_IPS_FILENAME
+
+
+def _definitive_ips_path() -> Path:
+    """Resolve the external definitive IPS without packaging or redistributing it."""
+    configured = os.environ.get(DEFINITIVE_IPS_ENV)
+    if configured:
+        return Path(configured).expanduser().resolve()
+    return _default_definitive_ips_path()
+
+
 def _definitive_ips() -> bytes:
-    patch = base64.b64decode("".join(_DEFINITIVE_IPS_B64))
+    """Load and authenticate the maintainer-supplied definitive title IPS."""
+    path = _definitive_ips_path()
+    try:
+        patch = path.read_bytes()
+    except OSError as error:
+        raise TitlePatchError(
+            "definitive title IPS is missing; set "
+            f"{DEFINITIVE_IPS_ENV} or place {DEFINITIVE_IPS_FILENAME} at {path}"
+        ) from error
     if _sha256(patch) != DEFINITIVE_IPS_SHA256:
-        raise TitlePatchError("embedded definitive title IPS hash drifted")
+        raise TitlePatchError(
+            "definitive title IPS hash does not match the reviewed maintainer input"
+        )
     return patch
 
 
 def _apply_ips(source: bytes, patch: bytes) -> bytes:
-    """Apply the embedded standard IPS patch without any pixel reconstruction."""
+    """Apply the verified standard IPS patch without any pixel reconstruction."""
     if not patch.startswith(b"PATCH"):
         raise TitlePatchError("definitive title patch is not an IPS file")
     output = bytearray(source)
@@ -208,6 +190,8 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
     ]
     pattern_map, tile_pattern_indices = _subtitle_tiles(subtitle)
     needed = len(pattern_map)
+    if needed == 0:
+        raise TitlePatchError("title subtitle contains no drawable glyphs")
 
     runs: list[tuple[int, int]] = []
     start = previous = None
