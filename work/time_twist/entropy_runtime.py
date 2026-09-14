@@ -32,7 +32,8 @@ FRONTEND_CPU_ADDRESS = 0x815E
 FRONTEND_REGION_SIZE = 69
 CATEGORY_CPU_ADDRESS = 0x81E0
 CATEGORY_REGION_SIZE = 70
-MENU_WIDTH_TABLE_CPU_ADDRESS = 0x8757
+MENU_WIDTH_WORK_RAM_ADDRESS = 0x042D
+MENU_MAX_STAGED_GLYPHS = 18
 
 
 class EntropyRuntimeError(ValueError):
@@ -99,23 +100,66 @@ BASE_RUNTIME_PATCHES = (
         replacement=_hex("B0"),
         label="extended code 63 dollar-sign tile redirect",
     ),
+)
+
+# The Japanese menu renderer used fixed six-glyph geometry. Earlier English
+# builds merely raised two loop counts to eight; reverse engineering and live
+# MesenCE testing later proved that limit was an implementation artifact. The
+# production renderer records each decoded label's pixel width in Work RAM and
+# derives draw counts, two-column placement, and cursor geometry from that one
+# value. Every replacement remains size-neutral inside NOV2.
+DYNAMIC_MENU_LAYOUT_PATCHES = (
     RuntimePatch(
-        file_offset=0x34BC,
-        expected=_hex("A9 06"),
-        replacement=_hex("A9 08"),
-        label="eight-glyph menu renderer first row",
+        file_offset=0x0D8A,
+        expected=_hex(
+            "0A A8 B1 C5 85 3C C8 B1 C5 85 3D A5 3C 85 C5 A5 3D 85 C6 4C FF 69"
+        ),
+        replacement=_hex(
+            "4C 3A 6C A4 32 C0 04 90 0A 98 29 03 A8 B9 2D 04 69 4F 60 A9 40 60"
+        ),
+        label="width-aware menu column base",
     ),
     RuntimePatch(
-        file_offset=0x34E7,
-        expected=_hex("A9 06"),
-        replacement=_hex("A9 08"),
-        label="eight-glyph menu renderer second row",
+        file_offset=0x0DDC,
+        expected=_hex(
+            "B1 C5 85 3C C8 B1 C5 85 3D A5 3C 85 C5 A5 3D 85 C6 4C FF 69"
+        ),
+        replacement=_hex(
+            "4C 3C 6C A5 98 38 E5 99 A8 8A 0A 0A 99 2D 04 A9 00 85 69 60"
+        ),
+        label="menu width Work RAM recorder",
     ),
     RuntimePatch(
-        file_offset=0x38A3,
-        expected=_hex("38"),
-        replacement=_hex("48"),
-        label="eight-glyph selection bracket span",
+        file_offset=0x345D,
+        expected=_hex("10"),
+        replacement=_hex("24"),
+        label="expanded variable-width menu clear span",
+    ),
+    RuntimePatch(
+        file_offset=0x3481,
+        expected=_hex(
+            "29 03 0A 85 3C A9 00 06 3C 2A 06 3C 2A 06 3C 2A 06 3C 2A 06 3C 2A "
+            "85 3D A5 32 C9 04 90 10 A9 51 18 65 3C 85 3C A9 22 65 3D 85 3D 4C BC "
+            "94 A9 49 18 65 3C 85 3C A9 22 65 3D 85 3D A9 06 85 31 A2 00"
+        ),
+        replacement=_hex(
+            "AA 29 03 0A 0A 0A 0A 0A 0A 85 3C A9 00 85 3D 8A C9 04 90 0D 29 03 A8 "
+            "B9 2D 04 4A 4A 4A 69 4B D0 02 A9 49 65 3C 85 3C A9 22 65 3D 85 3D BD "
+            "2D 04 4A 4A 4A D0 02 A9 06 85 31 A2 00 EA EA EA EA EA EA"
+        ),
+        label="metadata-driven menu renderer geometry",
+    ),
+    RuntimePatch(
+        file_offset=0x34E5,
+        expected=_hex("A2 01 A9 06 85 31"),
+        replacement=_hex("8A 4A 85 31 A2 01"),
+        label="paired-row dynamic menu draw count",
+    ),
+    RuntimePatch(
+        file_offset=0x3885,
+        expected=_hex("A5 32 C9 04 90 05 A9 80 4C 92 98 A9 40 85 14"),
+        replacement=_hex("20 8D 6D 85 14 EA EA EA EA EA EA EA EA EA EA"),
+        label="width-aware leading menu cursor",
     ),
 )
 
@@ -298,17 +342,17 @@ def _build_scanner() -> tuple[bytes, int, int, int, int, int]:
     assembler.label("menu_init")
     assembler.emit(0x85, 0xC2, 0xA9, 0x80, 0x85, 0x6C, 0xA0, 0x00, 0x60)
 
-    # The menu renderer knows the selected visual slot in $A8 but historically
-    # positioned the right bracket with one fixed six/eight-glyph span. Store
-    # each decoded label width separately and derive the selected span at draw
-    # time. This 25-byte helper consumes only recovered entropy-scanner padding.
+    # Width metadata is stored as pixels at $042D+visual-index. $A8 is the
+    # selected visual slot, so the trailing marker is text_base + width + 8.
+    # Keep the historical 25-byte scanner allocation size-neutral; the final
+    # six NOPs are unreachable padding after RTS.
     assembler.label("selection_span")
     assembler.emit(0x98, 0x48)  # TYA / PHA -- preserve caller Y
-    assembler.emit(0xA5, 0x98, 0x38, 0xE5, 0xA8, 0xA8)  # ($98-$A8) -> Y
-    assembler.absolute(0xB9, MENU_WIDTH_TABLE_CPU_ADDRESS)  # LDA widths,Y
-    assembler.emit(0x0A, 0x0A)  # decoder X was 2*glyphs; now 8*glyphs
+    assembler.emit(0xA4, 0xA8)  # LDY $A8 -- selected visual slot
+    assembler.absolute(0xB9, MENU_WIDTH_WORK_RAM_ADDRESS)
     assembler.emit(0x18, 0x69, 0x08, 0x65, 0x14, 0x85, 0x31)
-    assembler.emit(0x68, 0xA8, 0xA5, 0x31, 0x60)  # restore Y; return right X
+    assembler.emit(0x68, 0xA8, 0xA5, 0x31, 0x60)
+    assembler.emit(0xEA, 0xEA, 0xEA, 0xEA, 0xEA, 0xEA)
 
     blob = assembler.finish()
     if len(blob) > SCANNER_REGION_SIZE:
@@ -325,7 +369,7 @@ def _build_scanner() -> tuple[bytes, int, int, int, int, int]:
     )
 
 
-def _build_category_decoder() -> tuple[bytes, int]:
+def _build_category_decoder() -> bytes:
     """Build the compact trie walker in the recovered decoder region."""
     assembler = _Assembler(CATEGORY_CPU_ADDRESS)
     assembler.emit(0xA2, 0x00)
@@ -345,22 +389,12 @@ def _build_category_decoder() -> tuple[bytes, int]:
     assembler.label("tree")
     assembler.emit(*ENTROPY_TREE)
 
-    # Menu labels decode into $8747 with two bytes per visible glyph. X is
-    # therefore exactly twice the visible label width when the record ends.
-    # $99 counts the labels still being drawn, so use it as a stable 1..8 table
-    # index. $8758-$875F lies beyond the eight-glyph menu staging area and is
-    # overwritten normally when dialogue resumes.
-    assembler.label("menu_width_capture")
-    assembler.emit(0x8A, 0xA4, 0x99)  # TXA / LDY $99
-    assembler.absolute(0x99, MENU_WIDTH_TABLE_CPU_ADDRESS)  # STA widths,Y
-    assembler.emit(0xA9, 0x00, 0x85, 0x69, 0x60)  # original epilogue + RTS
-
     blob = assembler.finish()
     if len(blob) > CATEGORY_REGION_SIZE:
         raise EntropyRuntimeError(
             "entropy category decoder exceeds its region"
         )
-    return blob, assembler.labels["menu_width_capture"]
+    return blob
 
 
 def _build_frontend(bits_address: int, base_address: int) -> bytes:
@@ -409,9 +443,7 @@ def _build_frontend(bits_address: int, base_address: int) -> bytes:
     ENTROPY_MENU_INIT_CPU_ADDRESS,
     ENTROPY_SELECTION_SPAN_CPU_ADDRESS,
 ) = _build_scanner()
-_CATEGORY_CODE, ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS = (
-    _build_category_decoder()
-)
+_CATEGORY_CODE = _build_category_decoder()
 _FRONTEND_CODE = _build_frontend(
     ENTROPY_BITS_TABLE_CPU_ADDRESS,
     ENTROPY_BASE_TABLE_CPU_ADDRESS,
@@ -440,15 +472,7 @@ _MENU_BRANCH = bytes(
         0xEA,
     )
 )
-_MENU_WIDTH_CAPTURE_CALL = bytes(
-    (
-        0x20,
-        ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS & 0xFF,
-        ENTROPY_MENU_WIDTH_CAPTURE_CPU_ADDRESS >> 8,
-        0x60,
-        0xEA,
-    )
-)
+_MENU_WIDTH_CAPTURE_CALL = bytes.fromhex("20 DF 6D 60 EA")
 _DYNAMIC_SELECTION_SPAN_CALL = bytes(
     (
         0x20,
@@ -596,14 +620,14 @@ ENTROPY_RUNTIME_PATCHES = (
         5,
         "002AAB0B912D72966AEF53951C21D4652EA570282197847178F097CB3E4F353E",
         _MENU_WIDTH_CAPTURE_CALL,
-        "capture decoded menu label width",
+        "capture decoded menu width in Work RAM",
     ),
     HashGuardedPatch(
         0x989F,
         7,
-        "2984E2D892D6B25057EE1BCFC1F1AD40CFD9D0DE279D3A86513C9FD1333DE203",
+        "795716EA363F392E7057E46EE5DFE8D2001269B21826E48372059E3D095499AD",
         _DYNAMIC_SELECTION_SPAN_CALL,
-        "dynamic menu selection bracket span",
+        "dynamic menu trailing cursor span",
     ),
 )
 
@@ -652,6 +676,8 @@ def patch_entropy_nov2(data: bytes) -> bytes:
     result = bytearray(data)
     for base_patch in BASE_RUNTIME_PATCHES:
         base_patch.apply(result)
+    for menu_patch in DYNAMIC_MENU_LAYOUT_PATCHES:
+        menu_patch.apply(result)
     for prerequisite_patch in ENTROPY_PREREQUISITE_PATCHES:
         prerequisite_patch.apply(result)
     _guard_entropy_prerequisites(result)

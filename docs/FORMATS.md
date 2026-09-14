@@ -186,8 +186,9 @@ therefore pack the complete labels at variable lengths, regenerate those page
 pointers, move the two intervening secondary tables while updating their
 `$A210`/`$A212` base pointers, and shift scenario group zero by the same
 amount. The scenario dictionary and groups then use the bytes recovered from
-shorter menu records. The overlay size and fixed suffix still remain exactly
-unchanged.
+shorter menu records. The fixed suffix remains byte- and address-stable; the canonical
+overlay payload may nevertheless grow through proven spill placement as long as the
+loaded end remains below NOV3 at `$D7B5` and the fixed-size FDS side still fits.
 
 ## Font and title assets
 

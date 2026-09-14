@@ -114,9 +114,16 @@ need.
 
 ### Scenario rebuild
 
-Scenario group starts and the dictionary may move inside their reserved region.
-The region must not extend past `dictionary_end_offset` when
-`preserve_memory_footprint=True`.
+`scenario.py` still supports `preserve_memory_footprint=True` for native/source-analysis
+rebuilds; in that mode group/table/dictionary data must remain before the recovered
+fixed tail. That is a diagnostic compatibility mode, not the canonical release
+capacity model.
+
+The production entropy builder may keep complete groups inside the original text
+reservation and spill other complete groups after the original source payload while
+regenerating their pointers. The fixed source-owned tail remains byte- and
+address-stable, the rebuilt overlay must end before resident NOV3 at `$D7B5`, and the
+containing FDS side must still serialize to exactly 65,500 bytes.
 
 ### Fixed-record table patch
 
@@ -124,7 +131,8 @@ Scenario menus use the recovered menu addressing model:
 one base pointer plus page pointers for records 32, 64, and 96. It repacks
 those records at variable lengths, regenerates the page index, updates the
 verified secondary-table pointers, and shares the recovered bytes with the
-scenario region. No fixed suffix or overlay size moves.
+scenario region. The fixed suffix remains at its recovered loaded address, but
+the canonical overlay payload itself may grow when safe spill placement is available.
 
 ### Byte-exact program/UI patch
 

@@ -1,7 +1,9 @@
 # Documentation index
 
 The maintained documentation describes the current source-only translation and
-release pipeline. Retired implementation snapshots and commands remain in Git history.
+release pipeline. Exact retired implementation snapshots remain in Git history, while
+important architectural transitions and superseded constraints are also preserved in
+`docs/history/` as permanent engineering records.
 
 ## Start here
 
@@ -35,22 +37,31 @@ not replacement sources.
 1. [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md)
 2. [Architecture](ARCHITECTURE.md)
 3. [Formats](FORMATS.md)
-4. [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md)
-5. [Development guide](DEVELOPMENT.md)
-6. [Module map](MODULE_MAP.md)
-7. [CLI reference](CLI_REFERENCE.md)
-8. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
-9. [Private fixtures](PRIVATE_FIXTURES.md)
+4. [Gameplay script and event VM](GAMEPLAY_SCRIPT_ENGINE.md)
+5. [Gameplay graphics and scene engine](GAMEPLAY_GRAPHICS_ENGINE.md)
+6. [Development guide](DEVELOPMENT.md)
+7. [Module map](MODULE_MAP.md)
+8. [CLI reference](CLI_REFERENCE.md)
+9. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
+10. [Private fixtures](PRIVATE_FIXTURES.md)
+11. [Permanent engineering history](history/README.md)
 
 The reverse-engineering guide is the maintainer-level runtime map: it connects FDS
 file offsets, CPU load addresses, packed-text streams, NOV2 renderer behavior,
 scenario/menu addressing, font/CHR ownership, NOV4 title PPU/NMI sequencing, known
 failure modes, debugger breakpoints, and a repeatable evidence-to-fix workflow.
 
+The gameplay VM reference records the recovered high-nibble interpreter families,
+script label/subroutine table, persistent flag bank, predicate/control-flow model,
+audio command latches, exploration primitives, runtime CHR transform command,
+scene transitions, and the 98.6504% source-reachability baseline. Its remaining
+frontier is value-level semantic correlation rather than discovery of the VM skeleton.
+
 The gameplay graphics reference records the recovered `OB*`/`OBJ*`/`BG*` raw-CHR
-format, PPU destinations, NOV2 scene file-ID table, and partial-overlay behavior. It
-also separates those verified file-level facts from the still-unrecovered
-nametable/metasprite/palette metadata that consumes the tiles.
+format, PPU destinations, NOV2 scene file-ID table, partial-overlay behavior,
+metasprites, actor layouts, hotspot rectangles, direct nametable patches, palette
+records/animation, and animation/motion stream ownership. Remaining unknowns are
+narrow value-level semantics and human-facing names, not the basic data architecture.
 
 Candidate and strict release builds use the single source-locked release builder.
 Low-level parsing and inspection commands remain available, but obsolete standalone
@@ -61,7 +72,8 @@ bank/UI construction commands are no longer part of the public CLI.
 - [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md)
 - [English dialogue pagination policy](ENGLISH_PAGINATION_POLICY.md)
 - [NOV4 font-source safety](NOV4_FONT_SOURCE_SAFETY.md)
-- [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md)
+- [Gameplay script and event VM](GAMEPLAY_SCRIPT_ENGINE.md)
+- [Gameplay graphics and scene engine](GAMEPLAY_GRAPHICS_ENGINE.md)
 - [Title sequence](TITLE_SEQUENCE.md)
 - [Runtime playtest matrix](PLAYTEST_MATRIX.md)
 
@@ -93,4 +105,5 @@ archived or generated English string as the playable source.
   recorded edits, and scene checks used by the playtest matrix.
 - [`../audit/third_party/`](../audit/third_party/README.md): completed third-party
   comparison evidence.
+- [Permanent engineering history](history/README.md): preserved architectural transitions, failed experiments, and superseded constraints that must survive ordinary stale-documentation cleanup.
 - Git history: exact deleted code, old command implementations, and prior file states.

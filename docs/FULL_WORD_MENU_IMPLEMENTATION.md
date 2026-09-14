@@ -49,9 +49,11 @@ unmodeled relocation rule.
 ## Canonical entropy packing
 
 `release-build` encodes scenario dialogue and full-word menu labels through
-`entropy_compression.py` and `entropy_scenario.py`. The generated dictionary may
-contain up to 255 entries; dictionary definitions can reference earlier entries
-only, keeping expansion acyclic and bounded.
+`entropy_compression.py` and `entropy_scenario.py`. The frozen runtime ABI can
+represent dictionary references 1-255, but the current production optimizer uses
+one explicit **128-entry maximum for every scenario bank**. Dictionary definitions
+can reference earlier entries only, keeping expansion acyclic and bounded; candidate
+phrases are capped at 12 grammar tokens and nesting depth at 4.
 
 Entropy records are **not** the byte-aligned native format. Records inside one
 independently addressed stream are bit-contiguous and pad only at the stream
@@ -65,15 +67,19 @@ engine but through the frozen prefix grammar. There is no second Adaptive255 or
 
 ## Dynamic selection brackets
 
-Menu labels can now have different visible widths. The entropy runtime records
-the decoded width of each menu label in the existing staging area and derives
-the selected label's right-bracket coordinate from that width. This replaces
-the old fixed six/eight-glyph span without placing code or scratch state in the
-live `$9390-$93AF` palette region.
+Menu labels can now have different visible widths. The production runtime records
+each decoded label's pixel width at Work RAM `$042D+visual_index` and derives the
+draw count, dynamic second-column placement, and leading/trailing selector positions
+from that metadata. This replaces the old fixed six/eight-glyph span without placing
+code or scratch state in the live `$9390-$93AF` palette region.
 
-The text blitter still caps visible menu labels at the recovered eight-glyph
-surface. Full-word here means the complete configured label, not arbitrary
-unbounded menu prose.
+The reconstructed renderer clears 36 staging bytes, corresponding to **18 glyphs** at
+two staging bytes per glyph. The production validator therefore treats 18 visible
+glyphs as the conservative individual-label ceiling for this renderer architecture.
+Two-column rows are validated from their actual dynamic coordinates; the current
+conservative pair rule is at most 20 combined glyphs with the trailing cursor no
+farther right than x=`$F8`. The former eight-glyph limit was an implementation
+artifact, not an engine or NES hardware maximum.
 
 ## Fixed decoder-visible text
 
@@ -108,7 +114,17 @@ python work/tools/audit_fixed_menu_labels.py `
 ```
 
 Static and binary checks prove that the labels encode and decode exactly. They
-cannot prove every runtime call site. Manual playtesting must still open menus
-across page boundaries, move the cursor through them, select entries, use
-Back/Cancel, save/load, and complete the Zenpen-to-Kouhen disk flow before
-promotion.
+cannot prove every runtime call site. The source-backed geometry audit also parses the recovered `$A210-$A212`
+primary-menu descriptor tables from the original Zenpen and Kouhen images. Across
+the eleven menu banks, 367 descriptors reference all 721 configured labels. Because
+NOV2 `$9803` can compact predicate-surviving choices, the audit over-approximates
+runtime states by testing every order-preserving visible subset through eight
+choices; all resulting two-column pairings must fit the dynamic geometry. Run:
+
+```powershell
+python work/tools/audit_menu_geometry.py ORIGINAL_ZENPEN.fds ORIGINAL_KOUHEN.fds
+```
+
+Manual playtesting must still open menus across page boundaries, move the cursor
+through them, select entries, use Back/Cancel, save/load, and complete the
+Zenpen-to-Kouhen disk flow before promotion.

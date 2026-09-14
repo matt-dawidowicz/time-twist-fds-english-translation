@@ -6,7 +6,8 @@ import csv
 from pathlib import Path
 
 from time_twist import ui
-from time_twist.english import encode_english, validate_display_width
+from time_twist.english import encode_english
+from time_twist.menu_geometry import validate_menu_label
 from time_twist.release import SCENARIO_LOCATIONS
 from time_twist.textcodec import pack_records
 
@@ -31,7 +32,7 @@ def rows() -> list[dict[str, object]]:
                 encode_ok = False
                 encode_error = str(error)
             try:
-                validate_display_width(label)
+                validate_menu_label(label)
             except Exception as error:  # pragma: no cover - diagnostic path
                 width_ok = False
                 width_error = str(error)

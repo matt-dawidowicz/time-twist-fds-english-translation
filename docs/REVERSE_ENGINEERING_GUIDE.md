@@ -7,9 +7,12 @@ which engine owns a symptom, find the relevant pointer or runtime state, prove t
 constraint, patch the narrowest layer, and add the right regression test without
 rediscovering the game from scratch.
 
-Read this with [Architecture](ARCHITECTURE.md), [Formats](FORMATS.md), and the
-[Code tour](CODE_TOUR.md). The specialized title, menu, and font documents remain
-authoritative for their subjects; this guide connects them into one runtime model.
+Read this with [Architecture](ARCHITECTURE.md), [Formats](FORMATS.md), the
+[Gameplay script engine](GAMEPLAY_SCRIPT_ENGINE.md), the
+[Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md), and the
+[Code tour](CODE_TOUR.md). The specialized title, menu, font, gameplay-VM, and
+graphics documents remain authoritative for their subjects; this guide connects them
+into one runtime model.
 
 ## Evidence labels
 
@@ -214,9 +217,10 @@ runtime format and is not a harmless compressor tweak.
 | 15 | `11001` | 5 | extended 37-63 |
 
 The runtime ABI can address dictionary entries through 255. The current production
-optimizer is deliberately tighter: normal banks search up to 128 entries, `TT2` is
-capped at 96, dictionary phrases are capped at 12 grammar tokens, and nesting depth
-is capped at 4.
+optimizer searches up to 128 entries for every scenario bank, caps dictionary phrases
+at 12 grammar tokens, and caps nesting depth at 4. The former TT2-specific 96-entry
+exception was removed after source-backed benchmarking showed the normal 128-entry
+policy was safe and slightly smaller.
 
 ### The framing rule that caused several historical failures
 
@@ -358,15 +362,25 @@ safe to guess.
 
 ### Menu renderer width behavior
 
-The recovered visible menu surface supports eight glyphs. The production runtime
-patches two native six-glyph row limits to eight and replaces the fixed selection
-bracket width with a dynamic width:
+The native renderer used fixed six-glyph geometry. An early English patch raised two
+loop counts to eight, but later reverse engineering and MesenCE testing proved that
+eight was only a conservative implementation limit. The production renderer is now
+variable-width:
 
 - when a label finishes decoding, X is exactly twice its visible glyph count;
-- the runtime stores that width in the existing `$8758-$875F` staging area;
-- the selection helper uses the selected visual slot to derive the right bracket.
+- a width recorder converts that to pixels and stores it at Work RAM
+  `$042D+visual_index`;
+- the first-row draw count comes from that metadata with a nonzero fallback;
+- the paired row reuses the first-row count rather than a fixed literal;
+- the second column is positioned from the corresponding first-column label width;
+- leading and trailing selection cursors use the same width metadata; and
+- the staging clear spans 36 bytes, supporting up to 18 glyphs at two staging bytes
+  per glyph.
 
-Do not store scratch data in `$9390-$93AF`; that region is live palette state.
+For two-column rows, validate actual use-site geometry rather than applying a global
+eight-character rule. The conservative production model allows at most 20 combined
+glyphs and keeps the trailing cursor at or before x=`$F8`. Do not store code or
+scratch data in `$9390-$93AF`; that region is live palette state.
 
 ---
 
@@ -714,15 +728,31 @@ Japanese or garbled, the fix belongs here, not in the shared text decoder.
 
 ---
 
-## 15. Graphics files not yet modeled as a generic editable engine
+## 15. Gameplay graphics and scene data are now structurally recovered
 
-The game also contains `OB*`, `OBJ*`, and `BG*` graphics components. Their existence
-and FDS identities are known, but the public translation architecture does not yet
-claim one universal decoded object/background format or relocation model for all of
-them.
+The `OB*`, `OBJ*`, and `BG*` components are no longer an unknown graphics family.
+They are verified raw NES 2bpp CHR files loaded directly into CHR-RAM, with object
+files targeting pattern table 0 and background files targeting pattern table 1.
+NOV2's scene file-ID table determines which program and CHR overlays coexist, and
+same-address/partial overlays intentionally inherit untouched RAM or CHR from the
+previous base component.
 
-Treat these as **UNKNOWN unless a specific component has been recovered**. Before a
-future graphics edit becomes production code, document:
+The maintained [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) documents the
+recovered data architecture:
+
+- `$A200` static metasprite placements;
+- `$A202` actor spawn/layout records;
+- `$A204` packed metasprite definitions rendered into OAM;
+- `$A208` palette definitions;
+- `$A20C` hotspot rectangles and the opposing `$FD/$FE` one-way sentinels;
+- `$A21C` palette-animation sequences;
+- `$A21E` direct nametable tile-patch descriptors and RLE streams;
+- `$A22C/$A22E/$A230` actor animation/motion selectors and stream tables;
+- source-used `D2` runtime background-CHR clone/flip behavior.
+
+This does **not** make arbitrary relocation safe. Size-neutral CHR, metasprite,
+placement, map, and palette edits still require exact ownership/source guards and
+scene-composition awareness. For relocation or a new graphics path, document:
 
 - file load address and FDS file kind;
 - CHR/nametable/sprite/palette destination;
@@ -733,8 +763,9 @@ future graphics edit becomes production code, document:
 - exact free-space/relocation proof;
 - emulator evidence and a regression test.
 
-Do not extrapolate the title allocator or `SON-KOUH` RLE format to unrelated graphics
-without evidence.
+Do not extrapolate the title allocator or `SON-KOUH` RLE format to gameplay graphics;
+the recovered gameplay background-map path is a distinct `$A21E` descriptor/RLE
+engine.
 
 ---
 
@@ -777,12 +808,13 @@ remain intact.
 
 ### Menu text leaves stale garbage at the right edge
 
-Check menu clear tile `$C0` and the eight-glyph renderer. Do not apply the same opaque
-clear to dialogue tails.
+Check menu clear tile `$C0`, the 36-byte variable-width staging clear, and the
+metadata-derived draw count. Do not apply the same opaque clear to dialogue tails.
 
 ### Selection brackets fit short labels but not long labels
 
-Break at `$946B` and `$989F`; inspect the captured width table at `$8758-$875F`.
+Break at `$946B` and `$989F`; inspect the selected width byte at
+`$042D+visual_index`, then verify the derived column/cursor coordinates.
 
 ### A repeating letter/pattern appears in the post-title background
 
@@ -803,6 +835,13 @@ shape; a `JSR` substituted for the production `JMP` is a prime suspect.
 ### Only the Kouhen direct-boot warning is wrong
 
 Inspect `SON-KOUH`; it is a private tile/RLE path, not the scenario text engine.
+
+### A gameplay sprite/background/map is wrong
+
+Start with the active NOV2 scene-load index and composed `$A200`/CHR state. Then use
+`GAMEPLAY_GRAPHICS_ENGINE.md` to identify the owning CHR file, metasprite/placement
+record, `$A21E` map descriptor, palette record, or `D2` runtime CHR transform before
+patching bytes.
 
 ---
 
@@ -941,7 +980,11 @@ The following should remain explicit so future work does not silently invent rul
 - Control codes are not assigned one universal narrative meaning. Production relies
   only on recovered geometry and record-specific semantic evidence.
 - `CTRL:7` is decoder-representable but has no generic production-layout rule.
-- `OB*`, `OBJ*`, and `BG*` files are not one proven universal graphics format.
+- Gameplay graphics structures are recovered, but arbitrary relocation is not a
+  generic safe operation; same-address overlays and partial CHR residency remain
+  scene-specific ownership constraints.
+- Human-facing direction names for the opposing `$FD/$FE` hotspot sentinels remain
+  unassigned even though their one-way/opposite binary behavior is verified.
 - Hardware-visible title behavior depends on NMI/PPU ordering that static asset tests
   cannot fully prove.
 - FDS BIOS calls can mutate staging state outside the immediate source buffer; title
@@ -968,6 +1011,8 @@ release builder.
 | Four-row English layout/control policy | `work/time_twist/production_translation_core.py` |
 | Record-scoped production exceptions | `work/time_twist/production_translation.py` |
 | Fixed prompts, special UI, Kouhen guard | `work/time_twist/ui.py`, `ui_fixed_tables.py` |
+| Gameplay script/event VM | `docs/GAMEPLAY_SCRIPT_ENGINE.md`, `work/tools/audit_recovered_engine_surfaces.py` |
+| Gameplay graphics/scene tables | `docs/GAMEPLAY_GRAPHICS_ENGINE.md`, `work/tools/audit_recovered_engine_surfaces.py` |
 | Dialogue font and tile ownership | `work/time_twist/font.py` |
 | NOV4 title memory map | `work/time_twist/title_layout.py` |
 | Exact title asset allocation | `work/time_twist/title_assets.py` |
