@@ -8,6 +8,16 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from time_twist import ui
+from time_twist.english import encode_english, render_english
+from time_twist.entropy_codec import pack_entropy_pages, pack_entropy_stream
+from time_twist.entropy_compression import (
+    expand_entropy_dictionary,
+    expand_entropy_record,
+)
+from time_twist.scenario import DICTIONARY_POINTER_OFFSET
+from time_twist.textcodec import PackedSymbol, SymbolKind
+
 from tools import (
     audit_fixed_menu_labels,
     audit_full_word_menu_targets,
@@ -30,6 +40,63 @@ class FixedMenuAuditToolTests(unittest.TestCase):
                 audit_fixed_menu_labels._load_targets(path),
                 {("TT1B", 0): "Canonical"},
             )
+
+    def test_candidate_menu_decoder_uses_entropy_pages_and_dictionary(self) -> None:
+        """Decode the production menu format rather than native packed text."""
+        bank_name = "TT1B"
+        load_address = 0xA200
+        spec = ui.FIXED_RECORD_TABLE_SPECS[bank_name]
+        dictionary = (encode_english("Look"),)
+        reference = (
+            PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0),
+        )
+        menu = tuple(reference for _ in spec.records)
+        packed_menu, page_starts = pack_entropy_pages(
+            menu, records_per_page=ui.FIXED_RECORDS_PER_PAGE
+        )
+        pointer_bytes = ui.fixed_record_table_page_pointer_bytes(bank_name)
+        page_index_offset = spec.start + len(packed_menu)
+        dictionary_offset = page_index_offset + pointer_bytes
+        packed_dictionary = pack_entropy_stream(dictionary)
+        data = bytearray(dictionary_offset + len(packed_dictionary))
+        data[spec.start:page_index_offset] = packed_menu
+        data[
+            ui.FIXED_RECORD_PAGE_POINTER_OFFSET :
+            ui.FIXED_RECORD_PAGE_POINTER_OFFSET + 2
+        ] = (load_address + page_index_offset).to_bytes(2, "little")
+        for index, start in enumerate(page_starts[1:]):
+            offset = page_index_offset + index * 2
+            data[offset : offset + 2] = (
+                load_address + spec.start + start
+            ).to_bytes(2, "little")
+        data[
+            DICTIONARY_POINTER_OFFSET : DICTIONARY_POINTER_OFFSET + 2
+        ] = (load_address + dictionary_offset).to_bytes(2, "little")
+        data[dictionary_offset:] = packed_dictionary
+
+        decoded_menu = audit_fixed_menu_labels._candidate_menu_records(
+            bytes(data),
+            bank_name=bank_name,
+            load_address=load_address,
+            record_count=len(menu),
+        )
+        decoded_dictionary = (
+            audit_fixed_menu_labels._candidate_dictionary_prefix(
+                bytes(data),
+                load_address=load_address,
+                required_entries=1,
+            )
+        )
+        expansions = expand_entropy_dictionary(decoded_dictionary)
+
+        self.assertEqual(len(decoded_menu), len(menu))
+        self.assertEqual(decoded_menu[0], reference)
+        self.assertEqual(
+            render_english(
+                expand_entropy_record(decoded_menu[-1], expansions)
+            ),
+            "Look",
+        )
 
     def test_target_audit_emits_the_current_target_schema(self) -> None:
         """Prevent a silent producer/consumer schema drift."""
