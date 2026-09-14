@@ -17,7 +17,6 @@ from time_twist.entropy_compression import (
 )
 from time_twist.scenario import DICTIONARY_POINTER_OFFSET
 from time_twist.textcodec import PackedSymbol, SymbolKind
-
 from tools import (
     audit_fixed_menu_labels,
     audit_full_word_menu_targets,
