@@ -46,26 +46,38 @@ def _load_final_authority(path: Path) -> Image.Image:
             f"cannot read definitive IPS title authority: {authority_path}"
         ) from exc
     if payload.get("schema") != "Time Twist definitive IPS logo v1":
-        raise TitlePatchError("unsupported definitive IPS title authority schema")
+        raise TitlePatchError(
+            "unsupported definitive IPS title authority schema"
+        )
     if (
         payload.get("width"),
         payload.get("height"),
         payload.get("owned_rows"),
     ) != (256, 240, 97):
-        raise TitlePatchError("definitive IPS title authority has invalid geometry")
+        raise TitlePatchError(
+            "definitive IPS title authority has invalid geometry"
+        )
     if payload.get("palette") != [list(color) for color in TITLE_PALETTE]:
         raise TitlePatchError("definitive IPS title authority palette drifted")
     if payload.get("final_pixel_sha256") != DEFINITIVE_FINAL_PIXEL_SHA256:
-        raise TitlePatchError("definitive IPS title authority hash metadata drifted")
+        raise TitlePatchError(
+            "definitive IPS title authority hash metadata drifted"
+        )
     encoded = payload.get("owned_pixels_zlib_base64")
     if not isinstance(encoded, str):
-        raise TitlePatchError("definitive IPS title authority has no pixel payload")
+        raise TitlePatchError(
+            "definitive IPS title authority has no pixel payload"
+        )
     try:
         owned = zlib.decompress(base64.b64decode(encoded, validate=True))
     except (ValueError, zlib.error) as exc:
-        raise TitlePatchError("definitive IPS title pixel payload is invalid") from exc
+        raise TitlePatchError(
+            "definitive IPS title pixel payload is invalid"
+        ) from exc
     if len(owned) != 256 * 97 or any(pixel > 3 for pixel in owned):
-        raise TitlePatchError("definitive IPS title pixel payload has invalid data")
+        raise TitlePatchError(
+            "definitive IPS title pixel payload has invalid data"
+        )
     full = owned + bytes(256 * (240 - 97))
     if _sha256(full) != DEFINITIVE_FINAL_PIXEL_SHA256:
         raise TitlePatchError("definitive IPS title pixels drifted")
