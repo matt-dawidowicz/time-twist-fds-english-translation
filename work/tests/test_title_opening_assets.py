@@ -36,9 +36,7 @@ class TitleOpeningAssetTests(unittest.TestCase):
             payload["ips_sha256"],
             "915C0ED3600F5E560F9F588DC2100FE59772B5F7570E4F183565FBA9C77C6BA2",
         )
-        self.assertEqual(
-            payload["final_pixel_sha256"], DEFINITIVE_FINAL_PIXEL_SHA256
-        )
+        self.assertEqual(payload["final_pixel_sha256"], DEFINITIVE_FINAL_PIXEL_SHA256)
 
     def test_final_logo_uses_exact_ips_geometry_and_palette(self) -> None:
         """Lock the definitive logo's native bounds, indices, and pixel count."""
@@ -50,9 +48,7 @@ class TitleOpeningAssetTests(unittest.TestCase):
             sum(pixel != 0 for pixel in final.get_flattened_data()),
             7998,
         )
-        self.assertFalse(
-            any(final.crop((0, 97, 256, 240)).get_flattened_data())
-        )
+        self.assertFalse(any(final.crop((0, 97, 256, 240)).get_flattened_data()))
 
     def test_slide_is_the_same_logo_silhouette_down_to_the_pixel(self) -> None:
         """Require the completed swipe to be the definitive logo in white."""
@@ -77,9 +73,7 @@ class TitleOpeningAssetTests(unittest.TestCase):
                     bool(final_pixels[x, y]),
                     f"slide/final silhouette differs at ({x},{y})",
                 )
-        self.assertFalse(
-            any(slide.crop((0, 96, 256, 240)).get_flattened_data())
-        )
+        self.assertFalse(any(slide.crop((0, 96, 256, 240)).get_flattened_data()))
 
     def test_ips_clock_and_trademark_details_are_retained(self) -> None:
         """Lock representative one-pixel details from the definitive patch."""
