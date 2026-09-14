@@ -12,7 +12,11 @@ from typing import Callable
 from PIL import Image
 
 from . import title_assets as _assets
-from .title_layout import DEFAULT_SLIDE_ASSET_NAME, TITLE_PALETTE, TitlePatchError
+from .title_layout import (
+    DEFAULT_SLIDE_ASSET_NAME,
+    TITLE_PALETTE,
+    TitlePatchError,
+)
 
 DEFINITIVE_IPS_AUTHORITY_NAME = "definitive_ips_logo.json"
 DEFINITIVE_FINAL_ASSET_NAME = "Time Twist approved native title.png"
@@ -47,11 +51,7 @@ def _load_final_authority(path: Path) -> Image.Image:
         payload.get("width"),
         payload.get("height"),
         payload.get("owned_rows"),
-    ) != (
-        256,
-        240,
-        97,
-    ):
+    ) != (256, 240, 97):
         raise TitlePatchError("definitive IPS title authority has invalid geometry")
     if payload.get("palette") != [list(color) for color in TITLE_PALETTE]:
         raise TitlePatchError("definitive IPS title authority palette drifted")
@@ -103,7 +103,9 @@ def _target_to_indices(
         return _ORIGINAL_TARGET_LOADER(path, last_owned_row=last_owned_row)
     if not 0 <= last_owned_row < 240:
         raise TitlePatchError("native title authority row limit is invalid")
-    if any(result.crop((0, last_owned_row + 1, 256, 240)).get_flattened_data()):
+    if any(
+        result.crop((0, last_owned_row + 1, 256, 240)).get_flattened_data()
+    ):
         raise TitlePatchError(
             "native title authority owns pixels below its approved rows"
         )
