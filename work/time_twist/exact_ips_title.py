@@ -21,7 +21,12 @@ from pathlib import Path
 from PIL import Image
 
 from .fds import FdsImage
-from .title_assets import _draw_text, _tile_bytes, decode_title_rle, encode_title_rle
+from .title_assets import (
+    _draw_text,
+    _tile_bytes,
+    decode_title_rle,
+    encode_title_rle,
+)
 from .title_layout import (
     CLOCK_SOURCE_TILE,
     DEFAULT_SUBTITLE,
@@ -33,10 +38,18 @@ from .title_layout import (
     TitlePatchError,
 )
 
-BASE_ZENPEN_SHA256 = "B9424DD29EE195A9FA9AC4F844F058C380E30F7ACA741218789FA8611F741916"
-BASE_NOV4_SHA256 = "89F50DA5A0BD2CE318DD9DBBAF3CE976F353E5EC0AC6357FD91438CDAC927694"
-PATCHED_NOV4_SHA256 = "ABDD4C52BE8859B6A70AC02AC7388925696596611CE03C0628F73B5C59B4C8D5"
-DEFINITIVE_IPS_SHA256 = "915C0ED3600F5E560F9F588DC2100FE59772B5F7570E4F183565FBA9C77C6BA2"
+BASE_ZENPEN_SHA256 = (
+    "B9424DD29EE195A9FA9AC4F844F058C380E30F7ACA741218789FA8611F741916"
+)
+BASE_NOV4_SHA256 = (
+    "89F50DA5A0BD2CE318DD9DBBAF3CE976F353E5EC0AC6357FD91438CDAC927694"
+)
+PATCHED_NOV4_SHA256 = (
+    "ABDD4C52BE8859B6A70AC02AC7388925696596611CE03C0628F73B5C59B4C8D5"
+)
+DEFINITIVE_IPS_SHA256 = (
+    "915C0ED3600F5E560F9F588DC2100FE59772B5F7570E4F183565FBA9C77C6BA2"
+)
 DEFINITIVE_IPS_ENV = "TIME_TWIST_DEFINITIVE_TITLE_IPS"
 DEFINITIVE_IPS_FILENAME = "TimeTwist-Zenpen-newlogo.ips"
 
@@ -121,7 +134,9 @@ def _apply_ips(source: bytes, patch: bytes) -> bytes:
             output.extend(b"\x00" * (end - len(output)))
         output[target:end] = payload
     if offset != len(patch):
-        raise TitlePatchError("unexpected bytes after definitive title IPS EOF")
+        raise TitlePatchError(
+            "unexpected bytes after definitive title IPS EOF"
+        )
     return bytes(output)
 
 
@@ -134,11 +149,17 @@ def _exact_ips_nov4(zenpen_raw: bytes) -> tuple[bytes, bytes]:
     base_image = FdsImage.from_bytes(zenpen_raw)
     base_nov4 = base_image.sides[0].find_file("NOV4").data
     if _sha256(base_nov4) != BASE_NOV4_SHA256:
-        raise TitlePatchError("NOV4 baseline does not match the definitive title source")
-    patched_image = FdsImage.from_bytes(_apply_ips(zenpen_raw, _definitive_ips()))
+        raise TitlePatchError(
+            "NOV4 baseline does not match the definitive title source"
+        )
+    patched_image = FdsImage.from_bytes(
+        _apply_ips(zenpen_raw, _definitive_ips())
+    )
     patched_nov4 = patched_image.sides[0].find_file("NOV4").data
     if _sha256(patched_nov4) != PATCHED_NOV4_SHA256:
-        raise TitlePatchError("exact IPS application did not reproduce the known NOV4")
+        raise TitlePatchError(
+            "exact IPS application did not reproduce the known NOV4"
+        )
     return base_nov4, patched_nov4
 
 
@@ -147,7 +168,9 @@ def _overlay_exact_ips_differences(
 ) -> bytes:
     """Copy every byte changed by the historical IPS, preserving unrelated localization."""
     if len(data) != len(base_nov4) or len(patched_nov4) != len(base_nov4):
-        raise TitlePatchError("NOV4 layout changed before definitive title installation")
+        raise TitlePatchError(
+            "NOV4 layout changed before definitive title installation"
+        )
     result = bytearray(data)
     overlap = []
     for index, (base_byte, patched_byte) in enumerate(
@@ -192,7 +215,9 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
     final, second_offset = decode_title_rle(data, FINAL_NAMETABLE_START)
     second, terminator_offset = decode_title_rle(data, second_offset)
     if terminator_offset >= len(data) or data[terminator_offset] != 0xFF:
-        raise TitlePatchError("definitive IPS title stream lost its terminator")
+        raise TitlePatchError(
+            "definitive IPS title stream lost its terminator"
+        )
 
     final_ids = set(final[:960])
     second_ids = set(second[:960])
@@ -232,7 +257,9 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
     final_mut = bytearray(final)
     for tile_x, pattern_index in enumerate(tile_pattern_indices):
         if pattern_index >= 0:
-            final_mut[_SUBTITLE_TILE_ROW * 32 + tile_x] = tile_ids[pattern_index]
+            final_mut[_SUBTITLE_TILE_ROW * 32 + tile_x] = tile_ids[
+                pattern_index
+            ]
 
     rebuilt_stream = b"".join(
         (encode_title_rle(bytes(final_mut)), encode_title_rle(second), b"\xff")
@@ -281,7 +308,9 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
     )
     helper = helper_prefix + upload + helper_suffix
     if NOV4_LOAD_ADDRESS + helper_offset + len(helper) != glyph_address:
-        raise TitlePatchError("subtitle helper source-address calculation drifted")
+        raise TitlePatchError(
+            "subtitle helper source-address calculation drifted"
+        )
 
     loaded_end = glyph_address + len(glyph_data)
     if loaded_end > NOV3_LOAD_ADDRESS:
@@ -301,12 +330,18 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
     result.extend(helper)
     result.extend(glyph_data)
 
-    check_final, check_second_offset = decode_title_rle(result, FINAL_NAMETABLE_START)
-    check_second, check_terminator = decode_title_rle(result, check_second_offset)
+    check_final, check_second_offset = decode_title_rle(
+        result, FINAL_NAMETABLE_START
+    )
+    check_second, check_terminator = decode_title_rle(
+        result, check_second_offset
+    )
     if check_final != bytes(final_mut) or check_second != second:
         raise TitlePatchError("subtitle title-stream verification failed")
     if result[check_terminator] != 0xFF:
-        raise TitlePatchError("subtitle title-stream terminator verification failed")
+        raise TitlePatchError(
+            "subtitle title-stream terminator verification failed"
+        )
     return bytes(result)
 
 
