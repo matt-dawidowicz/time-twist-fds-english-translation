@@ -186,17 +186,27 @@ class TitlePatchTests(unittest.TestCase):
             slide_logo.tobytes(), self.slide.crop((0, 0, 256, 96)).tobytes()
         )
 
-    def test_slide_runtime_finishes_on_exact_logo(self) -> None:
-        """Preserve the native oscillating scroll while ending on the IPS logo."""
+    def test_slide_runtime_stages_then_finishes_on_exact_logo(self) -> None:
+        """Lock hidden staging, first visible swipe, and completed IPS logo."""
         self.assertEqual(len(title.SLIDE_SCROLL_ORIGINS), 21)
+        self.assertEqual(title.SLIDE_SCROLL_ORIGINS[:2], (0x1F0, 0x01C))
         self.assertEqual(title.SLIDE_SCROLL_ORIGINS[-1], 0x100)
-        self.assertFalse(
-            any(
-                title.render_slide_logo_frame(
-                    self.assets, 0x1F0
-                ).get_flattened_data()
-            )
+
+        # $1F0 is installed while PPUMASK is blank. Its raw wrapped viewport
+        # contains a 43-pixel sliver, but the next NMI advances to $001C before
+        # rendering is restored, so $001C is the first displayed swipe frame.
+        staged = title.render_slide_logo_frame(self.assets, 0x1F0)
+        self.assertEqual(staged.getbbox(), (0, 41, 6, 53))
+        self.assertEqual(
+            sum(bool(pixel) for pixel in staged.get_flattened_data()), 43
         )
+        first_visible = title.render_slide_logo_frame(self.assets, 0x01C)
+        self.assertEqual(first_visible.getbbox(), (237, 41, 256, 82))
+        self.assertEqual(
+            sum(bool(pixel) for pixel in first_visible.get_flattened_data()),
+            327,
+        )
+
         completed = title.render_slide_logo_frame(self.assets, 0x100)
         self.assertEqual(
             completed.tobytes(), self.slide.crop((0, 0, 256, 96)).tobytes()

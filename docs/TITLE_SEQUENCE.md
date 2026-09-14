@@ -77,8 +77,9 @@ completed swipe and final title now use the definitive IPS logo geometry.
 
 The temporary Nintendo opening still occupies IDs `$B0-$D5`. Before the swipe,
 the helper blanks rendering, disables NMI, restores the title patterns, queues
-the monochrome palette, restores the first scroll origin, and lets the next NMI
-make the new state visible without a mixed-CHR frame.
+the monochrome palette, and restores the `$01F0` staging origin. Rendering stays
+blank until the next NMI advances the scroll to `$001C`; `$001C` is therefore
+the first displayed swipe frame, with no `$01F0` wrap sliver or mixed-CHR frame.
 
 At the final transition the helper:
 
@@ -112,7 +113,8 @@ Tests now lock:
   swipe pixels;
 - the current subtitle placement and unchanged ROM-owned lower title art;
 - the 3-tile final-phase reconstruction identity;
-- all 21 native swipe origins and the blank first/completed last states;
+- all 21 native swipe origins, the hidden `$01F0` staging geometry, the
+  first visible `$001C` frame, and the completed `$0100` state;
 - native attribute tables, Nintendo overlay restoration, clock source CHR, and
   clock metasprite preservation;
 - the IPS clock-origin bytes;
