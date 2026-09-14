@@ -6,8 +6,8 @@ import base64
 import hashlib
 import json
 import zlib
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 from PIL import Image
 
