@@ -27,7 +27,9 @@ class TitleOpeningAssetTests(unittest.TestCase):
     def test_authority_locks_source_patch_and_pixel_hash(self) -> None:
         """Bind the maintained pixels to the exact Japanese image and IPS."""
         payload = json.loads(AUTHORITY.read_text(encoding="utf-8"))
-        self.assertEqual(payload["schema"], "Time Twist definitive IPS logo v1")
+        self.assertEqual(
+            payload["schema"], "Time Twist definitive IPS logo v1"
+        )
         self.assertEqual(
             payload["base_zenpen_sha256"],
             "B9424DD29EE195A9FA9AC4F844F058C380E30F7ACA741218789FA8611F741916",
@@ -45,7 +47,9 @@ class TitleOpeningAssetTests(unittest.TestCase):
         final = _target_to_indices(FINAL)
         self.assertEqual(final.getbbox(), (9, 23, 246, 97))
         self.assertEqual(set(final.get_flattened_data()), {0, 1, 2, 3})
-        self.assertEqual(_sha256(final.tobytes()), DEFINITIVE_FINAL_PIXEL_SHA256)
+        self.assertEqual(
+            _sha256(final.tobytes()), DEFINITIVE_FINAL_PIXEL_SHA256
+        )
         self.assertEqual(
             sum(pixel != 0 for pixel in final.get_flattened_data()),
             7998,
@@ -60,7 +64,9 @@ class TitleOpeningAssetTests(unittest.TestCase):
         slide = _target_to_indices(SLIDE, last_owned_row=95)
         self.assertEqual(slide.getbbox(), (9, 23, 246, 96))
         self.assertEqual(set(slide.get_flattened_data()), {0, 1})
-        self.assertEqual(_sha256(slide.tobytes()), DEFINITIVE_SLIDE_PIXEL_SHA256)
+        self.assertEqual(
+            _sha256(slide.tobytes()), DEFINITIVE_SLIDE_PIXEL_SHA256
+        )
         self.assertEqual(
             sum(pixel != 0 for pixel in slide.get_flattened_data()),
             7982,
