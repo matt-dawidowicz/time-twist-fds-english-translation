@@ -42,7 +42,9 @@ class ExactIpsTitleContractTests(unittest.TestCase):
                     _definitive_ips()
 
     @patch("time_twist.exact_ips_title.decode_title_rle")
-    def test_space_only_subtitle_is_rejected_before_chr_upload(self, decode) -> None:
+    def test_space_only_subtitle_is_rejected_before_chr_upload(
+        self, decode
+    ) -> None:
         final = bytes(1024)
         second = bytes(1024)
         decode.side_effect = [(final, 100), (second, 200)]
