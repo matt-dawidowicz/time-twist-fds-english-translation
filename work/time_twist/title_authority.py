@@ -43,7 +43,11 @@ def _load_final_authority(path: Path) -> Image.Image:
         ) from exc
     if payload.get("schema") != "Time Twist definitive IPS logo v1":
         raise TitlePatchError("unsupported definitive IPS title authority schema")
-    if (payload.get("width"), payload.get("height"), payload.get("owned_rows")) != (
+    if (
+        payload.get("width"),
+        payload.get("height"),
+        payload.get("owned_rows"),
+    ) != (
         256,
         240,
         97,
@@ -99,9 +103,7 @@ def _target_to_indices(
         return _ORIGINAL_TARGET_LOADER(path, last_owned_row=last_owned_row)
     if not 0 <= last_owned_row < 240:
         raise TitlePatchError("native title authority row limit is invalid")
-    if any(
-        result.crop((0, last_owned_row + 1, 256, 240)).get_flattened_data()
-    ):
+    if any(result.crop((0, last_owned_row + 1, 256, 240)).get_flattened_data()):
         raise TitlePatchError(
             "native title authority owns pixels below its approved rows"
         )
