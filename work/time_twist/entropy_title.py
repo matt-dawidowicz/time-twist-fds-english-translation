@@ -4,8 +4,8 @@ The established title builder remains unchanged.  After it produces the exact
 reviewed title, this module applies a pure upper-CHR tile-ID permutation:
 
 * tile 0 is reserved as blank in both title phases;
-* the 53 transition tiles move from IDs 0..52 to 1..53;
-* fixed upper patterns are compacted into IDs 54..235;
+* the 3 transition tiles move from IDs 0..2 to 1..3;
+* fixed upper patterns are compacted into IDs 4..235;
 * only nametable rows rendered through the upper pattern table are remapped;
 * the final-delta upload target moves from PPU $1000 to $1010.
 

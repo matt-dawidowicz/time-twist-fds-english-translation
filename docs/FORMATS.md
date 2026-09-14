@@ -236,8 +236,9 @@ nametables followed by one `$FF`.
 Production uses two 256x240 indexed PNG authorities. The final image uses
 values 0-3 and may own rows 0-96. The completed swipe uses values 0-1 and may
 own rows 0-95. No production crop, scale, or palette search is performed:
-those indices become exact 2bpp tile pixels. The two phases deliberately keep
-their distinct GIF geometry.
+those indices become exact 2bpp tile pixels. Through rows 0-95 the swipe
+authority is the final IPS-derived logo silhouette rendered monochrome; row 96
+is final-state-only because the moving swipe viewport is 96 pixels high.
 
 ### Title split and animated clock
 
@@ -249,9 +250,11 @@ hand tiles, frame layouts, or animation timing.
 
 Background IDs `$00-$EB` belong to the title; `$EC-$FF` remain the original
 hand source. Nintendo temporarily owns `$B0-$D5`, which are restored from base
-CHR immediately before the swipe. Fifty-three IDs below `$EC` are then replaced
-by a contiguous 848-byte CHR upload at the final transition, converting the exact
-slide table into the exact final table without lossy pattern merging.
+CHR immediately before the swipe. Because the definitive swipe and final logo
+share one silhouette, only three IDs below `$EC` differ between phases. A
+contiguous 48-byte CHR upload replaces those three tiles at the final transition,
+converting the exact slide table into the exact final table without lossy pattern
+merging.
 
 ## Source guards
 
