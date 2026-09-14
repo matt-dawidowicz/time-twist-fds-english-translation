@@ -2,8 +2,9 @@
 *.fds
 *.nes
 *.rom
+*.ips
 
-# Extracted or rebuilt ROM banks, runtime captures, and local emulator files.
+# Extracted or rebuilt ROM banks, runtime captures, private patches, and local emulator files.
 *.bin
 *.dmp
 *.mss
@@ -14,6 +15,7 @@ work/build/
 work/extracted_*/
 work/translated_banks/
 work/runtime_capture/
+work/private/
 
 # Python caches, packaging output, environments, and test artifacts.
 **/__pycache__/

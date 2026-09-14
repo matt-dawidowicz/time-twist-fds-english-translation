@@ -22,8 +22,8 @@ from time_twist.release import (
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-PR45_FOUR_SIDE_SHA256 = (
-    "99C282A51968890204990FCE7EE433E83925DCF5505FB29B74F959C22B5B01E9"
+REVIEWED_FOUR_SIDE_SHA256 = (
+    "B549193FE5A4F5218DCC3BD2E61113905DB95796C6FA80C5D30A008E68EE1881"
 )
 
 
@@ -41,8 +41,8 @@ class ReleaseBuildTests(unittest.TestCase):
             with self.assertRaisesRegex(ReleaseBuildError, "unapproved"):
                 validate_source_lock(path, project_root=PROJECT_ROOT)
 
-    def test_complete_candidate_rebuild_preserves_pr45_bytes(self) -> None:
-        """Rebuild deterministically and preserve the reviewed PR #45 candidate."""
+    def test_complete_candidate_rebuild_preserves_reviewed_bytes(self) -> None:
+        """Rebuild deterministically and preserve the reviewed playtest candidate."""
         required = (
             DEFAULT_SOURCE_LOCK,
             DEFAULT_ZENPEN_BASELINE,
@@ -90,7 +90,9 @@ class ReleaseBuildTests(unittest.TestCase):
                 first_directory / first["outputs"]["four_side"]["path"]
             ).read_bytes()
             self.assertEqual(four_side, zenpen + kouhen)
-            self.assertEqual(sha256_bytes(four_side), PR45_FOUR_SIDE_SHA256)
+            self.assertEqual(
+                sha256_bytes(four_side), REVIEWED_FOUR_SIDE_SHA256
+            )
 
             candidate_images = {
                 "zenpen": FdsImage.from_bytes(zenpen),

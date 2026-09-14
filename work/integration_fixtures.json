@@ -1,6 +1,6 @@
 {
   "schema": "Time Twist private integration fixtures v1",
-  "description": "Hash manifest for the minimal local ROM-derived source and runtime fixtures used by current integration tests. The public source repository intentionally does not distribute these files.",
+  "description": "Hash manifest for the minimal local ROM-derived source, third-party patch, and runtime fixtures used by current integration tests. The public source repository intentionally does not distribute these files.",
   "files": {
     "work/baseline/time_twist_kouhen_japan.fds": {
       "sha256": "F62A7424FE489CBE479C3EBAABE4CE62D85127601FFD3D08ABD4E5A0DC39442A",
@@ -9,6 +9,10 @@
     "work/baseline/time_twist_zenpen_japan.fds": {
       "sha256": "B9424DD29EE195A9FA9AC4F844F058C380E30F7ACA741218789FA8611F741916",
       "bytes": 131000
+    },
+    "work/private/TimeTwist-Zenpen-newlogo.ips": {
+      "sha256": "915C0ED3600F5E560F9F588DC2100FE59772B5F7570E4F183565FBA9C77C6BA2",
+      "bytes": 3005
     },
     "work/extracted_zenpen/side0_01_TT3A_A200.bin": {
       "sha256": "390F87E332642B832B7718A374CD192947F300C35862AC4FE631911D8F3404EC",
