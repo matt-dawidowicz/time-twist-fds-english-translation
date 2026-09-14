@@ -6,8 +6,9 @@ import base64
 import hashlib
 import json
 import zlib
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from pathlib import Path
+from typing import cast
 
 from PIL import Image
 
@@ -89,7 +90,9 @@ def _load_final_authority(path: Path) -> Image.Image:
 def _load_slide_authority(path: Path) -> Image.Image:
     """Derive the exact monochrome swipe from the final logo silhouette."""
     final = _load_final_authority(path)
-    final_pixels = bytes(final.get_flattened_data())
+    final_pixels = bytes(
+        cast(Iterable[int], final.get_flattened_data())
+    )
     slide_pixels = bytearray(256 * 240)
     for index, value in enumerate(final_pixels[: 256 * 96]):
         slide_pixels[index] = 1 if value else 0
