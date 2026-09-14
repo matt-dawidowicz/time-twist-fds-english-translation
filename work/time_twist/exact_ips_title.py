@@ -53,7 +53,12 @@ def _sha256(data: bytes) -> str:
 
 def _default_definitive_ips_path() -> Path:
     """Return the private-checkout location for the maintainer-supplied IPS."""
-    return Path(__file__).resolve().parents[2] / "work" / "private" / DEFINITIVE_IPS_FILENAME
+    return (
+        Path(__file__).resolve().parents[2]
+        / "work"
+        / "private"
+        / DEFINITIVE_IPS_FILENAME
+    )
 
 
 def _definitive_ips_path() -> Path:
@@ -123,7 +128,9 @@ def _apply_ips(source: bytes, patch: bytes) -> bytes:
 def _exact_ips_nov4(zenpen_raw: bytes) -> tuple[bytes, bytes]:
     """Return the untouched and exact IPS-patched NOV4 banks."""
     if _sha256(zenpen_raw) != BASE_ZENPEN_SHA256:
-        raise TitlePatchError("Zenpen baseline does not match the definitive title source")
+        raise TitlePatchError(
+            "Zenpen baseline does not match the definitive title source"
+        )
     base_image = FdsImage.from_bytes(zenpen_raw)
     base_nov4 = base_image.sides[0].find_file("NOV4").data
     if _sha256(base_nov4) != BASE_NOV4_SHA256:
@@ -135,13 +142,17 @@ def _exact_ips_nov4(zenpen_raw: bytes) -> tuple[bytes, bytes]:
     return base_nov4, patched_nov4
 
 
-def _overlay_exact_ips_differences(data: bytes, base_nov4: bytes, patched_nov4: bytes) -> bytes:
+def _overlay_exact_ips_differences(
+    data: bytes, base_nov4: bytes, patched_nov4: bytes
+) -> bytes:
     """Copy every byte changed by the historical IPS, preserving unrelated localization."""
     if len(data) != len(base_nov4) or len(patched_nov4) != len(base_nov4):
         raise TitlePatchError("NOV4 layout changed before definitive title installation")
     result = bytearray(data)
     overlap = []
-    for index, (base_byte, patched_byte) in enumerate(zip(base_nov4, patched_nov4, strict=True)):
+    for index, (base_byte, patched_byte) in enumerate(
+        zip(base_nov4, patched_nov4, strict=True)
+    ):
         if base_byte == patched_byte:
             continue
         if data[index] != base_byte:
@@ -150,7 +161,9 @@ def _overlay_exact_ips_differences(data: bytes, base_nov4: bytes, patched_nov4: 
         result[index] = patched_byte
     if overlap:
         first = overlap[0]
-        raise TitlePatchError(f"definitive title IPS overlaps localized NOV4 at 0x{first:04X}")
+        raise TitlePatchError(
+            f"definitive title IPS overlaps localized NOV4 at 0x{first:04X}"
+        )
     return bytes(result)
 
 
@@ -205,9 +218,14 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
             start = previous = tile_id
     if start is not None and previous is not None:
         runs.append((start, previous + 1))
-    selected = next((run for run in runs if run[1] - run[0] >= needed), None)
+    selected = next(
+        (run for run in runs if run[1] - run[0] >= needed),
+        None,
+    )
     if selected is None:
-        raise TitlePatchError("definitive title has no contiguous final-phase subtitle tile run")
+        raise TitlePatchError(
+            "definitive title has no contiguous final-phase subtitle tile run"
+        )
     first_tile = selected[0]
     tile_ids = list(range(first_tile, first_tile + needed))
 
@@ -216,11 +234,14 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
         if pattern_index >= 0:
             final_mut[_SUBTITLE_TILE_ROW * 32 + tile_x] = tile_ids[pattern_index]
 
-    rebuilt_stream = b"".join((encode_title_rle(bytes(final_mut)), encode_title_rle(second), b"\xff"))
+    rebuilt_stream = b"".join(
+        (encode_title_rle(bytes(final_mut)), encode_title_rle(second), b"\xff")
+    )
     stream_end = FINAL_NAMETABLE_START + len(rebuilt_stream)
     if stream_end > _MAX_ORIGINAL_TITLE_STREAM_END:
         raise TitlePatchError(
-            f"subtitle title stream ends at 0x{stream_end:04X}, beyond safe 0x{_MAX_ORIGINAL_TITLE_STREAM_END:04X}"
+            f"subtitle title stream ends at 0x{stream_end:04X}, "
+            f"beyond safe 0x{_MAX_ORIGINAL_TITLE_STREAM_END:04X}"
         )
 
     glyph_data = b"".join(pattern_map[index] for index in range(needed))
@@ -232,17 +253,32 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
     helper_prefix = TITLE_TRANSITION_CALL_SOURCE + bytes.fromhex(
         "A9 00 8D 01 20 A5 FF 48 29 7F 8D 00 20"
     )
-    helper_suffix = bytes.fromhex("68 85 FF 09 10 85 FF 8D 00 20 A5 1C 8D 01 20 60")
-    glyph_address = NOV4_LOAD_ADDRESS + helper_offset + len(helper_prefix) + 11 + len(helper_suffix)
+    helper_suffix = bytes.fromhex(
+        "68 85 FF 09 10 85 FF 8D 00 20 A5 1C 8D 01 20 60"
+    )
+    glyph_address = (
+        NOV4_LOAD_ADDRESS
+        + helper_offset
+        + len(helper_prefix)
+        + 11
+        + len(helper_suffix)
+    )
     ppu_address = 0x1000 + first_tile * 16
-    upload = bytes((
-        0xA0, ppu_address >> 8,
-        0xA9, ppu_address & 0xFF,
-        0xA2, needed,
-        0x20, 0xAF, 0xEB,
-        glyph_address & 0xFF,
-        glyph_address >> 8,
-    ))
+    upload = bytes(
+        (
+            0xA0,
+            ppu_address >> 8,
+            0xA9,
+            ppu_address & 0xFF,
+            0xA2,
+            needed,
+            0x20,
+            0xAF,
+            0xEB,
+            glyph_address & 0xFF,
+            glyph_address >> 8,
+        )
+    )
     helper = helper_prefix + upload + helper_suffix
     if NOV4_LOAD_ADDRESS + helper_offset + len(helper) != glyph_address:
         raise TitlePatchError("subtitle helper source-address calculation drifted")
@@ -250,13 +286,15 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
     loaded_end = glyph_address + len(glyph_data)
     if loaded_end > NOV3_LOAD_ADDRESS:
         raise TitlePatchError(
-            f"subtitle helper would overlap resident NOV3: ${loaded_end:04X} > ${NOV3_LOAD_ADDRESS:04X}"
+            f"subtitle helper would overlap resident NOV3: "
+            f"${loaded_end:04X} > ${NOV3_LOAD_ADDRESS:04X}"
         )
 
     result = bytearray(data)
     result[FINAL_NAMETABLE_START:stream_end] = rebuilt_stream
     result[
-        TITLE_TRANSITION_CALL_OFFSET : TITLE_TRANSITION_CALL_OFFSET + len(TITLE_TRANSITION_CALL_SOURCE)
+        TITLE_TRANSITION_CALL_OFFSET : TITLE_TRANSITION_CALL_OFFSET
+        + len(TITLE_TRANSITION_CALL_SOURCE)
     ] = bytes((0x20, helper_address & 0xFF, helper_address >> 8)) + b"\xea" * (
         len(TITLE_TRANSITION_CALL_SOURCE) - 3
     )
