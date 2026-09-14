@@ -6,7 +6,7 @@
 - Completed banks/components: **TT1A, TT1B, TT2, T22, TT3A, TT3B, TT4, TT5, T25, TT6A, TT6B, TT6C, TT6D, NOV2, NOV4, TITLE, SON-KOUH**
 - Current bank: **Complete — cross-bank consistency and QC finished**
 - Glossary entries: **67**
-- Records requiring gameplay/visual context: **6**
+- Records requiring gameplay/visual context: **4**
 - Records requiring technical expansion/recompression review: **0**
 
 ## Source fingerprints
@@ -56,12 +56,10 @@ Actual release usage, including any optimizer fallback, must come from a fresh R
 
 ## Records requiring gameplay screenshots or visual verification
 
-- `TT1B/g0/r28` — Punctuation alone permits statement/question readings, but the reply いえ strongly favors a question.
 - `TT3A/g2/r7` — The off-screen voice is probably an ally, but the exact speaker needs the surrounding gameplay shot.
 - `TT3A/g2/r30` — Spatial order of the torn-note characters needs a gameplay screenshot or nametable capture.
 - `TT3B/g0/r24` — The line may be Hitler himself or the Devil speaking through him; the visual staging determines the displayed identity.
 - `TT4/g4/r14` — The command “Wait” is unlabeled; a gameplay shot is needed to identify the warning voice.
-- `NOV2/wait` — Source control preservation conflicts with the existing one-line English display fix.
 
 ## Records requiring technical expansion or recompression review
 
@@ -77,9 +75,7 @@ Actual release usage, including any optimizer fallback, must come from a fresh R
 
 ## Remaining genuinely uncertain lines
 
-- `TT1B/g0/r28` (Medium) — Punctuation alone permits statement/question readings, but the reply いえ strongly favors a question.
 - `TT3A/g2/r7` (Requires gameplay context) — The off-screen voice is probably an ally, but the exact speaker needs the surrounding gameplay shot.
 - `TT3A/g2/r30` (Requires ROM or visual verification) — Spatial order of the torn-note characters needs a gameplay screenshot or nametable capture.
 - `TT3B/g0/r24` (Requires gameplay context) — The line may be Hitler himself or the Devil speaking through him; the visual staging determines the displayed identity.
 - `TT4/g4/r14` (Requires gameplay context) — The command “Wait” is unlabeled; a gameplay shot is needed to identify the warning voice.
-- `NOV2/wait` (Requires ROM or visual verification) — Source control preservation conflicts with the existing one-line English display fix.
