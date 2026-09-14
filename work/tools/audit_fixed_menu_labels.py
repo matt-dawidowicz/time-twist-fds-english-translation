@@ -12,6 +12,7 @@ import argparse
 import csv
 import hashlib
 from pathlib import Path
+
 from time_twist import ui
 from time_twist.english import render_english
 from time_twist.entropy_codec import (
@@ -202,10 +203,7 @@ def audit(
             decoded_label = decoded[index]
             status = "source-only"
             if decoded_label is not None:
-                if decoded_label == label:
-                    status = "full-word"
-                else:
-                    status = "mismatch"
+                status = "full-word" if decoded_label == label else "mismatch"
             width_ok = True
             width_error = ""
             try:
