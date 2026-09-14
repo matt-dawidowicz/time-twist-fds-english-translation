@@ -21,12 +21,14 @@ class ExactIpsTitleContractTests(unittest.TestCase):
     """Keep private-patch provenance and zero-glyph handling fail-closed."""
 
     def test_explicit_private_ips_path_is_honored(self) -> None:
+        """Use the explicitly configured private IPS path when present."""
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "maintainer-title.ips"
             with patch.dict(os.environ, {DEFINITIVE_IPS_ENV: str(path)}):
                 self.assertEqual(_definitive_ips_path(), path.resolve())
 
     def test_missing_private_ips_is_rejected(self) -> None:
+        """Fail closed when the required private IPS file is missing."""
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "missing.ips"
             with (
@@ -36,6 +38,7 @@ class ExactIpsTitleContractTests(unittest.TestCase):
                 _definitive_ips()
 
     def test_wrong_private_ips_hash_is_rejected(self) -> None:
+        """Reject a private IPS whose bytes do not match the reviewed hash."""
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "wrong.ips"
             path.write_bytes(b"PATCHEOF")
@@ -49,6 +52,7 @@ class ExactIpsTitleContractTests(unittest.TestCase):
     def test_space_only_subtitle_is_rejected_before_chr_upload(
         self, decode
     ) -> None:
+        """Reject a subtitle with no drawable glyphs before CHR upload setup."""
         final = bytes(1024)
         second = bytes(1024)
         decode.side_effect = [(final, 100), (second, 200)]
