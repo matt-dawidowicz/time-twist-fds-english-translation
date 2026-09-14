@@ -4,5 +4,14 @@
   "TT4/g1/r14": "Man: You!{CTRL:0}Merchant: Still here?!{CTRL:2}Man: Where is the boy?!{CTRL:0}Tell me!{CTRL:3}Merchant: H-help me!{CTRL:4}I found him dead!{CTRL:4}Dead need no clothes.{CTRL:3}Man: What?!{CTRL:3}Merchant: At the cape,{CTRL:4}behind a rock. I swear!{CTRL:3}Man: Doctor, come!{CTRL:4}Me: Y-yes!",
   "TT4/g4/r19": "Devil: Don't interfere!{CTRL:0}You followed me here?!{CTRL:2}Me: Not by choice...{CTRL:0}G-give my body back!",
   "TT4/g4/r23": "Devil: What?!{CTRL:2}The Warding Bell rings!{CTRL:0}Its peal fills the air!{CTRL:3}Devil: Gaaaaah…!!",
-  "TT4/g4/r27": "Man: My lord, can you{CTRL:0}hear the bell? Answer!{CTRL:2}Nicras: Prince...!{CTRL:6}Man: This is Alexander,{CTRL:4}prince of Macedonia!"
+  "TT4/g4/r27": "Man: My lord, can you{CTRL:0}hear the bell? Answer!{CTRL:2}Nicras: Prince...!{CTRL:6}Man: This is Alexander,{CTRL:4}prince of Macedonia!",
+  "TT4/g5/r6": "Fisherman: Know this one?",
+  "TT4/g5/r8": "Fisherman: Idiot.",
+  "TT4/g5/r9": "Fisherman: Correct! Next.",
+  "TT4/g5/r14": "Fisherman: Correct. All five! Well done.",
+  "TT4/g5/r15": "Fisherman: Tears shed in pity are the quickest to dry… An old Greek proverb.",
+  "TT4/g5/r16": "Fisherman: Cough? Use plantain.",
+  "TT4/g5/r17": "Fisherman: Use jiaogulan.",
+  "TT4/g5/r18": "Fisherman: Use dokudami.",
+  "TT4/g5/r21": "Fisherman: No need."
 }
