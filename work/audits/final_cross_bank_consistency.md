@@ -1,6 +1,6 @@
 # Cross-bank editorial decisions
 
-These maintained decisions cover the source-first voice/prose review across TT1A through TT6D. Playable wording comes from `work/translations/*.json`; the generated workbook and voice guide describe the current script. Superseded per-bank pilot reports remain in Git history. Runtime evidence is still required for the six staging-dependent questions below.
+These maintained decisions cover the source-first voice/prose review across TT1A through TT6D. Playable wording comes from `work/translations/*.json`; the generated workbook and voice guide describe the current script. Superseded per-bank pilot reports remain in Git history. Runtime evidence is still required for the four staging-dependent questions below.
 
 ## Scope
 
@@ -20,7 +20,7 @@ The pass reviewed recurring terminology, character voice, source-explicit regist
 - TT6C
 - TT6D
 
-Non-scenario components remain translated and complete, but this freeze did not editorially guess at the unresolved `NOV2/wait` rendering/control conflict.
+Non-scenario components remain translated and complete. The intentional one-line `NOV2/wait` engine-patch exception is documented and integration-tested.
 
 ## Final editorial rules
 
@@ -132,14 +132,12 @@ No prose consistency edit was allowed to override puzzle semantics.
 
 ## Remaining evidence-dependent records
 
-Six items remain deliberately unresolved because text-only editorial work cannot settle them reliably:
+Four items remain deliberately unresolved because text-only editorial work cannot settle them reliably:
 
-- `TT1B/g0/r28` — punctuation permits more than one reading, though the reply strongly favors a question;
 - `TT3A/g2/r7` — off-screen speaker identity needs gameplay staging;
 - `TT3A/g2/r30` — torn-note spatial ordering needs a gameplay screenshot/nametable capture;
 - `TT3B/g0/r24` — Hitler versus Devil-through-Hitler speaker identity depends on staging;
-- `TT4/g4/r14` — unlabeled `Wait` warning needs gameplay context;
-- `NOV2/wait` — source control preservation conflicts with the existing one-line English display treatment.
+- `TT4/g4/r14` — unlabeled `Wait` warning needs gameplay context.
 
 The freeze intentionally leaves these as runtime/visual verification tasks rather than manufacturing certainty.
 
@@ -148,6 +146,6 @@ The freeze intentionally leaves these as runtime/visual verification tasks rathe
 The [generated progress report](../../outputs/Time_Twist_translation_progress.md)
 contains fresh public fit measurements. A built candidate still needs the
 [maintainer release checks](../../docs/MAINTAINER_RELEASE_PROCESS.md) and
-[runtime playtest matrix](../../docs/PLAYTEST_MATRIX.md), including the six
+[runtime playtest matrix](../../docs/PLAYTEST_MATRIX.md), including the four
 records above. Editorial review and public compression checks do not certify
 gameplay, disk recovery, or save/load behavior.

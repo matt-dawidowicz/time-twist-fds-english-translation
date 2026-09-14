@@ -1394,10 +1394,10 @@ MANUAL_NOTES = {
         "line placement requires a gameplay screenshot or nametable capture."
     ),
     "NOV2/wait": (
-        "The existing English patch intentionally removed the source CTRL:0 so "
-        "PLEASE WAIT could remain on one visible line. This workbook obeys the "
-        "requested exact-control policy; runtime display behavior therefore needs "
-        "visual verification before insertion."
+        "The English engine patch intentionally removes the source CTRL:0 so "
+        "PLEASE WAIT remains on one visible line. Integration coverage verifies "
+        "the replacement fills the original record, decodes as 'Please wait...', "
+        "and contains no control code."
     ),
 }
 
@@ -2971,20 +2971,6 @@ def ambiguity_and_confidence(
         return (
             "Spatial order of the torn-note characters needs a gameplay screenshot "
             "or nametable capture.",
-            "Requires ROM or visual verification",
-            True,
-        )
-    if text_id == "TT1B/g0/r28":
-        return (
-            "Punctuation alone permits statement/question readings, but the reply "
-            "いえ strongly favors a question.",
-            "Medium",
-            True,
-        )
-    if text_id == "NOV2/wait":
-        return (
-            "Source control preservation conflicts with the existing one-line "
-            "English display fix.",
             "Requires ROM or visual verification",
             True,
         )
