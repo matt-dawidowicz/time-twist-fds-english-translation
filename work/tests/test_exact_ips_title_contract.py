@@ -29,19 +29,21 @@ class ExactIpsTitleContractTests(unittest.TestCase):
     def test_missing_private_ips_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "missing.ips"
-            with patch.dict(os.environ, {DEFINITIVE_IPS_ENV: str(path)}):
-                with self.assertRaisesRegex(TitlePatchError, "IPS is missing"):
-                    _definitive_ips()
+            with (
+                patch.dict(os.environ, {DEFINITIVE_IPS_ENV: str(path)}),
+                self.assertRaisesRegex(TitlePatchError, "IPS is missing"),
+            ):
+                _definitive_ips()
 
     def test_wrong_private_ips_hash_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "wrong.ips"
             path.write_bytes(b"PATCHEOF")
-            with patch.dict(os.environ, {DEFINITIVE_IPS_ENV: str(path)}):
-                with self.assertRaisesRegex(
-                    TitlePatchError, "hash does not match"
-                ):
-                    _definitive_ips()
+            with (
+                patch.dict(os.environ, {DEFINITIVE_IPS_ENV: str(path)}),
+                self.assertRaisesRegex(TitlePatchError, "hash does not match"),
+            ):
+                _definitive_ips()
 
     @patch("time_twist.exact_ips_title.decode_title_rle")
     def test_space_only_subtitle_is_rejected_before_chr_upload(
