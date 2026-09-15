@@ -283,6 +283,7 @@ def merged_translation_map(
                     f"{record_id}: final-playtest layout must be an explicit "
                     "control override"
                 )
+            _effective_base_template(record_id, base[record_id])
             validate_record_production_control_sequence(
                 record_id, base[record_id], reviewed_text
             )
