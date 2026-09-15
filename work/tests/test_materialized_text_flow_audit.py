@@ -72,7 +72,7 @@ class MaterializedTextFlowAuditTests(unittest.TestCase):
         text = _plain(_production("TT6C")["TT6C/g3/r8"])
         self.assertIn("Me: Yes.", text)
         self.assertIn("Both: Yes…", text)
-        self.assertIn("Me: Yes—Jesus Christ!", text)
+        self.assertIn("Me: Yes… Jesus Christ!", text)
         self.assertNotIn("Me: Right. Jesus Christ.", text)
 
 
