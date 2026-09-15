@@ -77,7 +77,9 @@ The source deliberately repeats `いえす` before resolving it as
 `いえす・きりすと`. The final consistency policy explicitly preserves this
 Yes/Jesus wordplay. A later production override changed the payoff to
 `Right. Jesus Christ.`, breaking the callback. Production again ends
-**`Yes—Jesus Christ!`** after the preceding `Yes` responses.
+**`Yes… Jesus Christ!`** after the preceding `Yes` responses. The true ellipsis
+preserves the beat while complying with the production typography rule that
+scenario prose contains no em or en dashes.
 
 ## Suspicious but not changed statically
 
