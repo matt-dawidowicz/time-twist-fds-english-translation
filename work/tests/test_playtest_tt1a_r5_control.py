@@ -21,6 +21,7 @@ CONTROL_RE = re.compile(r"\{CTRL:[0-7]\}")
 EXPECTED_RECORDS = frozenset(
     {
         "TT1A/g0/r5",
+        "TT1A/g0/r30",
         "TT1B/g0/r6",
         "TT1B/g2/r11",
         "TT1B/g2/r29",
@@ -96,10 +97,21 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
         )
         self.assertEqual(CONTROL_RE.sub(" ", text).split(), expected.split())
 
+    def test_time_travel_thought_flows_without_input_wait(self) -> None:
+        """Keep TT1A/g0/r30 continuous while preserving its later CTRL:6 beat."""
+        text = self.production_by_bank["TT1A"]["TT1A/g0/r30"]
+        self.assertNotIn("{CTRL:1}", text)
+        self.assertIn("{CTRL:6}", text)
+        expected = (
+            "Time travel, huh... So far, it's all talk. "
+            "Nobody's ever actually made it work. More importantly..."
+        )
+        self.assertEqual(CONTROL_RE.sub(" ", text).split(), expected.split())
+
     def test_unrelated_ctrl1_timing_remains_intact(self) -> None:
         """Keep dramatic, speaker-change, and intentional timing waits semantic."""
         controls_to_keep = {
-            "TT1A": ("TT1A/g0/r26", "TT1A/g0/r30"),
+            "TT1A": ("TT1A/g0/r26",),
             "TT1B": ("TT1B/g0/r26",),
             "TT3A": ("TT3A/g1/r21",),
             "TT4": ("TT4/g0/r12",),
