@@ -32,10 +32,10 @@ REVIEW_FILES = _core.REVIEW_FILES
 ProductionTranslationError = _core.ProductionTranslationError
 validate_renderer_buffer_layout = _core.validate_renderer_buffer_layout
 
-# These are not generic CTRL:1 demotions.  Each record was audited after the
+# These are not generic CTRL:1 demotions. Each record was audited after the
 # TT1A personality-test playtest exposed the failure mode: an inherited Japanese
 # input wait splitting one continuous English thought while the four-row box was
-# still largely empty.  The exact certified base template is part of the policy
+# still largely empty. The exact certified base template is part of the policy
 # so topology drift cannot silently broaden the exception.
 PRESENTATION_ONLY_CTRL1_TEMPLATES: dict[str, str] = {
     "TT1A/g0/r5": "First: personality test{CTRL:1}Please answer each one.",
@@ -60,7 +60,6 @@ PRESENTATION_ONLY_CTRL1_TEMPLATES: dict[str, str] = {
 PRESENTATION_ONLY_CTRL1_TEMPLATES.update(
     ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES
 )
-
 
 # Final playtest also identified four records with additional semantic controls whose
 # timing/pagination function is presentation-only in the reviewed English.
@@ -113,13 +112,12 @@ FINAL_PLAYTEST_LAYOUT_RECORDS = frozenset(
 )
 
 PRESENTATION_ONLY_CTRL1_RECORDS = frozenset(PRESENTATION_ONLY_CTRL1_TEMPLATES)
-_TEMPLATE_TO_PRESENTATION_ONLY_RECORDS: dict[str, list[str]] = {}
-for _record_id, _template in PRESENTATION_ONLY_CTRL1_TEMPLATES.items():
-    _TEMPLATE_TO_PRESENTATION_ONLY_RECORDS.setdefault(_template, []).append(_record_id)
+# Some source records share the same exact certified template. If every such record
+# has the same source-locked demotion policy, the legacy two-argument validator may
+# safely use either representative because the effective control sequence is identical.
 _TEMPLATE_TO_PRESENTATION_ONLY_RECORD = {
-    template: record_ids[0]
-    for template, record_ids in _TEMPLATE_TO_PRESENTATION_ONLY_RECORDS.items()
-    if len(record_ids) == 1
+    template: record_id
+    for record_id, template in PRESENTATION_ONLY_CTRL1_TEMPLATES.items()
 }
 
 
@@ -154,9 +152,7 @@ def _replace_control_sequence(text: str, controls: tuple[int, ...]) -> str:
     """Replace control values in place while preserving all visible source text."""
     pieces = CONTROL_RE.split(text)
     if len(pieces[1::2]) != len(controls):
-        raise ProductionTranslationError(
-            "control-rewrite arity changed unexpectedly"
-        )
+        raise ProductionTranslationError("control-rewrite arity changed unexpectedly")
     output = [pieces[0]]
     for value, segment in zip(controls, pieces[2::2], strict=True):
         output.append(f"{{CTRL:{value}}}")
@@ -206,28 +202,21 @@ def validate_production_control_sequence(source: str, production: str) -> None:
     """Validate controls, recognizing exact audited base templates for callers.
 
     Most call sites with a stable ID should use
-    :func:`validate_record_production_control_sequence`.  This two-argument
+    :func:`validate_record_production_control_sequence`. This two-argument
     compatibility API remains strict except when ``source`` exactly matches one
-    unique locked certified base presentation template above.
+    locked certified base presentation template above.
     """
     record_id = _TEMPLATE_TO_PRESENTATION_ONLY_RECORD.get(source)
     if record_id is None:
         record_id = next(
             (
                 candidate
-                for candidate, (
-                    expected,
-                    _effective,
-                ) in PRESENTATION_CONTROL_REWRITES.items()
+                for candidate, (expected, _effective) in PRESENTATION_CONTROL_REWRITES.items()
                 if source == expected
             ),
             None,
         )
-    effective_source = (
-        source
-        if record_id is None
-        else _effective_base_template(record_id, source)
-    )
+    effective_source = source if record_id is None else _effective_base_template(record_id, source)
     _core.validate_production_control_sequence(effective_source, production)
 
 
@@ -257,8 +246,7 @@ def merged_translation_map(
         unknown = sorted(set(review) - set(base))
         if unknown:
             raise ProductionTranslationError(
-                f"{bank_name} production review contains unknown IDs: "
-                f"{unknown[:3]}"
+                f"{bank_name} production review contains unknown IDs: {unknown[:3]}"
             )
         selected.update(review)
 
@@ -286,9 +274,7 @@ def merged_translation_map(
     for record_id, selected_text in selected.items():
         reviewed_text = selected_text
         if record_id not in explicit_control_overrides:
-            reviewed_text = " ".join(
-                CONTROL_RE.sub(" ", selected_text).split()
-            )
+            reviewed_text = " ".join(CONTROL_RE.sub(" ", selected_text).split())
         if record_id in FINAL_PLAYTEST_LAYOUT_RECORDS:
             if record_id not in explicit_control_overrides:
                 raise ProductionTranslationError(
