@@ -22,7 +22,9 @@ def _locked_bytes(path: Path, normalization: str) -> bytes:
         return data
     if normalization == "lf":
         return data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
-    raise AssertionError(f"unsupported source-lock normalization: {normalization!r}")
+    raise AssertionError(
+        f"unsupported source-lock normalization: {normalization!r}"
+    )
 
 
 class CurrentPublicSourceLockTests(unittest.TestCase):
@@ -39,7 +41,9 @@ class CurrentPublicSourceLockTests(unittest.TestCase):
                 continue
 
             path = PROJECT_ROOT / relative
-            self.assertTrue(path.is_file(), f"locked public source is missing: {relative}")
+            self.assertTrue(
+                path.is_file(), f"locked public source is missing: {relative}"
+            )
             data = _locked_bytes(path, record["normalization"])
             digest = hashlib.sha256(data).hexdigest().upper()
 
