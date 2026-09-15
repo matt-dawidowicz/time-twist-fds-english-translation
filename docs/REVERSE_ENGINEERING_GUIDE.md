@@ -384,26 +384,19 @@ scratch data in `$9390-$93AF`; that region is live palette state.
 
 ---
 
-## 8. Renderer-aware menu QA
+## 8. TT1A is a dual-addressing exception
 
-A menu label can be renderer-safe by itself and still fail in a two-column pairing.
-The maintained menu-geometry audit therefore validates actual runtime geometry, not a
-single global character-count limit.
+TT1A selector text is reached in two incompatible ways:
 
-For every source-visible descriptor combination it checks:
+- native code can jump directly to individual selector records by byte address;
+- the generic NOV2 renderer also expects a sequentially traversable copy.
 
-- the decoded English label width;
-- 18-glyph per-label staging capacity;
-- the conservative 20-glyph combined pair limit;
-- the second-column position derived from the first label;
-- the trailing selection cursor against x=`$F8`;
-- all order-preserving compacted visible subsets that can arise when predicates hide
-  entries; and
-- entropy-decoded release-candidate labels rather than trusting source JSON alone.
+The release therefore keeps **address-stable one-record entropy mirrors** for direct
+entry points and appends a separate contiguous renderer copy used by the sequential
+scanner through the `$A214` contract.
 
-The source-backed audit currently covers 721 labels, 367 descriptor records, and 162
-distinct possible two-column pairs. Candidate auditing must decode all 721 labels from
-the built image before a release can be promoted.
+If a TT1A selector works when chosen directly but fails when reached through generic
+rendering, or vice versa, inspect both copies before changing the decoder.
 
 ---
 
@@ -464,16 +457,567 @@ Controls `1`, `3`, and `6` are normally mandatory and remain in source order.
 inside continuous English, but it may never invent a new `CTRL:2` or move a source
 speaker-changing `CTRL:2` away from that speaker turn.
 
-Playtesting exposed a second, narrower exception: eleven exact source `CTRL:1` waits
-are presentation-only for the English layout. They are keyed by stable record ID and
+Playtesting exposed a second, narrower exception: ten exact source `CTRL:1` waits are
+presentation-only for the English layout. They are keyed by stable record ID and
 locked to the exact certified base template in `production_translation.py`. The base
-maps remain unchanged. `TT1A/g0/r30` joined this set during final playtesting after
-its pause following `Time travel, huh...` proved to interrupt one continuous internal
-thought; its later `CTRL:6` remains semantic. If any locked template changes, the
-build fails and requires a fresh audit instead of silently carrying the exception
-forward.
+maps remain unchanged. If any locked template changes, the build fails and requires a
+fresh audit instead of silently carrying the exception forward.
 
 This is the safe pattern for future control exceptions: **record-scoped, source-
 locked, and fail-closed**, never “change every control N.”
 
 ---
+
+## 10. The scroll-copy and transparency traps
+
+Two renderer details have already caused regressions and should be treated as engine
+invariants.
+
+### Dialogue scroll row copy
+
+NOV2 file `$2571` / CPU `$8571` contains:
+
+```text
+B9 D7 87    LDA $87D7,Y
+```
+
+That indexed load copies the valid bottom dialogue row to the nametable before the
+text buffer shifts during `CTRL:3/CTRL:4` behavior. Replacing it with a constant blank
+load erased complete sentences at transitions. It is guarded as a **must remain
+unchanged** sequence.
+
+### `$AC` is useful for dialogue tails but wrong for menu clearing
+
+The menu renderer treats tile `$AC` as transparent. Leaving menu-tail cells as `$AC`
+can expose stale pixels, so the menu clear path uses opaque common-space tile `$C0`.
+
+Dialogue tails are different. Making all unused dialogue cells opaque caused the
+native typewriter cadence to process them as silent characters. Dialogue tails
+therefore remain transparent `$AC` so they can be skipped without adding invisible
+character timing/sounds.
+
+Do not generalize a “blank tile fix” across menu and dialogue paths.
+
+---
+
+## 11. Fixed text outside scenario groups
+
+Not every visible string passes through the scenario group parser. Three broad classes
+exist:
+
+1. **size-neutral direct records** beside code, such as NOV2 disk/save/load prompts;
+2. **fixed tables** whose record/table boundaries are part of an addressing contract;
+3. **special-purpose graphics text**, such as the Kouhen direct-boot warning.
+
+A fixed-record patch must prove the source bytes or region hash before writing. If the
+replacement changes the size, either recover the complete relocation model or choose
+text that fits. Never shift adjacent executable code because a human-readable string
+“looks like it should have room.”
+
+The current release builder also converts every fixed stream that can reach the
+patched entropy decoder. Mixing a byte-aligned native record into an entropy-only
+runtime is invalid even if the English bytes themselves are correct.
+
+### Canonical component patch order
+
+Patch order is part of the architecture:
+
+```text
+all scenario banks
+  -> production entropy placement
+
+NOV2
+  -> patched_nov2_ui()
+  -> patch_entropy_nov2()
+
+NOV4
+  -> patched_nov4_font()
+  -> patched_nov4_entropy_text()
+  -> patched_nov4_entropy_title()
+
+Kouhen
+  -> patched_kouhen_boot_guard(SON-KOUH)
+```
+
+The order is intentionally non-commutative. For example, the font patch accepts a
+small whitelist of known NOV4 states, and the entropy title path expects the
+entropy-converted fixed text, not the retired native fixed-text patch.
+
+---
+
+## 12. Font engine and CHR ownership
+
+### Dialogue font format
+
+NOV4 stores inverse one-bit source rows at:
+
+```text
+NOV4 file offset = $1B7D + tile_id * 8
+```
+
+Each translated glyph is an 8x8 cell generated from deterministic five-pixel-wide
+patterns. Lowercase descenders can use the eighth row, so the maintained font model is
+5x8-in-an-8x8-cell rather than a strict seven-row font.
+
+A set pixel in the logical glyph clears a bit in the inverse stored row because NOV4
+expands these source rows into runtime tiles.
+
+### The font table is not uniformly writable
+
+This is one of the most important graphics discoveries:
+
+- relative source slots `$98-$AF` alias a normal 2bpp graphics block used by the
+  post-title graphics loader;
+- the safely writable English 1bpp font-source range begins at slot `$B0`, NOV4 file
+  `$20FD`;
+- the active English font-source range ends after slot `$FE`, at NOV4 file `$2375`.
+
+An English glyph must not be assigned to `$98-$AF` without first redesigning that
+shared graphics ownership.
+
+The historical extended-code-63 mapping pointed to tile `$AC`. Installing a glyph
+there produced a repeated glyph-shaped post-title background. Production redirects
+extended code 63 to recovered font tile `$B0` instead.
+
+This is why “unused glyph code” and “unused CHR/font storage” are separate questions.
+
+### NES 2bpp CHR refresher
+
+Ordinary NES CHR patterns are 16 bytes per 8x8 tile:
+
+```text
+bytes 0-7   = low bitplane
+bytes 8-15  = high bitplane
+pixel palette index = low | (high << 1)
+```
+
+The inverse 1bpp dialogue-font source is therefore a game-specific intermediate
+format, not generic NES CHR. `SON-KOUH` is another special case: it uploads private
+1bpp patterns directly and flips the inverse dialogue glyph rows when generating its
+message.
+
+---
+
+## 13. Title graphics engine
+
+The title sequence is the most timing-sensitive graphics path. See
+[Title sequence architecture](TITLE_SEQUENCE.md) for asset provenance; the runtime
+facts most useful for debugging are summarized here.
+
+### Recovered NOV4 layout
+
+| NOV4 file region / offset | Purpose |
+| --- | --- |
+| `$065E-$0808` | source final-title RLE stream |
+| `$0809-$094B` | source second/slide nametable RLE stream |
+| `$09D2-$19D1` | 4 KiB title CHR |
+| `$047A-$0599` | clock metasprite animation data - must remain byte-identical |
+| `$03CA` | two clock-hand origins - the only intentionally adjusted hand geometry |
+| `$1B7D + tile*8` | inverse dialogue-font source geometry |
+
+`NOV4` loads at `$A200`. Appended English title helpers/assets are valid only while
+their final loaded end remains below `$D7B5`.
+
+### Two nametables and the swipe
+
+The resident decoder writes:
+
+- final title map to nametable 0 at PPU `$2000`;
+- slide/Nintendo map to nametable 1 at PPU `$2400`.
+
+States 3-5 use 21 recovered horizontal origins:
+
+```text
+$01F0, $001C, $01D8, $0034, $01C0, $004C, $01A8,
+$0064, $0190, $007C, $0178, $0094, $0160, $00AC,
+$0148, $00C4, $0130, $00DC, $0118, $00F4, $0100
+```
+
+The physical attribute tables hide/reveal sections of the 512-pixel-wide NT0/NT1
+world while those origins alternate.
+
+### Pattern-table ownership and temporal reuse
+
+The upper title background owns tile IDs `$00-$EB`. IDs `$EC-$FF` remain the original
+clock-hand source and are protected.
+
+The Nintendo phase temporarily overlays 38 IDs `$B0-$D5`. Before the monochrome swipe
+becomes visible, a helper restores those IDs from the authoritative base slide CHR.
+
+The exact slide and exact final upper tables cannot coexist in the available upper
+background IDs. The current build therefore temporally reuses **53** tile IDs:
+
+1. those IDs initially contain the exact monochrome slide patterns;
+2. the final transition uploads a 53-tile / 848-byte delta into the same IDs;
+3. applying that delta reconstructs the exact colored final upper table.
+
+The lower title uses an independent 55-pattern set in pattern table 0. NOV4's existing
+raster split switches pattern-table behavior at tile row 16, inside a visually blank
+band below `PUSH START`.
+
+### RLE nametable format
+
+The native title/SON-KOUH family uses a small count-prefix RLE:
+
+- bytes below `$C0` are literals;
+- `$C0 + count`, followed by one byte, repeats that value;
+- `$FF` terminates the stream;
+- because `$FF` is reserved, the largest legal run prefix is `$FE` = 62 copies.
+
+The relocated title payload contains two decoded 1 KiB nametables followed by one
+final `$FF` terminator.
+
+### PPU/NMI ordering is functional behavior
+
+The title helpers intentionally blank rendering and sometimes disable NMI while CHR
+or title-only split state changes.
+
+Important state:
+
+- `$1C` - PPUMASK mirror used by the game;
+- `$FF` - PPUCTRL/NMI-related mirror used by the title code;
+- `$57/$58` - recovered horizontal scroll/nametable origin state;
+- `$2000` - PPUCTRL register;
+- `$2001` - PPUMASK register.
+
+The pre-slide helper clears the `$1C` mirror **before** blanking `$2001`, then disables
+NMI, restores Nintendo-overlaid CHR, installs the first scroll origin, and queues the
+monochrome palette. The palette must be queued **after** the FDS BIOS CHR upload,
+because that BIOS operation can overwrite palette staging state and its update flag.
+
+The helper deliberately does not restore `$2001` immediately. The next NMI must apply
+the new scroll/palette/nametable state first, then restore rendering from `$1C`. If
+rendering is restored too early, one frame of the old Nintendo nametable appears
+through the restored English title CHR.
+
+The final transition similarly blanks rendering/NMI while uploading the 53-tile upper
+delta and 55 lower patterns, then restores the split and render state.
+
+### START exit stack trap
+
+The source title-exit branch is a tail call. It ultimately jumps to `$6119`, whose
+`RTS` is supposed to return directly to the main engine. A detour implemented with
+`JSR` leaves an extra return address on the stack; `$6119` then returns into the
+middle of NOV4 and crashes after START.
+
+The production detour therefore uses `JMP` to the appended exit helper and ends with
+the original state-change/tail-call behavior.
+
+This is a good example of why a visually correct patch still needs control-flow
+recovery.
+
+---
+
+## 14. Kouhen direct-boot warning is a separate graphics engine path
+
+`SON-KOUH` does **not** render its warning through the normal scenario decoder.
+It owns a small private graphics path:
+
+- component size: 739 bytes;
+- 21 private one-bit tiles;
+- blank tile ID `$14`;
+- RLE nametable fragment starts at PPU `$20D0`;
+- decoded fragment size: 414 bytes.
+
+The English patch regenerates only the private glyph rows and RLE tilemap while
+preserving the program and component size. The generated glyph bits are inverted from
+the NOV4 dialogue-source representation because `SON-KOUH` uploads them directly.
+
+If the normal English font and dialogue are correct but the direct-Kouhen warning is
+Japanese or garbled, the fix belongs here, not in the shared text decoder.
+
+---
+
+## 15. Gameplay graphics and scene data are now structurally recovered
+
+The `OB*`, `OBJ*`, and `BG*` components are no longer an unknown graphics family.
+They are verified raw NES 2bpp CHR files loaded directly into CHR-RAM, with object
+files targeting pattern table 0 and background files targeting pattern table 1.
+NOV2's scene file-ID table determines which program and CHR overlays coexist, and
+same-address/partial overlays intentionally inherit untouched RAM or CHR from the
+previous base component.
+
+The maintained [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) documents the
+recovered data architecture:
+
+- `$A200` static metasprite placements;
+- `$A202` actor spawn/layout records;
+- `$A204` packed metasprite definitions rendered into OAM;
+- `$A208` palette definitions;
+- `$A20C` hotspot rectangles and the opposing `$FD/$FE` one-way sentinels;
+- `$A21C` palette-animation sequences;
+- `$A21E` direct nametable tile-patch descriptors and RLE streams;
+- `$A22C/$A22E/$A230` actor animation/motion selectors and stream tables;
+- source-used `D2` runtime background-CHR clone/flip behavior.
+
+This does **not** make arbitrary relocation safe. Size-neutral CHR, metasprite,
+placement, map, and palette edits still require exact ownership/source guards and
+scene-composition awareness. For relocation or a new graphics path, document:
+
+- file load address and FDS file kind;
+- CHR/nametable/sprite/palette destination;
+- compression or transfer routine;
+- pointer/caller structure;
+- lifetime relative to other overlays;
+- any tile IDs shared temporally with another scene;
+- exact free-space/relocation proof;
+- emulator evidence and a regression test.
+
+Do not extrapolate the title allocator or `SON-KOUH` RLE format to gameplay graphics;
+the recovered gameplay background-map path is a distinct `$A21E` descriptor/RLE
+engine.
+
+---
+
+## 16. Debugger cookbook
+
+These are the fastest first checks for recurring symptom classes.
+
+### First record is correct, following text becomes garbage
+
+Suspect entropy stream framing.
+
+- Break at `$80B1` and `$81E0`.
+- Watch `$6A/$6B/$6C` across separator 5.
+- `$6C` must **not** reset after an ordinary record separator.
+- Confirm that the current stream is not a genuinely new byte-addressed page/group.
+
+### A menu page works until record 32/64/96
+
+Suspect page-pointer regeneration or page alignment.
+
+- Inspect header pointer `$A21A` (file `$001A`).
+- Verify each stored page address lands on the first byte of a separately packed
+  32-record entropy stream.
+- Confirm the secondary tables moved by the same relocation delta.
+
+### Text overwrites an earlier line or an unexpected A press is required
+
+Suspect control geometry, not encoding.
+
+- Inspect the record's certified control topology.
+- Simulate X using row starts `$00/$30/$60/$90`.
+- Check whether `CTRL:1`, `CTRL:2`, or `CTRL:6` re-enters before already staged text.
+- Decide whether the source control is semantic, mixed, or a narrowly auditable
+  presentation-only exception. Do not globally demote the control value.
+
+### Dialogue vanishes during a scroll/pause transition
+
+Check NOV2 file `$2571` / CPU `$8571` first. The `B9 D7 87` indexed row-copy load must
+remain intact.
+
+### Menu text leaves stale garbage at the right edge
+
+Check menu clear tile `$C0`, the 36-byte variable-width staging clear, and the
+metadata-derived draw count. Do not apply the same opaque clear to dialogue tails.
+
+### Selection brackets fit short labels but not long labels
+
+Break at `$946B` and `$989F`; inspect the selected width byte at
+`$042D+visual_index`, then verify the derived column/cursor coordinates.
+
+### A repeating letter/pattern appears in the post-title background
+
+Suspect font/graphics aliasing. Verify that no active English glyph source was written
+into relative slots `$98-$AF`; active font storage begins at `$B0`.
+
+### The title flashes mixed graphics for one frame
+
+Suspect PPUMASK/NMI ordering. Inspect `$1C`, `$FF`, `$2000`, `$2001`, `$57`, and `$58`
+through the pre-slide/final transition. Confirm palette staging occurs after the BIOS
+CHR upload.
+
+### Game crashes immediately after START
+
+Inspect the title-exit detour. The handoff must preserve the source tail-call stack
+shape; a `JSR` substituted for the production `JMP` is a prime suspect.
+
+### Only the Kouhen direct-boot warning is wrong
+
+Inspect `SON-KOUH`; it is a private tile/RLE path, not the scenario text engine.
+
+### A gameplay sprite/background/map is wrong
+
+Start with the active NOV2 scene-load index and composed `$A200`/CHR state. Then use
+`GAMEPLAY_GRAPHICS_ENGINE.md` to identify the owning CHR file, metasprite/placement
+record, `$A21E` map descriptor, palette record, or `D2` runtime CHR transform before
+patching bytes.
+
+---
+
+## 17. A repeatable workflow for future fixes
+
+For each new bug, create a small evidence packet before changing code.
+
+### Step 1: identify the owning surface
+
+Record:
+
+```text
+visible symptom:
+FDS component:
+side / phase:
+component load address:
+file offset(s):
+CPU address(es):
+PPU destination if relevant:
+```
+
+If the component is unknown, stop and locate the FDS file load first.
+
+### Step 2: capture source authority
+
+Record one or more of:
+
+- exact source byte sequence;
+- region SHA-256;
+- pointer chain from known header/caller;
+- decoded record ID and control sequence;
+- source CHR/tile range;
+- source routine/disassembly range.
+
+A future patch should reject different bytes rather than “find something similar.”
+
+### Step 3: recover all consumers before relocating
+
+Search for:
+
+- direct absolute pointers;
+- page/base pointers;
+- sequential scanners;
+- secondary tables;
+- duplicated renderer copies;
+- code that assumes a fixed end address;
+- another phase that reads the same physical bytes.
+
+A string/table is movable only after all address contracts that reach it are modeled.
+
+### Step 4: reproduce the runtime state
+
+Use Mesen or equivalent to capture:
+
+- PC at the relevant handler;
+- A/X/Y and stack if control flow matters;
+- zero-page scratch used by the routine;
+- source pointer and current bit mask for text;
+- PPUCTRL/PPUMASK/scroll state for graphics;
+- nametable and pattern-table view for rendering bugs.
+
+Label the result **OBSERVED** until static code explains it.
+
+### Step 5: choose the narrowest patch layer
+
+Prefer, in order:
+
+1. translation/review data;
+2. production layout policy;
+3. entropy packing/placement;
+4. fixed-table declarative data;
+5. source-verified size-neutral instruction patch;
+6. verified relocation with all pointers regenerated;
+7. new runtime helper in proven free/reclaimed space.
+
+Do not start with a global decoder rewrite when one record/table policy is wrong.
+
+### Step 6: define postconditions before implementation
+
+Examples:
+
+```text
+record IDs unchanged
+semantic controls preserved
+scenario fixed tail byte-identical
+loaded end < $D7B5
+menu page pointers decode every label
+clock CHR/metasprite bytes unchanged
+palette region $9390-$93AF unchanged
+NOV2/NOV4 size invariant preserved where required
+```
+
+### Step 7: test at three levels
+
+- **unit** - synthetic structure and policy behavior;
+- **integration** - exact source guards and rebuilt component identity;
+- **runtime** - emulator route that proves the player-visible behavior.
+
+A static round trip cannot prove NMI timing, disk swapping, save/load behavior, or one-
+frame graphics corruption.
+
+---
+
+## 18. What to document when a new engine fact is discovered
+
+Every newly recovered fact should be written where the next maintainer will find it.
+Use this compact template:
+
+```text
+Component:
+Source revision / guard:
+File offset:
+Loaded CPU address:
+PPU address, if any:
+Callers / pointer chain:
+Runtime state used:
+Observed behavior:
+Verified interpretation:
+Bytes/addresses that may change:
+Bytes/addresses that must not change:
+Test protecting the fact:
+Playtest route protecting the behavior:
+Remaining unknowns:
+```
+
+If the fact changes a general mental model - for example, discovering that an
+apparently fixed table is actually page-indexed - update this guide as well as the
+specific module comments.
+
+---
+
+## 19. Known unknowns and non-generalizable behavior
+
+The following should remain explicit so future work does not silently invent rules:
+
+- Control codes are not assigned one universal narrative meaning. Production relies
+  only on recovered geometry and record-specific semantic evidence.
+- `CTRL:7` is decoder-representable but has no generic production-layout rule.
+- Gameplay graphics structures are recovered, but arbitrary relocation is not a
+  generic safe operation; same-address overlays and partial CHR residency remain
+  scene-specific ownership constraints.
+- Human-facing direction names for the opposing `$FD/$FE` hotspot sentinels remain
+  unassigned even though their one-way/opposite binary behavior is verified.
+- Hardware-visible title behavior depends on NMI/PPU ordering that static asset tests
+  cannot fully prove.
+- FDS BIOS calls can mutate staging state outside the immediate source buffer; title
+  palette ordering is one known example.
+- An emulator save state can preserve candidate-specific disk-write overlays or stale
+  loaded code. Reproduce release-critical bugs from clean candidate state.
+
+Unknown is a valid status. It is safer than encoding an attractive guess into the
+release builder.
+
+---
+
+## 20. High-value source files for deeper study
+
+| Question | Primary source |
+| --- | --- |
+| Native packed bits and separator alignment | `work/time_twist/textcodec.py` |
+| English glyph/token mapping | `work/time_twist/english.py`, `charmap.py` |
+| Scenario pointer layout and fixed-tail recovery | `work/time_twist/scenario.py` |
+| Frozen production grammar | `work/time_twist/entropy_codec.py` |
+| Dictionary search/constraints | `work/time_twist/entropy_compression.py` |
+| Resident/spill placement and page relocation | `work/time_twist/entropy_scenario.py` |
+| NOV2 patched decoder/runtime | `work/time_twist/entropy_runtime.py` |
+| Four-row English layout/control policy | `work/time_twist/production_translation_core.py` |
+| Record-scoped production exceptions | `work/time_twist/production_translation.py` |
+| Fixed prompts, special UI, Kouhen guard | `work/time_twist/ui.py`, `ui_fixed_tables.py` |
+| Gameplay script/event VM | `docs/GAMEPLAY_SCRIPT_ENGINE.md`, `work/tools/audit_recovered_engine_surfaces.py` |
+| Gameplay graphics/scene tables | `docs/GAMEPLAY_GRAPHICS_ENGINE.md`, `work/tools/audit_recovered_engine_surfaces.py` |
+| Dialogue font and tile ownership | `work/time_twist/font.py` |
+| NOV4 title memory map | `work/time_twist/title_layout.py` |
+| Exact title asset allocation | `work/time_twist/title_assets.py` |
+| PPU/NMI helper installation | `work/time_twist/title_patch.py`, `entropy_title.py` |
+| Final component patch order | `work/time_twist/release_build.py` |
+
+The goal is that a future maintainer starts from a known runtime model, not a hex
+editor and a blank notebook.
