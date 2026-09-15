@@ -34,9 +34,9 @@ from .title_layout import (
     FINAL_NAMETABLE_START,
     NOV3_LOAD_ADDRESS,
     NOV4_LOAD_ADDRESS,
+    TITLE_CHR_OFFSET,
     TITLE_TRANSITION_CALL_OFFSET,
     TITLE_TRANSITION_CALL_SOURCE,
-    TITLE_CHR_OFFSET,
     TitlePatchError,
 )
 
@@ -346,10 +346,9 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
             f"beyond safe 0x{_MAX_ORIGINAL_TITLE_STREAM_END:04X}"
         )
 
-    glyph_data = (
-        b"".join(pattern_map[index] for index in range(needed))
-        + bytes(correction_data)
-    )
+    glyph_data = b"".join(
+        pattern_map[index] for index in range(needed)
+    ) + bytes(correction_data)
     if len(glyph_data) != total_tiles * 16 or total_tiles > 0xFF:
         raise TitlePatchError(
             "title final-phase CHR payload has an invalid size"
