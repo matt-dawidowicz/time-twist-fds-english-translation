@@ -50,17 +50,7 @@ jobs:
             work/build/production_translations
             work/build/production-source.zip
           if-no-files-found: error
-      - run: python -m black work
-      - if: matrix.python-version == '3.14'
-        name: Upload Black-formatted sources
-        uses: actions/upload-artifact@v4
-        with:
-          name: black-formatted-sources
-          path: |
-            work/tests/test_final_playtest_golden_records.py
-            work/time_twist/exact_ips_title.py
-            work/time_twist/production_translation.py
-          if-no-files-found: error
+      - run: python -m black --check --diff work
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
