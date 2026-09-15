@@ -267,11 +267,13 @@ class EntropyProductionTests(unittest.TestCase):
     def test_parent_back_guard_is_choice_count_independent(self) -> None:
         """Lock root-menu B suppression to parent existence, never choice count."""
         patches = {patch.label: patch for patch in PARENT_BACK_GUARD_PATCHES}
-        self.assertEqual(len(patches), 5)
+        self.assertEqual(len(patches), 4)
+        scanner = {patch.label: patch for patch in ENTROPY_RUNTIME_PATCHES}[
+            "bit-contiguous entropy scanner"
+        ]
+        stub_offset = 0x814A - scanner.cpu_address
         self.assertEqual(
-            patches[
-                "clear saved Back destination when no parent exists"
-            ].replacement,
+            scanner.replacement[stub_offset : stub_offset + 5],
             bytes.fromhex("84 9C 4C BB 6B"),
         )
         self.assertEqual(
@@ -303,7 +305,7 @@ class EntropyProductionTests(unittest.TestCase):
         ]
         self.assertEqual(
             _sha256(scanner),
-            "7C276057F5E972C3E377AD54B8B7A2BD8FBA9757BF87F89DE219D7D875C61533",
+            "0D67AA4B4105720FF45907D4ECA8427AA76A0902D685949514BCC6AA6D7CD237",
         )
         self.assertEqual(
             _sha256(frontend),
@@ -325,7 +327,7 @@ class EntropyProductionTests(unittest.TestCase):
             span_stub,
             bytes.fromhex(
                 "98 48 A4 A8 B9 2D 04 18 69 08 65 14 85 31 "
-                "68 A8 A5 31 60 EA EA EA EA EA EA"
+                "68 A8 A5 31 60 84 9C 4C BB 6B EA"
             ),
         )
         self.assertEqual(MENU_WIDTH_WORK_RAM_ADDRESS, 0x042D)

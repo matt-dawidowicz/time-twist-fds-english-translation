@@ -332,6 +332,7 @@ class StaticUiTests(unittest.TestCase):
         original = path.read_bytes()
         ui_patched = patched_nov2_ui(original)
         patched = patch_entropy_nov2(ui_patched)
+        self.assertEqual(patch_entropy_nov2(patched), patched)
 
         # The native B dispatcher is the final authority: $9C == 0 returns;
         # any real saved parent proceeds into native Back/Cancel.

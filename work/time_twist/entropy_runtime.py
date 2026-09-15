@@ -169,12 +169,17 @@ DYNAMIC_MENU_LAYOUT_PATCHES = (
 # when $9C is zero; the defect is that root-menu setup can save the current
 # menu as its own Back destination.
 #
-# The entropy renderer leaves five NOP bytes at $814A. Reclaim them only after
-# the entropy runtime is installed: the no-parent descriptor path branches to
-# a freed $6B70 trampoline, which clears $9C through STY while Y is zero, then
-# resumes normal setup at $6BBB. The real-parent path that stores $C5/$C6 into
-# $9B/$9C remains byte-identical. Three state-table entries are redirected from
-# duplicate handler $6B70 to equivalent handler $6B66 so $6B70 can be reused.
+# The entropy renderer owns five NOP bytes at $814A. They are part of the
+# scanner's canonical replacement image and hold the no-parent stub so the
+# scanner hash guard remains idempotent. The no-parent descriptor path branches
+# to a freed $6B70 trampoline, which reaches that stub; STY clears $9C while Y
+# is zero, then normal setup resumes at $6BBB. The real-parent path that stores
+# $C5/$C6 into $9B/$9C remains byte-identical. Three state-table entries are
+# redirected from duplicate handler $6B70 to equivalent handler $6B66 so $6B70
+# can be reused.
+PARENT_BACK_GUARD_STUB_CPU_ADDRESS = 0x814A
+PARENT_BACK_GUARD_STUB = _hex("84 9C 4C BB 6B")
+
 PARENT_BACK_GUARD_PATCHES = (
     RuntimePatch(
         file_offset=0x0A97,
@@ -199,12 +204,6 @@ PARENT_BACK_GUARD_PATCHES = (
         expected=_hex("F0 10"),
         replacement=_hex("F0 C5"),
         label="route no-parent menu setup through Back guard",
-    ),
-    RuntimePatch(
-        file_offset=0x214A,
-        expected=_hex("EA EA EA EA EA"),
-        replacement=_hex("84 9C 4C BB 6B"),
-        label="clear saved Back destination when no parent exists",
     ),
 )
 
@@ -533,6 +532,23 @@ _DICTIONARY_REJOIN = bytes.fromhex("4C 5E 81")
 
 _SCANNER_BLOCK = _SCANNER_CODE + bytes((0xEA,)) * (
     SCANNER_REGION_SIZE - len(_SCANNER_CODE)
+)
+_parent_back_guard_stub_offset = (
+    PARENT_BACK_GUARD_STUB_CPU_ADDRESS - SCANNER_CPU_ADDRESS
+)
+_stub_end = _parent_back_guard_stub_offset + len(PARENT_BACK_GUARD_STUB)
+if not 0 <= _parent_back_guard_stub_offset < _stub_end <= len(_SCANNER_BLOCK):
+    raise EntropyRuntimeError("parent Back guard stub escaped scanner region")
+if _SCANNER_BLOCK[_parent_back_guard_stub_offset:_stub_end] != bytes(
+    (0xEA,)
+) * len(PARENT_BACK_GUARD_STUB):
+    raise EntropyRuntimeError(
+        "parent Back guard stub no longer owns NOP space"
+    )
+_SCANNER_BLOCK = (
+    _SCANNER_BLOCK[:_parent_back_guard_stub_offset]
+    + PARENT_BACK_GUARD_STUB
+    + _SCANNER_BLOCK[_stub_end:]
 )
 _FRONTEND_BLOCK = _FRONTEND_CODE + bytes((0xEA,)) * (
     FRONTEND_REGION_SIZE - len(_FRONTEND_CODE)
