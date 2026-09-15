@@ -29,17 +29,18 @@ If a speaker-changing boundary cannot fit within the native two-row re-entry lim
 the build fails closed so the wording can be shortened explicitly instead of moving
 the control into the wrong turn.
 
-## `CTRL:1`: mandatory by default, ten exact audited exceptions
+## `CTRL:1`: mandatory by default, eleven exact audited exceptions
 
 `CTRL:1` normally remains a mandatory semantic/input wait. Playtesting exposed one
 narrow failure mode, however: several Japanese records used `CTRL:1` as a short
 presentation pause even though the corresponding English is one continuous thought
 and the four-row box still has unused space.
 
-The production layer therefore demotes `CTRL:1` **only** for these ten audited stable
-record IDs:
+The production layer therefore demotes `CTRL:1` **only** for these eleven audited
+stable record IDs:
 
 - `TT1A/g0/r5`
+- `TT1A/g0/r30`
 - `TT1B/g0/r6`
 - `TT1B/g2/r11`
 - `TT1B/g2/r29`
@@ -49,6 +50,11 @@ record IDs:
 - `TT4/g0/r30`
 - `TT6B/g0/r6`
 - `TT6C/g2/r5`
+
+`TT1A/g0/r30` was promoted into this set during final playtesting after the inherited
+wait after `Time travel, huh...` proved to interrupt one continuous internal thought
+without adding useful dramatic timing. Its later `CTRL:6` beat remains semantic and
+is preserved.
 
 This exception does **not** modify the certified base translation maps. Each record is
 registered in `production_translation.py` together with its exact certified base
@@ -90,7 +96,8 @@ record separator in the packed stream and is never an ordinary translated contro
 
 Coverage protects both sides of the policy:
 
-- the ten audited presentation-only `CTRL:1` waits disappear only in production;
+- the eleven audited presentation-only `CTRL:1` waits disappear only in production;
+- `TT1A/g0/r30` loses its input wait while retaining its later `CTRL:6` beat;
 - unrelated dramatic, speaker-change, and timing `CTRL:1` waits remain intact;
 - a source-template change invalidates the corresponding exception;
 - source speaker-changing `CTRL:2` boundaries remain attached to the correct turn;
