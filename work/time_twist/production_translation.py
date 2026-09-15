@@ -2,8 +2,8 @@
 
 The low-level layout engine lives in :mod:`production_translation_core`.  This
 module keeps project-specific policy explicit: reviewed prose is reflowed against
-the certified base control topology, except for a small audited set of source
-``CTRL:1`` waits proven by playtesting to be presentation-only in English.
+the certified base control topology, except for an audited set of source
+``CTRL:1`` waits proven to be presentation-only in English.
 
 The certified ``work/translations`` maps remain untouched.  Every presentation-
 only exception is keyed by stable record ID and locked to the exact base template
@@ -17,6 +17,7 @@ import json
 from pathlib import Path
 
 from . import production_translation_core as _core
+from .pagination_ctrl1_policy import ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES
 
 CONTROL_RE = _core.CONTROL_RE
 DISPLAY_COLUMNS = _core.DISPLAY_COLUMNS
@@ -56,6 +57,9 @@ PRESENTATION_ONLY_CTRL1_TEMPLATES: dict[str, str] = {
     "TT6B/g0/r6": "Joints ache. Hungry...{CTRL:1}Throat's bone-dry...",
     "TT6C/g2/r5": "Pencil in its hand.{CTRL:1}Died while writing.",
 }
+PRESENTATION_ONLY_CTRL1_TEMPLATES.update(
+    ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES
+)
 
 
 # Final playtest also identified four records with additional semantic controls whose
@@ -109,9 +113,13 @@ FINAL_PLAYTEST_LAYOUT_RECORDS = frozenset(
 )
 
 PRESENTATION_ONLY_CTRL1_RECORDS = frozenset(PRESENTATION_ONLY_CTRL1_TEMPLATES)
+_TEMPLATE_TO_PRESENTATION_ONLY_RECORDS: dict[str, list[str]] = {}
+for _record_id, _template in PRESENTATION_ONLY_CTRL1_TEMPLATES.items():
+    _TEMPLATE_TO_PRESENTATION_ONLY_RECORDS.setdefault(_template, []).append(_record_id)
 _TEMPLATE_TO_PRESENTATION_ONLY_RECORD = {
-    template: record_id
-    for record_id, template in PRESENTATION_ONLY_CTRL1_TEMPLATES.items()
+    template: record_ids[0]
+    for template, record_ids in _TEMPLATE_TO_PRESENTATION_ONLY_RECORDS.items()
+    if len(record_ids) == 1
 }
 
 
@@ -200,7 +208,7 @@ def validate_production_control_sequence(source: str, production: str) -> None:
     Most call sites with a stable ID should use
     :func:`validate_record_production_control_sequence`.  This two-argument
     compatibility API remains strict except when ``source`` exactly matches one
-    of the locked certified base presentation templates above.
+    unique locked certified base presentation template above.
     """
     record_id = _TEMPLATE_TO_PRESENTATION_ONLY_RECORD.get(source)
     if record_id is None:
