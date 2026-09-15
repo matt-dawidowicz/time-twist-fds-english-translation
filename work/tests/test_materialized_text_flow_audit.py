@@ -70,8 +70,8 @@ class MaterializedTextFlowAuditTests(unittest.TestCase):
     def test_audited_scene_controls_remain_on_natural_boundaries(self) -> None:
         """Lock timing controls that separate complete thoughts and responses."""
         tt3b = _production("TT3B")["TT3B/g1/r22"]
-        self.assertIn("I can't remember anything…{CTRL:0}Why am I here…?{CTRL:6}", tt3b)
-        self.assertNotIn("can't remember{CTRL:6}anything", tt3b)
+        self.assertIn("Cougar: Mind's blank…{CTRL:0}Why am I here…?{CTRL:6}", tt3b)
+        self.assertNotIn("Mind's{CTRL:6}blank", tt3b)
 
         tt6c = _production("TT6C")["TT6C/g3/r8"]
         self.assertIn("Joseph: Ah… right…{CTRL:3}Me: Yes.{CTRL:3}", tt6c)
