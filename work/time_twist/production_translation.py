@@ -207,8 +207,10 @@ def validate_production_control_sequence(source: str, production: str) -> None:
         record_id = next(
             (
                 candidate
-                for candidate, (expected, _effective) in
-                PRESENTATION_CONTROL_REWRITES.items()
+                for candidate, (
+                    expected,
+                    _effective,
+                ) in PRESENTATION_CONTROL_REWRITES.items()
                 if source == expected
             ),
             None,
