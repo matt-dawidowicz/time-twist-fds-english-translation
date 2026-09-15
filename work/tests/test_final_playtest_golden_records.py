@@ -26,6 +26,7 @@ GOLDEN_RECORDS = {
 
 
 def _production(bank: str) -> dict[str, str]:
+    """Materialize one bank with the maintained production source layers."""
     return merged_translation_map(
         bank,
         base_directory=ROOT / "work" / "translations",
@@ -38,6 +39,7 @@ class FinalPlaytestGoldenRecordTests(unittest.TestCase):
     """Keep final-playtest prose and control geometry byte-deterministic."""
 
     def test_materialized_records_match_golden_build(self) -> None:
+        """Require production materialization to reproduce every approved record."""
         by_bank = {bank: _production(bank) for bank in {"TT1A", "TT1B"}}
         for record_id, expected in GOLDEN_RECORDS.items():
             bank = record_id.split("/", 1)[0]
@@ -96,6 +98,7 @@ class FinalPlaytestGoldenRecordTests(unittest.TestCase):
         )
 
     def test_runtime_validation_fails_closed_on_topology_drift(self) -> None:
+        """Reject native control geometry that drifts from the reviewed policy."""
         production = GOLDEN_RECORDS["TT1A/g0/r30"]
         with self.assertRaisesRegex(
             ProductionTranslationError, "native control topology changed"
