@@ -30,6 +30,7 @@ jobs:
         run: |
           python -m unittest work.tests.test_ui_unit work.tests.test_entropy_production
           python -m pip install black==25.1.0 ruff==0.16.7
+          python -m black work/time_twist/entropy_runtime.py work/tests/test_entropy_production.py work/integration_tests/test_ui.py
           python -m black --check work/time_twist/entropy_runtime.py work/tests/test_entropy_production.py work/integration_tests/test_ui.py
           python -m ruff check work/time_twist/entropy_runtime.py work/tests/test_entropy_production.py work/integration_tests/test_ui.py
           git diff --check
