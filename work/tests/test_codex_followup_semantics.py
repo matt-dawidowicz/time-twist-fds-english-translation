@@ -74,11 +74,11 @@ class CodexFollowupSemanticTests(unittest.TestCase):
         self.assertTrue(text.startswith('"DR. SIMON VANISHES":{CTRL:2}'))
         self.assertNotIn('"DR. SIMON{CTRL:2}VANISHES"', text)
 
-    def test_ctrl3_does_not_move_when_weak_ctrl2_is_demoted(self) -> None:
-        """Preserve the scholar/result boundary during full-box pagination."""
+    def test_scholar_profile_uses_final_playtest_scroll_geometry(self) -> None:
+        """Keep the approved continuous scholar profile from the golden build."""
         text = _production("TT1A")["TT1A/g0/r24"]
-        self.assertNotIn("scholar{CTRL:3}type", text)
-        self.assertIn("serious,{CTRL:3}stubborn scholar type.", text)
+        self.assertNotIn("{CTRL:3}", text)
+        self.assertIn("serious,{CTRL:4}stubborn scholar type.", text)
 
     def test_directional_riddle_keeps_right_to_middle_ctrl2(self) -> None:
         """Keep the native Right-to-Middle timing transition in TT6B."""

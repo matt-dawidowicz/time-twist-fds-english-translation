@@ -1,9 +1,11 @@
 # Title artwork authority
 
-The authoritative English `TIME TWIST` wordmark comes from the historical
-`TimeTwist-Zenpen-newlogo.ips` patch. The patch is not treated as a production
-binary overlay: its rendered native pixels are the source of truth, and the
-modern title builder repacks those pixels through the recovered NOV4 runtime.
+The historical English `TIME TWIST` wordmark comes from
+`TimeTwist-Zenpen-newlogo.ips`. Production builds now authenticate and apply that
+maintainer-supplied private IPS directly, then add the separately reviewed
+final-playtest corrections and English subtitle. These checked-in PNGs remain
+reproducible native reference/provenance assets; they are not the code path that
+installs the production title.
 
 Definitive provenance:
 
@@ -12,7 +14,7 @@ Definitive provenance:
 - definitive logo IPS SHA-256:
   `915C0ED3600F5E560F9F588DC2100FE59772B5F7570E4F183565FBA9C77C6BA2`.
 
-The production authorities are:
+The checked-in IPS-derived reference assets are:
 
 - `Time Twist approved native title.png` — exact 256x240 indexed colored logo
   extracted from the patched NOV4 final title; rows 0-96 are owned;
@@ -41,7 +43,9 @@ The subtitle `On the Outskirts of History...`, `PUSH START`, machine art, and
 copyright are intentionally not baked into these files. They remain code/ROM
 owned. The live blue clock hands are also absent from the background; NOV4
 continues to animate the original sprite CHR and metasprite tables, using the
-exact clock-origin adjustment from the definitive IPS.
+exact clock-origin adjustment from the definitive IPS. Production adds six
+final-state-only wordmark tile corrections after applying the IPS; the swipe
+reference remains unchanged.
 
 `Time Twist approved English opening.gif` and the older high-resolution title
 references remain historical comparison/provenance artifacts only. They are no

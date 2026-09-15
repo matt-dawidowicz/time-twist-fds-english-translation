@@ -1,11 +1,12 @@
-"""Install the definitive historical IPS title exactly, then add our subtitle.
+"""Install the definitive historical IPS title and reviewed final-playtest polish.
 
 The third-party IPS remains a maintainer-supplied private input and is never
 embedded in or redistributed with this package. The pipeline loads the external
 patch, verifies its SHA-256, applies it to the supported untouched Zenpen image,
 extracts the resulting NOV4 bytes, overlays only the IPS-owned NOV4 differences
-onto the already-localized NOV4 bank, and then adds
-``On the Outskirts of History...`` in a final-phase-only CHR upload.
+onto the already-localized NOV4 bank, then adds the reviewed six-tile final-logo
+corrections and ``On the Outskirts of History...`` in one final-phase-only CHR
+upload. The moving monochrome swipe remains the exact IPS artwork.
 
 Set ``TIME_TWIST_DEFINITIVE_TITLE_IPS`` to the patch path when running from an
 installed package. A source checkout also accepts the private fixture at
@@ -33,6 +34,7 @@ from .title_layout import (
     FINAL_NAMETABLE_START,
     NOV3_LOAD_ADDRESS,
     NOV4_LOAD_ADDRESS,
+    TITLE_CHR_OFFSET,
     TITLE_TRANSITION_CALL_OFFSET,
     TITLE_TRANSITION_CALL_SOURCE,
     TitlePatchError,
@@ -57,6 +59,49 @@ _ZERO_TILE = bytes(16)
 _SUBTITLE_TILE_ROW = 13
 _SUBTITLE_Y = _SUBTITLE_TILE_ROW * 8
 _MAX_ORIGINAL_TITLE_STREAM_END = 0x094D
+
+# Final-playtest pixel corrections to the definitive IPS wordmark. Each entry
+# duplicates one IPS-owned tile into spare final-phase CHR, changes only the
+# reviewed pixels, and remaps exactly one final nametable cell. The moving
+# monochrome swipe remains byte-for-byte identical to the historical IPS.
+_FINAL_LOGO_TILE_CORRECTIONS: tuple[tuple[int, int, bytes, bytes], ...] = (
+    (
+        0x066,
+        0x03,
+        bytes.fromhex("00000001071f7ffc000000000000030f"),
+        bytes.fromhex("00000001071f7fff000000000000020e"),
+    ),
+    (
+        0x0D6,
+        0x04,
+        bytes.fromhex("000000ffffff00000000000000ffffff"),
+        bytes.fromhex("000000ffffff00010000000000ffffff"),
+    ),
+    (
+        0x0D7,
+        0x33,
+        bytes.fromhex("00000080c1e1e3c30000000000808000"),
+        bytes.fromhex("00000080c1e1e3c30000000000808101"),
+    ),
+    (
+        0x0F1,
+        0x14,
+        bytes.fromhex("f0f0f0f0f0f0f0f01f1f1f1f1f1f1f1f"),
+        bytes.fromhex("f0f0f0f0f0f070301f1f1f1f1f1f1f9f"),
+    ),
+    (
+        0x123,
+        0x08,
+        bytes.fromhex("1c1c1c1c1c1c1c1c0707070707070707"),
+        bytes.fromhex("1c1c1c1c1c1c1c1f0707070707070707"),
+    ),
+    (
+        0x12B,
+        0x16,
+        bytes.fromhex("00000000000000ffffffffffffffffff"),
+        bytes.fromhex("01010000000000ffffffffffffffffff"),
+    ),
+)
 
 
 def _sha256(data: bytes) -> str:
@@ -255,6 +300,13 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
         )
     first_tile = selected[0]
     tile_ids = list(range(first_tile, first_tile + needed))
+    correction_first_tile = first_tile + needed
+    total_tiles = needed + len(_FINAL_LOGO_TILE_CORRECTIONS)
+    if selected[1] - first_tile < total_tiles:
+        raise TitlePatchError(
+            "definitive title has no contiguous final-phase tile run for "
+            "subtitle plus reviewed logo corrections"
+        )
 
     final_mut = bytearray(final)
     for tile_x, pattern_index in enumerate(tile_pattern_indices):
@@ -262,6 +314,27 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
             final_mut[_SUBTITLE_TILE_ROW * 32 + tile_x] = tile_ids[
                 pattern_index
             ]
+
+    correction_data = bytearray()
+    for correction_index, (
+        nametable_index,
+        source_tile,
+        expected_pattern,
+        corrected_pattern,
+    ) in enumerate(_FINAL_LOGO_TILE_CORRECTIONS):
+        if final_mut[nametable_index] != source_tile:
+            raise TitlePatchError(
+                f"definitive title cell 0x{nametable_index:03X} no longer uses "
+                f"expected tile ${source_tile:02X}"
+            )
+        source_offset = TITLE_CHR_OFFSET + source_tile * 16
+        if data[source_offset : source_offset + 16] != expected_pattern:
+            raise TitlePatchError(
+                f"definitive title tile ${source_tile:02X} changed under "
+                "reviewed pixel correction"
+            )
+        final_mut[nametable_index] = correction_first_tile + correction_index
+        correction_data.extend(corrected_pattern)
 
     rebuilt_stream = b"".join(
         (encode_title_rle(bytes(final_mut)), encode_title_rle(second), b"\xff")
@@ -273,9 +346,13 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
             f"beyond safe 0x{_MAX_ORIGINAL_TITLE_STREAM_END:04X}"
         )
 
-    glyph_data = b"".join(pattern_map[index] for index in range(needed))
-    if len(glyph_data) != needed * 16 or needed > 0xFF:
-        raise TitlePatchError("subtitle CHR payload has an invalid size")
+    glyph_data = b"".join(
+        pattern_map[index] for index in range(needed)
+    ) + bytes(correction_data)
+    if len(glyph_data) != total_tiles * 16 or total_tiles > 0xFF:
+        raise TitlePatchError(
+            "title final-phase CHR payload has an invalid size"
+        )
 
     helper_offset = len(data)
     helper_address = NOV4_LOAD_ADDRESS + helper_offset
@@ -300,7 +377,7 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
             0xA9,
             ppu_address & 0xFF,
             0xA2,
-            needed,
+            total_tiles,
             0x20,
             0xAF,
             0xEB,
@@ -353,7 +430,7 @@ def patched_nov4_exact_ips_title(
     *,
     subtitle: str = DEFAULT_SUBTITLE,
 ) -> bytes:
-    """Install the exact historical logo patch and retain our English subtitle."""
+    """Install the historical logo base plus approved final-phase corrections."""
     base_nov4, patched_nov4 = _exact_ips_nov4(zenpen_raw)
     exact = _overlay_exact_ips_differences(data, base_nov4, patched_nov4)
     return _install_subtitle(exact, subtitle)

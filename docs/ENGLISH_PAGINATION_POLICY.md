@@ -29,18 +29,19 @@ If a speaker-changing boundary cannot fit within the native two-row re-entry lim
 the build fails closed so the wording can be shortened explicitly instead of moving
 the control into the wrong turn.
 
-## `CTRL:1`: mandatory by default, eleven exact audited exceptions
+## `CTRL:1`: mandatory by default, twelve exact audited exceptions
 
 `CTRL:1` normally remains a mandatory semantic/input wait. Playtesting exposed one
 narrow failure mode, however: several Japanese records used `CTRL:1` as a short
 presentation pause even though the corresponding English is one continuous thought
 and the four-row box still has unused space.
 
-The production layer therefore demotes `CTRL:1` **only** for these eleven audited
+The production layer therefore demotes `CTRL:1` **only** for these twelve audited
 stable record IDs:
 
 - `TT1A/g0/r5`
 - `TT1A/g0/r30`
+- `TT1B/g0/r0`
 - `TT1B/g0/r6`
 - `TT1B/g2/r11`
 - `TT1B/g2/r29`
@@ -52,9 +53,11 @@ stable record IDs:
 - `TT6C/g2/r5`
 
 `TT1A/g0/r30` was promoted into this set during final playtesting after the inherited
-wait after `Time travel, huh...` proved to interrupt one continuous internal thought
-without adding useful dramatic timing. Its later `CTRL:6` beat remains semantic and
-is preserved.
+wait after `Time travel, huh...` proved to interrupt one continuous internal thought.
+The later inherited `CTRL:6` in that same thought was subsequently observed to create
+the same false interruption and is also presentation-only in the approved build.
+`TT1B/g0/r0` likewise treats the arrival-line `CTRL:1` as presentation geometry so
+the museum introduction reads continuously.
 
 This exception does **not** modify the certified base translation maps. Each record is
 registered in `production_translation.py` together with its exact certified base
@@ -89,15 +92,35 @@ The repeatable binary/source check lives in
 
 ## Other semantic controls
 
-`CTRL:3` and `CTRL:6` remain mandatory and preserve source order. `CTRL:5` is the
-record separator in the packed stream and is never an ordinary translated control.
+`CTRL:3` and `CTRL:6` remain mandatory by default and preserve source order. Final
+playtesting established four exact record-scoped exceptions where a native semantic
+control acts only as Japanese presentation timing in the reviewed English:
+
+- `TT1A/g0/r24`: the scholar-profile `CTRL:3` is regenerated as ordinary scroll
+  geometry so one continuous result is not split artificially;
+- `TT1A/g0/r30`: the later `CTRL:6` is presentation-only, in addition to the audited
+  `CTRL:1` demotion above;
+- `TT1A/g0/r31`: the `CTRL:3` before `Whatever…` is presentation-only and the
+  approved build uses normal row-four scrolling there;
+- `TT1A/g1/r1`: the opening `CTRL:1` and the early `CTRL:6` are presentation-only;
+  the later `CTRL:3` boundaries remain semantic.
+
+These rewrites are locked to the exact certified base templates and native control
+sequences. The materializer fails if the English base template drifts; ROM-backed
+validation independently fails if the Japanese source control topology drifts. This
+keeps the exceptions narrow without requiring Japanese visible text to equal the
+English template.
+
+`CTRL:5` is the record separator in the packed stream and is never an ordinary
+translated control.
 
 ## Regression intent
 
 Coverage protects both sides of the policy:
 
-- the eleven audited presentation-only `CTRL:1` waits disappear only in production;
-- `TT1A/g0/r30` loses its input wait while retaining its later `CTRL:6` beat;
+- the twelve audited presentation-only `CTRL:1` waits disappear only in production;
+- the four final-playtest semantic-control rewrites reproduce the approved control
+  geometry without broadening the policy to unrelated records;
 - unrelated dramatic, speaker-change, and timing `CTRL:1` waits remain intact;
 - a source-template change invalidates the corresponding exception;
 - source speaker-changing `CTRL:2` boundaries remain attached to the correct turn;

@@ -42,6 +42,7 @@ PRESENTATION_ONLY_CTRL1_TEMPLATES: dict[str, str] = {
         "Time travel, huh...{CTRL:1}All talk so far.{CTRL:0}"
         "No one's pulled it off.{CTRL:6}More importantly..."
     ),
+    "TT1B/g0/r0": "Made it... Devil Museum{CTRL:1}I've wanted to visit.",
     "TT1B/g0/r6": '"Closed today.{CTRL:1}Inquire at the church."',
     "TT1B/g2/r11": "The parlor.{CTRL:1}Paper and magnifier.",
     "TT1B/g2/r29": "A local map.{CTRL:1}A villa lies north.",
@@ -55,6 +56,58 @@ PRESENTATION_ONLY_CTRL1_TEMPLATES: dict[str, str] = {
     "TT6B/g0/r6": "Joints ache. Hungry...{CTRL:1}Throat's bone-dry...",
     "TT6C/g2/r5": "Pencil in its hand.{CTRL:1}Died while writing.",
 }
+
+
+# Final playtest also identified four records with additional semantic controls whose
+# timing/pagination function is presentation-only in the reviewed English.
+# Each rewrite is locked to the exact certified base record and replaces only
+# the audited control token(s); prose and all other controls remain source-owned.
+PRESENTATION_CONTROL_REWRITES: dict[str, tuple[str, str]] = {
+    "TT1A/g0/r24": (
+        "Cautious, methodical.{CTRL:0}Rarely fail, but can{CTRL:2}"
+        "seem a bit ordinary.{CTRL:0}Hardworking, principled{CTRL:3}"
+        "Stubborn scholar type.{CTRL:4}You care till worn out.{CTRL:4}"
+        "Romantic, but awkward.",
+        "Cautious, methodical.{CTRL:0}Rarely fail, but can{CTRL:2}"
+        "seem a bit ordinary.{CTRL:0}Hardworking, principled{CTRL:4}"
+        "Stubborn scholar type.{CTRL:4}You care till worn out.{CTRL:4}"
+        "Romantic, but awkward.",
+    ),
+    "TT1A/g0/r30": (
+        "Time travel, huh...{CTRL:1}All talk so far.{CTRL:0}"
+        "No one's pulled it off.{CTRL:6}More importantly...",
+        "Time travel, huh...{CTRL:0}All talk so far.{CTRL:0}"
+        "No one's pulled it off.{CTRL:0}More importantly...",
+    ),
+    "TT1A/g0/r31": (
+        "............{CTRL:1}That's weird...{CTRL:0}Some kind of charm?"
+        "{CTRL:6}{CTRL:4}{CTRL:3}Whatever... Let's go!",
+        "............{CTRL:1}That's weird...{CTRL:0}Some kind of charm?"
+        "{CTRL:6}{CTRL:4}{CTRL:4}Whatever... Let's go!",
+    ),
+    "TT1A/g1/r1": (
+        "A new century nears...{CTRL:1}yet few welcome the age{CTRL:0}"
+        "about to begin.{CTRL:6}Conflict still rages{CTRL:4}across the world."
+        "{CTRL:3}Environmental harm and{CTRL:4}food shortages worsen."
+        "{CTRL:3}Anyone can see it:{CTRL:4}Earth's future is grim.",
+        "A new century nears...{CTRL:0}yet few welcome the age{CTRL:0}"
+        "about to begin.{CTRL:0}Conflict still rages{CTRL:4}across the world."
+        "{CTRL:3}Environmental harm and{CTRL:4}food shortages worsen."
+        "{CTRL:3}Anyone can see it:{CTRL:4}Earth's future is grim.",
+    ),
+}
+
+FINAL_PLAYTEST_LAYOUT_RECORDS = frozenset(
+    {
+        "TT1A/g0/r3",
+        "TT1A/g0/r24",
+        "TT1A/g0/r30",
+        "TT1A/g0/r31",
+        "TT1A/g1/r1",
+        "TT1B/g0/r0",
+    }
+)
+
 PRESENTATION_ONLY_CTRL1_RECORDS = frozenset(PRESENTATION_ONLY_CTRL1_TEMPLATES)
 _TEMPLATE_TO_PRESENTATION_ONLY_RECORD = {
     template: record_id
@@ -73,26 +126,71 @@ def _demote_single_ctrl1(record_id: str, template: str) -> str:
     return template.replace("{CTRL:1}", "{CTRL:0}", 1)
 
 
+def _presentation_control_policy(record_id: str) -> tuple[str, str] | None:
+    """Return the exact base/effective templates for one audited record."""
+    rewrite = PRESENTATION_CONTROL_REWRITES.get(record_id)
+    if rewrite is not None:
+        return rewrite
+    template = PRESENTATION_ONLY_CTRL1_TEMPLATES.get(record_id)
+    if template is None:
+        return None
+    return template, _demote_single_ctrl1(record_id, template)
+
+
+def _control_sequence(text: str) -> tuple[int, ...]:
+    """Return every native control value in textual order."""
+    return tuple(int(value) for value in CONTROL_RE.findall(text))
+
+
+def _replace_control_sequence(text: str, controls: tuple[int, ...]) -> str:
+    """Replace control values in place while preserving all visible source text."""
+    pieces = CONTROL_RE.split(text)
+    if len(pieces[1::2]) != len(controls):
+        raise ProductionTranslationError(
+            "control-rewrite arity changed unexpectedly"
+        )
+    output = [pieces[0]]
+    for value, segment in zip(controls, pieces[2::2], strict=True):
+        output.append(f"{{CTRL:{value}}}")
+        output.append(segment)
+    return "".join(output)
+
+
+def _effective_control_template(record_id: str, source: str) -> str:
+    """Apply an audited presentation rewrite to any text with the same topology."""
+    policy = _presentation_control_policy(record_id)
+    if policy is None:
+        return source
+    expected, effective = policy
+    expected_controls = _control_sequence(expected)
+    source_controls = _control_sequence(source)
+    if source_controls != expected_controls:
+        raise ProductionTranslationError(
+            f"{record_id}: native control topology changed under the audited "
+            "presentation-control policy; re-audit before building"
+        )
+    return _replace_control_sequence(source, _control_sequence(effective))
+
+
 def _effective_base_template(record_id: str, template: str) -> str:
-    """Return the production template while keeping certified base data intact."""
-    expected = PRESENTATION_ONLY_CTRL1_TEMPLATES.get(record_id)
-    if expected is None:
+    """Return the audited production template without mutating certified base data."""
+    policy = _presentation_control_policy(record_id)
+    if policy is None:
         return template
+    expected, effective = policy
     if template != expected:
         raise ProductionTranslationError(
             f"{record_id}: certified base template changed under the audited "
-            "presentation-only CTRL:1 policy; re-audit before building"
+            "presentation-control policy; re-audit before building"
         )
-    return _demote_single_ctrl1(record_id, template)
+    return effective
 
 
 def validate_record_production_control_sequence(
     record_id: str, source: str, production: str
 ) -> None:
-    """Validate one record, honoring only the audited CTRL:1 exceptions."""
-    effective_source = source
-    if record_id in PRESENTATION_ONLY_CTRL1_RECORDS:
-        effective_source = _demote_single_ctrl1(record_id, source)
+    """Validate one record, honoring only audited presentation rewrites."""
+    effective_source = _effective_control_template(record_id, source)
     _core.validate_production_control_sequence(effective_source, production)
 
 
@@ -102,13 +200,26 @@ def validate_production_control_sequence(source: str, production: str) -> None:
     Most call sites with a stable ID should use
     :func:`validate_record_production_control_sequence`.  This two-argument
     compatibility API remains strict except when ``source`` exactly matches one
-    of the eleven locked certified base templates above.
+    of the locked certified base presentation templates above.
     """
     record_id = _TEMPLATE_TO_PRESENTATION_ONLY_RECORD.get(source)
     if record_id is None:
-        effective_source = source
-    else:
-        effective_source = _demote_single_ctrl1(record_id, source)
+        record_id = next(
+            (
+                candidate
+                for candidate, (
+                    expected,
+                    _effective,
+                ) in PRESENTATION_CONTROL_REWRITES.items()
+                if source == expected
+            ),
+            None,
+        )
+    effective_source = (
+        source
+        if record_id is None
+        else _effective_base_template(record_id, source)
+    )
     _core.validate_production_control_sequence(effective_source, production)
 
 
@@ -170,6 +281,19 @@ def merged_translation_map(
             reviewed_text = " ".join(
                 CONTROL_RE.sub(" ", selected_text).split()
             )
+        if record_id in FINAL_PLAYTEST_LAYOUT_RECORDS:
+            if record_id not in explicit_control_overrides:
+                raise ProductionTranslationError(
+                    f"{record_id}: final-playtest layout must be an explicit "
+                    "control override"
+                )
+            _effective_base_template(record_id, base[record_id])
+            validate_record_production_control_sequence(
+                record_id, base[record_id], reviewed_text
+            )
+            validate_renderer_buffer_layout(reviewed_text)
+            laid_out[record_id] = reviewed_text
+            continue
         laid_out[record_id] = layout_review_text(
             record_id,
             reviewed_text,
