@@ -9,8 +9,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from time_twist.exact_ips_title import (
-    DEFINITIVE_IPS_ENV,
     _FINAL_LOGO_TILE_CORRECTIONS,
+    DEFINITIVE_IPS_ENV,
     _definitive_ips,
     _definitive_ips_path,
     _install_subtitle,
