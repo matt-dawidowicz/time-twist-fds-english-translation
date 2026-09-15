@@ -31,14 +31,14 @@ ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES: dict[str, str] = {
     ),
     "T22/g0/r4": "Jailer: If only we had{CTRL:1}proof... just to myself",
     "T22/g0/r10": (
-        "\"PACT{CTRL:1}O Devil, lord of night,{CTRL:0}I kneel. You are my god"
+        '"PACT{CTRL:1}O Devil, lord of night,{CTRL:0}I kneel. You are my god'
         "{CTRL:6}of justice. I vow all{CTRL:4}to vice, slander, evil."
-        "{CTRL:3}Bishop\""
+        '{CTRL:3}Bishop"'
     ),
     "T22/g1/r1": (
-        "\"PACT{CTRL:1}O Devil, lord of night,{CTRL:0}I kneel. You are my god"
+        '"PACT{CTRL:1}O Devil, lord of night,{CTRL:0}I kneel. You are my god'
         "{CTRL:6}of justice. I vow all{CTRL:4}to vice, slander, evil."
-        "{CTRL:3}Bishop\""
+        '{CTRL:3}Bishop"'
     ),
     "TT3A/g0/r29": (
         "Devil: Pact complete.{CTRL:1}Your soul for a share"
