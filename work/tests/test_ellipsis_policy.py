@@ -68,9 +68,7 @@ class EllipsisPolicyTests(unittest.TestCase):
             *(english for _, _, english in DISK_NUMBER_ERROR_PATCHES),
             *(english for _, _, english in WRONG_DISK_PATCHES),
         ]
-        offenders = [
-            text for text in texts if ASCII_ELLIPSIS_RE.search(text)
-        ]
+        offenders = [text for text in texts if ASCII_ELLIPSIS_RE.search(text)]
         self.assertEqual(
             [],
             offenders,
