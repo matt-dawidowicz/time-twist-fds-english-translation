@@ -269,11 +269,15 @@ class EntropyProductionTests(unittest.TestCase):
         patches = {patch.label: patch for patch in PARENT_BACK_GUARD_PATCHES}
         self.assertEqual(len(patches), 5)
         self.assertEqual(
-            patches["clear saved Back destination when no parent exists"].replacement,
+            patches[
+                "clear saved Back destination when no parent exists"
+            ].replacement,
             bytes.fromhex("84 9C 4C BB 6B"),
         )
         self.assertEqual(
-            patches["route no-parent menu setup through Back guard"].replacement,
+            patches[
+                "route no-parent menu setup through Back guard"
+            ].replacement,
             bytes.fromhex("F0 C5"),
         )
         # None of the parent-guard replacements read $98 (LDY $98 = A4 98),
