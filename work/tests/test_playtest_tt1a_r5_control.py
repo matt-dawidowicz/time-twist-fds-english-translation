@@ -62,14 +62,15 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
 
     def test_policy_is_exact_audited_record_set(self) -> None:
         """Prevent accidental broadening or silent removal of an audited case."""
-        self.assertEqual(len(ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES), 53)
-        self.assertEqual(len(EXPECTED_RECORDS), 65)
+        self.assertEqual(len(ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES), 54)
+        self.assertEqual(len(EXPECTED_RECORDS), 66)
         self.assertEqual(PRESENTATION_ONLY_CTRL1_RECORDS, EXPECTED_RECORDS)
         self.assertEqual(
             frozenset(PRESENTATION_ONLY_CTRL1_TEMPLATES), EXPECTED_RECORDS
         )
         for record_id in (
             "TT1A/g0/r26",
+            "T22/g0/r10",
             "TT3B/g1/r13",
             "T25/g1/r19",
             "TT6C/g1/r24",
