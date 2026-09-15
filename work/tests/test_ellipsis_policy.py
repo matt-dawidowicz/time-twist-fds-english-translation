@@ -37,7 +37,11 @@ class EllipsisPolicyTests(unittest.TestCase):
                 for record_id, text in production.items()
                 if "..." in text
             )
-        self.assertEqual([], offenders, "ASCII ellipses remain:\n" + "\n".join(offenders))
+        self.assertEqual(
+            [],
+            offenders,
+            "ASCII ellipses remain:\n" + "\n".join(offenders),
+        )
 
     def test_fixed_menu_labels_use_true_ellipsis_glyphs(self) -> None:
         """Reject ASCII ellipses from every canonical fixed menu label table."""
@@ -47,7 +51,11 @@ class EllipsisPolicyTests(unittest.TestCase):
             for label in spec.records
             if "..." in label
         ]
-        self.assertEqual([], offenders, "ASCII ellipses remain:\n" + "\n".join(offenders))
+        self.assertEqual(
+            [],
+            offenders,
+            "ASCII ellipses remain:\n" + "\n".join(offenders),
+        )
 
     def test_fixed_prompt_strings_use_true_ellipsis_glyphs(self) -> None:
         """Reject ASCII ellipses from fixed prompt strings that remain semantic text."""
@@ -59,7 +67,11 @@ class EllipsisPolicyTests(unittest.TestCase):
             *(english for _, _, english in WRONG_DISK_PATCHES),
         ]
         offenders = [text for text in texts if "..." in text]
-        self.assertEqual([], offenders, "ASCII ellipses remain:\n" + "\n".join(offenders))
+        self.assertEqual(
+            [],
+            offenders,
+            "ASCII ellipses remain:\n" + "\n".join(offenders),
+        )
 
 
 if __name__ == "__main__":
