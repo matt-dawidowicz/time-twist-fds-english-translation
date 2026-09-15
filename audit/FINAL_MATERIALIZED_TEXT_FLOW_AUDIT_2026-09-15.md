@@ -55,7 +55,8 @@ connection. Production now restores the explicit referent.
 
 The source uses `あいつ`, recognizing the figure rather than introducing an
 unknown `someone`. A later override had regressed to `Someone came from above`.
-Production now keeps the recognized referent: **`that guy came down from above.`**
+Production now keeps that recognized referent with the control-safe wording
+**`He came down from above.`** The original speaker/control topology is preserved.
 
 ### TT6A/g2/r26 — restore the omitted object
 
