@@ -38,6 +38,10 @@ validate_renderer_buffer_layout = _core.validate_renderer_buffer_layout
 # so topology drift cannot silently broaden the exception.
 PRESENTATION_ONLY_CTRL1_TEMPLATES: dict[str, str] = {
     "TT1A/g0/r5": "First: personality test{CTRL:1}Please answer each one.",
+    "TT1A/g0/r30": (
+        "Time travel, huh...{CTRL:1}All talk so far.{CTRL:0}"
+        "No one's pulled it off.{CTRL:6}More importantly..."
+    ),
     "TT1B/g0/r6": '"Closed today.{CTRL:1}Inquire at the church."',
     "TT1B/g2/r11": "The parlor.{CTRL:1}Paper and magnifier.",
     "TT1B/g2/r29": "A local map.{CTRL:1}A villa lies north.",
@@ -98,7 +102,7 @@ def validate_production_control_sequence(source: str, production: str) -> None:
     Most call sites with a stable ID should use
     :func:`validate_record_production_control_sequence`.  This two-argument
     compatibility API remains strict except when ``source`` exactly matches one
-    of the ten locked certified base templates above.
+    of the eleven locked certified base templates above.
     """
     record_id = _TEMPLATE_TO_PRESENTATION_ONLY_RECORD.get(source)
     if record_id is None:
