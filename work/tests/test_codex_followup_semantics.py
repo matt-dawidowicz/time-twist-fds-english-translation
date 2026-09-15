@@ -61,12 +61,12 @@ class CodexFollowupSemanticTests(unittest.TestCase):
     def test_bethlehem_inn_turn_keeps_its_ctrl2_boundary(self) -> None:
         """Keep Joseph's plea separate from the host's next reply."""
         text = _production("TT6B")["TT6B/g1/r13"]
-        self.assertIn("Joseph: Please...{CTRL:2}Host: Sleep by the road", text)
+        self.assertIn("Joseph: Please…{CTRL:2}Host: Sleep by the road", text)
 
     def test_angel_reveal_keeps_narration_to_joseph_ctrl2(self) -> None:
         """Keep the reveal pause before Joseph recognizes the apparent angel."""
         text = _production("TT6C")["TT6C/g1/r10"]
-        self.assertIn("back again...!{CTRL:0}{CTRL:2}Joseph: Angel!", text)
+        self.assertIn("back again…!{CTRL:0}{CTRL:2}Joseph: Angel!", text)
 
     def test_quoted_dr_simon_heading_stays_whole(self) -> None:
         """Periods inside a quoted heading must not create a fake speaker label."""
