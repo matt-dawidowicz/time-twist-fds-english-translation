@@ -5,11 +5,11 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-from time_twist.english import encode_english, render_english
 from time_twist.entropy_runtime import (
     PARENT_BACK_GUARD_PATCHES,
     patch_entropy_nov2,
 )
+from time_twist.english import encode_english, render_english
 from time_twist.textcodec import pack_records, split_records
 from time_twist.ui import (
     DISK_NUMBER_ERROR_PATCHES,
