@@ -799,7 +799,7 @@ FIXED_NATURAL = {
     "はなす": "Talk",
     "とる": "Take",
     "つかう": "Use",
-    "きく": "Ask / listen",
+    "きく": "Listen",
     "かぐ": "Smell",
     "いどう": "Move",
     "まわり": "Surroundings",
@@ -1805,10 +1805,10 @@ GLOSSARY_SEEDS = (
     (
         "Command",
         "きく",
-        "聞く／訊く",
-        "ASK / LISTEN",
-        "Hear",
-        "Context determines whether it means ask or listen.",
+        "聞く／聴く／訊く",
+        "LISTEN",
+        "Hear; ask/inquire outside the audited fixed command",
+        "Audited fixed gameplay command is Listen; scenario uses remain context-dependent.",
     ),
     (
         "Interface",

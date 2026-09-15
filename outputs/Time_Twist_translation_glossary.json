@@ -582,12 +582,12 @@
   {
     "category": "Command",
     "exact_japanese": "きく",
-    "reconstructed_japanese": "聞く／訊く",
+    "reconstructed_japanese": "聞く／聴く／訊く",
     "romaji": "kiku",
-    "chosen_english": "ASK / LISTEN",
-    "alternative_readings": "Hear",
+    "chosen_english": "LISTEN",
+    "alternative_readings": "Hear; ask/inquire outside the audited fixed command",
     "first_occurrence": "TT1A/g0/r2",
-    "notes": "Context determines whether it means ask or listen."
+    "notes": "Audited fixed gameplay command is Listen; scenario uses remain context-dependent."
   },
   {
     "category": "Interface",

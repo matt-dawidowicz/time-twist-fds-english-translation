@@ -196,7 +196,7 @@ This guide accompanies the complete translation workbook. Exact Japanese always 
 - **MOVE** — exact `いどう`; reconstructed `移動`; first `TT1B/fixed/r2`. Core menu command.
 - **USE** — exact `つかう`; reconstructed `使う`; first `TT1B/fixed/r10`. Core menu command.
 - **TAKE** — exact `とる`; reconstructed `取る`; first `TT1A/g0/r7`. Core menu command.
-- **ASK / LISTEN** — exact `きく`; reconstructed `聞く／訊く`; first `TT1A/g0/r2`. Context determines whether it means ask or listen.
+- **LISTEN** — exact `きく`; reconstructed `聞く／聴く／訊く`; first `TT1A/g0/r2`. Audited fixed gameplay command is Listen; scenario uses remain context-dependent.
 - **START** — exact `さいしょから`; reconstructed `最初から`; first `NOV2/start`. Start-menu label.
 - **PLEASE WAIT…** — exact `しばらく おまちください`; reconstructed `しばらくお待ちください`; first `TT1A/g0/r21`. System wait prompt.
 - **PART 1** — exact `ぜんぺん`; reconstructed `前編`; first `NOV2/disk/r0`. Zenpen disk label.
