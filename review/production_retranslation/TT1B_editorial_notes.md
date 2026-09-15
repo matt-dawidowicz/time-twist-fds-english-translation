@@ -19,7 +19,7 @@ TT1B is the first major voice test for the production localization: the protagon
 
 | ID | Current | Review proposal | Why it is better |
 | --- | --- | --- | --- |
-| TT1B/g0/r0 | `Made it... Devil Museum / I've wanted to visit.` | `Made it… Devil Museum. I've been meaning to come here.` | `一度こようと思ってたんだ` is an existing intention, not simply a generic desire. The revision sounds like spontaneous internal narration. |
+| TT1B/g0/r0 | `Made it... Devil Museum / I've wanted to visit.` | `Here we are… the Devil Museum. I've been meaning to visit this place.` | `一度こようと思ってたんだ` is an existing intention, not simply a generic desire. Final playtesting preferred the more natural arrival narration while preserving that meaning. |
 | TT1B/g0/r1 | `Last saw blue sky when?` | `When was the last time I saw a blue sky?` | Restores a complete natural thought. The Japanese explicitly says `青空`, and the old line is pure byte-budget English. |
 | TT1B/g0/r6 | `"Closed today. Inquire at the church."` | `"CLOSED TODAY. If you need assistance, please go to the church."` | Reads as a posted notice while retaining the functional instruction `ご用のある方は教会まで`. |
 | TT1B/g0/r14 | `Used at witches' rites... Said to hold soul pacts made with devils.` | `A box used at witches' gatherings in medieval Europe. Said to have held soul contracts made with devils.` | Restores exhibit-register prose and the explicit `契約書` sense of written soul contracts. |

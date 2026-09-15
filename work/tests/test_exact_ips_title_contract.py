@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from time_twist.exact_ips_title import (
     DEFINITIVE_IPS_ENV,
+    _FINAL_LOGO_TILE_CORRECTIONS,
     _definitive_ips,
     _definitive_ips_path,
     _install_subtitle,
@@ -47,6 +48,25 @@ class ExactIpsTitleContractTests(unittest.TestCase):
                 self.assertRaisesRegex(TitlePatchError, "hash does not match"),
             ):
                 _definitive_ips()
+
+    def test_final_playtest_logo_corrections_are_exact_and_narrow(self) -> None:
+        """Lock the six final-phase-only wordmark tile corrections."""
+        self.assertEqual(
+            [(cell, tile) for cell, tile, _source, _target in _FINAL_LOGO_TILE_CORRECTIONS],
+            [
+                (0x066, 0x03),
+                (0x0D6, 0x04),
+                (0x0D7, 0x33),
+                (0x0F1, 0x14),
+                (0x123, 0x08),
+                (0x12B, 0x16),
+            ],
+        )
+        for _cell, _tile, source, target in _FINAL_LOGO_TILE_CORRECTIONS:
+            with self.subTest(cell=_cell):
+                self.assertEqual(len(source), 16)
+                self.assertEqual(len(target), 16)
+                self.assertNotEqual(source, target)
 
     @patch("time_twist.exact_ips_title.decode_title_rle")
     def test_space_only_subtitle_is_rejected_before_chr_upload(
