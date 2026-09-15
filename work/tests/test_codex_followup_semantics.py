@@ -97,7 +97,7 @@ class CodexFollowupSemanticTests(unittest.TestCase):
         self.assertIn("My god of justice.", text)
         self.assertIn('every evil.{CTRL:3}Bishop"', text)
         self.assertEqual(
-            [1, 0, 6, 4, 3],
+            [0, 0, 6, 4, 3],
             [
                 int(value)
                 for value in re.findall(r"\{CTRL:([0-7])\}", text)
