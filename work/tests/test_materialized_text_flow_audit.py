@@ -67,6 +67,40 @@ class MaterializedTextFlowAuditTests(unittest.TestCase):
             with self.subTest(record_id=record_id):
                 self.assertIn(expected, _plain(_production(bank)[record_id]))
 
+    def test_historical_atrocity_language_is_not_sanitized(self) -> None:
+        """Keep Nazi persecution and slavery as explicit as the Japanese source."""
+        cases = (
+            (
+                "TT3A",
+                "TT3A/g1/r25",
+                "rounding up spies and rebels and sending them to the gas chambers",
+            ),
+            (
+                "TT3A",
+                "TT3A/g3/r4",
+                "imprisoned me and forced me to develop a secret weapon",
+            ),
+            (
+                "TT5",
+                "TT5/g0/r6",
+                "We won't let the likes of you lord it over us!",
+            ),
+            ("TT5", "TT5/g0/r7", "You people were born slaves."),
+            (
+                "TT5",
+                "TT5/g0/r18",
+                "Devote your whole lives to us.",
+            ),
+            (
+                "T25",
+                "T25/g1/r24",
+                "the graveyard of slaves who refused to obey",
+            ),
+        )
+        for bank, record_id, expected in cases:
+            with self.subTest(record_id=record_id):
+                self.assertIn(expected, _plain(_production(bank)[record_id]))
+
     def test_audited_scene_controls_remain_on_natural_boundaries(self) -> None:
         """Lock timing controls that separate complete thoughts and responses."""
         tt3b = _production("TT3B")["TT3B/g1/r22"]
