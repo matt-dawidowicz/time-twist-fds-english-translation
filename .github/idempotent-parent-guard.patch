@@ -1,0 +1,112 @@
+diff -ruN tt_idem_base/work/integration_tests/test_ui.py tt_idem_fix/work/integration_tests/test_ui.py
+--- tt_idem_base/work/integration_tests/test_ui.py	2026-09-15 23:11:30.016245818 +0000
++++ tt_idem_fix/work/integration_tests/test_ui.py	2026-09-15 23:10:41.644693137 +0000
+@@ -332,6 +332,7 @@
+         original = path.read_bytes()
+         ui_patched = patched_nov2_ui(original)
+         patched = patch_entropy_nov2(ui_patched)
++        self.assertEqual(patch_entropy_nov2(patched), patched)
+ 
+         # The native B dispatcher is the final authority: $9C == 0 returns;
+         # any real saved parent proceeds into native Back/Cancel.
+diff -ruN tt_idem_base/work/tests/test_entropy_production.py tt_idem_fix/work/tests/test_entropy_production.py
+--- tt_idem_base/work/tests/test_entropy_production.py	2026-09-15 23:11:30.016175765 +0000
++++ tt_idem_fix/work/tests/test_entropy_production.py	2026-09-15 23:11:07.371656025 +0000
+@@ -267,11 +267,13 @@
+     def test_parent_back_guard_is_choice_count_independent(self) -> None:
+         """Lock root-menu B suppression to parent existence, never choice count."""
+         patches = {patch.label: patch for patch in PARENT_BACK_GUARD_PATCHES}
+-        self.assertEqual(len(patches), 5)
++        self.assertEqual(len(patches), 4)
++        scanner = {patch.label: patch for patch in ENTROPY_RUNTIME_PATCHES}[
++            "bit-contiguous entropy scanner"
++        ]
++        stub_offset = 0x814A - scanner.cpu_address
+         self.assertEqual(
+-            patches[
+-                "clear saved Back destination when no parent exists"
+-            ].replacement,
++            scanner.replacement[stub_offset : stub_offset + 5],
+             bytes.fromhex("84 9C 4C BB 6B"),
+         )
+         self.assertEqual(
+@@ -303,7 +305,7 @@
+         ]
+         self.assertEqual(
+             _sha256(scanner),
+-            "7C276057F5E972C3E377AD54B8B7A2BD8FBA9757BF87F89DE219D7D875C61533",
++            "0D67AA4B4105720FF45907D4ECA8427AA76A0902D685949514BCC6AA6D7CD237",
+         )
+         self.assertEqual(
+             _sha256(frontend),
+@@ -325,7 +327,7 @@
+             span_stub,
+             bytes.fromhex(
+                 "98 48 A4 A8 B9 2D 04 18 69 08 65 14 85 31 "
+-                "68 A8 A5 31 60 EA EA EA EA EA EA"
++                "68 A8 A5 31 60 84 9C 4C BB 6B EA"
+             ),
+         )
+         self.assertEqual(MENU_WIDTH_WORK_RAM_ADDRESS, 0x042D)
+diff -ruN tt_idem_base/work/time_twist/entropy_runtime.py tt_idem_fix/work/time_twist/entropy_runtime.py
+--- tt_idem_base/work/time_twist/entropy_runtime.py	2026-09-15 23:11:30.016012893 +0000
++++ tt_idem_fix/work/time_twist/entropy_runtime.py	2026-09-15 23:10:48.862568401 +0000
+@@ -169,12 +169,17 @@
+ # when $9C is zero; the defect is that root-menu setup can save the current
+ # menu as its own Back destination.
+ #
+-# The entropy renderer leaves five NOP bytes at $814A. Reclaim them only after
+-# the entropy runtime is installed: the no-parent descriptor path branches to
+-# a freed $6B70 trampoline, which clears $9C through STY while Y is zero, then
+-# resumes normal setup at $6BBB. The real-parent path that stores $C5/$C6 into
+-# $9B/$9C remains byte-identical. Three state-table entries are redirected from
+-# duplicate handler $6B70 to equivalent handler $6B66 so $6B70 can be reused.
++# The entropy renderer owns five NOP bytes at $814A. They are part of the
++# scanner's canonical replacement image and hold the no-parent stub so the
++# scanner hash guard remains idempotent. The no-parent descriptor path branches
++# to a freed $6B70 trampoline, which reaches that stub; STY clears $9C while Y
++# is zero, then normal setup resumes at $6BBB. The real-parent path that stores
++# $C5/$C6 into $9B/$9C remains byte-identical. Three state-table entries are
++# redirected from duplicate handler $6B70 to equivalent handler $6B66 so $6B70
++# can be reused.
++PARENT_BACK_GUARD_STUB_CPU_ADDRESS = 0x814A
++PARENT_BACK_GUARD_STUB = _hex("84 9C 4C BB 6B")
++
+ PARENT_BACK_GUARD_PATCHES = (
+     RuntimePatch(
+         file_offset=0x0A97,
+@@ -200,12 +205,6 @@
+         replacement=_hex("F0 C5"),
+         label="route no-parent menu setup through Back guard",
+     ),
+-    RuntimePatch(
+-        file_offset=0x214A,
+-        expected=_hex("EA EA EA EA EA"),
+-        replacement=_hex("84 9C 4C BB 6B"),
+-        label="clear saved Back destination when no parent exists",
+-    ),
+ )
+ 
+ 
+@@ -534,6 +533,21 @@
+ _SCANNER_BLOCK = _SCANNER_CODE + bytes((0xEA,)) * (
+     SCANNER_REGION_SIZE - len(_SCANNER_CODE)
+ )
++_parent_back_guard_stub_offset = (
++    PARENT_BACK_GUARD_STUB_CPU_ADDRESS - SCANNER_CPU_ADDRESS
++)
++_stub_end = _parent_back_guard_stub_offset + len(PARENT_BACK_GUARD_STUB)
++if not 0 <= _parent_back_guard_stub_offset < _stub_end <= len(_SCANNER_BLOCK):
++    raise EntropyRuntimeError("parent Back guard stub escaped scanner region")
++if _SCANNER_BLOCK[_parent_back_guard_stub_offset:_stub_end] != bytes(
++    (0xEA,)
++) * len(PARENT_BACK_GUARD_STUB):
++    raise EntropyRuntimeError("parent Back guard stub no longer owns NOP space")
++_SCANNER_BLOCK = (
++    _SCANNER_BLOCK[:_parent_back_guard_stub_offset]
++    + PARENT_BACK_GUARD_STUB
++    + _SCANNER_BLOCK[_stub_end:]
++)
+ _FRONTEND_BLOCK = _FRONTEND_CODE + bytes((0xEA,)) * (
+     FRONTEND_REGION_SIZE - len(_FRONTEND_CODE)
+ )
