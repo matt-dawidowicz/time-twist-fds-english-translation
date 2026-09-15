@@ -1,0 +1,38 @@
+name: apply-parent-guard-ruff
+
+on:
+  push:
+    branches:
+      - fix/root-menu-b-noop-20260915
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: ${{ !contains(github.event.head_commit.message, '[ruff-parent-guard-applied]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: fix/root-menu-b-noop-20260915
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Apply Ruff diff
+        run: patch -p1 < .github/ruff-parent-guard.patch
+      - name: Remove one-shot files
+        run: rm .github/ruff-parent-guard.patch .github/workflows/apply-parent-guard-ruff.yml
+      - name: Verify import-order target
+        run: |
+          python -m pip install ruff==0.16.7
+          python -m ruff check work/integration_tests/test_ui.py
+          git diff --check
+      - name: Commit lint-only correction
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "Fix parent guard import order [ruff-parent-guard-applied]"
+          git push origin HEAD:fix/root-menu-b-noop-20260915
