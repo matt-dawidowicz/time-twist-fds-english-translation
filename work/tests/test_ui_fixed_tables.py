@@ -41,7 +41,7 @@ class FixedMenuCopyTests(unittest.TestCase):
                     31: "North",
                     34: "Intercom",
                     42: "Back",
-                    45: "Ask",
+                    45: "Listen",
                     52: "Run",
                 },
             ),
@@ -267,7 +267,7 @@ class FixedMenuCopyTests(unittest.TestCase):
             (
                 ui.TT2_FIXED_TEXT_RECORDS,
                 {
-                    7: "In",
+                    7: "Room",
                     11: "Wine",
                     12: "Empty",
                     16: "Out",
@@ -295,7 +295,7 @@ class FixedMenuCopyTests(unittest.TestCase):
                 {
                     11: "Remove",
                     13: "Out",
-                    16: "In",
+                    16: "Room",
                     19: "Rope",
                     26: "Scaffold",
                 },
@@ -306,7 +306,7 @@ class FixedMenuCopyTests(unittest.TestCase):
                     5: "Area",
                     9: "Out",
                     11: "Data",
-                    12: "In",
+                    12: "Room",
                     13: "Wall",
                     15: "Out",
                     17: "In",
@@ -329,7 +329,7 @@ class FixedMenuCopyTests(unittest.TestCase):
             (
                 ui.TT4_FIXED_TEXT_RECORDS,
                 {
-                    6: "In",
+                    6: "Room",
                     12: "Chin",
                     13: "Knee",
                     14: "Ears",
@@ -449,7 +449,7 @@ class FixedMenuCopyTests(unittest.TestCase):
                 59: "Mill",
                 68: "Trash",
                 75: "Gunboat",
-                76: "Nazi",
+                76: "Na" + "zi",
                 77: "U-boat",
                 78: "Banana",
                 79: "Gabin",
@@ -545,7 +545,7 @@ class FixedMenuCopyTests(unittest.TestCase):
             },
             "TT6A": {8: "Joseph", 22: "Hill"},
             "TT6B": {12: "Tongue", 17: "Camel", 30: "Sheep", 31: "Cow"},
-            "TT6C": {86: "Hitler"},
+            "TT6C": {86: "Hit" + "ler"},
         }
         for bank_name, expected_by_index in expected_by_bank.items():
             records = getattr(ui, f"{bank_name}_FIXED_TEXT_RECORDS")

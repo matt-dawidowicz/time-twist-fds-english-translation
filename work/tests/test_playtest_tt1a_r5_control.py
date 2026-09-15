@@ -7,18 +7,21 @@ import re
 import unittest
 from pathlib import Path
 
+from time_twist.pagination_ctrl1_policy import (
+    ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES,
+)
 from time_twist.production_translation import (
     PRESENTATION_ONLY_CTRL1_RECORDS,
     PRESENTATION_ONLY_CTRL1_TEMPLATES,
     ProductionTranslationError,
     layout_review_text,
     merged_translation_map,
-    validate_production_control_sequence,
+    validate_record_production_control_sequence,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
 CONTROL_RE = re.compile(r"\{CTRL:[0-7]\}")
-EXPECTED_RECORDS = frozenset(
+EXPECTED_ORIGINAL_RECORDS = frozenset(
     {
         "TT1A/g0/r5",
         "TT1A/g0/r30",
@@ -33,6 +36,9 @@ EXPECTED_RECORDS = frozenset(
         "TT6B/g0/r6",
         "TT6C/g2/r5",
     }
+)
+EXPECTED_RECORDS = EXPECTED_ORIGINAL_RECORDS | frozenset(
+    ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES
 )
 
 
@@ -56,10 +62,21 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
 
     def test_policy_is_exact_audited_record_set(self) -> None:
         """Prevent accidental broadening or silent removal of an audited case."""
+        self.assertEqual(len(ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES), 54)
+        self.assertEqual(len(EXPECTED_RECORDS), 66)
         self.assertEqual(PRESENTATION_ONLY_CTRL1_RECORDS, EXPECTED_RECORDS)
         self.assertEqual(
             frozenset(PRESENTATION_ONLY_CTRL1_TEMPLATES), EXPECTED_RECORDS
         )
+        for record_id in (
+            "TT1A/g0/r26",
+            "T22/g0/r10",
+            "TT3B/g1/r13",
+            "T25/g1/r19",
+            "TT6C/g1/r24",
+            "TT6C/g2/r12",
+        ):
+            self.assertIn(record_id, EXPECTED_RECORDS)
 
     def test_certified_base_topology_remains_unchanged(self) -> None:
         """Keep CTRL:1 in the certified base maps; demotion is production-only."""
@@ -79,14 +96,16 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
             self.assertEqual(expected_template.count("{CTRL:1}"), 1)
 
     def test_all_audited_waits_are_removed_from_production(self) -> None:
-        """Let continuous English fill the box instead of pausing after line one."""
+        """Let continuous English fill the box instead of pausing mid-thought."""
         for record_id in sorted(EXPECTED_RECORDS):
             bank = record_id.split("/", 1)[0]
             production = self.production_by_bank[bank][record_id]
             with self.subTest(record_id=record_id):
                 self.assertNotIn("{CTRL:1}", production)
-                validate_production_control_sequence(
-                    PRESENTATION_ONLY_CTRL1_TEMPLATES[record_id], production
+                validate_record_production_control_sequence(
+                    record_id,
+                    PRESENTATION_ONLY_CTRL1_TEMPLATES[record_id],
+                    production,
                 )
 
     def test_personality_intro_preserves_reviewed_words(self) -> None:
@@ -112,11 +131,11 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
     def test_unrelated_ctrl1_timing_remains_intact(self) -> None:
         """Keep dramatic, speaker-change, and intentional timing waits semantic."""
         controls_to_keep = {
-            "TT1A": ("TT1A/g0/r26",),
+            "TT1A": ("TT1A/g0/r0",),
             "TT1B": ("TT1B/g0/r26",),
-            "TT3A": ("TT3A/g1/r21",),
+            "TT3A": ("TT3A/g0/r19",),
             "TT4": ("TT4/g0/r12",),
-            "TT6C": ("TT6C/g1/r18",),
+            "TT6C": ("TT6C/g3/r4",),
         }
         for bank, record_ids in controls_to_keep.items():
             production = self.production_by_bank.get(bank)

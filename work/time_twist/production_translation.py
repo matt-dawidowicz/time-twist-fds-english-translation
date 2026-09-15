@@ -2,8 +2,8 @@
 
 The low-level layout engine lives in :mod:`production_translation_core`.  This
 module keeps project-specific policy explicit: reviewed prose is reflowed against
-the certified base control topology, except for a small audited set of source
-``CTRL:1`` waits proven by playtesting to be presentation-only in English.
+the certified base control topology, except for an audited set of source
+``CTRL:1`` waits proven to be presentation-only in English.
 
 The certified ``work/translations`` maps remain untouched.  Every presentation-
 only exception is keyed by stable record ID and locked to the exact base template
@@ -17,6 +17,9 @@ import json
 from pathlib import Path
 
 from . import production_translation_core as _core
+from .pagination_ctrl1_policy import (
+    ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES,
+)
 
 CONTROL_RE = _core.CONTROL_RE
 DISPLAY_COLUMNS = _core.DISPLAY_COLUMNS
@@ -31,10 +34,10 @@ REVIEW_FILES = _core.REVIEW_FILES
 ProductionTranslationError = _core.ProductionTranslationError
 validate_renderer_buffer_layout = _core.validate_renderer_buffer_layout
 
-# These are not generic CTRL:1 demotions.  Each record was audited after the
+# These are not generic CTRL:1 demotions. Each record was audited after the
 # TT1A personality-test playtest exposed the failure mode: an inherited Japanese
 # input wait splitting one continuous English thought while the four-row box was
-# still largely empty.  The exact certified base template is part of the policy
+# still largely empty. The exact certified base template is part of the policy
 # so topology drift cannot silently broaden the exception.
 PRESENTATION_ONLY_CTRL1_TEMPLATES: dict[str, str] = {
     "TT1A/g0/r5": "First: personality test{CTRL:1}Please answer each one.",
@@ -56,7 +59,9 @@ PRESENTATION_ONLY_CTRL1_TEMPLATES: dict[str, str] = {
     "TT6B/g0/r6": "Joints ache. Hungry...{CTRL:1}Throat's bone-dry...",
     "TT6C/g2/r5": "Pencil in its hand.{CTRL:1}Died while writing.",
 }
-
+PRESENTATION_ONLY_CTRL1_TEMPLATES.update(
+    ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES
+)
 
 # Final playtest also identified four records with additional semantic controls whose
 # timing/pagination function is presentation-only in the reviewed English.
@@ -109,6 +114,9 @@ FINAL_PLAYTEST_LAYOUT_RECORDS = frozenset(
 )
 
 PRESENTATION_ONLY_CTRL1_RECORDS = frozenset(PRESENTATION_ONLY_CTRL1_TEMPLATES)
+# Some source records share the same exact certified template. If every such record
+# has the same source-locked demotion policy, the legacy two-argument validator may
+# safely use either representative because the effective control sequence is identical.
 _TEMPLATE_TO_PRESENTATION_ONLY_RECORD = {
     template: record_id
     for record_id, template in PRESENTATION_ONLY_CTRL1_TEMPLATES.items()
@@ -198,9 +206,9 @@ def validate_production_control_sequence(source: str, production: str) -> None:
     """Validate controls, recognizing exact audited base templates for callers.
 
     Most call sites with a stable ID should use
-    :func:`validate_record_production_control_sequence`.  This two-argument
+    :func:`validate_record_production_control_sequence`. This two-argument
     compatibility API remains strict except when ``source`` exactly matches one
-    of the locked certified base presentation templates above.
+    locked certified base presentation template above.
     """
     record_id = _TEMPLATE_TO_PRESENTATION_ONLY_RECORD.get(source)
     if record_id is None:
@@ -249,8 +257,7 @@ def merged_translation_map(
         unknown = sorted(set(review) - set(base))
         if unknown:
             raise ProductionTranslationError(
-                f"{bank_name} production review contains unknown IDs: "
-                f"{unknown[:3]}"
+                f"{bank_name} production review contains unknown IDs: {unknown[:3]}"
             )
         selected.update(review)
 

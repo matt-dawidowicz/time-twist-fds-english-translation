@@ -13,7 +13,7 @@
     "TT3A/g0/r13": "Soldier: Cougar, again? Two weeks in solitary!",
     "TT3A/g0/r14": "TIME: JULY 1944 — LOCATION: POW CAMP, SOUTHERN GERMANY — NAME: COUGAR — RANK: U.S. AIR FORCE FIRST LIEUTENANT",
     "TT3A/g0/r15": "Looks like I warped into Germany during World War II… and into a POW's body.",
-    "TT3A/g0/r17": "There's another room beyond this wall.",
+    "TT3A/g0/r17": "Looks like there's another room beyond this wall.",
     "TT3A/g0/r18": "The place reeks of men's sweat.",
     "TT3A/g0/r19": "Voice: Cougar, can you hear me? Me: Yeah. Voice: The moment you're released, escape. We'll make the arrangements on our end. Me: … Voice: With your intelligence, we can finally bring Hitler down!",
     "TT3A/g0/r20": "Voice: Don't give up. The Allies are counting on you.",
@@ -36,11 +36,11 @@
     "TT3A/g1/r15": "A faint light is shining from under the mattress.",
     "TT3A/g1/r17": "There's writing on the star-shaped medal, but it's too corroded to read.",
     "TT3A/g1/r18": "Nick: Tough luck, Cougar. Better luck next time.",
-    "TT3A/g1/r19": "Nick: The assassination attempt on Hitler failed. That bastard's got the devil's own luck.",
+    "TT3A/g1/r19": "Nick: I heard the assassination attempt on Hitler failed. That bastard's got the devil's own luck.",
     "TT3A/g1/r21": "Ralph: Head west through the woods until you reach a park. Ask Rebecca for your orders. Me: Rebecca?! Ralph: It's the network's code name. Password: \"Drop dead, Hitler!\"",
     "TT3A/g1/r22": "\"Drop dead, Hitler!\" The Gestapo are everywhere. Be careful and don't attract attention.",
     "TT3A/g1/r24": "Frankie: You're on your own. We'll pretend we know nothing. Don't hold it against us.",
-    "TT3A/g1/r25": "Frankie: Hitler rounds up spies and rebels and sends them to the gas chambers.",
+    "TT3A/g1/r25": "Frankie: Apparently Hitler's rounding up spies and rebels and sending them to the gas chambers.",
     "TT3A/g1/r26": "Frankie: America and Germany are racing to build some secret weapon—an atomic bomb. One of those could turn Paris to ash.",
     "TT3A/g2/r9": "Clay soil. No good for pottery.",
     "TT3A/g2/r10": "I dig up a little pebble.",
@@ -62,7 +62,7 @@
     "TT3A/g3/r13": "\"Four kilometers southwest of here. Wait outside the old watermill. —Rebecca\"",
     "TT3A/g3/r14": "Simon: The Gestapo are nearby. We should stay here for now.",
     "TT3A/g3/r19": "Man: My son was sixteen. They sent him to war, and the enemy shot him dead… You couldn't possibly understand what that does to a father.",
-    "TT3A/g3/r20": "Man: According to our information, an escape-network contact is coming through here. Have you seen anyone suspicious?",
+    "TT3A/g3/r20": "Man: According to our information, this is an escape-network contact point. Have you seen anyone suspicious?",
     "TT3A/g3/r23": "He takes off in a flash.",
     "TT3A/g3/r24": "I reach down for the bottle. There's a piece of paper inside.",
     "TT3A/g3/r25": "I smash the bottle and pull out the note. It's written in red ink.",
@@ -82,8 +82,9 @@
     "TT3A/g4/r11": "Old Man: Rub the tip of your nose twice with one finger.",
     "TT3A/g4/r12": "Old Man: A barking dog does not always mean a thief. German proverb.",
     "TT3A/g4/r16": "Woman: Until the war is over, love will have to wait…",
-    "TT3A/g4/r17": "Woman: A POW escaped, and a scientist fled an army laboratory. Have you seen anyone suspicious?",
+    "TT3A/g4/r17": "Woman: Our information says a POW escaped, and apparently a scientist fled an army laboratory. Have you seen anyone suspicious?",
     "TT3A/g4/r21": "Woman: Hands up! Me: What?! Woman: Too bad. I'm Gestapo!",
-    "TT3A/g4/r22": "I give her a quick wink, then rub the tip of my nose twice. Woman: …"
+    "TT3A/g4/r22": "I give her a quick wink, then rub the tip of my nose twice. Woman: …",
+    "TT3A/g0/r25": "Seems like someone's next door."
   }
 }

@@ -57,7 +57,7 @@ Command,はなす,話す,hanasu,TALK,Speak,TT1B/fixed/r1,Core menu command.
 Command,いどう,移動,idou,MOVE,Go,TT1B/fixed/r2,Core menu command.
 Command,つかう,使う,tsukau,USE,,TT1B/fixed/r10,Core menu command.
 Command,とる,取る,toru,TAKE,Get,TT1A/g0/r7,Core menu command.
-Command,きく,聞く／訊く,kiku,ASK / LISTEN,Hear,TT1A/g0/r2,Context determines whether it means ask or listen.
+Command,きく,聞く／聴く／訊く,kiku,LISTEN,Hear; ask/inquire outside the audited fixed command,TT1A/g0/r2,Audited fixed gameplay command is Listen; scenario uses remain context-dependent.
 Interface,さいしょから,最初から,saishokara,START,From the beginning,NOV2/start,Start-menu label.
 Interface,しばらく おまちください,しばらくお待ちください,shibaraku omachikudasai,PLEASE WAIT…,,TT1A/g0/r21,System wait prompt.
 Interface,ぜんぺん,前編,zenpen,PART 1,first part,NOV2/disk/r0,Zenpen disk label.
