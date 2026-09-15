@@ -40,7 +40,7 @@ class MaterializedTextFlowAuditTests(unittest.TestCase):
                 "T25/g1/r20",
                 "The men who attacked George and Belle last night",
             ),
-            ("TT6A", "TT6A/g0/r18", "that guy came down from above"),
+            ("TT6A", "TT6A/g0/r18", "He came down from above"),
             ("TT6A", "TT6A/g2/r26", "waiting for someone"),
         )
         for bank, record_id, expected in cases:
