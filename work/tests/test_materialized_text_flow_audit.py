@@ -30,7 +30,9 @@ def _plain(text: str) -> str:
 class MaterializedTextFlowAuditTests(unittest.TestCase):
     """Protect source-backed fixes in the actual production layer."""
 
-    def test_semantic_and_referent_corrections_survive_materialization(self) -> None:
+    def test_semantic_and_referent_corrections_survive_materialization(
+        self,
+    ) -> None:
         """Keep previously audited source distinctions in final production text."""
         cases = (
             ("TT1B", "TT1B/g2/r16", "His eyesight seems poor."),
@@ -47,13 +49,19 @@ class MaterializedTextFlowAuditTests(unittest.TestCase):
             with self.subTest(record_id=record_id):
                 self.assertIn(expected, _plain(_production(bank)[record_id]))
 
-    def test_flow_and_grammar_corrections_survive_materialization(self) -> None:
+    def test_flow_and_grammar_corrections_survive_materialization(
+        self,
+    ) -> None:
         """Keep clear English in branch, quiz, and narration records."""
         cases = (
             ("T22", "T22/g0/r4", "Just thinking aloud."),
             ("TT3A", "TT3A/g4/r6", 'starred in "Pépé le Moko"?'),
             ("TT3B", "TT3B/g1/r8", "revealing the words beneath!"),
-            ("TT6B", "TT6B/g1/r27", "Demon-Sealing Jar that can imprison devils"),
+            (
+                "TT6B",
+                "TT6B/g1/r27",
+                "Demon-Sealing Jar that can imprison devils",
+            ),
         )
         for bank, record_id, expected in cases:
             with self.subTest(record_id=record_id):
