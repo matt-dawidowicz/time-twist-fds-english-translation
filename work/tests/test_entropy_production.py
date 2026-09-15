@@ -34,6 +34,7 @@ from time_twist.entropy_runtime import (
     MENU_WIDTH_WORK_RAM_ADDRESS,
     NOV3_LOAD_ADDRESS,
     PALETTE_CPU_RANGE,
+    PARENT_BACK_GUARD_PATCHES,
     SCANNER_CODE_BYTES,
 )
 from time_twist.entropy_scenario import build_entropy_scenario_bank
@@ -262,6 +263,27 @@ class EntropyProductionTests(unittest.TestCase):
             self.assertTrue(occupied.isdisjoint(touched), patch.label)
             occupied.update(touched)
         self.assertLess(max(occupied), NOV3_LOAD_ADDRESS)
+
+    def test_parent_back_guard_is_choice_count_independent(self) -> None:
+        """Lock root-menu B suppression to parent existence, never choice count."""
+        patches = {patch.label: patch for patch in PARENT_BACK_GUARD_PATCHES}
+        self.assertEqual(len(patches), 5)
+        self.assertEqual(
+            patches["clear saved Back destination when no parent exists"].replacement,
+            bytes.fromhex("84 9C 4C BB 6B"),
+        )
+        self.assertEqual(
+            patches["route no-parent menu setup through Back guard"].replacement,
+            bytes.fromhex("F0 C5"),
+        )
+        # None of the parent-guard replacements read $98 (LDY $98 = A4 98),
+        # the retired choice-count discriminator.
+        self.assertFalse(
+            any(
+                bytes.fromhex("A4 98") in patch.replacement
+                for patch in PARENT_BACK_GUARD_PATCHES
+            )
+        )
 
     def test_generated_runtime_binary_is_frozen(self) -> None:
         """Verify generated runtime binary is frozen."""

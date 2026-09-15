@@ -244,8 +244,8 @@ def patched_nov4_title(
     # upper logo CHR table during teardown.  Clear the saved menu-cancel pointer
     # as well so the post-title flow cannot inherit a stale destination.  The
     # menu engine may install a fresh pointer while constructing START; NOV2's
-    # separate one-choice B guard handles that case without affecting
-    # Back/Cancel on larger menus.
+    # parent-destination guard clears it again when START has no real parent,
+    # independent of the number of visible choices.
     # The helper ends with the original state change, so it intentionally does
     # not return to the replaced START-button branch.
     exit_helper = TITLE_EXIT_HELPER

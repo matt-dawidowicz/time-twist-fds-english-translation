@@ -164,6 +164,51 @@ DYNAMIC_MENU_LAYOUT_PATCHES = (
 )
 
 
+# Back/Cancel is keyed to whether the current menu has a real parent, not to
+# the number of visible choices. The native dispatcher at $99DC already returns
+# when $9C is zero; the defect is that root-menu setup can save the current
+# menu as its own Back destination.
+#
+# The entropy renderer leaves five NOP bytes at $814A. Reclaim them only after
+# the entropy runtime is installed: the no-parent descriptor path branches to
+# a freed $6B70 trampoline, which clears $9C through STY while Y is zero, then
+# resumes normal setup at $6BBB. The real-parent path that stores $C5/$C6 into
+# $9B/$9C remains byte-identical. Three state-table entries are redirected from
+# duplicate handler $6B70 to equivalent handler $6B66 so $6B70 can be reused.
+PARENT_BACK_GUARD_PATCHES = (
+    RuntimePatch(
+        file_offset=0x0A97,
+        expected=_hex("70 6B 70 6B"),
+        replacement=_hex("66 6B 66 6B"),
+        label="free duplicate state handler 6B70 entries 1-2",
+    ),
+    RuntimePatch(
+        file_offset=0x0A9D,
+        expected=_hex("70 6B"),
+        replacement=_hex("66 6B"),
+        label="free duplicate state handler 6B70 entry 3",
+    ),
+    RuntimePatch(
+        file_offset=0x0B70,
+        expected=_hex("4C 01 61"),
+        replacement=_hex("4C 4A 81"),
+        label="no-parent Back guard trampoline",
+    ),
+    RuntimePatch(
+        file_offset=0x0BA9,
+        expected=_hex("F0 10"),
+        replacement=_hex("F0 C5"),
+        label="route no-parent menu setup through Back guard",
+    ),
+    RuntimePatch(
+        file_offset=0x214A,
+        expected=_hex("EA EA EA EA EA"),
+        replacement=_hex("84 9C 4C BB 6B"),
+        label="clear saved Back destination when no parent exists",
+    ),
+)
+
+
 class _Assembler:
     """Minimal deterministic assembler for the small 6502 replacement blocks."""
 
@@ -690,6 +735,8 @@ def patch_entropy_nov2(data: bytes) -> bytes:
     )
     for runtime_patch in ENTROPY_RUNTIME_PATCHES:
         runtime_patch.apply(result)
+    for parent_patch in PARENT_BACK_GUARD_PATCHES:
+        parent_patch.apply(result)
     _guard_entropy_prerequisites(result)
     palette_after = bytes(
         result[

@@ -59,10 +59,10 @@ test. These checks are especially valuable:
 1. Watch the full title sequence before pressing `Start`. The Nintendo-to-title
    handoff should remain blank while the display state changes; it must not
    flash the old Nintendo screen with English title graphics.
-2. At a menu with nowhere to go back, press `B`. It must not jump to a stale or
-   nonexistent parent menu. The approved build may refresh/reopen the current
-   menu; preserve that behavior rather than suppressing the redraw. On a normal
-   nested menu with a real parent, `B` should still go Back/Cancel.
+2. At any menu with nowhere to go back, press `B`. Absolutely nothing should
+   happen: no stale jump, close/reopen cycle, redraw, or refresh flicker. Choice
+   count is irrelevant. On any nested menu with a real parent, including a
+   one-choice nested menu, `B` should still go Back/Cancel.
 3. Follow the in-game disk prompts without resetting. At `PART 1 / SIDE B`,
    choose the second side; at `PART 2 / SIDE A`, choose the third side.
 4. At a request for another side, reselect the mounted side. The primary
