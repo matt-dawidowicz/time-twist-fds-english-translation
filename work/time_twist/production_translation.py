@@ -17,7 +17,9 @@ import json
 from pathlib import Path
 
 from . import production_translation_core as _core
-from .pagination_ctrl1_policy import ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES
+from .pagination_ctrl1_policy import (
+    ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES,
+)
 
 CONTROL_RE = _core.CONTROL_RE
 DISPLAY_COLUMNS = _core.DISPLAY_COLUMNS
@@ -152,7 +154,9 @@ def _replace_control_sequence(text: str, controls: tuple[int, ...]) -> str:
     """Replace control values in place while preserving all visible source text."""
     pieces = CONTROL_RE.split(text)
     if len(pieces[1::2]) != len(controls):
-        raise ProductionTranslationError("control-rewrite arity changed unexpectedly")
+        raise ProductionTranslationError(
+            "control-rewrite arity changed unexpectedly"
+        )
     output = [pieces[0]]
     for value, segment in zip(controls, pieces[2::2], strict=True):
         output.append(f"{{CTRL:{value}}}")
@@ -211,12 +215,19 @@ def validate_production_control_sequence(source: str, production: str) -> None:
         record_id = next(
             (
                 candidate
-                for candidate, (expected, _effective) in PRESENTATION_CONTROL_REWRITES.items()
+                for candidate, (
+                    expected,
+                    _effective,
+                ) in PRESENTATION_CONTROL_REWRITES.items()
                 if source == expected
             ),
             None,
         )
-    effective_source = source if record_id is None else _effective_base_template(record_id, source)
+    effective_source = (
+        source
+        if record_id is None
+        else _effective_base_template(record_id, source)
+    )
     _core.validate_production_control_sequence(effective_source, production)
 
 
@@ -274,7 +285,9 @@ def merged_translation_map(
     for record_id, selected_text in selected.items():
         reviewed_text = selected_text
         if record_id not in explicit_control_overrides:
-            reviewed_text = " ".join(CONTROL_RE.sub(" ", selected_text).split())
+            reviewed_text = " ".join(
+                CONTROL_RE.sub(" ", selected_text).split()
+            )
         if record_id in FINAL_PLAYTEST_LAYOUT_RECORDS:
             if record_id not in explicit_control_overrides:
                 raise ProductionTranslationError(
