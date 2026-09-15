@@ -103,8 +103,8 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
         self.assertNotIn("{CTRL:1}", text)
         self.assertIn("{CTRL:6}", text)
         expected = (
-            "Time travel, huh... So far, it's all talk. "
-            "Nobody's ever actually made it work. More importantly..."
+            "Time travel, huh… So far, it's all talk. "
+            "Nobody's ever actually made it work. More importantly…"
         )
         self.assertEqual(CONTROL_RE.sub(" ", text).split(), expected.split())
 
