@@ -480,72 +480,12 @@ NOV2_DIALOGUE_ROW_COPY = (
     bytes.fromhex("B9 D7 87"),
 )
 
-# The menu input dispatcher enters its B-button action at $99DC.  The
-# original code correctly returns when no Back destination was saved, but a
-# one-choice menu can save its own address as that destination.  Pressing B
-# then closes and redraws the same menu, making the top border slide through
-# the START label.
-#
-# NOV2 has no expandable space: it occupies $6000-$A1FF, immediately below
-# NOV4.  Reuse the twelve bytes at $6A2E-$6A39 by redirecting three duplicate
-# state-table JMPs to identical handlers that already exist.  The replacement
-# B action keeps the original $9C=0 guard at $99DC intact, then:
-#
-# * returns through the existing RTS at $6A93 when the menu has one choice;
-# * performs the original action-4/state-$22 transition for larger menus.
-#
-# Thus the post-title START menu ignores B without changing Back/Cancel on
-# normal multi-choice menus.
-NOV2_SINGLE_CHOICE_B_PATCHES = (
-    SourceVerifiedPatch(
-        component="NOV2",
-        file_offset=0x0A0D,
-        cpu_address=0x6A0D,
-        expected=bytes.fromhex("31 6A 34 6A"),
-        replacement=bytes.fromhex("40 6A 40 6A"),
-        label="duplicate state handlers 1-2",
-    ),
-    SourceVerifiedPatch(
-        component="NOV2",
-        file_offset=0x0A13,
-        cpu_address=0x6A13,
-        expected=bytes.fromhex("34 6A"),
-        replacement=bytes.fromhex("40 6A"),
-        label="duplicate state handler 4",
-    ),
-    SourceVerifiedPatch(
-        component="NOV2",
-        file_offset=0x0A17,
-        cpu_address=0x6A17,
-        expected=bytes.fromhex("37 6A"),
-        replacement=bytes.fromhex("73 6B"),
-        label="duplicate state handler 6",
-    ),
-    SourceVerifiedPatch(
-        component="NOV2",
-        file_offset=0x0A25,
-        cpu_address=0x6A25,
-        expected=bytes.fromhex("F0 07"),
-        replacement=bytes.fromhex("F0 19"),
-        label="shared state-return branch",
-    ),
-    SourceVerifiedPatch(
-        component="NOV2",
-        file_offset=0x0A2E,
-        cpu_address=0x6A2E,
-        expected=bytes.fromhex("4C 01 61 4C 01 61 4C 01 61 4C DB 89"),
-        replacement=bytes.fromhex("A4 98 88 F0 60 A9 04 85 A1 4C B8 7D"),
-        label="single-choice B guard helper",
-    ),
-    SourceVerifiedPatch(
-        component="NOV2",
-        file_offset=0x39E1,
-        cpu_address=0x99E1,
-        expected=bytes.fromhex("A9 04 85 A1 A9 22 4C 09 61"),
-        replacement=bytes.fromhex("4C 2E 6A EA EA EA EA EA EA"),
-        label="B action detour",
-    ),
-)
+# The native B-button dispatcher at $99DC already has the correct semantic
+# contract: it returns immediately when the saved Back-destination high byte
+# at $9C is zero, and otherwise performs the normal Back/Cancel transition.
+# Production must therefore keep B behavior keyed to parent-menu existence,
+# never to visible choice count. The entropy runtime repairs root-menu parent
+# bookkeeping after its reclaimed code regions are installed.
 
 # English scenario banks use extended glyph values 37-62 for punctuation,
 # digits, and the seven uncommon uppercase letters. Values 0-36 are therefore
@@ -975,27 +915,6 @@ def _patched_opaque_text_clears(data: bytes) -> bytes:
     return bytes(result)
 
 
-def _patched_single_choice_b_guard(data: bytes) -> bytes:
-    """Make B a no-op only while a one-choice menu is active.
-
-    Args:
-        data: NOV2 bytes containing the recovered input branches.
-
-    Returns:
-        A same-size copy with guarded branch/code fragments installed.
-
-    Raises:
-        UiPatchError: If a replacement changes size or a source instruction
-            differs.
-
-    Multi-choice Back/Cancel behavior is deliberately left untouched.
-    """
-    result = bytearray(data)
-    for patch in NOV2_SINGLE_CHOICE_B_PATCHES:
-        patch.apply_to(result)
-    return bytes(result)
-
-
 def _patched_extended_dictionary_decoder(data: bytes) -> bytes:
     """Enable dictionary references 32-68 in unused English glyph codes."""
     result = bytearray(data)
@@ -1011,7 +930,8 @@ def patched_nov2_ui(data: bytes) -> bytes:
 
     Returns:
         A same-size copy containing wait/disk/side-error/wrong-disk/start/load
-        translations, opaque menu-tail clearing, and the one-choice B guard.
+        translations and opaque menu-tail clearing while preserving the native
+        parent-based B dispatcher.
 
     Raises:
         UiPatchError: If any revision guard or size invariant fails.
@@ -1039,7 +959,7 @@ def patched_nov2_ui(data: bytes) -> bytes:
     with_extended_dictionary = _patched_extended_dictionary_decoder(
         with_opaque_clears
     )
-    return _patched_single_choice_b_guard(with_extended_dictionary)
+    return with_extended_dictionary
 
 
 def patched_nov4_ui(data: bytes) -> bytes:

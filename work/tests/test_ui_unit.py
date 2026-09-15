@@ -16,7 +16,6 @@ from time_twist.ui import (
     LOAD_PROMPT_OFFSET,
     NOV2_EXTENDED_DICTIONARY_PATCH,
     NOV2_OPAQUE_CLEAR_PATCHES,
-    NOV2_SINGLE_CHOICE_B_PATCHES,
     NOV4_LOAD_PROMPT_OFFSET,
     ORIGINAL_LOAD_PROMPT,
     ORIGINAL_NOV4_LOAD_PROMPT,
@@ -105,7 +104,6 @@ class SourceVerifiedPatchTests(unittest.TestCase):
         patches = (
             NOV2_EXTENDED_DICTIONARY_PATCH,
             *NOV2_OPAQUE_CLEAR_PATCHES,
-            *NOV2_SINGLE_CHOICE_B_PATCHES,
         )
         for patch in patches:
             with self.subTest(label=patch.label):

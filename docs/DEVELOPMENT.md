@@ -103,7 +103,7 @@ baselines; those data are intentionally not embedded in the wheel.
 3. **Capture the expected source.** Use exact bytes for a short instruction or
    SHA-256 for a complete fixed table/asset.
 4. **State the invariant.** Examples: record sizes, file size, tail address,
-   clock bytes, or one-choice-only input behavior.
+   clock bytes, or parent-destination Back/Cancel behavior.
 5. **Write a pure patch function.** Accept `bytes`, validate first, return new
    `bytes`, and avoid filesystem/emulator state.
 6. **Verify the output.** Re-decode data or assert the exact changed range.

@@ -6,6 +6,10 @@ import unittest
 from pathlib import Path
 
 from time_twist.english import encode_english, render_english
+from time_twist.entropy_runtime import (
+    PARENT_BACK_GUARD_PATCHES,
+    patch_entropy_nov2,
+)
 from time_twist.textcodec import pack_records, split_records
 from time_twist.ui import (
     DISK_NUMBER_ERROR_PATCHES,
@@ -30,7 +34,6 @@ from time_twist.ui import (
     NOV2_EXTENDED_DICTIONARY_PATCH,
     NOV2_OPAQUE_CLEAR_PATCHES,
     NOV2_SAVE_SYSTEM_PATCHES,
-    NOV2_SINGLE_CHOICE_B_PATCHES,
     NOV4_LOAD_PROMPT_OFFSET,
     NOV4_START_PROMPT_OFFSET,
     ORIGINAL_LOAD_PROMPT,
@@ -243,14 +246,6 @@ class StaticUiTests(unittest.TestCase):
         expected_changed.update(
             patch.file_offset for patch in NOV2_OPAQUE_CLEAR_PATCHES
         )
-        expected_changed.update(
-            index
-            for patch in NOV2_SINGLE_CHOICE_B_PATCHES
-            for index in range(
-                patch.file_offset,
-                patch.file_offset + len(patch.expected),
-            )
-        )
         self.assertEqual(len(patched), len(original))
         for offset, source, english in DISK_PROMPT_PATCHES:
             replacement = pack_records([encode_english(english)])
@@ -329,23 +324,32 @@ class StaticUiTests(unittest.TestCase):
         self.assertEqual(render_english(records[0]).rstrip(), "Please wait...")
         self.assertNotIn("{CTRL:", render_english(records[0]))
 
-    def test_zenpen_nov2_b_ignores_one_choice_but_keeps_normal_back(
-        self,
-    ) -> None:
-        """Verify the current contract described by this regression test."""
+    def test_zenpen_nov2_b_depends_on_parent_not_choice_count(self) -> None:
+        """Make Back/Cancel depend only on a valid previous-menu destination."""
         path = WORK_DIR / "extracted_zenpen/side0_06_NOV2_6000.bin"
         if not path.exists():
             self.fail("workspace fixture is not available")
         original = path.read_bytes()
-        patched = patched_nov2_ui(original)
+        ui_patched = patched_nov2_ui(original)
+        patched = patch_entropy_nov2(ui_patched)
+        self.assertEqual(patch_entropy_nov2(patched), patched)
 
-        for patch in NOV2_SINGLE_CHOICE_B_PATCHES:
-            self.assertEqual(
-                original[
-                    patch.file_offset : patch.file_offset + len(patch.expected)
-                ],
-                patch.expected,
-            )
+        # The native B dispatcher is the final authority: $9C == 0 returns;
+        # any real saved parent proceeds into native Back/Cancel.
+        self.assertEqual(
+            patched[0x39DC:0x39EA],
+            bytes.fromhex("A5 9C D0 01 60 A9 04 85 A1 A9 22 4C 09 61"),
+        )
+
+        # The retired special case must stay retired. $6A2E is not replaced
+        # with code that reads visible-choice count $98, so a one-choice nested
+        # menu remains able to Back when it has a real parent.
+        self.assertEqual(
+            patched[0x0A2E:0x0A3A],
+            bytes.fromhex("4C 01 61 4C 01 61 4C 01 61 4C DB 89"),
+        )
+
+        for patch in PARENT_BACK_GUARD_PATCHES:
             self.assertEqual(
                 patched[
                     patch.file_offset : patch.file_offset
@@ -354,26 +358,23 @@ class StaticUiTests(unittest.TestCase):
                 patch.replacement,
             )
 
-        # $99DC-$99E0 retains the original saved-destination guard.  Its
-        # nonzero path now detours to $6A2E.
+        # No-parent setup branches to $6B70 -> $814A. Y is zero at this point,
+        # so STY $9C clears the saved Back destination before normal setup
+        # resumes at $6BBB.
+        branch_address = 0x6BA9
+        branch = patched[0x0BA9:0x0BAB]
+        self.assertEqual(branch, bytes.fromhex("F0 C5"))
+        signed_offset = branch[1] - 0x100 if branch[1] & 0x80 else branch[1]
+        self.assertEqual(branch_address + 2 + signed_offset, 0x6B70)
+        self.assertEqual(patched[0x0B70:0x0B73], bytes.fromhex("4C 4A 81"))
         self.assertEqual(
-            patched[0x39DC:0x39E1], bytes.fromhex("A5 9C D0 01 60")
+            patched[0x214A:0x214F], bytes.fromhex("84 9C 4C BB 6B")
         )
-        self.assertEqual(patched[0x39E1:0x39E4], bytes.fromhex("4C 2E 6A"))
 
-        # The helper loads the visible-choice count from $98 and decrements Y
-        # only for comparison.  One choice branches to the existing RTS at
-        # $6A93; larger menus retain action 4 and state $22 through $7DB8.
-        helper = patched[0x0A2E:0x0A3A]
+        # The real-parent path still copies C5/C6 into $9B/$9C, independent of
+        # how many choices the nested menu contains.
         self.assertEqual(
-            helper,
-            bytes.fromhex("A4 98 88 F0 60 A9 04 85 A1 4C B8 7D"),
-        )
-        helper_address = 0x6A2E
-        branch_pc_after_operand = helper_address + 5
-        self.assertEqual(branch_pc_after_operand + helper[4], 0x6A93)
-        self.assertEqual(
-            patched[0x1DB8:0x1DBD], bytes.fromhex("A9 22 4C 09 61")
+            patched[0x0BAB:0x0BB3], bytes.fromhex("A5 C5 85 9B A5 C6 85 9C")
         )
 
     def test_zenpen_nov4_live_start_prompt_patch(self) -> None:
