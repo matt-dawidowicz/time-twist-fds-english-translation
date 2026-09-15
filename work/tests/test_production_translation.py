@@ -349,7 +349,7 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
 
         tt6c = production("TT6C")
         self.assertIn(
-            "{CTRL:3}Me: Right. Jesus Christ.",
+            "{CTRL:3}Me: Yes—Jesus Christ!",
             tt6c["TT6C/g3/r8"],
         )
 
