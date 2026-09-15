@@ -44,7 +44,9 @@ class FinalPlaytestGoldenRecordTests(unittest.TestCase):
             with self.subTest(record_id=record_id):
                 self.assertEqual(by_bank[bank][record_id], expected)
 
-    def test_materialization_fails_closed_on_exact_base_prose_drift(self) -> None:
+    def test_materialization_fails_closed_on_exact_base_prose_drift(
+        self,
+    ) -> None:
         """Require re-audit even when changed base prose keeps the same controls."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -66,9 +68,12 @@ class FinalPlaytestGoldenRecordTests(unittest.TestCase):
                 encoding="utf-8",
             )
             (override_directory / "TT1A.json").write_text(
-                (ROOT / "work" / "production_overrides" / "TT1A.json").read_text(
-                    encoding="utf-8"
-                ),
+                (
+                    ROOT
+                    / "work"
+                    / "production_overrides"
+                    / "TT1A.json"
+                ).read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
 
@@ -81,7 +86,9 @@ class FinalPlaytestGoldenRecordTests(unittest.TestCase):
                     override_directory=override_directory,
                 )
 
-    def test_runtime_validation_accepts_japanese_text_with_same_topology(self) -> None:
+    def test_runtime_validation_accepts_japanese_text_with_same_topology(
+        self,
+    ) -> None:
         """Apply record policy by native controls, not English visible text."""
         production = GOLDEN_RECORDS["TT1A/g0/r30"]
         japanese_shaped = (

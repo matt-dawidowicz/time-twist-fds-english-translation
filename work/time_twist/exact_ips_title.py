@@ -65,12 +65,42 @@ _MAX_ORIGINAL_TITLE_STREAM_END = 0x094D
 # reviewed pixels, and remaps exactly one final nametable cell. The moving
 # monochrome swipe remains byte-for-byte identical to the historical IPS.
 _FINAL_LOGO_TILE_CORRECTIONS: tuple[tuple[int, int, bytes, bytes], ...] = (
-    (0x066, 0x03, bytes.fromhex("00000001071f7ffc000000000000030f"), bytes.fromhex("00000001071f7fff000000000000020e")),
-    (0x0D6, 0x04, bytes.fromhex("000000ffffff00000000000000ffffff"), bytes.fromhex("000000ffffff00010000000000ffffff")),
-    (0x0D7, 0x33, bytes.fromhex("00000080c1e1e3c30000000000808000"), bytes.fromhex("00000080c1e1e3c30000000000808101")),
-    (0x0F1, 0x14, bytes.fromhex("f0f0f0f0f0f0f0f01f1f1f1f1f1f1f1f"), bytes.fromhex("f0f0f0f0f0f070301f1f1f1f1f1f1f9f")),
-    (0x123, 0x08, bytes.fromhex("1c1c1c1c1c1c1c1c0707070707070707"), bytes.fromhex("1c1c1c1c1c1c1c1f0707070707070707")),
-    (0x12B, 0x16, bytes.fromhex("00000000000000ffffffffffffffffff"), bytes.fromhex("01010000000000ffffffffffffffffff")),
+    (
+        0x066,
+        0x03,
+        bytes.fromhex("00000001071f7ffc000000000000030f"),
+        bytes.fromhex("00000001071f7fff000000000000020e"),
+    ),
+    (
+        0x0D6,
+        0x04,
+        bytes.fromhex("000000ffffff00000000000000ffffff"),
+        bytes.fromhex("000000ffffff00010000000000ffffff"),
+    ),
+    (
+        0x0D7,
+        0x33,
+        bytes.fromhex("00000080c1e1e3c30000000000808000"),
+        bytes.fromhex("00000080c1e1e3c30000000000808101"),
+    ),
+    (
+        0x0F1,
+        0x14,
+        bytes.fromhex("f0f0f0f0f0f0f0f01f1f1f1f1f1f1f1f"),
+        bytes.fromhex("f0f0f0f0f0f070301f1f1f1f1f1f1f9f"),
+    ),
+    (
+        0x123,
+        0x08,
+        bytes.fromhex("1c1c1c1c1c1c1c1c0707070707070707"),
+        bytes.fromhex("1c1c1c1c1c1c1c1f0707070707070707"),
+    ),
+    (
+        0x12B,
+        0x16,
+        bytes.fromhex("00000000000000ffffffffffffffffff"),
+        bytes.fromhex("01010000000000ffffffffffffffffff"),
+    ),
 )
 
 
@@ -316,11 +346,14 @@ def _install_subtitle(data: bytes, subtitle: str) -> bytes:
             f"beyond safe 0x{_MAX_ORIGINAL_TITLE_STREAM_END:04X}"
         )
 
-    glyph_data = b"".join(pattern_map[index] for index in range(needed)) + bytes(
-        correction_data
+    glyph_data = (
+        b"".join(pattern_map[index] for index in range(needed))
+        + bytes(correction_data)
     )
     if len(glyph_data) != total_tiles * 16 or total_tiles > 0xFF:
-        raise TitlePatchError("title final-phase CHR payload has an invalid size")
+        raise TitlePatchError(
+            "title final-phase CHR payload has an invalid size"
+        )
 
     helper_offset = len(data)
     helper_address = NOV4_LOAD_ADDRESS + helper_offset

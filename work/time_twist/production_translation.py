@@ -146,7 +146,9 @@ def _replace_control_sequence(text: str, controls: tuple[int, ...]) -> str:
     """Replace control values in place while preserving all visible source text."""
     pieces = CONTROL_RE.split(text)
     if len(pieces[1::2]) != len(controls):
-        raise ProductionTranslationError("control-rewrite arity changed unexpectedly")
+        raise ProductionTranslationError(
+            "control-rewrite arity changed unexpectedly"
+        )
     output = [pieces[0]]
     for value, segment in zip(controls, pieces[2::2], strict=True):
         output.append(f"{{CTRL:{value}}}")

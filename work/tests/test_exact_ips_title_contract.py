@@ -49,10 +49,15 @@ class ExactIpsTitleContractTests(unittest.TestCase):
             ):
                 _definitive_ips()
 
-    def test_final_playtest_logo_corrections_are_exact_and_narrow(self) -> None:
+    def test_final_playtest_logo_corrections_are_exact_and_narrow(
+        self,
+    ) -> None:
         """Lock the six final-phase-only wordmark tile corrections."""
         self.assertEqual(
-            [(cell, tile) for cell, tile, _source, _target in _FINAL_LOGO_TILE_CORRECTIONS],
+            [
+                (cell, tile)
+                for cell, tile, _source, _target in _FINAL_LOGO_TILE_CORRECTIONS
+            ],
             [
                 (0x066, 0x03),
                 (0x0D6, 0x04),
