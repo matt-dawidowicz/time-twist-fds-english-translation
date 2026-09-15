@@ -69,10 +69,7 @@ class FinalPlaytestGoldenRecordTests(unittest.TestCase):
             )
             (override_directory / "TT1A.json").write_text(
                 (
-                    ROOT
-                    / "work"
-                    / "production_overrides"
-                    / "TT1A.json"
+                    ROOT / "work" / "production_overrides" / "TT1A.json"
                 ).read_text(encoding="utf-8"),
                 encoding="utf-8",
             )
