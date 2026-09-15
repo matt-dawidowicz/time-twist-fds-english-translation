@@ -24,8 +24,38 @@ jobs:
         run: python -m pip install -e .
       - name: Run materialized text-flow regression
         run: python -m unittest work.tests.test_materialized_text_flow_audit
-      - name: Refresh intentional source lock
-        run: time-twist release-lock --update
+      - name: Refresh only intentional text source-lock entries
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          paths = (
+              "work/production_overrides/T22.json",
+              "work/production_overrides/T25.json",
+              "work/production_overrides/TT1B.json",
+              "work/production_overrides/TT3A.json",
+              "work/production_overrides/TT3B.json",
+              "work/production_overrides/TT6A.json",
+              "work/production_overrides/TT6B.json",
+              "work/production_overrides/TT6C.json",
+          )
+          lock_path = Path("work/release_sources.json")
+          payload = json.loads(lock_path.read_text(encoding="utf-8"))
+          for relative in paths:
+              raw = Path(relative).read_bytes()
+              normalized = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+              entry = payload["files"][relative]
+              if entry.get("normalization") != "lf":
+                  raise SystemExit(f"unexpected normalization for {relative}")
+              entry["sha256"] = hashlib.sha256(normalized).hexdigest().upper()
+              entry["bytes"] = len(normalized)
+          lock_path.write_text(
+              json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          PY
       - name: Remove one-shot workflow
         run: rm .github/workflows/final-text-flow-audit.yml
       - name: Verify clean patch
