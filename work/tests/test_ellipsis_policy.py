@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import unittest
 from pathlib import Path
 
@@ -11,12 +12,14 @@ from time_twist.ui import (
     DISK_NUMBER_ERROR_PATCHES,
     DISK_PROMPT_PATCHES,
     DISK_SET_ERROR_ENGLISH,
+    FIXED_RECORD_TABLE_SPECS,
     SIDE_NUMBER_ERROR_PATCHES,
+    WAIT_PROMPT_TEXT,
     WRONG_DISK_PATCHES,
 )
-from time_twist.ui_fixed_tables import FIXED_RECORD_TABLE_SPECS
 
 ROOT = Path(__file__).resolve().parents[2]
+ASCII_ELLIPSIS_RE = re.compile(r"(?<!\.)\.{3}(?!\.)")
 
 
 class EllipsisPolicyTests(unittest.TestCase):
@@ -35,7 +38,7 @@ class EllipsisPolicyTests(unittest.TestCase):
             offenders.extend(
                 f"{record_id}: {text}"
                 for record_id, text in production.items()
-                if "..." in text
+                if ASCII_ELLIPSIS_RE.search(text)
             )
         self.assertEqual(
             [],
@@ -49,7 +52,7 @@ class EllipsisPolicyTests(unittest.TestCase):
             f"{bank}: {label}"
             for bank, spec in FIXED_RECORD_TABLE_SPECS.items()
             for label in spec.records
-            if "..." in label
+            if ASCII_ELLIPSIS_RE.search(label)
         ]
         self.assertEqual(
             [],
@@ -65,8 +68,11 @@ class EllipsisPolicyTests(unittest.TestCase):
             *(english for _, _, english in SIDE_NUMBER_ERROR_PATCHES),
             *(english for _, _, english in DISK_NUMBER_ERROR_PATCHES),
             *(english for _, _, english in WRONG_DISK_PATCHES),
+            WAIT_PROMPT_TEXT,
         ]
-        offenders = [text for text in texts if "..." in text]
+        offenders = [
+            text for text in texts if ASCII_ELLIPSIS_RE.search(text)
+        ]
         self.assertEqual(
             [],
             offenders,
