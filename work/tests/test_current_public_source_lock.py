@@ -7,8 +7,12 @@ import json
 import unittest
 from pathlib import Path
 
+from time_twist.release import ReleasePaths, authoritative_source_paths
+from time_twist.title import DEFAULT_SUBTITLE
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SOURCE_LOCK = PROJECT_ROOT / "work" / "release_sources.json"
+INTEGRATION_FIXTURES = PROJECT_ROOT / "work" / "integration_fixtures.json"
 PRIVATE_RETAIL_BASELINES = {
     "work/baseline/time_twist_zenpen_japan.fds",
     "work/baseline/time_twist_kouhen_japan.fds",
@@ -31,13 +35,28 @@ class CurrentPublicSourceLockTests(unittest.TestCase):
     """Verify source-lock freshness without requiring private retail ROMs."""
 
     def test_checked_in_release_sources_match_lock(self) -> None:
-        """Fail CI when an authoritative public source changes without a lock refresh."""
+        """Fail CI when an authoritative release source drifts from its lock."""
         payload = json.loads(SOURCE_LOCK.read_text(encoding="utf-8"))
         files = payload["files"]
-        checked = 0
+        paths = ReleasePaths.from_project_root(PROJECT_ROOT)
+        authoritative = {
+            path.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
+            for path in authoritative_source_paths(paths)
+        }
+        fixtures = json.loads(INTEGRATION_FIXTURES.read_text(encoding="utf-8"))[
+            "files"
+        ]
 
-        for relative, record in files.items():
+        self.assertEqual(payload["subtitle"], DEFAULT_SUBTITLE)
+        self.assertEqual(set(files), authoritative)
+
+        for relative in sorted(authoritative):
+            record = files[relative]
             if relative in PRIVATE_RETAIL_BASELINES:
+                fixture = fixtures[relative]
+                self.assertEqual(record["normalization"], "raw")
+                self.assertEqual(record["bytes"], fixture["bytes"])
+                self.assertEqual(record["sha256"], fixture["sha256"])
                 continue
 
             path = PROJECT_ROOT / relative
@@ -57,9 +76,6 @@ class CurrentPublicSourceLockTests(unittest.TestCase):
                 record["sha256"],
                 f"source-lock SHA-256 is stale: {relative}",
             )
-            checked += 1
-
-        self.assertGreater(checked, 0)
 
 
 if __name__ == "__main__":
