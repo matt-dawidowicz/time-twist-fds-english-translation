@@ -43,9 +43,9 @@ class CurrentPublicSourceLockTests(unittest.TestCase):
             path.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
             for path in authoritative_source_paths(paths)
         }
-        fixtures = json.loads(INTEGRATION_FIXTURES.read_text(encoding="utf-8"))[
-            "files"
-        ]
+        fixtures = json.loads(
+            INTEGRATION_FIXTURES.read_text(encoding="utf-8")
+        )["files"]
 
         self.assertEqual(payload["subtitle"], DEFAULT_SUBTITLE)
         self.assertEqual(set(files), authoritative)
