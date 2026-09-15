@@ -1,0 +1,63 @@
+name: temporary ambiguity refresh
+
+on:
+  push:
+    branches:
+      - fix/context-sensitive-ui-and-ambiguities-20260915
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: python -m pip install -r requirements.txt
+      - name: Apply audited kiku terminology policy
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("work/generate_translation_workbook.py")
+          text = path.read_text(encoding="utf-8")
+          old_fixed = '    "きく": "Ask / listen",'
+          new_fixed = '    "きく": "Listen",'
+          old_glossary = '''        "聞く／訊く",
+                  "ASK / LISTEN",
+                  "Hear",
+                  "Context determines whether it means ask or listen.",'''
+          new_glossary = '''        "聞く／聴く／訊く",
+                  "LISTEN",
+                  "Hear; ask/inquire outside the audited fixed command",
+                  "Audited fixed gameplay command is Listen; scenario uses remain context-dependent.",'''
+          changed = False
+          if old_fixed in text:
+              if text.count(old_fixed) != 1:
+                  raise SystemExit("unexpected FIXED_NATURAL kiku count")
+              text = text.replace(old_fixed, new_fixed)
+              changed = True
+          if old_glossary in text:
+              if text.count(old_glossary) != 1:
+                  raise SystemExit("unexpected glossary kiku count")
+              text = text.replace(old_glossary, new_glossary)
+              changed = True
+          if changed:
+              path.write_text(text, encoding="utf-8")
+          PY
+      - run: python work/generate_translation_workbook.py
+      - name: Commit deterministic refresh
+        run: |
+          if git diff --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add work/generate_translation_workbook.py outputs work/translation_workbook_banks
+          git commit -m "Align kiku glossary with audited Listen command"
+          git push origin HEAD:${{ github.ref_name }}
