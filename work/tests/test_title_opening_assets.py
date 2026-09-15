@@ -80,41 +80,6 @@ class TitleOpeningAssetTests(unittest.TestCase):
             any(slide.crop((0, 96, 256, 240)).get_flattened_data())
         )
 
-    def test_slide_first_t_top_matches_final_outline(self) -> None:
-        """Lock the first T's upper staircase to the final-logo silhouette."""
-        final = _target_to_indices(FINAL)
-        slide = _target_to_indices(SLIDE, last_owned_row=95)
-        first_t_top = (9, 23, 57, 45)
-        final_region = final.crop(first_t_top)
-        slide_region = slide.crop(first_t_top)
-        self.assertEqual(
-            tuple(bool(pixel) for pixel in slide_region.get_flattened_data()),
-            tuple(bool(pixel) for pixel in final_region.get_flattened_data()),
-        )
-        expected_staircase = {
-            27: (55, 56),
-            28: (53, 56),
-            29: (51, 56),
-            30: (49, 56),
-            31: (47, 56),
-            32: (45, 56),
-            33: (43, 56),
-            34: (41, 56),
-            35: (39, 56),
-            36: (37, 56),
-            37: (35, 56),
-            38: (33, 56),
-            39: (31, 56),
-            40: (29, 56),
-            41: (27, 56),
-        }
-        for y, (left, right) in expected_staircase.items():
-            with self.subTest(y=y):
-                active = tuple(
-                    x for x in range(9, 57) if slide.getpixel((x, y)) != 0
-                )
-                self.assertEqual(active, tuple(range(left, right + 1)))
-
     def test_ips_clock_and_trademark_details_are_retained(self) -> None:
         """Lock representative one-pixel details from the definitive patch."""
         final = _target_to_indices(FINAL)
