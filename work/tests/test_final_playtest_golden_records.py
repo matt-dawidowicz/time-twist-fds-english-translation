@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -41,6 +43,43 @@ class FinalPlaytestGoldenRecordTests(unittest.TestCase):
             bank = record_id.split("/", 1)[0]
             with self.subTest(record_id=record_id):
                 self.assertEqual(by_bank[bank][record_id], expected)
+
+    def test_materialization_fails_closed_on_exact_base_prose_drift(self) -> None:
+        """Require re-audit even when changed base prose keeps the same controls."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            base_directory = root / "translations"
+            override_directory = root / "production_overrides"
+            base_directory.mkdir()
+            override_directory.mkdir()
+
+            base = json.loads(
+                (ROOT / "work" / "translations" / "TT1A.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            base["TT1A/g0/r30"] = base["TT1A/g0/r30"].replace(
+                "More importantly...", "Different prose..."
+            )
+            (base_directory / "TT1A.json").write_text(
+                json.dumps(base, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            (override_directory / "TT1A.json").write_text(
+                (ROOT / "work" / "production_overrides" / "TT1A.json").read_text(
+                    encoding="utf-8"
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(
+                ProductionTranslationError, "certified base template changed"
+            ):
+                merged_translation_map(
+                    "TT1A",
+                    base_directory=base_directory,
+                    override_directory=override_directory,
+                )
 
     def test_runtime_validation_accepts_japanese_text_with_same_topology(self) -> None:
         """Apply record policy by native controls, not English visible text."""
