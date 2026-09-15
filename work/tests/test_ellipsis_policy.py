@@ -14,7 +14,6 @@ from time_twist.ui import (
     DISK_SET_ERROR_ENGLISH,
     FIXED_RECORD_TABLE_SPECS,
     SIDE_NUMBER_ERROR_PATCHES,
-    WAIT_PROMPT_TEXT,
     WRONG_DISK_PATCHES,
 )
 
@@ -61,14 +60,13 @@ class EllipsisPolicyTests(unittest.TestCase):
         )
 
     def test_fixed_prompt_strings_use_true_ellipsis_glyphs(self) -> None:
-        """Reject ASCII ellipses from fixed prompt strings that remain semantic text."""
+        """Reject ASCII ellipses from fixed prompts whose length is not slot-bound."""
         texts = [
             *(english for _, _, english in DISK_PROMPT_PATCHES),
             DISK_SET_ERROR_ENGLISH,
             *(english for _, _, english in SIDE_NUMBER_ERROR_PATCHES),
             *(english for _, _, english in DISK_NUMBER_ERROR_PATCHES),
             *(english for _, _, english in WRONG_DISK_PATCHES),
-            WAIT_PROMPT_TEXT,
         ]
         offenders = [
             text for text in texts if ASCII_ELLIPSIS_RE.search(text)
