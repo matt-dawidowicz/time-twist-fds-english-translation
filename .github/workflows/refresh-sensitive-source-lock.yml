@@ -1,0 +1,56 @@
+name: refresh-sensitive-source-lock
+
+on:
+  push:
+    branches:
+      - fix/materialized-text-flow-audit-20260915
+    paths:
+      - .github/workflows/refresh-sensitive-source-lock.yml
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: fix/materialized-text-flow-audit-20260915
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+      - name: Refresh only changed override locks
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+
+          paths = [
+              'work/production_overrides/TT1B.json',
+              'work/production_overrides/TT2.json',
+              'work/production_overrides/T22.json',
+              'work/production_overrides/TT4.json',
+          ]
+          lock_path = Path('work/release_sources.json')
+          lock = json.loads(lock_path.read_text(encoding='utf-8'))
+          for name in paths:
+              raw = Path(name).read_bytes().replace(b'\r\n', b'\n').replace(b'\r', b'\n')
+              entry = lock['files'][name]
+              entry['normalization'] = 'lf'
+              entry['sha256'] = hashlib.sha256(raw).hexdigest().upper()
+              entry['bytes'] = len(raw)
+              print(name, entry['sha256'], entry['bytes'])
+          lock_path.write_text(json.dumps(lock, indent=2, ensure_ascii=False) + '\n', encoding='utf-8', newline='\n')
+          PY
+      - name: Remove one-shot helper
+        run: rm .github/workflows/refresh-sensitive-source-lock.yml
+      - name: Commit refreshed lock and cleanup
+        run: |
+          git config user.name 'starlight_world'
+          git config user.email '43389528+matt-dawidowicz@users.noreply.github.com'
+          git add work/release_sources.json .github/workflows/refresh-sensitive-source-lock.yml
+          git commit -m 'Refresh source locks for whole-game fidelity overrides'
+          git push origin HEAD:fix/materialized-text-flow-audit-20260915
