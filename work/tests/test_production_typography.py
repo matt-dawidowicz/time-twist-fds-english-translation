@@ -149,7 +149,7 @@ class ProductionTypographyTests(unittest.TestCase):
                 if (
                     approved
                     and approved in text
-                    and not production_pairs[: len(base_pairs)] != base_pairs
+                    and production_pairs[: len(base_pairs)] == base_pairs
                 ):
                     continue
 
