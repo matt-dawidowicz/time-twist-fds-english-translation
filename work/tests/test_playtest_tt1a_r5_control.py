@@ -17,10 +17,11 @@ from time_twist.production_translation import (
     layout_review_text,
     merged_translation_map,
     validate_record_production_control_sequence,
+    validate_renderer_buffer_layout,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-CONTROL_RE = re.compile(r"\{CTRL:[0-7]\}")
+CONTROL_RE = re.compile(r"\{CTRL:([0-7])\}")
 EXPECTED_ORIGINAL_RECORDS = frozenset(
     {
         "TT1A/g0/r5",
@@ -40,6 +41,11 @@ EXPECTED_ORIGINAL_RECORDS = frozenset(
 EXPECTED_RECORDS = EXPECTED_ORIGINAL_RECORDS | frozenset(
     ADDITIONAL_PRESENTATION_ONLY_CTRL1_TEMPLATES
 )
+
+
+def _controls(text: str) -> tuple[int, ...]:
+    """Return the ordered native control values in a record."""
+    return tuple(int(value) for value in CONTROL_RE.findall(text))
 
 
 class PresentationOnlyCtrl1Tests(unittest.TestCase):
@@ -79,12 +85,9 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
             self.assertIn(record_id, EXPECTED_RECORDS)
 
     def test_certified_base_topology_remains_unchanged(self) -> None:
-        """Keep CTRL:1 in the certified base maps; demotion is production-only."""
+        """Keep audited CTRL:1 topology while allowing base prose revisions."""
         by_bank: dict[str, dict[str, str]] = {}
-        for (
-            record_id,
-            expected_template,
-        ) in PRESENTATION_ONLY_CTRL1_TEMPLATES.items():
+        for record_id, historical_template in PRESENTATION_ONLY_CTRL1_TEMPLATES.items():
             bank = record_id.split("/", 1)[0]
             if bank not in by_bank:
                 by_bank[bank] = json.loads(
@@ -92,41 +95,41 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
                         ROOT / "work" / "translations" / f"{bank}.json"
                     ).read_text(encoding="utf-8")
                 )
-            self.assertEqual(by_bank[bank][record_id], expected_template)
-            self.assertEqual(expected_template.count("{CTRL:1}"), 1)
+            current = by_bank[bank][record_id]
+            self.assertEqual(_controls(current), _controls(historical_template))
+            self.assertEqual(current.count("{CTRL:1}"), 1)
 
     def test_all_audited_waits_are_removed_from_production(self) -> None:
         """Let continuous English fill the box instead of pausing mid-thought."""
         for record_id in sorted(EXPECTED_RECORDS):
             bank = record_id.split("/", 1)[0]
             production = self.production_by_bank[bank][record_id]
+            source = json.loads(
+                (ROOT / "work" / "translations" / f"{bank}.json").read_text(
+                    encoding="utf-8"
+                )
+            )[record_id]
             with self.subTest(record_id=record_id):
                 self.assertNotIn("{CTRL:1}", production)
                 validate_record_production_control_sequence(
                     record_id,
-                    PRESENTATION_ONLY_CTRL1_TEMPLATES[record_id],
+                    source,
                     production,
                 )
+                validate_renderer_buffer_layout(production)
 
-    def test_personality_intro_preserves_reviewed_words(self) -> None:
-        """Retain the exact reviewed prose that exposed the playtest problem."""
+    def test_personality_intro_flows_without_inherited_wait(self) -> None:
+        """Keep the personality introduction continuous regardless of wording."""
         text = self.production_by_bank["TT1A"]["TT1A/g0/r5"]
-        expected = (
-            "First, we'll begin with a personality test. "
-            "Please answer each question."
-        )
-        self.assertEqual(CONTROL_RE.sub(" ", text).split(), expected.split())
+        self.assertNotIn("{CTRL:1}", text)
+        validate_renderer_buffer_layout(text)
 
     def test_time_travel_thought_flows_without_inherited_waits(self) -> None:
-        """Keep TT1A/g0/r30 continuous exactly as approved in playtest."""
+        """Keep TT1A/g0/r30 continuous regardless of editorial wording."""
         text = self.production_by_bank["TT1A"]["TT1A/g0/r30"]
         self.assertNotIn("{CTRL:1}", text)
         self.assertNotIn("{CTRL:6}", text)
-        expected = (
-            "Time travel, huh… So far, it's all talk. "
-            "Nobody's ever actually made it work. More importantly…"
-        )
-        self.assertEqual(CONTROL_RE.sub(" ", text).split(), expected.split())
+        validate_renderer_buffer_layout(text)
 
     def test_unrelated_ctrl1_timing_remains_intact(self) -> None:
         """Keep dramatic, speaker-change, and intentional timing waits semantic."""
@@ -152,18 +155,26 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
                 with self.subTest(record_id=record_id):
                     self.assertIn("{CTRL:1}", production[record_id])
 
-    def test_policy_fails_closed_if_audited_base_template_changes(
-        self,
-    ) -> None:
-        """Require a fresh audit instead of carrying an exception onto new text."""
+    def test_policy_accepts_prose_change_with_same_topology(self) -> None:
+        """Do not require a policy edit for ordinary wording revisions."""
+        output = layout_review_text(
+            "TT1A/g0/r5",
+            "Rewritten personality-test introduction with different wording.",
+            "Changed source.{CTRL:1}Still changed.",
+        )
+        self.assertNotIn("{CTRL:1}", output)
+        validate_renderer_buffer_layout(output)
+
+    def test_policy_fails_closed_if_audited_topology_changes(self) -> None:
+        """Require a fresh audit only when runtime-significant controls change."""
         with self.assertRaisesRegex(
             ProductionTranslationError,
-            "re-audit before building",
+            "control topology changed",
         ):
             layout_review_text(
                 "TT1A/g0/r5",
-                "First, we'll begin with a personality test. Please answer each question.",
-                "Changed source.{CTRL:1}Still changed.",
+                "Rewritten personality-test introduction.",
+                "Changed source.{CTRL:3}Still changed.",
             )
 
 
