@@ -55,6 +55,8 @@ def _materialized_records(output_directory: Path) -> dict[str, str]:
 class ProductionTypographyTests(unittest.TestCase):
     """Keep game-facing punctuation and spacing mechanically clean."""
 
+    maxDiff = None
+
     def test_materialized_corpus_has_no_em_or_en_dashes(self) -> None:
         """Require ordinary punctuation unless a future source case is reviewed."""
         with tempfile.TemporaryDirectory(
