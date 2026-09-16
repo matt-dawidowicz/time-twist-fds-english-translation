@@ -9,10 +9,10 @@ reflow can accidentally reintroduce ambiguity or remove a source distinction.
 
 The pass covers scene-to-scene flow, obscure/negative responses, English-only
 comprehension, previously approved semantic corrections, historical-source
-fidelity, and the known runtime-dependent ambiguity inventory. The Japanese
-source records remain the authority. A wording change is classified as definite
-only when the source or a previous source-backed audit settles it without
-gameplay guesswork.
+fidelity, sensitive-content intensity, and the known runtime-dependent ambiguity
+inventory. The Japanese source records remain the authority. A wording change is
+classified as definite only when the source or a previous source-backed audit
+settles it without gameplay guesswork.
 
 ## Definite fixes
 
@@ -136,6 +136,89 @@ The goal is fidelity rather than amplification: historically ugly dialogue
 remains ugly because the source is ugly, while translator-added slurs or stronger
 claims are not introduced.
 
+## Whole-game sensitive-content source-fidelity pass
+
+The same standard was applied to the rest of the playable game: violence,
+persecution, religion, sex/gender material, class abuse, profanity, death,
+supernatural evil, war, and historically loaded terminology were checked against
+the Japanese rather than normalized according to modern taste.
+
+### Additional definite corrections
+
+Six additional materialized lines had drifted away from the source's actual
+intensity.
+
+- `TT2/g0/r0`: `おれたちびんぼうにん` means **poor people / poor folk**. The
+  polished `poor bastards` added an insult that Pierre does not use. Production
+  now says **`Help us poor folk!`**
+- `TT2/g0/r1`: `どうなってんだ` is **`What's going on?!`**. The polished
+  `What the hell is going on?!` added profanity not present in the line. The
+  production wording is now source-neutral.
+- `TT2/g0/r9`: the same `どうなってんだ` construction had again been intensified
+  to `What the hell is going on?!`. Production now reads **`What's going on?! I'm
+  in somebody else's body!`**
+- `TT1B/g1/r2`: `なんてこった` expresses shocked disbelief but contains no
+  profanity. The polished `Wh-what the hell?!` is now **`Wh-what the…?!`**
+- `T22/g1/r7`: the Bishop's accusation says Jeanne received the Devil's baptism
+  and became `みにくき よくぼうのとりこ` — a **captive/slave of vile desire**.
+  The polished `depraved, baptized by the Devil` flattened that explicit image.
+  Production now says she was **`baptized by the Devil and enslaved to vile
+  desire`**, followed by the explicit Church death sentence.
+- `TT4/g3/r3`: `みんしゅしゅぎなんぞより おれは かみさまをしんじるね` means
+  roughly **`Rather than democracy, I believe in the gods.`** The polished
+  `To hell with democracy` invented stronger hostility. Production now follows
+  the source without that added condemnation.
+
+### Explicit material deliberately retained
+
+The audit also confirmed that several potentially uncomfortable lines are not
+localization embellishments and must remain explicit:
+
+- `TT2/g2/r17`: a character repeats the rumor that the Bishop **burns girls and
+  eats them** (`ひあぶりにしたむすめを くってる`).
+- `TT2/g4/r7`: the source says the Bishop takes girls he likes to the basement and
+  **tortures** them (`ごうもんしている`).
+- `T22/g1/r6-r14`: burning Jeanne as a public example, sentencing her to death,
+  the pyre, and gradual torment are all source-backed; they are not euphemized.
+- `TT1B/g1/r14`: the dated `ぼいん` joke is deliberately objectifying sexual
+  humor. The translation keeps the crude breast joke rather than converting it
+  into neutral admiration.
+- `TT4/g4/r15`: `この くそがきが` licenses the Devil's strong insult to the child;
+  it is not being cleaned up merely for taste.
+- `TT4/g4/r20`: the Devil explicitly threatens to **kill the boy repeatedly**
+  (`なんどでもきさまを ころしにいくぞ`).
+- `TT6B/g1/r23`: the cow's joke is literally scatological (`くそは くそだべー`),
+  so **`Shit is shit.`** remains.
+- `TT6C/g2/r13`: the Devil explicitly claims that humans love **discrimination
+  and conflict** (`さべつやあらそいが だいすき`). That accusation is not
+  softened into generic selfishness or disagreement.
+- `TT6C/g2/r6`: the extended world war, nuclear exchange, starvation/dehydration,
+  and post-apocalyptic ruin remain explicit because they are explicit in the
+  source.
+- The Nativity/temptation/anti-Christ material, demonic possession, God/angel/
+  savior terminology, and the deliberate Yes / `いえす` / Jesus wordplay remain
+  religiously specific rather than being secularized.
+
+### Historical and ethnonym terminology
+
+A source-faithful translation does not require mechanically preserving every
+period Japanese exonym when doing so would change the English referent or import
+an unrelated slur.
+
+- Japanese `ジプシー` is rendered **Romani** in the relevant charm description.
+  The source uses it as an ethnonym, not as an insult; `Romani` preserves the
+  intended people/referent without adding a pejorative English register.
+- Historical quiz wording referring to `インディアン` is rendered with
+  **Native Americans** while preserving the source's explicit contrast with white
+  settlers. This updates the ethnonym without erasing the racial/historical
+  distinction being tested.
+- `捕虜収容所` remains **POW camp**. Historical seriousness is not a reason to
+  mistranslate it as a concentration or extermination camp.
+
+The governing rule for the release is therefore symmetric: **do not sanitize
+source-backed ugliness, and do not manufacture ugliness the source does not
+contain.**
+
 ## Suspicious but not changed statically
 
 ### T25/g1/r15 — pronoun clarity
@@ -197,7 +280,9 @@ speaker identity.
 ## Regression policy
 
 The accompanying unit regression materializes the authoritative production layer
-and locks the semantic distinctions above after reflow, including explicit
-historical-atrocity checks for the Nazi and slavery chapters. This is intentional:
-a future base edit, override, or compression pass must not silently turn a
-previously fixed source distinction back into an ambiguity or euphemism.
+and locks the semantic distinctions above after reflow. It explicitly tests both
+halves of the fidelity rule: source-backed atrocity, persecution, sexual, violent,
+scatological, and religious language must not be sanitized, while neutral source
+lines must not acquire translator-invented profanity or stronger ideological
+claims. A future base edit, override, or compression pass must not silently undo
+those distinctions.
