@@ -101,6 +101,43 @@ class MaterializedTextFlowAuditTests(unittest.TestCase):
             with self.subTest(record_id=record_id):
                 self.assertIn(expected, _plain(_production(bank)[record_id]))
 
+    def test_sensitive_content_matches_source_intensity(self) -> None:
+        """Preserve genuine ugliness without adding profanity the source lacks."""
+        source_faithful = (
+            ("TT2", "TT2/g0/r0", "Help us poor folk!"),
+            ("TT2", "TT2/g0/r1", "Me: What's going on?!"),
+            ("TT2", "TT2/g0/r9", "What's going on?! I'm in somebody else's body!"),
+            ("TT1B", "TT1B/g1/r2", "Wh-what the…?!"),
+            ("T22", "T22/g1/r7", "enslaved to vile desire"),
+            ("TT4", "TT4/g3/r3", "Rather than democracy, I believe in the gods."),
+        )
+        for bank, record_id, expected in source_faithful:
+            with self.subTest(record_id=record_id):
+                self.assertIn(expected, _plain(_production(bank)[record_id]))
+
+        invented_intensity = (
+            ("TT2", "TT2/g0/r0", "poor bastards"),
+            ("TT2", "TT2/g0/r1", "What the hell"),
+            ("TT2", "TT2/g0/r9", "What the hell"),
+            ("TT1B", "TT1B/g1/r2", "what the hell"),
+            ("TT4", "TT4/g3/r3", "To hell with democracy"),
+        )
+        for bank, record_id, rejected in invented_intensity:
+            with self.subTest(record_id=record_id, rejected=rejected):
+                self.assertNotIn(rejected, _plain(_production(bank)[record_id]))
+
+        explicit_source_content = (
+            ("TT2", "TT2/g2/r17", "burns girls and then eats them"),
+            ("TT2", "TT2/g4/r7", "tortures them"),
+            ("TT4", "TT4/g4/r15", "You little shit"),
+            ("TT4", "TT4/g4/r20", "kill you as many times as it takes"),
+            ("TT6B", "TT6B/g1/r23", "Shit is shit."),
+            ("TT6C", "TT6C/g2/r13", "prejudice and conflict"),
+        )
+        for bank, record_id, expected in explicit_source_content:
+            with self.subTest(record_id=record_id):
+                self.assertIn(expected, _plain(_production(bank)[record_id]))
+
     def test_audited_scene_controls_remain_on_natural_boundaries(self) -> None:
         """Lock timing controls that separate complete thoughts and responses."""
         tt3b = _production("TT3B")["TT3B/g1/r22"]
