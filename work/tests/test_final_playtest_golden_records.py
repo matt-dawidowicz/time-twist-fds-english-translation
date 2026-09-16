@@ -22,10 +22,10 @@ ROOT = Path(__file__).resolve().parents[2]
 # not require synchronized assertion updates.
 GOLDEN_CONTROL_SEQUENCES = {
     "TT1A/g0/r3": (0, 0, 0),
-    "TT1A/g0/r24": (0, 0, 0, 4, 4, 4, 4, 4, 4),
+    "TT1A/g0/r24": (0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4),
     "TT1A/g0/r30": (0, 0, 0, 4),
     "TT1A/g0/r31": (1, 0, 6, 4, 4),
-    "TT1A/g1/r1": (0, 0, 0, 3, 4, 3, 4, 4, 4, 4),
+    "TT1A/g1/r1": (0, 0, 0, 3, 4, 3, 4, 4, 4, 4, 4),
     "TT1B/g0/r0": (0, 0, 0),
 }
 
