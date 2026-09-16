@@ -28,6 +28,9 @@ BANK_NAMES = (
 )
 CONTROL_RE = re.compile(r"\{CTRL:\d+\}")
 SPACE_BEFORE_PUNCT_RE = re.compile(r"\s+[,.!?;:]")
+PUNCT_ONLY_LABEL_RE = re.compile(r"^[^:]+: [.!?]+$")
+MISSING_SPACE_AFTER_PUNCT_RE = re.compile(r"(?:[,;!?]|:(?!\d))(?=[A-Za-z\"])")
+MISSING_SPACE_AFTER_PERIOD_RE = re.compile(r"\.(?=[A-Z\"])")
 
 
 def _materialized_records(output_directory: Path) -> dict[str, str]:
@@ -86,8 +89,15 @@ class ProductionTypographyTests(unittest.TestCase):
                         problems.append("double space")
                     if "\t" in segment or "\n" in segment or "\r" in segment:
                         problems.append("embedded whitespace control")
-                    if SPACE_BEFORE_PUNCT_RE.search(segment):
+                    if (
+                        SPACE_BEFORE_PUNCT_RE.search(segment)
+                        and not PUNCT_ONLY_LABEL_RE.fullmatch(segment)
+                    ):
                         problems.append("space before punctuation")
+                    if MISSING_SPACE_AFTER_PUNCT_RE.search(segment):
+                        problems.append("missing space after punctuation")
+                    if MISSING_SPACE_AFTER_PERIOD_RE.search(segment):
+                        problems.append("missing space after period")
                     if problems:
                         offenders.append(
                             f"{record_id}: {', '.join(problems)}: {segment!r}"
