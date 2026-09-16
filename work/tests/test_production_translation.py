@@ -346,10 +346,10 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
 
         t22 = production("T22")
         self.assertIn(
-            "baptized by the{CTRL:6}Devil and enslaved to", t22["T22/g1/r7"]
+            "baptized by the{CTRL:6}Devil and enslaved by", t22["T22/g1/r7"]
         )
         self.assertIn(
-            "vile desire. The Church{CTRL:4}sentences her to death.",
+            "vile desires. The Church{CTRL:4}sentences her to death.",
             t22["T22/g1/r7"],
         )
 
