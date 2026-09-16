@@ -47,13 +47,17 @@ def _materialized_records(output_directory: Path) -> dict[str, str]:
         output_directory=output_directory,
     )
     if sum(counts.values()) != 1299:
-        raise AssertionError(f"expected 1299 production records, got {sum(counts.values())}")
+        raise AssertionError(
+            f"expected 1299 production records, got {sum(counts.values())}"
+        )
 
     records: dict[str, str] = {}
     for bank_name in BANK_NAMES:
         records.update(
             json.loads(
-                (output_directory / f"{bank_name}.json").read_text(encoding="utf-8")
+                (output_directory / f"{bank_name}.json").read_text(
+                    encoding="utf-8"
+                )
             )
         )
     return records
@@ -65,9 +69,9 @@ def _base_records() -> dict[str, str]:
     for bank_name in BANK_NAMES:
         records.update(
             json.loads(
-                (ROOT / "work" / "translations" / f"{bank_name}.json").read_text(
-                    encoding="utf-8"
-                )
+                (
+                    ROOT / "work" / "translations" / f"{bank_name}.json"
+                ).read_text(encoding="utf-8")
             )
         )
     return records
@@ -93,7 +97,9 @@ class ProductionTypographyTests(unittest.TestCase):
 
     def test_materialized_visible_segments_have_clean_spacing(self) -> None:
         """Reject unambiguous whitespace defects without second-guessing controls."""
-        with tempfile.TemporaryDirectory(prefix="time_twist_spacing_") as directory:
+        with tempfile.TemporaryDirectory(
+            prefix="time_twist_spacing_"
+        ) as directory:
             records = _materialized_records(Path(directory))
             offenders: list[str] = []
             for record_id, text in records.items():
@@ -107,10 +113,9 @@ class ProductionTypographyTests(unittest.TestCase):
                         problems.append("double space")
                     if "\t" in segment or "\n" in segment or "\r" in segment:
                         problems.append("embedded whitespace control")
-                    if (
-                        SPACE_BEFORE_PUNCT_RE.search(segment)
-                        and not PUNCT_ONLY_LABEL_RE.fullmatch(segment)
-                    ):
+                    if SPACE_BEFORE_PUNCT_RE.search(
+                        segment
+                    ) and not PUNCT_ONLY_LABEL_RE.fullmatch(segment):
                         problems.append("space before punctuation")
                     if MISSING_SPACE_AFTER_PUNCT_RE.search(segment):
                         problems.append("missing space after punctuation")
@@ -123,9 +128,13 @@ class ProductionTypographyTests(unittest.TestCase):
 
             self.assertEqual(offenders, [])
 
-    def test_materialized_corpus_has_no_unapproved_new_blank_rows(self) -> None:
+    def test_materialized_corpus_has_no_unapproved_new_blank_rows(
+        self,
+    ) -> None:
         """Do not introduce doubled row advances unless layout review approved them."""
-        with tempfile.TemporaryDirectory(prefix="time_twist_blank_rows_") as directory:
+        with tempfile.TemporaryDirectory(
+            prefix="time_twist_blank_rows_"
+        ) as directory:
             production = _materialized_records(Path(directory))
             base = _base_records()
             offenders: list[str] = []
@@ -137,7 +146,11 @@ class ProductionTypographyTests(unittest.TestCase):
                     continue
 
                 approved = APPROVED_NEW_DOUBLED_ROW_ADVANCES.get(record_id)
-                if approved and approved in text and not production_pairs[: len(base_pairs)] != base_pairs:
+                if (
+                    approved
+                    and approved in text
+                    and not production_pairs[: len(base_pairs)] != base_pairs
+                ):
                     continue
 
                 new_pairs = production_pairs.copy()

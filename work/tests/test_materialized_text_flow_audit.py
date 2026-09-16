@@ -106,10 +106,18 @@ class MaterializedTextFlowAuditTests(unittest.TestCase):
         source_faithful = (
             ("TT2", "TT2/g0/r0", "Help us poor folk!"),
             ("TT2", "TT2/g0/r1", "Me: What's going on?!"),
-            ("TT2", "TT2/g0/r9", "What's going on?! I'm in somebody else's body!"),
+            (
+                "TT2",
+                "TT2/g0/r9",
+                "What's going on?! I'm in somebody else's body!",
+            ),
             ("TT1B", "TT1B/g1/r2", "Wh-what the…?!"),
             ("T22", "T22/g1/r7", "enslaved to vile desire"),
-            ("TT4", "TT4/g3/r3", "Rather than democracy, I believe in the gods."),
+            (
+                "TT4",
+                "TT4/g3/r3",
+                "Rather than democracy, I believe in the gods.",
+            ),
         )
         for bank, record_id, expected in source_faithful:
             with self.subTest(record_id=record_id):
@@ -124,7 +132,9 @@ class MaterializedTextFlowAuditTests(unittest.TestCase):
         )
         for bank, record_id, rejected in invented_intensity:
             with self.subTest(record_id=record_id, rejected=rejected):
-                self.assertNotIn(rejected, _plain(_production(bank)[record_id]))
+                self.assertNotIn(
+                    rejected, _plain(_production(bank)[record_id])
+                )
 
         explicit_source_content = (
             ("TT2", "TT2/g2/r17", "burns girls and then eats them"),
