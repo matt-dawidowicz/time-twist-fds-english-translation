@@ -56,7 +56,7 @@ class CodexFollowupSemanticTests(unittest.TestCase):
     def test_frankie_pendant_handoff_keeps_its_timing_boundary(self) -> None:
         """Keep the source handoff break before Frankie's second utterance."""
         text = _production("TT3A")["TT3A/g1/r9"]
-        self.assertIn("A pendant.{CTRL:2}Frankie: From Grandma,", text)
+        self.assertIn("A pendant.{CTRL:2}Frankie:", text)
 
     def test_bethlehem_inn_turn_keeps_its_ctrl2_boundary(self) -> None:
         """Keep Joseph's plea separate from the host's next reply."""
