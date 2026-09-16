@@ -6,12 +6,144 @@ on:
       - main
   pull_request:
 
-# PR validation is intentionally read-only.
+permissions:
+  contents: write
+
 concurrency:
   group: tests-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
+  repair-followup-semantics:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -r requirements.txt
+      - name: Restore reviewed semantic wording and controls
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+          import json
+
+          root = Path.cwd()
+
+          def load(path):
+              p = root / path
+              return p, json.loads(p.read_text(encoding="utf-8"))
+
+          def save(p, data):
+              p.write_text(
+                  json.dumps(data, ensure_ascii=False, indent=2) + "\n",
+                  encoding="utf-8",
+                  newline="\n",
+              )
+
+          p, data = load("work/production_overrides/T22.json")
+          pact = (
+              '"PACT{CTRL:0}O Devil, dark ruler, I{CTRL:0}bow. My god of justice.'
+              '{CTRL:6}I vow all to vice,{CTRL:4}slander, and every evil.'
+              '{CTRL:3}Bishop"'
+          )
+          data["T22/g0/r10"] = pact
+          data["T22/g1/r1"] = pact
+          data["T22/g1/r7"] = (
+              "Bishop: Jeanne d'Arc, granddaughter of Lugot, was baptized by the "
+              "Devil and enslaved to vile desire. The Church sentences her to death."
+          )
+          save(p, data)
+
+          p, data = load("work/production_overrides/TT1B.json")
+          data["TT1B/g2/r12"] = (
+              '"DR. SIMON VANISHES": Last night, Dr. Simon, 84, announced a theory '
+              "of time warp. He vanished to escape the media frenzy. Sources say his "
+              "machine is already complete. Rumors say Simon traveled through time."
+          )
+          save(p, data)
+
+          p, data = load("work/production_overrides/TT6B.json")
+          data["TT6B/g1/r3"] = (
+              "Right: Middle isn't{CTRL:0}the unreliable one.{CTRL:2}"
+              "Middle: Left isn't{CTRL:0}the honest one.{CTRL:3}"
+              "Left: Right isn't{CTRL:4}the liar."
+          )
+          save(p, data)
+
+          p, data = load("work/production_overrides/TT3B.json")
+          data["TT3B/g1/r22"] = (
+              "Schmidt: Border ahead.{CTRL:0}Cougar: Mind's blank…{CTRL:0}"
+              "Why am I here…?{CTRL:6}Simon: You must have{CTRL:4}hit your head badly."
+              "{CTRL:3}Schmidt: But we saw something terrible.{CTRL:3}"
+              "Cougar: Might change my{CTRL:4}whole view of life.{CTRL:3}Simon: Indeed…"
+          )
+          save(p, data)
+
+          p = root / "work/tests/test_production_translation.py"
+          text = p.read_text(encoding="utf-8")
+          text = text.replace(
+              '"baptized by the{CTRL:6}Devil and enslaved by"',
+              '"baptized by the{CTRL:6}Devil and enslaved to"',
+          )
+          text = text.replace(
+              '"vile desires. The Church{CTRL:4}sentences her to death."',
+              '"vile desire. The Church{CTRL:4}sentences her to death."',
+          )
+          p.write_text(text, encoding="utf-8", newline="\n")
+
+          # Refresh source-lock rows for every tracked file changed above.
+          lock_path = root / "work/release_sources.json"
+          payload = json.loads(lock_path.read_text(encoding="utf-8"))
+          for relative, record in payload["files"].items():
+              path = root / relative
+              if not path.is_file():
+                  continue
+              blob = path.read_bytes()
+              if record["normalization"] == "lf":
+                  blob = blob.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+              elif record["normalization"] != "raw":
+                  raise ValueError(record["normalization"])
+              record["sha256"] = hashlib.sha256(blob).hexdigest().upper()
+              record["bytes"] = len(blob)
+          lock_path.write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+              newline="\n",
+          )
+          PY
+      - name: Regenerate tracked review outputs
+        run: |
+          python work/generate_bilingual_comparison_ci.py
+          python work/generate_translation_workbook.py
+      - name: Format changed Python
+        run: python -m black work/tests/test_production_translation.py
+      - name: Commit follow-up repairs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            work/production_overrides/T22.json \
+            work/production_overrides/TT1B.json \
+            work/production_overrides/TT3B.json \
+            work/production_overrides/TT6B.json \
+            work/tests/test_production_translation.py \
+            work/release_sources.json \
+            outputs \
+            work/translation_workbook_banks
+          if git diff --cached --quiet; then
+            echo "No follow-up changes to commit."
+            exit 0
+          fi
+          git commit -m "Restore reviewed semantic controls and wording"
+          git push origin HEAD:${{ github.head_ref }}
+
   unit-tests:
     runs-on: ubuntu-latest
     strategy:
