@@ -1,7 +1,7 @@
 {
   "TT6B/g0/r0": "Joseph: Are you all right, Mary? Mary: I'm managing… Kashim looks miserable. Joseph: He'll be fine. A little water will perk him right up.",
   "TT6B/g0/r31": "Camel: Of these three, one always tells the truth. One always lies. And one lies only sometimes. That's the unreliable one.",
-  "TT6B/g1/r3": "Right: Middle isn't the unreliable one. Middle: Left isn't the honest one. Left: Right isn't the liar.",
+  "TT6B/g1/r3": "Right: Middle isn't{CTRL:0}the unreliable one.{CTRL:2}Middle: Left isn't{CTRL:0}the honest one.{CTRL:3}Left: Right isn't{CTRL:4}the liar.",
   "TT6B/g1/r13": "Host: We're full. Joseph: Please… Host: Sleep by the road. Joseph: Please! The baby's coming now! Host: Fine, then. Take the stable. Joseph: Thank you!",
   "TT6B/g1/r25": "Mare: Rome? Who cares? Its downfall will come.",
   "TT6B/g1/r27": "Sheep: Far to the east, they say there's a Demon-Sealing Jar that can imprison devils.",
