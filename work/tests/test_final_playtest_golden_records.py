@@ -48,7 +48,9 @@ def _controls(text: str) -> tuple[int, ...]:
 class FinalPlaytestGoldenRecordTests(unittest.TestCase):
     """Keep final-playtest control geometry stable while permitting prose edits."""
 
-    def test_materialized_records_preserve_playtest_control_geometry(self) -> None:
+    def test_materialized_records_preserve_playtest_control_geometry(
+        self,
+    ) -> None:
         """Require approved records to retain controls and renderer-safe layout."""
         by_bank = {bank: _production(bank) for bank in {"TT1A", "TT1B"}}
         for record_id, expected_controls in GOLDEN_CONTROL_SEQUENCES.items():
