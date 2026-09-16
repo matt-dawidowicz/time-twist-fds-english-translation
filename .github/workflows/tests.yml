@@ -98,8 +98,33 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          from time_twist.release_metadata import write_source_lock
-          write_source_lock(project_root=Path.cwd())
+          import hashlib
+          import json
+
+          root = Path.cwd()
+          lock_path = root / "work/release_sources.json"
+          payload = json.loads(lock_path.read_text(encoding="utf-8"))
+          for relative, record in payload["files"].items():
+              path = root / relative
+              if not path.is_file():
+                  # The two private Japanese baseline ROMs are intentionally not
+                  # stored in GitHub. Preserve their already-certified lock rows.
+                  continue
+              data = path.read_bytes()
+              if record["normalization"] == "lf":
+                  data = data.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+              elif record["normalization"] != "raw":
+                  raise ValueError(
+                      f"unsupported normalization for {relative}: "
+                      f"{record['normalization']}"
+                  )
+              record["sha256"] = hashlib.sha256(data).hexdigest().upper()
+              record["bytes"] = len(data)
+          lock_path.write_text(
+              json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+              newline="\n",
+          )
           PY
       - name: Commit generated repair
         run: |
