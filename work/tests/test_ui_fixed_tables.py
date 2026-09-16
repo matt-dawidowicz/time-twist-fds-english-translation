@@ -325,7 +325,10 @@ class FixedMenuCopyTests(unittest.TestCase):
                     93: "Lamp",
                 },
             ),
-            (ui.TT3B_FIXED_TEXT_RECORDS, {5: "Area", 12: "Outside", 14: "Guard"}),
+            (
+                ui.TT3B_FIXED_TEXT_RECORDS,
+                {5: "Area", 12: "Outside", 14: "Guard"},
+            ),
             (
                 ui.TT4_FIXED_TEXT_RECORDS,
                 {
