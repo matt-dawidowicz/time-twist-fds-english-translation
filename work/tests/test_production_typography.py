@@ -29,8 +29,8 @@ BANK_NAMES = (
 CONTROL_RE = re.compile(r"\{CTRL:\d+\}")
 SPACE_BEFORE_PUNCT_RE = re.compile(r"\s+[,.!?;:]")
 PUNCT_ONLY_LABEL_RE = re.compile(r"^[^:]+: [.!?]+$")
-MISSING_SPACE_AFTER_PUNCT_RE = re.compile(r"(?:[,;!?]|:(?!\d))(?=[A-Za-z\"])")
-MISSING_SPACE_AFTER_PERIOD_RE = re.compile(r"\.(?=[A-Z\"])")
+MISSING_SPACE_AFTER_PUNCT_RE = re.compile(r"(?:[,;!?]|:(?!\d))(?=[A-Za-z])")
+MISSING_SPACE_AFTER_PERIOD_RE = re.compile(r"(?<![A-Z])\.(?=[A-Z][a-z])")
 
 
 def _materialized_records(output_directory: Path) -> dict[str, str]:
