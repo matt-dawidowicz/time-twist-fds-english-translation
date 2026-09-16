@@ -87,7 +87,10 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
     def test_certified_base_topology_remains_unchanged(self) -> None:
         """Keep audited CTRL:1 topology while allowing base prose revisions."""
         by_bank: dict[str, dict[str, str]] = {}
-        for record_id, historical_template in PRESENTATION_ONLY_CTRL1_TEMPLATES.items():
+        for (
+            record_id,
+            historical_template,
+        ) in PRESENTATION_ONLY_CTRL1_TEMPLATES.items():
             bank = record_id.split("/", 1)[0]
             if bank not in by_bank:
                 by_bank[bank] = json.loads(
@@ -96,7 +99,9 @@ class PresentationOnlyCtrl1Tests(unittest.TestCase):
                     ).read_text(encoding="utf-8")
                 )
             current = by_bank[bank][record_id]
-            self.assertEqual(_controls(current), _controls(historical_template))
+            self.assertEqual(
+                _controls(current), _controls(historical_template)
+            )
             self.assertEqual(current.count("{CTRL:1}"), 1)
 
     def test_all_audited_waits_are_removed_from_production(self) -> None:
