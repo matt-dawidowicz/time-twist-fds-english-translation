@@ -9,7 +9,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 WORKBOOK_BANKS = ROOT / "work" / "translation_workbook_banks"
 EXPECTED_CONTEXT_IDS = {
-    "TT3A/g2/r7",
     "TT3A/g2/r30",
     "TT3B/g0/r24",
     "TT4/g4/r14",
@@ -35,7 +34,7 @@ def _row(bank_name: str, record_id: str) -> dict[str, object]:
 class TranslationQCBacklogTests(unittest.TestCase):
     """Keep resolved QC items out of the evidence-dependent backlog."""
 
-    def test_only_four_records_require_gameplay_or_visual_context(
+    def test_only_three_records_require_gameplay_or_visual_context(
         self,
     ) -> None:
         """Keep the remaining backlog limited to genuinely staging-dependent rows."""
