@@ -1,14 +1,14 @@
 """Project policy facade for canonical production-English materialization.
 
-The low-level layout engine lives in :mod:`production_translation_core`.  This
+The low-level layout engine lives in :mod:`production_translation_core`. This
 module keeps project-specific policy explicit: reviewed prose is reflowed against
 the certified base control topology, except for an audited set of source
 ``CTRL:1`` waits proven to be presentation-only in English.
 
-The certified ``work/translations`` maps remain untouched.  Every presentation-
-only exception is keyed by stable record ID and locked to the exact base template
-that was reviewed, so a later source/template change fails closed and requires a
-fresh audit rather than silently inheriting the exception.
+The certified ``work/translations`` maps remain untouched. Presentation-only
+exceptions are keyed by stable record ID and locked to the audited control
+topology, not to exact English prose. Text may therefore be revised freely while
+control-sequence drift still fails closed and requires a fresh audit.
 """
 
 from __future__ import annotations
@@ -37,8 +37,9 @@ validate_renderer_buffer_layout = _core.validate_renderer_buffer_layout
 # These are not generic CTRL:1 demotions. Each record was audited after the
 # TT1A personality-test playtest exposed the failure mode: an inherited Japanese
 # input wait splitting one continuous English thought while the four-row box was
-# still largely empty. The exact certified base template is part of the policy
-# so topology drift cannot silently broaden the exception.
+# still largely empty. The visible text is historical context only; policy is
+# enforced by stable record ID plus control topology so prose edits do not need
+# to rewrite the assertion layer.
 PRESENTATION_ONLY_CTRL1_TEMPLATES: dict[str, str] = {
     "TT1A/g0/r5": "First: personality test{CTRL:1}Please answer each one.",
     "TT1A/g0/r30": (
@@ -64,9 +65,9 @@ PRESENTATION_ONLY_CTRL1_TEMPLATES.update(
 )
 
 # Final playtest also identified four records with additional semantic controls whose
-# timing/pagination function is presentation-only in the reviewed English.
-# Each rewrite is locked to the exact certified base record and replaces only
-# the audited control token(s); prose and all other controls remain source-owned.
+# timing/pagination function is presentation-only in the reviewed English. The
+# strings record the audited before/after topology; visible prose is not part of
+# the invariant.
 PRESENTATION_CONTROL_REWRITES: dict[str, tuple[str, str]] = {
     "TT1A/g0/r24": (
         "Cautious, methodical.{CTRL:0}Rarely fail, but can{CTRL:2}"
@@ -114,9 +115,9 @@ FINAL_PLAYTEST_LAYOUT_RECORDS = frozenset(
 )
 
 PRESENTATION_ONLY_CTRL1_RECORDS = frozenset(PRESENTATION_ONLY_CTRL1_TEMPLATES)
-# Some source records share the same exact certified template. If every such record
-# has the same source-locked demotion policy, the legacy two-argument validator may
-# safely use either representative because the effective control sequence is identical.
+# The legacy two-argument validator has no record ID, so it can only recognize
+# policy records from their historical template. Record-aware call sites do not
+# have this limitation and are topology-based.
 _TEMPLATE_TO_PRESENTATION_ONLY_RECORD = {
     template: record_id
     for record_id, template in PRESENTATION_ONLY_CTRL1_TEMPLATES.items()
@@ -135,7 +136,7 @@ def _demote_single_ctrl1(record_id: str, template: str) -> str:
 
 
 def _presentation_control_policy(record_id: str) -> tuple[str, str] | None:
-    """Return the exact base/effective templates for one audited record."""
+    """Return the audited before/after control templates for one record."""
     rewrite = PRESENTATION_CONTROL_REWRITES.get(record_id)
     if rewrite is not None:
         return rewrite
@@ -181,17 +182,19 @@ def _effective_control_template(record_id: str, source: str) -> str:
 
 
 def _effective_base_template(record_id: str, template: str) -> str:
-    """Return the audited production template without mutating certified base data."""
+    """Apply audited control rewrites while allowing visible prose to change."""
     policy = _presentation_control_policy(record_id)
     if policy is None:
         return template
     expected, effective = policy
-    if template != expected:
+    expected_controls = _control_sequence(expected)
+    template_controls = _control_sequence(template)
+    if template_controls != expected_controls:
         raise ProductionTranslationError(
-            f"{record_id}: certified base template changed under the audited "
+            f"{record_id}: certified base control topology changed under the audited "
             "presentation-control policy; re-audit before building"
         )
-    return effective
+    return _replace_control_sequence(template, _control_sequence(effective))
 
 
 def validate_record_production_control_sequence(
@@ -203,12 +206,13 @@ def validate_record_production_control_sequence(
 
 
 def validate_production_control_sequence(source: str, production: str) -> None:
-    """Validate controls, recognizing exact audited base templates for callers.
+    """Validate controls for callers that do not provide a stable record ID.
 
-    Most call sites with a stable ID should use
-    :func:`validate_record_production_control_sequence`. This two-argument
-    compatibility API remains strict except when ``source`` exactly matches one
-    locked certified base presentation template above.
+    Record-aware callers should use
+    :func:`validate_record_production_control_sequence`, which permits arbitrary
+    prose changes while enforcing the audited topology. This compatibility API
+    can recognize policy records only when ``source`` matches a historical
+    template because no record identity is available.
     """
     record_id = _TEMPLATE_TO_PRESENTATION_ONLY_RECORD.get(source)
     if record_id is None:
