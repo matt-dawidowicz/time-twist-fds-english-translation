@@ -8,10 +8,11 @@ record-level semantic review because later production overrides, compression, or
 reflow can accidentally reintroduce ambiguity or remove a source distinction.
 
 The pass covers scene-to-scene flow, obscure/negative responses, English-only
-comprehension, previously approved semantic corrections, and the known
-runtime-dependent ambiguity inventory. The Japanese source records remain the
-authority. A wording change is classified as definite only when the source or a
-previous source-backed audit settles it without gameplay guesswork.
+comprehension, previously approved semantic corrections, historical-source
+fidelity, and the known runtime-dependent ambiguity inventory. The Japanese
+source records remain the authority. A wording change is classified as definite
+only when the source or a previous source-backed audit settles it without
+gameplay guesswork.
 
 ## Definite fixes
 
@@ -81,6 +82,60 @@ Yes/Jesus wordplay. A later production override changed the payoff to
 preserves the beat while complying with the production typography rule that
 scenario prose contains no em or en dashes.
 
+## Historical atrocity fidelity — Nazi Germany and slavery
+
+This pass also rechecked the 1944 Germany and 1864 Atlanta chapters directly
+against the Japanese source. The translation policy here is deliberately
+non-sanitizing: preserve the source's coercion, racism, violence, and historical
+terminology when the Japanese states them, but do not invent stronger claims or
+collapse distinct historical institutions.
+
+### Nazi Germany
+
+The materialized chapter correctly preserves the source's explicit content:
+
+- `TT3A/g1/r25` states that Hitler's regime is rounding up spies and rebels and
+  sending them to **gas chambers**; this is not softened to generic imprisonment
+  or disappearance.
+- `TT3A/g3/r4` preserves `かんきんして` and `きょうせいしました`: Simon says the
+  **Nazis imprisoned him and forced him to develop a secret weapon**, and that he
+  will not help them murder anyone again.
+- Gestapo identifications remain explicit in `TT3A/g3/r27`, `TT3A/g4/r21`, and
+  surrounding resistance dialogue.
+- `TT3A/g0/r14` remains a **POW camp in southern Germany** because the source says
+  `ほりょしゅうようじょ`; the translation does not inaccurately upgrade it to a
+  concentration or extermination camp.
+- `TT3B/g0/r23` explicitly keeps Rebecca's agents **inside the Nazi ranks**.
+
+No additional Nazi-scene euphemism requiring a production rewrite was found in
+this pass.
+
+### Slavery and post-emancipation racial violence
+
+Several polished English lines were gentler or more interpretive than the
+Japanese and were corrected:
+
+- `TT5/g0/r6`: `きさまらなどに でかいつらされてたまるか` is contemptuous and
+  hierarchical. Production now uses **`We won't let the likes of you lord it over
+  us!`**, followed by the explicit threat **`I'll make an example of you. Taste my
+  whip!`** rather than the softer `Don't start getting ideas around here!`.
+- `TT5/g0/r7`: the beating remains explicit, Belle says **`At this rate, my son
+  will die!`**, and the attacker states **`You people were born slaves.`** The
+  anti-emancipation threat is not reframed as merely a labor dispute.
+- `TT5/g0/r18`: `なんぶから でていこうなどとおもうな` and
+  `いっしょうを おれたちのためにささげるんだ` are restored as **`Don't even
+  think about leaving the South. Devote your whole lives to us.`**
+- `T25/g1/r24`: `いうことをきかないどれいどもの はかば` is rendered as **`the
+  graveyard of slaves who refused to obey`**. The previous polished wording added
+  `me`; that ownership pronoun is contextually plausible but not present in the
+  Japanese, so it has been removed.
+- `T25/g2/r4` continues to state explicitly **`Leave the slaves behind`** rather
+  than replacing `どれいたち` with workers, servants, or another euphemism.
+
+The goal is fidelity rather than amplification: historically ugly dialogue
+remains ugly because the source is ugly, while translator-added slurs or stronger
+claims are not introduced.
+
 ## Suspicious but not changed statically
 
 ### T25/g1/r15 — pronoun clarity
@@ -142,6 +197,7 @@ speaker identity.
 ## Regression policy
 
 The accompanying unit regression materializes the authoritative production layer
-and locks the semantic distinctions above after reflow. This is intentional: a
-future base edit, override, or compression pass must not silently turn a
-previously fixed source distinction back into an ambiguity.
+and locks the semantic distinctions above after reflow, including explicit
+historical-atrocity checks for the Nazi and slavery chapters. This is intentional:
+a future base edit, override, or compression pass must not silently turn a
+previously fixed source distinction back into an ambiguity or euphemism.
