@@ -31,6 +31,10 @@ SPACE_BEFORE_PUNCT_RE = re.compile(r"\s+[,.!?;:]")
 PUNCT_ONLY_LABEL_RE = re.compile(r"^[^:]+: [.!?]+$")
 MISSING_SPACE_AFTER_PUNCT_RE = re.compile(r"(?:[,;!?]|:(?!\d))(?=[A-Za-z])")
 MISSING_SPACE_AFTER_PERIOD_RE = re.compile(r"(?<![A-Z])\.(?=[A-Z][a-z])")
+DOUBLED_ROW_ADVANCE_RE = re.compile(r"\{CTRL:([04])\}\{CTRL:\1\}")
+APPROVED_NEW_DOUBLED_ROW_ADVANCES = {
+    "TT3A/g3/r13": "{CTRL:0}{CTRL:0}",
+}
 
 
 def _materialized_records(output_directory: Path) -> dict[str, str]:
@@ -50,6 +54,20 @@ def _materialized_records(output_directory: Path) -> dict[str, str]:
         records.update(
             json.loads(
                 (output_directory / f"{bank_name}.json").read_text(encoding="utf-8")
+            )
+        )
+    return records
+
+
+def _base_records() -> dict[str, str]:
+    """Return the certified base translation corpus keyed by record id."""
+    records: dict[str, str] = {}
+    for bank_name in BANK_NAMES:
+        records.update(
+            json.loads(
+                (ROOT / "work" / "translations" / f"{bank_name}.json").read_text(
+                    encoding="utf-8"
+                )
             )
         )
     return records
@@ -102,6 +120,34 @@ class ProductionTypographyTests(unittest.TestCase):
                         offenders.append(
                             f"{record_id}: {', '.join(problems)}: {segment!r}"
                         )
+
+            self.assertEqual(offenders, [])
+
+    def test_materialized_corpus_has_no_unapproved_new_blank_rows(self) -> None:
+        """Do not introduce doubled row advances unless layout review approved them."""
+        with tempfile.TemporaryDirectory(prefix="time_twist_blank_rows_") as directory:
+            production = _materialized_records(Path(directory))
+            base = _base_records()
+            offenders: list[str] = []
+
+            for record_id, text in production.items():
+                production_pairs = DOUBLED_ROW_ADVANCE_RE.findall(text)
+                base_pairs = DOUBLED_ROW_ADVANCE_RE.findall(base[record_id])
+                if production_pairs == base_pairs:
+                    continue
+
+                approved = APPROVED_NEW_DOUBLED_ROW_ADVANCES.get(record_id)
+                if approved and approved in text and not production_pairs[: len(base_pairs)] != base_pairs:
+                    continue
+
+                new_pairs = production_pairs.copy()
+                for pair in base_pairs:
+                    if pair in new_pairs:
+                        new_pairs.remove(pair)
+                if new_pairs:
+                    offenders.append(
+                        f"{record_id}: introduced doubled CTRL:{', CTRL:'.join(new_pairs)}"
+                    )
 
             self.assertEqual(offenders, [])
 
