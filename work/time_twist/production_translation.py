@@ -130,6 +130,11 @@ FINAL_PLAYTEST_LAYOUT_RECORDS = frozenset(
         "TT3B/g1/r23",
         "TT3B/g1/r24",
         "TT4/g2/r14",
+        "TT4/g5/r7",
+        "TT4/g5/r10",
+        "TT4/g5/r11",
+        "TT4/g5/r12",
+        "TT4/g5/r13",
     }
 )
 
