@@ -112,7 +112,7 @@ class FixedMenuCopyTests(unittest.TestCase):
                 71: "Cotton gin",
                 90: "Tens digit",
                 91: "Ones digit",
-                99: "Six or more",
+                98: "Six or more",
                 103: "Pour in",
                 105: "Large bottle",
                 106: "Medium bottle",
