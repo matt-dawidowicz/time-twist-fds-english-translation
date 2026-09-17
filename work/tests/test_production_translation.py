@@ -10,6 +10,8 @@ from pathlib import Path
 
 from time_twist.production_translation import (
     ProductionTranslationError,
+    QUIZ_QUESTION_RECORDS,
+    _validate_quiz_question_geometry,
     _validate_cross_record_staging,
     layout_review_text,
     materialize_production_maps,
@@ -234,6 +236,91 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
                 "Alpha{CTRL:0}beta",
                 "Alpha{CTRL:1}beta{CTRL:0}gamma",
             )
+
+    def test_quiz_question_registry_covers_all_scenario_quizzes(self) -> None:
+        """Keep all five scenario quiz blocks under geometry protection."""
+        expected = {
+            "TT2/g1/r12",
+            "TT2/g1/r15",
+            "TT2/g1/r16",
+            "TT2/g1/r17",
+            "TT2/g1/r18",
+            "TT3A/g4/r2",
+            "TT3A/g4/r4",
+            "TT3A/g4/r5",
+            "TT3A/g4/r6",
+            "TT3A/g4/r7",
+            "TT4/g5/r7",
+            "TT4/g5/r10",
+            "TT4/g5/r11",
+            "TT4/g5/r12",
+            "TT4/g5/r13",
+            "TT5/g2/r12",
+            "TT5/g2/r15",
+            "TT5/g2/r16",
+            "TT5/g2/r17",
+            "TT5/g2/r18",
+            "TT6B/g1/r30",
+            "TT6B/g2/r0",
+            "TT6B/g2/r1",
+            "TT6B/g2/r2",
+            "TT6B/g2/r3",
+        }
+        self.assertEqual(QUIZ_QUESTION_RECORDS, expected)
+
+    def test_quiz_question_growth_is_rejected(self) -> None:
+        """Do not let natural-English reflow consume quiz answer-menu rows."""
+        base = {
+            "TEST/g0/r0": "{CTRL:0}{CTRL:0}Short question?",
+        }
+        production = {
+            "TEST/g0/r0": (
+                "{CTRL:0}{CTRL:0}This question is much too long for the row"
+            ),
+        }
+        with patch(
+            "time_twist.production_translation.QUIZ_QUESTION_RECORDS",
+            frozenset({"TEST/g0/r0"}),
+        ):
+            with self.assertRaisesRegex(
+                ProductionTranslationError,
+                "maximum is 23",
+            ):
+                _validate_quiz_question_geometry("TEST", base, production)
+
+    def test_quiz_question_control_drift_is_rejected(self) -> None:
+        """Do not let the prose reflower move a question into extra rows."""
+        base = {
+            "TEST/g0/r0": "{CTRL:0}{CTRL:0}Question line?",
+        }
+        production = {
+            "TEST/g0/r0": "{CTRL:0}Question{CTRL:0}line?",
+        }
+        with patch(
+            "time_twist.production_translation.QUIZ_QUESTION_RECORDS",
+            frozenset({"TEST/g0/r0"}),
+        ):
+            with self.assertRaisesRegex(
+                ProductionTranslationError,
+                "control geometry changed",
+            ):
+                _validate_quiz_question_geometry("TEST", base, production)
+
+    def test_current_scenario_quizzes_preserve_native_geometry(self) -> None:
+        """Validate every registered quiz against the certified base controls."""
+        for bank_name in ("TT2", "TT3A", "TT4", "TT5", "TT6B"):
+            base = json.loads(
+                (
+                    ROOT / "work" / "translations" / f"{bank_name}.json"
+                ).read_text(encoding="utf-8")
+            )
+            production = merged_translation_map(
+                bank_name,
+                base_directory=ROOT / "work" / "translations",
+                override_directory=ROOT / "work" / "production_overrides",
+                review_directory=ROOT / "review" / "production_retranslation",
+            )
+            _validate_quiz_question_geometry(bank_name, base, production)
 
     def test_cross_record_growth_cannot_enter_next_record_row(self) -> None:
         """Catch the A-press overwrite seen when a one-row source grows to row two."""
