@@ -112,6 +112,43 @@ PRESENTATION_CONTROL_REWRITES: dict[str, tuple[str, str]] = {
     ),
 }
 
+QUIZ_QUESTION_RECORDS = frozenset(
+    {
+        "TT2/g1/r12",
+        "TT2/g1/r15",
+        "TT2/g1/r16",
+        "TT2/g1/r17",
+        "TT2/g1/r18",
+        "TT3A/g4/r2",
+        "TT3A/g4/r4",
+        "TT3A/g4/r5",
+        "TT3A/g4/r6",
+        "TT3A/g4/r7",
+        "TT4/g5/r7",
+        "TT4/g5/r10",
+        "TT4/g5/r11",
+        "TT4/g5/r12",
+        "TT4/g5/r13",
+        "TT5/g2/r12",
+        "TT5/g2/r15",
+        "TT5/g2/r16",
+        "TT5/g2/r17",
+        "TT5/g2/r18",
+        "TT6B/g1/r30",
+        "TT6B/g2/r0",
+        "TT6B/g2/r1",
+        "TT6B/g2/r2",
+        "TT6B/g2/r3",
+    }
+)
+
+# Scenario quiz prompts share their text box with a native answer-selection UI.
+# Their control geometry is therefore interface state, not ordinary prose
+# presentation.  The separate TT6C retrospective quiz lives in a fixed-address
+# menu table and is protected by the fixed-table build/test path instead.
+QUIZ_MAX_SEGMENT_COLUMNS = 23
+
+
 FINAL_PLAYTEST_LAYOUT_RECORDS = frozenset(
     {
         "TT1A/g0/r3",
@@ -293,6 +330,57 @@ def _maximum_written_cursor(text: str) -> int:
     return maximum
 
 
+def _validate_quiz_question_geometry(
+    bank_name: str,
+    base: dict[str, str],
+    production: dict[str, str],
+) -> None:
+    """Preserve native row geometry for scenario quiz questions.
+
+    Quiz prompts are immediately followed by a selectable answer menu.  Unlike
+    ordinary dialogue, extra rows are not harmless: they can collide with the
+    quiz UI and corrupt the renderer.  Require the production prompt to keep
+    the exact source control sequence, the same empty/non-empty segment shape,
+    and at most 23 visible characters in every occupied segment.
+    """
+    prefix = f"{bank_name}/"
+    for record_id in sorted(
+        record_id
+        for record_id in QUIZ_QUESTION_RECORDS
+        if record_id.startswith(prefix)
+    ):
+        if record_id not in base or record_id not in production:
+            raise ProductionTranslationError(
+                f"{record_id}: registered quiz question is missing"
+            )
+        source = base[record_id]
+        translated = production[record_id]
+        if _control_sequence(translated) != _control_sequence(source):
+            raise ProductionTranslationError(
+                f"{record_id}: quiz question control geometry changed"
+            )
+
+        source_segments = CONTROL_RE.split(source)
+        production_segments = CONTROL_RE.split(translated)
+        if len(source_segments) != len(production_segments):
+            raise ProductionTranslationError(
+                f"{record_id}: quiz question segment count changed"
+            )
+        for index, (source_segment, production_segment) in enumerate(
+            zip(source_segments, production_segments, strict=True)
+        ):
+            if bool(source_segment) != bool(production_segment):
+                raise ProductionTranslationError(
+                    f"{record_id}: quiz segment {index} changed empty-row geometry"
+                )
+            if len(production_segment) > QUIZ_MAX_SEGMENT_COLUMNS:
+                raise ProductionTranslationError(
+                    f"{record_id}: quiz segment {index} is "
+                    f"{len(production_segment)} columns; maximum is "
+                    f"{QUIZ_MAX_SEGMENT_COLUMNS}"
+                )
+
+
 def _validate_cross_record_staging(
     bank_name: str,
     base: dict[str, str],
@@ -382,11 +470,18 @@ def merged_translation_map(
             reviewed_text = " ".join(
                 CONTROL_RE.sub(" ", selected_text).split()
             )
-        if record_id in FINAL_PLAYTEST_LAYOUT_RECORDS:
+        if (
+            record_id in FINAL_PLAYTEST_LAYOUT_RECORDS
+            or record_id in QUIZ_QUESTION_RECORDS
+        ):
             if record_id not in explicit_control_overrides:
+                kind = (
+                    "quiz question"
+                    if record_id in QUIZ_QUESTION_RECORDS
+                    else "final-playtest layout"
+                )
                 raise ProductionTranslationError(
-                    f"{record_id}: final-playtest layout must be an explicit "
-                    "control override"
+                    f"{record_id}: {kind} must be an explicit control override"
                 )
             _effective_base_template(record_id, base[record_id])
             validate_record_production_control_sequence(
@@ -400,6 +495,7 @@ def merged_translation_map(
             reviewed_text,
             base[record_id],
         )
+    _validate_quiz_question_geometry(bank_name, base, laid_out)
     _validate_cross_record_staging(bank_name, base, laid_out)
     return laid_out
 
