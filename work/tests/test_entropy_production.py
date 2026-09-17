@@ -227,7 +227,7 @@ class EntropyProductionTests(unittest.TestCase):
         )
         self.assertIn(
             bytes.fromhex("BD 2D 04 4A 4A 4A D0 02 A9 06 85 31"),
-            patches["aligned two-column menu renderer geometry"].replacement,
+            patches["metadata-driven menu renderer geometry"].replacement,
         )
         self.assertEqual(MENU_WIDTH_WORK_RAM_ADDRESS, 0x042D)
         self.assertEqual(MENU_MAX_STAGED_GLYPHS, 18)
@@ -347,7 +347,7 @@ class EntropyProductionTests(unittest.TestCase):
         }
         self.assertTrue(
             menu_patches[
-                "aligned leading menu cursor"
+                "width-aware leading menu cursor"
             ].replacement.startswith(bytes.fromhex("20 8D 6D"))
         )
 
