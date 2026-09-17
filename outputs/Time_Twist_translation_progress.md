@@ -11,7 +11,7 @@
 
 ## Source fingerprints
 
-- `Time Twist Japanese-English script comparison.json` — LF-normalized SHA-256 `A05EDC696CFBBC219B5EF7C37C905FA3C3D95B60FAA54E0A3C11615F78359967`
+- `Time Twist Japanese-English script comparison.json` — LF-normalized SHA-256 `B295776E0CCBA1D3815EE0568F9BF821E5DDC1E17216D0FA5E76C49971B3BEE6`
 - Diagnostic review: not supplied (neutral diagnostics used)
 
 ## Bank coverage
@@ -39,17 +39,17 @@
 Recomputed from the current playable scenario maps and configured full-word menus using the 68-entry greedy baseline. Measurements include structural pointers and the recovered movable menu reservation where applicable. All 13 banks fit this public model:
 
 - TT1A: 1664/1669 bytes used; 5 bytes remain.
-- TT1B: 3914/4234 bytes used; 320 bytes remain.
-- TT2: 4053/4141 bytes used; 88 bytes remain.
-- T22: 1899/1939 bytes used; 40 bytes remain.
-- TT3A: 4127/4169 bytes used; 42 bytes remain.
-- TT3B: 1873/1927 bytes used; 54 bytes remain.
-- TT4: 5143/5187 bytes used; 44 bytes remain.
-- TT5: 4125/4201 bytes used; 76 bytes remain.
-- T25: 2422/2561 bytes used; 139 bytes remain.
-- TT6A: 2782/3000 bytes used; 218 bytes remain.
-- TT6B: 2485/2601 bytes used; 116 bytes remain.
-- TT6C: 3839/3947 bytes used; 108 bytes remain.
+- TT1B: 3946/4234 bytes used; 288 bytes remain.
+- TT2: 4086/4141 bytes used; 55 bytes remain.
+- T22: 1913/1939 bytes used; 26 bytes remain.
+- TT3A: 4150/4169 bytes used; 19 bytes remain.
+- TT3B: 1886/1927 bytes used; 41 bytes remain.
+- TT4: 5182/5187 bytes used; 5 bytes remain.
+- TT5: 4187/4201 bytes used; 14 bytes remain.
+- T25: 2436/2561 bytes used; 125 bytes remain.
+- TT6A: 2805/3000 bytes used; 195 bytes remain.
+- TT6B: 2515/2601 bytes used; 86 bytes remain.
+- TT6C: 3866/3947 bytes used; 81 bytes remain.
 - TT6D: 317/332 bytes used; 15 bytes remain.
 
 Actual release usage, including any optimizer fallback, must come from a fresh ROM-backed candidate manifest. These conservative measurements do not certify a built image or runtime behavior.
