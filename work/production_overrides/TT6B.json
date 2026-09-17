@@ -1,8 +1,14 @@
 {
+  "TT6B/g0/r0": "Joseph: Are you all right, Mary? Mary: I'm managing… Kashim looks miserable. Joseph: He'll be fine. A little water will perk him right up.",
   "TT6B/g0/r31": "Camel: Of these three, one always tells the truth. One always lies. And one lies only sometimes. That's the unreliable one.",
   "TT6B/g1/r3": "Right: Middle isn't{CTRL:0}the unreliable one.{CTRL:2}Middle: Left isn't{CTRL:0}the honest one.{CTRL:3}Left: Right isn't{CTRL:4}the liar.",
-  "TT6B/g1/r13": "Host: We're full.{CTRL:0}Joseph: Please…{CTRL:2}Host: Sleep by the road{CTRL:6}Joseph: Please!{CTRL:4}The baby's coming now!{CTRL:3}Host: Fine, then.{CTRL:4}Take the stable.{CTRL:3}Joseph: Thank you!",
+  "TT6B/g1/r13": "Host: We're full. Joseph: Please… Host: Sleep by the road. Joseph: Please! The baby's coming now! Host: Fine, then. Take the stable. Joseph: Thank you!",
+  "TT6B/g1/r25": "Mare: Rome? Who cares? Its downfall will come.",
   "TT6B/g1/r27": "Sheep: Far to the east, they say there's a Demon-Sealing Jar that can imprison devils.",
-  "TT6B/g2/r18": "Mare: No nibbling.{CTRL:0}Eat it all at once!{CTRL:2}Me: Y-yes…",
-  "TT6B/g2/r29": "Me: Hee-haw!{CTRL:1}Mare: …"
+  "TT6B/g2/r0": "What is the name of the one God worshiped in Judaism?",
+  "TT6B/g2/r1": "From what country did Moses lead the Israelites out?",
+  "TT6B/g2/r3": "What word for \"Savior\" means \"the anointed one\"?",
+  "TT6B/g2/r18": "Mare: No nibbling. Eat it all at once! Me: Y-yes…",
+  "TT6B/g2/r28": "Mare: Like the cut? It's all the rage in Jerusalem. Heh.",
+  "TT6B/g2/r29": "Me: Hee-haw! Mare: …"
 }

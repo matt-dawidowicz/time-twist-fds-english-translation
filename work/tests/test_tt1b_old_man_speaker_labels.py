@@ -41,7 +41,7 @@ class TT1BOldManSpeakerLabelTests(unittest.TestCase):
 
         for record_id in record_ids:
             with self.subTest(record_id=record_id):
-                self.assertIn("Old man:", tt1b[record_id])
+                self.assertIn("Old Man:", tt1b[record_id])
                 self.assertNotIn("Elder:", tt1b[record_id])
 
     def test_tt6a_actual_elder_title_is_preserved(self) -> None:

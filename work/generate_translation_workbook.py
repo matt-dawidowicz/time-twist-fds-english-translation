@@ -510,7 +510,7 @@ SPEAKER_IDENTITY_OVERRIDES = {
     "T22/g1/r17": "Onlookers",
     "TT3A/g0/r20": "Off-screen ally / remembered voice",
     "TT3A/g0/r21": "Off-screen ally / remembered voice",
-    "TT3A/g2/r7": "Off-screen voice, likely an ally",
+    "TT3A/g2/r7": "Frankie",
     "TT3A/g4/r7": "Quiz prompt",
     "TT3B/g0/r24": "Hitler or the Devil speaking through him",
     "TT4/g0/r3": "Statue inscription: Athena",
@@ -539,10 +539,6 @@ SPEAKER_IDENTITY_OVERRIDES = {
 }
 
 GAMEPLAY_SPEAKER_AMBIGUITIES = {
-    "TT3A/g2/r7": (
-        "The off-screen voice is probably an ally, but the exact speaker needs the "
-        "surrounding gameplay shot."
-    ),
     "TT3B/g0/r24": (
         "The line may be Hitler himself or the Devil speaking through him; the "
         "visual staging determines the displayed identity."
