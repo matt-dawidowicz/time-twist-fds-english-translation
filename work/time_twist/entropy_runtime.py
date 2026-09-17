@@ -557,22 +557,28 @@ _CATEGORY_BLOCK = _CATEGORY_CODE + bytes((0xEA,)) * (
     CATEGORY_REGION_SIZE - len(_CATEGORY_CODE)
 )
 
+# Production replaces NOV2's complete fixed 51-record text region with this
+# entropy stream. Records 3-7 are the shared disk-change card, so keep their
+# user-facing wording complete here even though the pre-entropy staging records
+# in ui.py remain size-locked as ``Part2``/``SideA``. The entropy block has
+# enough recovered slack to render the proper ``Part 2`` and ``Side A`` on
+# every current and future card that uses the shared NOV2 prompt records.
 _INTERNAL_TABLE_STREAM = bytes.fromhex(
     "9cafbf3f79a3e5f4fcfcff1c379261b31c91febee0641c9429f76048f6bedbee"
-    "4bfcd6f6be3c8ff594db703c4e5453ee9fe3ce7e9f732979cfd3eca9f0244b57"
-    "435f0244b5779903e0600798fda7dc31344fbbcbd1fd5eed2eef2853eee769a4"
-    "94bc8f894f5e47fafaf33df5b43c8fbf4fb8f2a4fd4eeeeeeeeeeeeef6e66b4a"
-    "399de893dd4aca3ca363e023cea4f4212b28f5fd51c00bc83b313951eded61d6"
-    "3e055daf282cb04a54887593ef907eae1cb5767dd6325d52f99bcb7758219ad4"
-    "7d6e8f99c867523d2e66e8f99c8675bf3390747cce433a58ccd2b289d7c83f5"
-    "70e5abb3ef35490db7872d5d9f7c00ca74f3fb7e534fbcd52436de5453eecd78"
-    "f80194e9e7cc4f51da7872d5d7ee4b7f6a9d7d9b4b2be28466aee13d7ef7efd"
-    "c96fee6e9593734a81a733a09d966bb260a119b380"
+    "4bfcd6f6be3c8ff594db703c4e5453ee9fe3ce7e9f732979cfd3ee654f81225ab"
+    "bc0d7c0912d5de640f81801e63f69f70c4d13eef2f47f57bb4bbbca14fbb9da6"
+    "9252f23e253d791febebccf7d6d0f23efd3ee3ca93f53bbbbbbbbbbbbbdb99ad2"
+    "8e677a24f752b28f28d8f808f3a93d084aca3d7f547002f20ecc4e547b7b5875"
+    "8f81576bca0b2c1295221d64fbe41fab872d5d9f758c9754be66f2ddd60866b5"
+    "1f5ba3e67219d48f4b99ba3e67219d6fcce41d1f3390ce963334aca275f20fd5"
+    "c396aecfbcd52436de1cb5767df00329d3cfedf94d3ef35490db79514fbb35e3e"
+    "00653a79f313d4769e1cb575fb92dfdaa75f66d2caf8a119abb84f5fbdfbf725b"
+    "fb9ba564dcd2a069cce827659aec9828466ce0"
 )
 _INTERNAL_TABLE_BLOCK = _INTERNAL_TABLE_STREAM + bytes(
     338 - len(_INTERNAL_TABLE_STREAM)
 )
-if len(_INTERNAL_TABLE_STREAM) != 308 or len(_INTERNAL_TABLE_BLOCK) != 338:
+if len(_INTERNAL_TABLE_STREAM) != 309 or len(_INTERNAL_TABLE_BLOCK) != 338:
     raise EntropyRuntimeError("internal entropy table size changed")
 
 
