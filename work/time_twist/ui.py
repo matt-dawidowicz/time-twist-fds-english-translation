@@ -328,9 +328,12 @@ def _encode_disk_prompt(english: str) -> tuple[PackedSymbol, ...]:
 
     The native five-bit dictionary limit is unrelated to these fixed records:
     the short labels are direct packed streams beside executable NOV2 code.
-    ``Part2`` and ``SideA`` are deliberately compact ordinary-glyph labels so
-    they fit the immutable records without repurposing a tile that title
-    rendering uses. All disk prompts use the normal English encoder.
+    ``Part2`` and ``SideA`` are deliberately compact *staging* labels so these
+    immutable native records remain source-compatible before the entropy runtime
+    is installed. Production replaces the complete 51-record NOV2 fixed-text
+    region with an entropy stream whose shared disk card renders ``Part 2`` and
+    ``Side A`` with normal spaces. All staging prompts use the normal English
+    encoder.
     """
     return encode_english(english)
 
