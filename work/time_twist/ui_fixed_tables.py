@@ -266,7 +266,7 @@ TT3A_FIXED_TEXT_RECORDS = (
     "Outside fence",
     "Hit",
     "Info",
-    "Room ",
+    "Room",
     "Wall",
     "Charm",
     "Outside",

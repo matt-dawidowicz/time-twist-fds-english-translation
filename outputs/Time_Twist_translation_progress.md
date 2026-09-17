@@ -42,7 +42,7 @@ Recomputed from the current playable scenario maps and configured full-word menu
 - TT1B: 3946/4234 bytes used; 288 bytes remain.
 - TT2: 4086/4141 bytes used; 55 bytes remain.
 - T22: 1913/1939 bytes used; 26 bytes remain.
-- TT3A: 4150/4169 bytes used; 19 bytes remain.
+- TT3A: 4149/4169 bytes used; 20 bytes remain.
 - TT3B: 1886/1927 bytes used; 41 bytes remain.
 - TT4: 5182/5187 bytes used; 5 bytes remain.
 - TT5: 4187/4201 bytes used; 14 bytes remain.
