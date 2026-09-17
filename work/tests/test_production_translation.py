@@ -366,6 +366,10 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
         self.assertNotIn("a{CTRL:2}cool-headed", tt1a["TT1A/g0/r23"])
 
         tt4 = production("TT4")
+        self.assertIn(
+            "boy, around ten years{CTRL:0}old?{CTRL:6}Me: I'm not sure…",
+            tt4["TT4/g2/r14"],
+        )
         self.assertIn("underworld.{CTRL:2}Very well.", tt4["TT4/g3/r23"])
 
         tt3a = production("TT3A")
