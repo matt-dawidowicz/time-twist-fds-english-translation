@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import unittest
 
 from time_twist import ui
@@ -9,127 +10,183 @@ from time_twist.english import encode_english, render_english
 from time_twist.textcodec import SymbolKind, pack_records, split_records
 
 
-class FixedMenuCopyTests(unittest.TestCase):
-    """Keep the proven full command labels consistent across scenario banks."""
+PLAYTESTED_FIXED_TABLES = {
+    "TT1B": (53, "3BECDEFFAB00DF1AA325E8CD64C9DC6620FEF7D65B16C648C772F7F464D049FE"),
+    "TT2": (70, "BA8D8F471FF33DDD8450C6CF5FF9E089B4BDE665803270341259F488BE6377E3"),
+    "T22": (33, "63BFD903D1C0E80FD9313B676FD325CAC88AAAAC5285E954629EAB0EC06A9032"),
+    "TT3A": (95, "A1DA019EBB9FE636D44FB28191E204C9681696E20A4D52A68EF3093E5DBD6868"),
+    "TT3B": (21, "1C6729FEA026AFD19E9141F59549DCA83AF619408D5ECAA78F447263EAB7B4F0"),
+    "TT4": (97, "0A674FE72AB019987E1A8314067BA06FBE2274B0409F04C83D99320534F3BD6C"),
+    "TT5": (113, "B80DA89B385C0638EA24A9D28EC486DA1D4059F6C355F0A384B7BB517E1C0ED1"),
+    "T25": (42, "9AEC9EC9864E32882A3366C4203539178BEBD3D6DFD5E1FE5A6B59FAA999E4AF"),
+    "TT6A": (41, "2E996F73C58D3C51873D0220B15A3C620820082FFC0C6E2EFFF1BC9096E56959"),
+    "TT6B": (62, "E9C82C14C714D8BD1A074E62FCB8FD90E7DF8E51D29AD5F50BC3AA2C7F95653C"),
+    "TT6C": (94, "1F53AADDFD78DC9E4997A3012088EEFC1FD35B6E87DDA5AAE3BDC14C55DB3564"),
+}
 
-    def test_proven_full_command_labels_use_title_case(self) -> None:
-        """Protect the size-neutral replacements for cramped menu verbs."""
-        expected = (
-            (
-                ui.TT1B_FIXED_TEXT_RECORDS,
-                {
-                    0: "Look",
-                    1: "Talk",
-                    2: "Move",
-                    3: "Sky",
-                    4: "Area",
-                    5: "Museum",
-                    8: "East",
-                    9: "West",
-                    10: "Use",
-                    11: "Fight",
-                    12: "Poke",
-                    13: "Walk",
-                    14: "Jar",
-                    15: "Case",
-                    18: "Fiend",
-                    20: "Hold",
-                    21: "Hug",
-                    22: "Smile",
-                    23: "Praise",
-                    30: "Map",
-                    31: "North",
-                    34: "Intercom",
-                    42: "Back",
-                    45: "Listen",
-                    52: "Run",
-                },
-            ),
-            (
-                ui.TT2_FIXED_TEXT_RECORDS,
-                {1: "Talk", 3: "Use", 6: "Move", 18: "Walk", 47: "Offer"},
-            ),
-            (
-                ui.T22_FIXED_TEXT_RECORDS,
-                {1: "Talk", 2: "Use", 4: "Move", 22: "Open", 32: "Walk"},
-            ),
-            (
-                ui.TT3A_FIXED_TEXT_RECORDS,
-                {1: "Talk", 3: "Use", 4: "Move", 18: "Walk", 41: "Toss"},
-            ),
-            (
-                ui.TT3B_FIXED_TEXT_RECORDS,
-                {1: "Talk", 3: "Use", 4: "Move", 13: "Fight", 15: "Run"},
-            ),
-            (
-                ui.TT4_FIXED_TEXT_RECORDS,
-                {
-                    1: "Talk",
-                    2: "Treat",
-                    3: "Use",
-                    5: "Move",
-                    10: "Slap",
-                    11: "Press",
-                    23: "Eat",
-                    46: "Crush",
-                    47: "Prick",
-                    50: "Wrap",
-                    65: "Swing",
-                    67: "Walk",
-                },
-            ),
-            (
-                ui.TT5_FIXED_TEXT_RECORDS,
-                {1: "Talk", 3: "Move", 14: "Open", 21: "Use", 103: "Pour"},
-            ),
-            (
-                ui.T25_FIXED_TEXT_RECORDS,
-                {
-                    1: "Talk",
-                    2: "Use",
-                    3: "Move",
-                    23: "Open",
-                    31: "Hide",
-                    32: "Down",
-                    33: "Up",
-                },
-            ),
-            (
-                ui.TT6A_FIXED_TEXT_RECORDS,
-                {3: "Hold", 4: "Move", 10: "Turn", 35: "Down"},
-            ),
-            (
-                ui.TT6B_FIXED_TEXT_RECORDS,
-                {
-                    3: "Hold",
-                    4: "Move",
-                    11: "Yell",
-                    13: "Wink",
-                    14: "Talk",
-                    15: "Eat",
-                    25: "Fight",
-                    26: "Walk",
-                    56: "Hug",
-                    57: "Smile",
-                },
-            ),
-            (
-                ui.TT6C_FIXED_TEXT_RECORDS,
-                {
-                    2: "Leap",
-                    5: "Talk",
-                    7: "Eat",
-                    8: "Use",
-                    18: "Move",
-                    19: "Open",
-                    20: "Move",
-                },
-            ),
-        )
-        for records, expected_by_index in expected:
+
+def _table_digest(records: tuple[str, ...]) -> str:
+    """Return a stable semantic digest for one ordered fixed-menu table."""
+    return hashlib.sha256("\0".join(records).encode("utf-8")).hexdigest().upper()
+
+
+class FixedMenuCopyTests(unittest.TestCase):
+    """Keep fixed-menu copy synchronized with the runtime-playtested release."""
+
+    def test_playtested_fixed_tables_are_locked(self) -> None:
+        """Lock every ordered label without duplicating hundreds of strings."""
+        for bank_name, (expected_count, expected_digest) in (
+            PLAYTESTED_FIXED_TABLES.items()
+        ):
+            records = getattr(ui, f"{bank_name}_FIXED_TEXT_RECORDS")
+            with self.subTest(bank=bank_name):
+                self.assertEqual(len(records), expected_count)
+                self.assertEqual(_table_digest(records), expected_digest)
+
+    def test_playtested_expanded_labels_are_locked(self) -> None:
+        """Keep representative runtime-verified full labels human-readable."""
+        expected = {
+            "TT1B": {
+                11: "Attack",
+                15: "Exhibit",
+                18: "Monster",
+                20: "Hold hands",
+                22: "Smile at",
+                23: "Compliment",
+                33: "Nameplate",
+                35: "Newspaper",
+                36: "Magnifying glass",
+                52: "Run away",
+            },
+            "TT2": {
+                12: "Empty bottle",
+                20: "Signboard",
+                21: "Posted sign",
+                22: "Bottles",
+                24: "Take off",
+                58: "Onlookers",
+                64: "Basement",
+            },
+            "T22": {11: "Take off", 24: "Scrap paper", 30: "Onlookers"},
+            "TT3A": {
+                9: "Outside fence",
+                12: "Room",
+                25: "Shower room",
+                30: "Pebble",
+                41: "Throw",
+                47: "Red writing",
+                48: "Blue writing",
+                50: "Password",
+                55: "Combine",
+                59: "Watermill",
+                68: "Trash can",
+                76: "Nazi boat",
+                78: "Banana boat",
+                93: "Streetlamp",
+            },
+            "TT3B": {6: "Watermill", 12: "Outside car", 15: "Run away"},
+            "TT4": {
+                10: "Slap cheeks",
+                11: "Press abdomen",
+                12: "Lift chin",
+                13: "Bend knees",
+                17: "With pauses",
+                18: "Continuously",
+                33: "Medicinal herb",
+                46: "Crush with fingers",
+                47: "Prick with needle",
+                48: "Do nothing",
+                49: "Apply oil",
+                50: "Wrap with cloth",
+                56: "Plantain herb",
+                94: "Brown rice",
+            },
+            "TT5": {
+                28: "Call Meyer",
+                30: "Pick cotton",
+                31: "Repair roof",
+                32: "Split wood",
+                33: "Pull weeds",
+                56: "Marine Corps",
+                58: "Red ship",
+                71: "Cotton gin",
+                90: "Tens digit",
+                91: "Ones digit",
+                99: "Six or more",
+                103: "Pour in",
+                105: "Large bottle",
+                106: "Medium bottle",
+                107: "Small bottle",
+            },
+            "T25": {
+                16: "Outside window",
+                19: "Guest room",
+                26: "First drawer",
+                27: "Second drawer",
+                28: "Third drawer",
+                32: "Get down",
+                33: "Go up",
+                34: "Get on",
+            },
+            "TT6A": {
+                10: "Turn aside",
+                21: "Well water",
+                23: "Right house",
+                24: "Left house",
+                29: "Hand mill",
+                34: "Get on",
+                35: "Get down",
+                38: "On stand",
+                39: "Roof tile",
+                40: "Children",
+            },
+            "TT6B": {
+                11: "Shout",
+                12: "Stick out tongue",
+                25: "Attack",
+                33: "Fruit of wisdom",
+                34: "Fruit of knowledge",
+                54: "Wag tail",
+                57: "Smile at",
+                58: "Compliment",
+            },
+            "TT6C": {
+                2: "Leap at",
+                14: "My body",
+                17: "Time Belt",
+                18: "Move aside",
+                32: "Human bones",
+                60: "Plantain herb",
+                76: "Gold bracelet",
+                77: "Silver bracelet",
+                78: "Copper bracelet",
+                79: "Tin bracelet",
+            },
+        }
+        for bank_name, expected_by_index in expected.items():
+            records = getattr(ui, f"{bank_name}_FIXED_TEXT_RECORDS")
             for index, label in expected_by_index.items():
-                with self.subTest(records=records, index=index):
+                with self.subTest(bank=bank_name, index=index):
                     self.assertEqual(records[index], label)
+
+    def test_fixed_menu_labels_have_clean_semantic_spacing(self) -> None:
+        """Do not encode accidental leading or trailing spaces in menu labels."""
+        for bank_name in PLAYTESTED_FIXED_TABLES:
+            records = getattr(ui, f"{bank_name}_FIXED_TEXT_RECORDS")
+            for index, label in enumerate(records):
+                with self.subTest(bank=bank_name, index=index, label=label):
+                    self.assertEqual(label, label.strip())
+                    self.assertNotIn("  ", label)
+
+    def test_contextual_menu_localization_audit_is_locked(self) -> None:
+        """Protect source-reviewed contextual menu corrections."""
+        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[14], "Jar")
+        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[38], "Old man")
+        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[40], "Ground")
+        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[41], "Forward")
+        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[51], "Time Belt")
+        self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[47], "Offer")
+        self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[56], "Plantain herb")
 
     def test_disk_copy_is_title_case_and_exactly_size_neutral(self) -> None:
         """Preserve every NOV2 prompt slot while avoiding all-caps copy."""
@@ -261,310 +318,13 @@ class FixedMenuCopyTests(unittest.TestCase):
             ui.KOUHEN_BOOT_GUARD_TILE_COUNT * 8,
         )
 
-    def test_fixed_menu_labels_use_mixed_case_where_verified(self) -> None:
-        """Keep complete menu words readable while leaving forced abbreviations."""
-        expected = (
-            (
-                ui.TT2_FIXED_TEXT_RECORDS,
-                {
-                    7: "Room",
-                    11: "Wine",
-                    12: "Empty bottle",
-                    16: "Outside",
-                    17: "Info",
-                    19: "Area",
-                    20: "Sign",
-                    21: "Notice",
-                    23: "Wear",
-                    24: "Remove",
-                    25: "Old Man",
-                    52: "No",
-                    54: "Yes",
-                    55: "No",
-                    60: "Jail",
-                    62: "Jailer",
-                    63: "Women",
-                    64: "Cellar",
-                    67: "Rope",
-                    68: "Candle",
-                    69: "Cell",
-                },
-            ),
-            (
-                ui.T22_FIXED_TEXT_RECORDS,
-                {
-                    11: "Remove",
-                    13: "Outside",
-                    16: "Room",
-                    19: "Rope",
-                    26: "Scaffold",
-                },
-            ),
-            (
-                ui.TT3A_FIXED_TEXT_RECORDS,
-                {
-                    5: "Area",
-                    9: "Outside",
-                    11: "Info",
-                    12: "Room",
-                    13: "Wall",
-                    15: "Outside",
-                    17: "Enter",
-                    25: "Shower",
-                    29: "Tile",
-                    30: "Rock",
-                    31: "Shower",
-                    38: "Yes",
-                    39: "No",
-                    45: "Man",
-                    47: "Red",
-                    48: "Blue",
-                    63: "No",
-                    90: "Yes",
-                    91: "No",
-                    93: "Lamp",
-                },
-            ),
-            (
-                ui.TT3B_FIXED_TEXT_RECORDS,
-                {5: "Area", 12: "Outside", 14: "Guard"},
-            ),
-            (
-                ui.TT4_FIXED_TEXT_RECORDS,
-                {
-                    6: "Room",
-                    12: "Chin",
-                    13: "Knee",
-                    14: "Ears",
-                    15: "Eyes",
-                    16: "Nose",
-                    17: "Pause",
-                    20: "Oil",
-                    25: "Outside",
-                    26: "Area",
-                    29: "Man",
-                    34: "No",
-                    37: "Info",
-                    39: "Youth",
-                    40: "Up",
-                    43: "Warm",
-                    44: "Cool",
-                    48: "None",
-                    49: "Oil",
-                    56: "Plantain",
-                    74: "Fisherman",
-                    75: "Kid",
-                    94: "Rice",
-                    95: "Pearl",
-                },
-            ),
-            (
-                ui.TT5_FIXED_TEXT_RECORDS,
-                {
-                    6: "Men",
-                    7: "Area",
-                    15: "Info",
-                    16: "Room",
-                    20: "Outside",
-                    24: "No",
-                    26: "Again",
-                    29: "Water",
-                    32: "Wood",
-                    33: "Weed",
-                    104: "End",
-                    105: "Large",
-                    106: "Medium",
-                    112: "In",
-                },
-            ),
-            (
-                ui.T25_FIXED_TEXT_RECORDS,
-                {
-                    9: "Room",
-                    15: "Outside",
-                    16: "Outside",
-                    17: "Hall",
-                    18: "Area",
-                    19: "Guest",
-                    20: "Study",
-                    21: "Stair",
-                    34: "On",
-                    35: "Boat",
-                },
-            ),
-            (
-                ui.TT6A_FIXED_TEXT_RECORDS,
-                {
-                    5: "Area",
-                    14: "Info",
-                    16: "Kid",
-                    20: "Hay",
-                    21: "Water",
-                    26: "Room",
-                    33: "Outside",
-                    34: "On",
-                    40: "Kids",
-                },
-            ),
-            (
-                ui.TT6B_FIXED_TEXT_RECORDS,
-                {5: "Area", 18: "Men", 27: "Room", 52: "Oil", 53: "Hay"},
-            ),
-            (
-                ui.TT6C_FIXED_TEXT_RECORDS,
-                {
-                    9: "Room",
-                    13: "Men",
-                    21: "Area",
-                    32: "Bones",
-                    54: "Bread",
-                    76: "Gold",
-                    77: "Silver",
-                    78: "Copper",
-                    79: "Tin",
-                },
-            ),
-        )
-        for records, expected_by_index in expected:
-            for index, label in expected_by_index.items():
-                with self.subTest(records=records, index=index):
-                    self.assertEqual(records[index], label)
-
-    def test_august_12_full_label_fit_examples_are_locked(self) -> None:
-        """Protect the latest safe fixed-menu label expansions."""
-        expected_by_bank = {
-            "T25": {
-                11: "Meyer",
-                14: "Pot",
-                24: "Desk",
-                38: "Me",
-            },
-            "TT3A": {
-                10: "Hit",
-                14: "Charm",
-                23: "Stove",
-                24: "Bed",
-                40: "Gun",
-                49: "Notes",
-                50: "Pass",
-                54: "Tear",
-                57: "East",
-                59: "Mill",
-                68: "Trash",
-                75: "Gunboat",
-                76: "Na" + "zi",
-                77: "U-boat",
-                78: "Banana",
-                79: "Gabin",
-                83: "Truffaut",
-            },
-            "TT3B": {
-                6: "Mill",
-                9: "Gun",
-                10: "Charm",
-            },
-            "TT4": {
-                24: "Lick",
-                41: "Down",
-                52: "East",
-                59: "Grind",
-                60: "Boil",
-                70: "Plato",
-                78: "Alice",
-                93: "Fig",
-            },
-            "TT5": {
-                11: "East",
-                27: "Schedule",
-                28: "Call",
-                31: "Roof",
-                56: "Marine",
-                58: "Red",
-                65: "Whitney",
-                67: "Etna",
-                71: "Gin",
-                72: "Plow",
-                90: "Tens",
-                91: "Ones",
-                109: "Meyer",
-            },
-            "TT6A": {
-                9: "Nod",
-                15: "Elder",
-                27: "Mary",
-                29: "Mill",
-                39: "Tile",
-            },
-            "TT6B": {
-                7: "Mary",
-                16: "Tent",
-                20: "East",
-                32: "Dung",
-                35: "Isis",
-                38: "Iraq",
-                41: "Egypt",
-                42: "David",
-                54: "Wag",
-                55: "Fleas",
-                59: "Hoof",
-                60: "Tail",
-                61: "Mane",
-            },
-            "TT6C": {
-                11: "Mary",
-                28: "East",
-                61: "Jiaogulan",
-                68: "Fred",
-                69: "Bob",
-                75: "Puma",
-                85: "Meyer",
-                87: "Nicras",
-                91: "Left",
-                92: "Up",
-            },
-        }
-        for bank_name, expected_by_index in expected_by_bank.items():
-            records = getattr(ui, f"{bank_name}_FIXED_TEXT_RECORDS")
-            for index, label in expected_by_index.items():
-                with self.subTest(bank=bank_name, index=index):
-                    self.assertEqual(records[index], label)
-
-    def test_august_12_dictionary_assisted_full_word_experiment_is_locked(
-        self,
-    ) -> None:
-        """Protect full-word labels proven by existing/reused dictionary slots."""
-        expected_by_bank = {
-            "T22": {0: "Look", 30: "Crowd"},
-            "TT2": {8: "Pierre", 58: "Crowd"},
-            "TT3B": {8: "Woman"},
-            "TT4": {73: "Sea"},
-            "TT5": {19: "Drawer", 55: "Trader", 73: "Camera"},
-            "T25": {
-                5: "Soldier",
-                6: "Coffee",
-                8: "Mansion",
-                25: "Drawer",
-                36: "Coyote",
-            },
-            "TT6A": {8: "Joseph", 22: "Hill"},
-            "TT6B": {12: "Tongue", 17: "Camel", 30: "Sheep", 31: "Cow"},
-            "TT6C": {86: "Hit" + "ler"},
-        }
-        for bank_name, expected_by_index in expected_by_bank.items():
-            records = getattr(ui, f"{bank_name}_FIXED_TEXT_RECORDS")
-            for index, label in expected_by_index.items():
-                with self.subTest(bank=bank_name, index=index):
-                    self.assertEqual(records[index], label)
-
-    def test_full_word_targets_exclude_known_placeholder_abbreviations(
-        self,
-    ) -> None:
-        """The release tables must contain readable labels."""
-        self.assertEqual(ui.TT5_FIXED_TEXT_RECORDS[23], "Yes")
-        self.assertEqual(ui.TT6C_FIXED_TEXT_RECORDS[25], "Yes")
-        self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[9], "Body")
-        self.assertEqual(ui.TT3A_FIXED_TEXT_RECORDS[6], "Body")
-        self.assertEqual(ui.TT6C_FIXED_TEXT_RECORDS[16], "Body")
+    def test_full_word_targets_preserve_complete_labels(self) -> None:
+        """Keep source-reviewed labels complete across the repacked tables."""
+        self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[28], "Crimea")
+        self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[34], "Criminals")
+        self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[4], "Silver coin")
+        self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[19], "Olive")
+        self.assertEqual(ui.T25_FIXED_TEXT_RECORDS[29], "Picture")
         self.assertEqual(
             ui.TT3A_FIXED_TEXT_RECORDS[56:59], ("North", "East", "West")
         )
@@ -572,20 +332,6 @@ class FixedMenuCopyTests(unittest.TestCase):
             ui.TT6C_FIXED_TEXT_RECORDS[91:94], ("Left", "Up", "Right")
         )
 
-    def test_full_word_targets_preserve_complete_labels(self) -> None:
-        """Keep the source-reviewed labels complete across the repacked tables."""
-        self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[28], "Crimea")
-        self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[34], "Criminals")
-        self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[4], "Silver coin")
-        self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[19], "Olive")
-        self.assertEqual(ui.T25_FIXED_TEXT_RECORDS[29], "Picture")
 
-    def test_contextual_menu_localization_audit_is_locked(self) -> None:
-        """Protect the seven source-reviewed contextual menu corrections."""
-        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[14], "Jar")
-        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[38], "Old man")
-        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[40], "Ground")
-        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[41], "Forward")
-        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[51], "Time Belt")
-        self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[47], "Offer")
-        self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[56], "Plantain")
+if __name__ == "__main__":
+    unittest.main()
