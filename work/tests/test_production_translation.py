@@ -6,6 +6,7 @@ import json
 import re
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from time_twist.production_translation import (
