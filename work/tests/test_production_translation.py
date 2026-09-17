@@ -10,6 +10,7 @@ from pathlib import Path
 
 from time_twist.production_translation import (
     ProductionTranslationError,
+    _validate_cross_record_staging,
     layout_review_text,
     materialize_production_maps,
     merged_translation_map,
@@ -233,6 +234,38 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
                 "Alpha{CTRL:0}beta",
                 "Alpha{CTRL:1}beta{CTRL:0}gamma",
             )
+
+    def test_cross_record_growth_cannot_enter_next_record_row(self) -> None:
+        """Catch the A-press overwrite seen when a one-row source grows to row two."""
+        base = {
+            "TEST/g0/r0": "His shoulder is burned.",
+            "TEST/g0/r1": "{CTRL:0}Dario: He tipped a pot",
+        }
+        production = {
+            "TEST/g0/r0": "His shoulder is badly{CTRL:0}burned.",
+            "TEST/g0/r1": "{CTRL:0}Dario: Apparently he",
+        }
+        with self.assertRaisesRegex(
+            ProductionTranslationError,
+            "pressing A would overwrite staged text",
+        ):
+            _validate_cross_record_staging("TEST", base, production)
+
+    def test_entire_production_corpus_preserves_cross_record_rows(self) -> None:
+        """Keep translated predecessors out of rows reserved by following records."""
+        for bank_name in BANK_NAMES:
+            base = json.loads(
+                (ROOT / "work" / "translations" / f"{bank_name}.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            production = merged_translation_map(
+                bank_name,
+                base_directory=ROOT / "work" / "translations",
+                override_directory=ROOT / "work" / "production_overrides",
+                review_directory=ROOT / "review" / "production_retranslation",
+            )
+            _validate_cross_record_staging(bank_name, base, production)
 
     def test_implicit_row_crossing_is_rejected(self) -> None:
         """Reject a segment that silently crosses the 24-column row boundary."""
