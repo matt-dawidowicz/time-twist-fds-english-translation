@@ -8,7 +8,10 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from generate_translation_workbook import OUTPUTS, measure_translation_footprint
+from generate_translation_workbook import (
+    OUTPUTS,
+    measure_translation_footprint,
+)
 from generate_translation_workbook_ci import measure_current_footprints
 from time_twist.capacity import (
     NATIVE_SCENARIO_CAPACITY_BYTES,
