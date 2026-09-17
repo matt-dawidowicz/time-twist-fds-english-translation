@@ -7,6 +7,7 @@ import random
 import unittest
 from pathlib import Path
 
+from time_twist.english import encode_english
 from time_twist.entropy_codec import (
     CATEGORY_BASES,
     CATEGORY_PAYLOAD_BITS,
@@ -21,6 +22,7 @@ from time_twist.entropy_compression import (
     optimize_entropy_dictionary,
 )
 from time_twist.entropy_runtime import (
+    _INTERNAL_TABLE_STREAM,
     BASE_RUNTIME_PATCHES,
     CATEGORY_CODE_BYTES,
     DYNAMIC_MENU_LAYOUT_PATCHES,
@@ -30,7 +32,6 @@ from time_twist.entropy_runtime import (
     ENTROPY_RUNTIME_PATCHES,
     ENTROPY_SELECTION_SPAN_CPU_ADDRESS,
     FRONTEND_CODE_BYTES,
-    _INTERNAL_TABLE_STREAM,
     MENU_MAX_STAGED_GLYPHS,
     MENU_WIDTH_WORK_RAM_ADDRESS,
     NOV3_LOAD_ADDRESS,
@@ -40,7 +41,6 @@ from time_twist.entropy_runtime import (
 )
 from time_twist.entropy_scenario import build_entropy_scenario_bank
 from time_twist.scenario import ScenarioBank, ScenarioRecord
-from time_twist.english import encode_english
 from time_twist.textcodec import PackedSymbol, SymbolKind
 
 
