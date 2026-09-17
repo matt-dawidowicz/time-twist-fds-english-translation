@@ -69,6 +69,14 @@ PRESENTATION_ONLY_CTRL1_TEMPLATES.update(
 # strings record the audited before/after topology; visible prose is not part of
 # the invariant.
 PRESENTATION_CONTROL_REWRITES: dict[str, tuple[str, str]] = {
+    "TT3A/g2/r29": (
+        "He holds a paper.{CTRL:1}Simon: A child gave it{CTRL:0}to me. A stranger asked{CTRL:6}him to. I take it.{CTRL:3}Blue writing.",
+        "He holds a paper.{CTRL:0}Simon: A child gave it{CTRL:0}to me. A stranger asked{CTRL:6}him to. I take it.{CTRL:3}Blue writing.",
+    ),
+    "TT3B/g1/r22": (
+        "Schmidt: Border ahead.{CTRL:1}Cougar: Mind's blank...{CTRL:0}Why am I here...?{CTRL:6}Simon: You must have{CTRL:4}hit your head badly.{CTRL:3}Schmidt: What a horror.{CTRL:3}Cougar: Might change my{CTRL:4}whole view of life.{CTRL:3}Simon: Indeed...",
+        "Schmidt: Border ahead.{CTRL:0}Cougar: Mind's blank...{CTRL:0}Why am I here...?{CTRL:6}Simon: You must have{CTRL:4}hit your head badly.{CTRL:3}Schmidt: What a horror.{CTRL:3}Cougar: Might change my{CTRL:4}whole view of life.{CTRL:3}Simon: Indeed...",
+    ),
     "TT1A/g0/r24": (
         "Cautious, methodical.{CTRL:0}Rarely fail, but can{CTRL:2}"
         "seem a bit ordinary.{CTRL:0}Hardworking, principled{CTRL:3}"
@@ -111,6 +119,15 @@ FINAL_PLAYTEST_LAYOUT_RECORDS = frozenset(
         "TT1A/g0/r31",
         "TT1A/g1/r1",
         "TT1B/g0/r0",
+        "TT3A/g2/r29",
+        "TT3A/g2/r30",
+        "TT3A/g2/r31",
+        "TT3A/g3/r13",
+        "TT3A/g4/r17",
+        "TT3B/g0/r28",
+        "TT3B/g1/r22",
+        "TT3B/g1/r23",
+        "TT3B/g1/r24",
     }
 )
 

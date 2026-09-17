@@ -14,12 +14,12 @@
   "TT3A/g2/r5": "An open tunnel…!",
   "TT3A/g2/r7": "Frankie: Wait, Cougar…",
   "TT3A/g2/r27": "Rustle…!",
-  "TT3A/g2/r29": "He's holding a piece of paper. Simon: A child gave it to me. Some man I'd never seen asked him to deliver it. I take it. The writing is in blue ink.",
+  "TT3A/g2/r29": "He's holding a piece of{CTRL:0}paper.{CTRL:0}Simon: A kid gave this.{CTRL:6}A stranger had asked him{CTRL:4}to deliver it.{CTRL:4}I take the paper.{CTRL:3}The writing is in blue{CTRL:4}ink.",
   "TT3A/g3/r3": "Man: I'm Simon, a physicist. My contacts asked Rebecca's people to hide me…",
   "TT3A/g3/r4": "Simon: The Nazis imprisoned me and forced me to develop a secret weapon. I refuse to help them murder anyone ever again!",
   "TT3A/g3/r9": "I give him a wink, then rub my nose twice. Man: What was that?!",
   "TT3A/g3/r12": "Hmm… better not.",
-  "TT3A/g3/r13": "\"4 km southwest of here.{CTRL:0}Wait at old watermill.{CTRL:0}{CTRL:0}Signed, Rebecca.\"",
+  "TT3A/g3/r13": "{CTRL:4}4 km southwest of here.{CTRL:4}Wait at old watermill.{CTRL:4}Signed, Rebecca.{CTRL:4}",
   "TT3A/g3/r19": "Man: My son was sixteen. They sent him to war, and the enemy shot him dead… You couldn't possibly understand what that does to a father.",
   "TT3A/g3/r29": "I give him a wink, then rub my nose twice. Man: …",
   "TT3A/g4/r2": "What Nazi secret police force purged Hitler's enemies?",
@@ -31,5 +31,8 @@
   "TT3A/g4/r12": "Old Man: A barking dog does not always mean a thief. An old German proverb.",
   "TT3A/g4/r13": "Old Man: Idiot.",
   "TT3A/g4/r14": "Old Man: So what?",
-  "TT3A/g4/r17": "Woman: Our information says a POW escaped, and apparently a scientist fled an army laboratory. Have you seen anyone suspicious?"
+  "TT3A/g4/r17": "Woman: A POW escaped,{CTRL:0}and a scientist fled{CTRL:0}an army laboratory.{CTRL:6}Have you seen anyone{CTRL:4}suspicious?",
+  "TT3A/g3/r23": "They dash off.",
+  "TT3A/g2/r30": "A torn piece of a note,{CTRL:0}written in red ink:{CTRL:0}\"…4 km southwest…\"{CTRL:0}\"…Rebecca\"",
+  "TT3A/g2/r31": "The other half of the{CTRL:0}note, written in blue{CTRL:0}ink: \"…old watermill…\"{CTRL:0}\"…wait there…\""
 }
