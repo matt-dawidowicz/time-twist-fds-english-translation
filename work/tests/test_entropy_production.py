@@ -102,7 +102,9 @@ class EntropyProductionTests(unittest.TestCase):
 
     def test_shared_disk_card_uses_full_spaced_labels(self) -> None:
         """Keep every shared NOV2 disk-change card on full English labels."""
-        records = unpack_entropy_stream(_INTERNAL_TABLE_STREAM, record_count=51)
+        records = unpack_entropy_stream(
+            _INTERNAL_TABLE_STREAM, record_count=51
+        )
         expected = (
             "Part 1",
             "Part 2",
@@ -111,7 +113,9 @@ class EntropyProductionTests(unittest.TestCase):
             "{CTRL:0}{CTRL:0}Insert now.",
         )
         for record, text in zip(records[3:8], expected, strict=True):
-            self.assertEqual(_semantic(record), _semantic(encode_english(text)))
+            self.assertEqual(
+                _semantic(record), _semantic(encode_english(text))
+            )
 
     def test_mixed_bit_contiguous_streams_round_trip(self) -> None:
         """Verify mixed bit contiguous streams round trip."""
