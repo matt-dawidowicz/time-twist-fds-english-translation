@@ -14,6 +14,7 @@ control-sequence drift still fails closed and requires a fresh audit.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from . import production_translation_core as _core
@@ -258,6 +259,72 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
     return _core.layout_review_text(record_id, reviewed, effective_template)
 
 
+def _leading_record_cursor(text: str) -> int | None:
+    """Return the first visible-row cursor after leading controls, if any."""
+    cursor = 0
+    position = 0
+    saw_control = False
+    while True:
+        match = CONTROL_RE.match(text, position)
+        if match is None:
+            break
+        saw_control = True
+        cursor = _core._cursor_after_control(cursor, int(match.group(1)))
+        position = match.end()
+    return cursor if saw_control else None
+
+
+def _maximum_written_cursor(text: str) -> int:
+    """Return the furthest byte written by one record in the four-row buffer."""
+    segments, controls = _core._template_parts(text)
+    cursor = 0
+    maximum = 0
+    for index, segment in enumerate(segments):
+        cursor += len(segment) * 2
+        maximum = max(maximum, cursor)
+        if index < len(controls):
+            cursor = _core._cursor_after_control(cursor, controls[index])
+    return maximum
+
+
+def _validate_cross_record_staging(
+    bank_name: str,
+    base: dict[str, str],
+    production: dict[str, str],
+) -> None:
+    """Reject translation growth that overwrites text staged by the prior record.
+
+    Some source scripts intentionally compose consecutive records in one text box.
+    A following record can begin with a row-reentry control because the Japanese
+    predecessor fits entirely above that row. If English expands the predecessor
+    into that row, pressing A causes the next record to overwrite visible text.
+    Preserve the source cross-record row contract instead of validating records in
+    isolation only.
+    """
+    grouped: dict[tuple[int, int], str] = {}
+    pattern = re.compile(rf"^{re.escape(bank_name)}/g(\d+)/r(\d+)$")
+    for record_id in production:
+        match = pattern.match(record_id)
+        if match is not None:
+            grouped[(int(match.group(1)), int(match.group(2)))] = record_id
+
+    for (group, record), record_id in sorted(grouped.items()):
+        next_id = grouped.get((group, record + 1))
+        if next_id is None:
+            continue
+        next_cursor = _leading_record_cursor(base[next_id])
+        if next_cursor is None:
+            continue
+        source_max = _maximum_written_cursor(base[record_id])
+        production_max = _maximum_written_cursor(production[record_id])
+        if source_max <= next_cursor < production_max:
+            raise ProductionTranslationError(
+                f"{record_id}: production text reaches X=${production_max:02X}, "
+                f"but following {next_id} re-enters at X=${next_cursor:02X}; "
+                "pressing A would overwrite staged text"
+            )
+
+
 def merged_translation_map(
     bank_name: str,
     *,
@@ -327,6 +394,7 @@ def merged_translation_map(
             reviewed_text,
             base[record_id],
         )
+    _validate_cross_record_staging(bank_name, base, laid_out)
     return laid_out
 
 
