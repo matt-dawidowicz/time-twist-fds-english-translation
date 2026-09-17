@@ -28,6 +28,28 @@ If you are new to the project, read the playtesting guide or one contributor
 guide first. The deeper release and reverse-engineering documents are linked
 from those pages.
 
+## Playing Part 2 (Kouhen)
+
+Part 2 does **not** start by booting the Kouhen disk directly. Time Twist uses
+the completed Zenpen disk state to unlock the second half.
+
+After finishing Part 1:
+
+1. Keep the completed Zenpen FDS write/save state. In an emulator such as
+   Mesen, do not discard the candidate's FDS persistence/sidecar after the
+   ending.
+2. Power-cycle or reopen the **same candidate** with **Part 1 / Side A**
+   (`TT1` Side A) selected.
+3. Continue through the title/start flow and choose **Part 2** when it becomes
+   available.
+4. When the game asks for **Part 2 / Side B**, switch to `TT2` Side B. In the
+   combined four-side image this is the **fourth side**.
+5. Continue normally into Kouhen.
+
+Booting `TT2` Side A directly is a negative/guard path; it should tell the
+player to start with Part 1 rather than beginning Kouhen. This mirrors the
+original two-part FDS release behavior.
+
 ## Current status
 
 - All **2,058 text records** are represented in the translation
