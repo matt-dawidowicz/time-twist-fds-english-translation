@@ -335,7 +335,7 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
 
         tt3a = production("TT3A")
         self.assertIn(
-            "{CTRL:0}{CTRL:0}Signed, Rebecca.",
+            "{CTRL:4}Signed, Rebecca.{CTRL:4}",
             tt3a["TT3A/g3/r13"],
         )
 
