@@ -251,13 +251,15 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
         ):
             _validate_cross_record_staging("TEST", base, production)
 
-    def test_entire_production_corpus_preserves_cross_record_rows(self) -> None:
+    def test_entire_production_corpus_preserves_cross_record_rows(
+        self,
+    ) -> None:
         """Keep translated predecessors out of rows reserved by following records."""
         for bank_name in BANK_NAMES:
             base = json.loads(
-                (ROOT / "work" / "translations" / f"{bank_name}.json").read_text(
-                    encoding="utf-8"
-                )
+                (
+                    ROOT / "work" / "translations" / f"{bank_name}.json"
+                ).read_text(encoding="utf-8")
             )
             production = merged_translation_map(
                 bank_name,
