@@ -50,7 +50,9 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
     def test_quiz_questions_keep_native_compact_geometry(self) -> None:
         """Keep question text out of the answer menu's reserved rows."""
         tt4 = _production()
-        self.assertEqual(tt4["TT4/g5/r7"], "{CTRL:0}{CTRL:0}Greek city-states?")
+        self.assertEqual(
+            tt4["TT4/g5/r7"], "{CTRL:0}{CTRL:0}Greek city-states?"
+        )
         self.assertEqual(
             tt4["TT4/g5/r10"], "{CTRL:0}{CTRL:0}Athens' great rival?"
         )
