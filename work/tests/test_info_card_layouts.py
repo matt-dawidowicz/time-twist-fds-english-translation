@@ -44,7 +44,9 @@ class InfoCardLayoutTests(unittest.TestCase):
             "{CTRL:0}{CTRL:0}Name: Chino{CTRL:0}Trade: locksmith",
         )
 
-    def test_long_identity_cards_keep_fields_on_separate_segments(self) -> None:
+    def test_long_identity_cards_keep_fields_on_separate_segments(
+        self,
+    ) -> None:
         """Never append a new field label to the preceding field's visible row."""
         cards = {
             ("TT3A", "TT3A/g0/r14"): (
