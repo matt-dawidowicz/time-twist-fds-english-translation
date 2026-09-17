@@ -17,6 +17,32 @@ It inserts `CTRL:0` while advancing through the first four physical rows and use
 `CTRL:4` when another visible row requires the native scroll behavior. Leading and
 trailing layout controls are retained when they affect record entry or exit.
 
+## Scenario quiz questions: native geometry is authoritative
+
+Scenario quiz prompts are a special case and are **not** ordinary reflowable
+dialogue. The question shares the four-row text buffer with a native answer-selection
+UI that opens immediately afterward. Expanding a one- or two-row Japanese question
+into additional English rows can therefore corrupt the answer menu even when the
+generic dialogue renderer considers the record valid.
+
+Production registers all 25 scenario quiz-question records across TT2, TT3A, TT4,
+TT5, and TT6B. For those records:
+
+- the exact source control sequence is preserved;
+- empty leading row geometry is preserved;
+- the number of control-delimited segments is preserved;
+- every occupied English segment is limited to 23 visible columns;
+- each production question must be an explicit control-bearing override rather than
+  generic prose reflow.
+
+The TT6C retrospective quiz is a different storage class: its prompts/answers live in
+a fixed-address table and remain protected by the fixed-table build and regression
+tests instead.
+
+This rule was added after runtime playtesting showed the same failure class in
+multiple chapter quizzes, culminating in the Athens fisherman quiz corrupting the
+screen when its first question had been expanded into ordinary multi-row prose.
+
 ## `CTRL:2`: mixed semantic/page behavior
 
 `CTRL:2` can represent an ordinary page transition or a meaningful speaker/timing
@@ -154,6 +180,7 @@ Coverage protects both sides of the policy:
 - `CTRL:7` remains absent from the recovered scenario/menu corpus and is not invented
   by production layout;
 - the Maradul Barao Garadura chant retains its intentional strong pause;
+- all 25 scenario quiz questions retain their native control/row geometry and 23-column segment limit;
 - every production record is checked against the four-row renderer staging model.
 
 Manual playtesting remains necessary because static layout checks cannot determine the
