@@ -9,7 +9,6 @@ from time_twist import ui
 from time_twist.english import encode_english, render_english
 from time_twist.textcodec import SymbolKind, pack_records, split_records
 
-
 PLAYTESTED_FIXED_TABLES = {
     "TT1B": (
         53,
