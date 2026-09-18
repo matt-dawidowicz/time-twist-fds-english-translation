@@ -37,11 +37,11 @@
   "TT4/g4/r27": "Man: My lord, can you hear the bell? Answer! Nicras: Prince…! Man: This is Alexander, prince of Macedonia!",
   "TT4/g5/r1": "Voice: He must not die. Me: Who's there?! Voice: God has chosen him for a sacred purpose. Please… use your gift.",
   "TT4/g5/r2": "Ngh…!",
-  "TT4/g5/r6": "Fisherman: Know this?",
-  "TT4/g5/r7": "{CTRL:0}{CTRL:0}Greek city-states?",
+  "TT4/g5/r6": "Fisherman: Let's see...",
+  "TT4/g5/r7": "{CTRL:0}{CTRL:0}Term for Greek cities?",
   "TT4/g5/r8": "Fisherman: Wrong.",
   "TT4/g5/r9": "Fisherman: Right! Next.",
-  "TT4/g5/r13": "{CTRL:0}{CTRL:0}Three Greek crops:{CTRL:0}olives, grapes, and…?",
+  "TT4/g5/r13": "{CTRL:0}{CTRL:0}Greek staples: olives,{CTRL:0}grapes, and what?",
   "TT4/g5/r14": "Fisherman: All five!{CTRL:0}Well done.",
   "TT4/g5/r15": "Fisherman: Tears of pity{CTRL:0}dry fastest of all…{CTRL:2}An old Greek proverb.",
   "TT4/g5/r16": "Fisherman: Cough? Use plantain.",
@@ -49,7 +49,7 @@
   "TT4/g5/r18": "Fisherman: Use dokudami.",
   "TT4/g5/r21": "Fisherman: No need.",
   "TT4/g1/r26": "His shoulder is burned.",
-  "TT4/g5/r10": "{CTRL:0}{CTRL:0}Athens' great rival?",
-  "TT4/g5/r11": "{CTRL:0}{CTRL:0}Greatest Greek hero?",
-  "TT4/g5/r12": "{CTRL:0}{CTRL:0}Athena's temple?"
+  "TT4/g5/r10": "{CTRL:0}{CTRL:0}Athens' rival city?",
+  "TT4/g5/r11": "{CTRL:0}{CTRL:0}Greece's greatest hero?",
+  "TT4/g5/r12": "{CTRL:0}{CTRL:0}Temple of Athena?"
 }
