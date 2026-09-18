@@ -132,6 +132,15 @@ class PostMergePlaytestRegressionTests(unittest.TestCase):
             ("Squeeze", "Prick", "Leave it"),
         )
 
+    def test_priest_statue_page_ends_on_complete_clause(self) -> None:
+        """Do not leave the priest's accusation hanging on 'some local'."""
+        text = _production("TT4")["TT4/g0/r9"]
+        self.assertIn(
+            "fainted… Probably local{CTRL:0}thugs did it.{CTRL:3}",
+            text,
+        )
+        self.assertNotIn("some local{CTRL:3}", text)
+
     def test_athens_missing_boy_pause_follows_complete_question(self) -> None:
         """Do not require A in the middle of the ten-year-old question."""
         text = _production("TT4")["TT4/g2/r14"]
