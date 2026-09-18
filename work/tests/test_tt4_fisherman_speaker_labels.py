@@ -47,22 +47,22 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
         """Preserve the source speaker on the plantain advice line."""
         self.assertTrue(_production()["TT4/g5/r16"].startswith("Fisherman:"))
 
-    def test_quiz_questions_keep_native_compact_geometry(self) -> None:
-        """Keep question text out of the answer menu's reserved rows."""
+    def test_quiz_questions_use_safe_two_line_english(self) -> None:
+        """Use natural English without scrolling beyond the quiz-safe rows."""
         tt4 = _production()
         self.assertEqual(
-            tt4["TT4/g5/r7"], "{CTRL:0}{CTRL:0}Term for Greek cities?"
+            tt4["TT4/g5/r7"], "{CTRL:0}{CTRL:0}What were city-states{CTRL:0}in Greece called?"
         )
         self.assertEqual(
-            tt4["TT4/g5/r10"], "{CTRL:0}{CTRL:0}Athens' rival city?"
+            tt4["TT4/g5/r10"], "{CTRL:0}{CTRL:0}Which city-state was{CTRL:0}Athens' greatest rival?"
         )
         self.assertEqual(
-            tt4["TT4/g5/r11"], "{CTRL:0}{CTRL:0}Greece's greatest hero?"
+            tt4["TT4/g5/r11"], "{CTRL:0}{CTRL:0}Who was the great hero{CTRL:0}of Greek mythology?"
         )
-        self.assertEqual(tt4["TT4/g5/r12"], "{CTRL:0}{CTRL:0}Temple of Athena?")
+        self.assertEqual(tt4["TT4/g5/r12"], "{CTRL:0}{CTRL:0}Which temple was built{CTRL:0}for the goddess Athena?")
         self.assertEqual(
             tt4["TT4/g5/r13"],
-            "{CTRL:0}{CTRL:0}Greek staples: olives,{CTRL:0}grapes, and what?",
+            "{CTRL:0}{CTRL:0}What crop joined olives{CTRL:0}and grapes in Greece?",
         )
 
     def test_fixed_menu_uses_the_same_identity(self) -> None:
