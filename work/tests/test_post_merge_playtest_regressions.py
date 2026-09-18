@@ -188,6 +188,18 @@ class PostMergePlaytestRegressionTests(unittest.TestCase):
             ("Polis", "Agora", "Acropolis", "Colony"),
         )
 
+    def test_temple_quiz_top_pair_fits_runtime_window(self) -> None:
+        """Keep the temple quiz's paired top row inside its narrower window."""
+        choices = ui.TT4_FIXED_TEXT_RECORDS[86:91]
+        self.assertEqual(
+            choices,
+            ("Delphi", "Pantheon", "Olympia", "Karnak", "Parthenon"),
+        )
+        # Runtime evidence shows this quiz window cannot safely display the
+        # old 9+9 Agamemnon/Parthenon pair even though generic menu geometry
+        # accepted it. Choice 1 pairs with choice 5 on the top row.
+        self.assertLessEqual(len(choices[0]) + len(choices[4]), 16)
+
     def test_fisherman_quiz_stays_natural_and_two_line(self) -> None:
         """Freeze the runtime-safe natural Athens fisherman question forms."""
         tt4 = _production("TT4")
