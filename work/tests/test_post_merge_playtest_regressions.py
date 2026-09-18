@@ -11,6 +11,7 @@ from time_twist import ui
 from time_twist.english import encode_english
 from time_twist.entropy_codec import unpack_entropy_stream
 from time_twist.entropy_runtime import _INTERNAL_TABLE_STREAM
+from time_twist.release_build import _patch_tt4_fisherman_quiz_branches
 from time_twist.production_translation import (
     QUIZ_QUESTION_RECORDS,
     _validate_cross_record_staging,
@@ -193,12 +194,43 @@ class PostMergePlaytestRegressionTests(unittest.TestCase):
         choices = ui.TT4_FIXED_TEXT_RECORDS[86:91]
         self.assertEqual(
             choices,
-            ("Delphi", "Pantheon", "Olympia", "Karnak", "Parthenon"),
+            ("Delphi", "Pantheon", "Parthenon", "Olympia", "Karnak"),
         )
-        # Runtime evidence shows this quiz window cannot safely display the
-        # old 9+9 Agamemnon/Parthenon pair even though generic menu geometry
-        # accepted it. Choice 1 pairs with choice 5 on the top row.
-        self.assertLessEqual(len(choices[0]) + len(choices[4]), 16)
+        # This five-choice window pairs choice 1 with choice 5. Keep the
+        # paired row at or below the playtested 13-glyph ceiling.
+        self.assertLessEqual(len(choices[0]) + len(choices[4]), 13)
+
+    def test_crop_quiz_pairs_short_labels_with_long_labels(self) -> None:
+        """Keep the six-choice crop menu inside the same narrow runtime window."""
+        choices = ui.TT4_FIXED_TEXT_RECORDS[91:97]
+        self.assertEqual(
+            choices,
+            ("Strawberry", "Melon", "Brown rice", "Pearl", "Fig", "Coffee"),
+        )
+        self.assertLessEqual(len(choices[0]) + len(choices[4]), 13)
+        self.assertLessEqual(len(choices[1]) + len(choices[5]), 13)
+
+    def test_reordered_quiz_choices_move_correct_vm_targets(self) -> None:
+        """Keep answer correctness aligned with the reordered English menus."""
+        data = bytearray(b"\x00" * 0x1000)
+        load_address = 0xA200
+        temple_offset = 0xAE3E - load_address
+        crop_offset = 0xAE4C - load_address
+        data[temple_offset : temple_offset + 6] = bytes.fromhex(
+            "31 DB DB DB DB 06"
+        )
+        data[crop_offset : crop_offset + 7] = bytes.fromhex(
+            "31 CD CD 07 CD CD CD"
+        )
+        patched = _patch_tt4_fisherman_quiz_branches(bytes(data))
+        self.assertEqual(
+            patched[temple_offset : temple_offset + 6],
+            bytes.fromhex("31 DB DB 06 DB DB"),
+        )
+        self.assertEqual(
+            patched[crop_offset : crop_offset + 7],
+            bytes.fromhex("31 CD CD CD CD 07 CD"),
+        )
 
     def test_fisherman_quiz_stays_natural_and_two_line(self) -> None:
         """Freeze the runtime-safe natural Athens fisherman question forms."""
