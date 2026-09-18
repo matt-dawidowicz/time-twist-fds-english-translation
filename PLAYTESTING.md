@@ -63,8 +63,13 @@ test. These checks are especially valuable:
    happen: no stale jump, close/reopen cycle, redraw, or refresh flicker. Choice
    count is irrelevant. On any nested menu with a real parent, including a
    one-choice nested menu, `B` should still go Back/Cancel.
-3. Follow the in-game disk prompts without resetting. At `PART 1 / SIDE B`,
-   choose the second side; at `PART 2 / SIDE A`, choose the third side.
+3. Follow the retail disk flow. At `PART 1 / SIDE B`, choose the second side
+   (`TT1` Side B). When Zenpen ends at `TO BE CONTINUED...`, do **not** expect an
+   automatic jump to Kouhen Side A. Preserve the completed Zenpen disk state,
+   power-cycle or reopen the exact same four-side candidate with completed
+   `TT1` Side A selected, choose `Part 2` from the title flow, and then follow
+   the prompt to `TT2` Side B (the fourth side). `TT2` Side A (the third side)
+   is the Kouhen direct-boot guard and is tested separately as a negative path.
 4. At a request for another side, reselect the mounted side. The primary
    retry says `Wrong side.` / `Try again.`; alternate headings can say
    `Bad side.`. Repeat once, then select the requested side and confirm recovery.

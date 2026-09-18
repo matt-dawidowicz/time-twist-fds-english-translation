@@ -1,5 +1,5 @@
 {
-  "TT3A/g0/r14": "TIME: JULY 1944. LOCATION: POW CAMP, SOUTHERN GERMANY. NAME: COUGAR. RANK: U.S. AIR FORCE FIRST LIEUTENANT",
+  "TT3A/g0/r14": "TIME: JULY 1944.{CTRL:0}LOCATION: POW CAMP, SOUTHERN GERMANY.{CTRL:0}NAME: COUGAR.{CTRL:0}RANK: U.S. AIR FORCE FIRST LIEUTENANT",
   "TT3A/g0/r19": "Voice: Cougar, hear me? Me: Yeah. Voice: Once you're free, escape. We'll handle the arrangements. Me: … Voice: With your intel, we can take Hitler down!",
   "TT3A/g0/r28": "Hitler: Great dark god… by the dark rite of human fat and sharpened stakes, I pledge my entire life to you…",
   "TT3A/g0/r29": "Devil: The pact is sealed. Your soul, in exchange for a portion of my power. And I, in turn…",
@@ -22,11 +22,11 @@
   "TT3A/g3/r13": "{CTRL:4}4 km southwest of here.{CTRL:4}Wait at old watermill.{CTRL:4}Signed, Rebecca.{CTRL:4}",
   "TT3A/g3/r19": "Man: My son was sixteen. They sent him to war, and the enemy shot him dead… You couldn't possibly understand what that does to a father.",
   "TT3A/g3/r29": "I give him a wink, then rub my nose twice. Man: …",
-  "TT3A/g4/r2": "What Nazi secret police force purged Hitler's enemies?",
-  "TT3A/g4/r4": "What was the French resistance movement called?",
-  "TT3A/g4/r5": "What were Germany's famous submarines called?",
-  "TT3A/g4/r6": "Which big-nosed actor starred in \"Pépé le Moko\"?",
-  "TT3A/g4/r7": "Who commanded the Normandy landings later called \"The Longest Day\"?",
+  "TT3A/g4/r2": "{CTRL:0}{CTRL:0}Nazi secret police that{CTRL:0}purged Hitler's foes?",
+  "TT3A/g4/r4": "{CTRL:0}{CTRL:0}France's resistance{CTRL:0}movement was called?",
+  "TT3A/g4/r5": "{CTRL:0}{CTRL:0}Germany's famous{CTRL:0}submarines?",
+  "TT3A/g4/r6": "{CTRL:0}{CTRL:0}Big-nosed star of{CTRL:0}\"Pépé le Moko\"?",
+  "TT3A/g4/r7": "{CTRL:0}{CTRL:0}Who commanded the{CTRL:0}Normandy landings{CTRL:4}in \"The Longest Day\"?",
   "TT3A/g4/r10": "Old Man: Ah, I see…",
   "TT3A/g4/r12": "Old Man: A barking dog does not always mean a thief. An old German proverb.",
   "TT3A/g4/r13": "Old Man: Idiot.",
@@ -34,5 +34,6 @@
   "TT3A/g4/r17": "Woman: A POW escaped,{CTRL:0}and a scientist fled{CTRL:0}an army laboratory.{CTRL:6}Have you seen anyone{CTRL:4}suspicious?",
   "TT3A/g3/r23": "They dash off.",
   "TT3A/g2/r30": "A torn piece of a note,{CTRL:0}written in red ink:{CTRL:0}\"…4 km southwest…\"{CTRL:0}\"…Rebecca\"",
-  "TT3A/g2/r31": "The other half of the{CTRL:0}note, written in blue{CTRL:0}ink: \"…old watermill…\"{CTRL:0}\"…wait there…\""
+  "TT3A/g2/r31": "The other half of the{CTRL:0}note, written in blue{CTRL:0}ink: \"…old watermill…\"{CTRL:0}\"…wait there…\"",
+  "TT3A/g2/r10": "I dig up a small pebble."
 }

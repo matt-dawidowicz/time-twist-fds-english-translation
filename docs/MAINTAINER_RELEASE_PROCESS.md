@@ -110,7 +110,12 @@ inputs, and observations. The minimum runtime gates are:
 
 - title sequence and `Start`/`B` behavior;
 - normal disk requests and one wrong-side recovery;
-- Zenpen-to-Kouhen continuity without a reset;
+- retail Zenpen-to-Kouhen continuation through the completed Zenpen disk state:
+  finish Zenpen, preserve its FDS writes, power-cycle or reopen the exact same
+  four-side candidate with `TT1` Side A selected, choose `Part 2` from the title
+  flow, and then follow the request to `TT2` Side B;
+- Kouhen Side A direct boot tested separately as the expected warning/negative
+  path, not as the normal continuation route;
 - in-game save and normal reload;
 - menus on both sides of the record-32/64/96 page boundaries and changed
   high-risk text;

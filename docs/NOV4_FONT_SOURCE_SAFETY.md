@@ -10,7 +10,7 @@ Therefore an active English glyph may use only runtime source slots `$B0-$FE`. N
 
 The historical failure used extended code 63, whose native lookup tile is `$AC`, as a compact `Side A` suffix. Slot `$AC` lies inside the direct 2bpp source range. The post-title Start-screen nametable fills the background with a runtime tile whose first bitplane comes from that source location, so installing the compact `A` glyph produced the repeated A-shaped background.
 
-The current source intentionally leaves extended codes 45 and 63 inactive. The disk-change labels use ordinary-glyph `Part2` and `SideA`; they do not install private prompt ligatures.
+The native pre-entropy staging records still use ordinary-glyph `Part2` and `SideA` so their immutable byte slots remain source-compatible without private prompt ligatures. Those strings are not the production display authority: the final entropy-owned NOV2 51-record table has enough slack to render the shared disk-change card as `Part 2` and `Side A`. Because the card records are shared, later Part 2 / Side A prompts inherit the same spacing automatically.
 
 `work/tests/test_nov4_font_source_safety.py` generalizes the regression guard from one protected tile to the complete recovered source ranges.
 

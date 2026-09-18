@@ -5,10 +5,13 @@
   "TT6B/g1/r13": "Host: We're full. Joseph: Please… Host: Sleep by the road. Joseph: Please! The baby's coming now! Host: Fine, then. Take the stable. Joseph: Thank you!",
   "TT6B/g1/r25": "Mare: Rome? Who cares? Its downfall will come.",
   "TT6B/g1/r27": "Sheep: Far to the east, they say there's a Demon-Sealing Jar that can imprison devils.",
-  "TT6B/g2/r0": "What is the name of the one God worshiped in Judaism?",
-  "TT6B/g2/r1": "From what country did Moses lead the Israelites out?",
-  "TT6B/g2/r3": "What word for \"Savior\" means \"the anointed one\"?",
+  "TT6B/g2/r0": "{CTRL:0}{CTRL:0}Name Judaism's one God.",
+  "TT6B/g2/r1": "{CTRL:0}{CTRL:0}Moses led Israelites{CTRL:0}out of which country?",
+  "TT6B/g2/r3": "{CTRL:0}{CTRL:0}What word for Savior{CTRL:0}means \"anointed one\"?",
   "TT6B/g2/r18": "Mare: No nibbling. Eat it all at once! Me: Y-yes…",
   "TT6B/g2/r28": "Mare: Like the cut? It's all the rage in Jerusalem. Heh.",
-  "TT6B/g2/r29": "Me: Hee-haw! Mare: …"
+  "TT6B/g2/r29": "Me: Hee-haw! Mare: …",
+  "TT6B/g1/r29": "Sheep: Know this one?",
+  "TT6B/g1/r30": "{CTRL:0}{CTRL:0}What fruit did Eve eat?",
+  "TT6B/g2/r2": "{CTRL:0}{CTRL:0}Which Jewish king built{CTRL:0}Jerusalem's Temple?"
 }

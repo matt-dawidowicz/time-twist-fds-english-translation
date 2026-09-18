@@ -9,25 +9,59 @@ from time_twist import ui
 from time_twist.english import encode_english, render_english
 from time_twist.textcodec import SymbolKind, pack_records, split_records
 
-
 PLAYTESTED_FIXED_TABLES = {
-    "TT1B": (53, "3BECDEFFAB00DF1AA325E8CD64C9DC6620FEF7D65B16C648C772F7F464D049FE"),
-    "TT2": (70, "BA8D8F471FF33DDD8450C6CF5FF9E089B4BDE665803270341259F488BE6377E3"),
-    "T22": (33, "63BFD903D1C0E80FD9313B676FD325CAC88AAAAC5285E954629EAB0EC06A9032"),
-    "TT3A": (95, "A1DA019EBB9FE636D44FB28191E204C9681696E20A4D52A68EF3093E5DBD6868"),
-    "TT3B": (21, "1C6729FEA026AFD19E9141F59549DCA83AF619408D5ECAA78F447263EAB7B4F0"),
-    "TT4": (97, "0A674FE72AB019987E1A8314067BA06FBE2274B0409F04C83D99320534F3BD6C"),
-    "TT5": (113, "B80DA89B385C0638EA24A9D28EC486DA1D4059F6C355F0A384B7BB517E1C0ED1"),
-    "T25": (42, "9AEC9EC9864E32882A3366C4203539178BEBD3D6DFD5E1FE5A6B59FAA999E4AF"),
-    "TT6A": (41, "2E996F73C58D3C51873D0220B15A3C620820082FFC0C6E2EFFF1BC9096E56959"),
-    "TT6B": (62, "E9C82C14C714D8BD1A074E62FCB8FD90E7DF8E51D29AD5F50BC3AA2C7F95653C"),
-    "TT6C": (94, "1F53AADDFD78DC9E4997A3012088EEFC1FD35B6E87DDA5AAE3BDC14C55DB3564"),
+    "TT1B": (
+        53,
+        "3BECDEFFAB00DF1AA325E8CD64C9DC6620FEF7D65B16C648C772F7F464D049FE",
+    ),
+    "TT2": (
+        70,
+        "BA8D8F471FF33DDD8450C6CF5FF9E089B4BDE665803270341259F488BE6377E3",
+    ),
+    "T22": (
+        33,
+        "63BFD903D1C0E80FD9313B676FD325CAC88AAAAC5285E954629EAB0EC06A9032",
+    ),
+    "TT3A": (
+        95,
+        "A1DA019EBB9FE636D44FB28191E204C9681696E20A4D52A68EF3093E5DBD6868",
+    ),
+    "TT3B": (
+        21,
+        "1C6729FEA026AFD19E9141F59549DCA83AF619408D5ECAA78F447263EAB7B4F0",
+    ),
+    "TT4": (
+        97,
+        "0E0D53BADFC47768697F5470474762B267D27C1F81B1023559198BC434E61E2C",
+    ),
+    "TT5": (
+        113,
+        "B80DA89B385C0638EA24A9D28EC486DA1D4059F6C355F0A384B7BB517E1C0ED1",
+    ),
+    "T25": (
+        42,
+        "9AEC9EC9864E32882A3366C4203539178BEBD3D6DFD5E1FE5A6B59FAA999E4AF",
+    ),
+    "TT6A": (
+        41,
+        "2E996F73C58D3C51873D0220B15A3C620820082FFC0C6E2EFFF1BC9096E56959",
+    ),
+    "TT6B": (
+        62,
+        "E9C82C14C714D8BD1A074E62FCB8FD90E7DF8E51D29AD5F50BC3AA2C7F95653C",
+    ),
+    "TT6C": (
+        94,
+        "1F53AADDFD78DC9E4997A3012088EEFC1FD35B6E87DDA5AAE3BDC14C55DB3564",
+    ),
 }
 
 
 def _table_digest(records: tuple[str, ...]) -> str:
     """Return a stable semantic digest for one ordered fixed-menu table."""
-    return hashlib.sha256("\0".join(records).encode("utf-8")).hexdigest().upper()
+    return (
+        hashlib.sha256("\0".join(records).encode("utf-8")).hexdigest().upper()
+    )
 
 
 class FixedMenuCopyTests(unittest.TestCase):
@@ -35,9 +69,10 @@ class FixedMenuCopyTests(unittest.TestCase):
 
     def test_playtested_fixed_tables_are_locked(self) -> None:
         """Lock every ordered label without duplicating hundreds of strings."""
-        for bank_name, (expected_count, expected_digest) in (
-            PLAYTESTED_FIXED_TABLES.items()
-        ):
+        for bank_name, (
+            expected_count,
+            expected_digest,
+        ) in PLAYTESTED_FIXED_TABLES.items():
             records = getattr(ui, f"{bank_name}_FIXED_TEXT_RECORDS")
             with self.subTest(bank=bank_name):
                 self.assertEqual(len(records), expected_count)
@@ -93,9 +128,9 @@ class FixedMenuCopyTests(unittest.TestCase):
                 17: "With pauses",
                 18: "Continuously",
                 33: "Medicinal herb",
-                46: "Crush with fingers",
-                47: "Prick with needle",
-                48: "Do nothing",
+                46: "Squeeze",
+                47: "Prick",
+                48: "Leave it",
                 49: "Apply oil",
                 50: "Wrap with cloth",
                 56: "Plantain herb",

@@ -7,6 +7,7 @@ import random
 import unittest
 from pathlib import Path
 
+from time_twist.english import encode_english
 from time_twist.entropy_codec import (
     CATEGORY_BASES,
     CATEGORY_PAYLOAD_BITS,
@@ -21,6 +22,7 @@ from time_twist.entropy_compression import (
     optimize_entropy_dictionary,
 )
 from time_twist.entropy_runtime import (
+    _INTERNAL_TABLE_STREAM,
     BASE_RUNTIME_PATCHES,
     CATEGORY_CODE_BYTES,
     DYNAMIC_MENU_LAYOUT_PATCHES,
@@ -97,6 +99,23 @@ class EntropyProductionTests(unittest.TestCase):
             (5, 0, 0, 4, 8, 16, 24, 32, 1, 9, 17, 33, 65, 97, 129, 37),
         )
         self.assertEqual(NOV3_LOAD_ADDRESS, 0xD7B5)
+
+    def test_shared_disk_card_uses_full_spaced_labels(self) -> None:
+        """Keep every shared NOV2 disk-change card on full English labels."""
+        records = unpack_entropy_stream(
+            _INTERNAL_TABLE_STREAM, record_count=51
+        )
+        expected = (
+            "Part 1",
+            "Part 2",
+            "{CTRL:0}Side A",
+            "{CTRL:0}Side B",
+            "{CTRL:0}{CTRL:0}Insert now.",
+        )
+        for record, text in zip(records[3:8], expected, strict=True):
+            self.assertEqual(
+                _semantic(record), _semantic(encode_english(text))
+            )
 
     def test_mixed_bit_contiguous_streams_round_trip(self) -> None:
         """Verify mixed bit contiguous streams round trip."""

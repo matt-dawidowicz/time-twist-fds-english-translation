@@ -47,6 +47,24 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
         """Preserve the source speaker on the plantain advice line."""
         self.assertTrue(_production()["TT4/g5/r16"].startswith("Fisherman:"))
 
+    def test_quiz_questions_keep_native_compact_geometry(self) -> None:
+        """Keep question text out of the answer menu's reserved rows."""
+        tt4 = _production()
+        self.assertEqual(
+            tt4["TT4/g5/r7"], "{CTRL:0}{CTRL:0}Greek city-states?"
+        )
+        self.assertEqual(
+            tt4["TT4/g5/r10"], "{CTRL:0}{CTRL:0}Athens' great rival?"
+        )
+        self.assertEqual(
+            tt4["TT4/g5/r11"], "{CTRL:0}{CTRL:0}Greatest Greek hero?"
+        )
+        self.assertEqual(tt4["TT4/g5/r12"], "{CTRL:0}{CTRL:0}Athena's temple?")
+        self.assertEqual(
+            tt4["TT4/g5/r13"],
+            "{CTRL:0}{CTRL:0}Three Greek crops:{CTRL:0}olives, grapes, and…?",
+        )
+
     def test_fixed_menu_uses_the_same_identity(self) -> None:
         """Keep the selectable fisherman label aligned with dialogue."""
         self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[74], "Fisherman")

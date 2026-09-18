@@ -29,9 +29,9 @@ hashes forward from an earlier checklist or candidate.
 ## Test protocol
 
 1. Record emulator name/version, FDS BIOS hash, platform, controller mapping, and whether automatic FDS disk switching is disabled.
-2. For the continuity run, cold-boot the four-side candidate and do not reset or open Kouhen as a new game. Save states may be used only for isolated reproduction after a clean continuity pass has reached the same scene.
-3. At `PART 1 / SIDE B`, select the second side (`TT1` Side B). At `PART 2 / SIDE A`, select the third side (`TT2` Side A). Record every later side request and follow the in-game prompt; never substitute a reset.
-4. Test the disk-error paths separately: reselect the currently mounted side for the same-side retry, and deliberately select an incorrect disk/side for wrong-disk recovery. The primary same-side retry is `Wrong side.` / `Try again.`; alternate compact headings may say `Bad side.`. The distinct wrong-disk path uses `Wrong disk!` / `Try another side`. Record which path actually appeared, then select the requested side and recover without resetting.
+2. Cold-boot the four-side candidate for Zenpen. Save states may be used only for isolated reproduction after a clean run has reached the same scene. Preserve all FDS writes made by that exact candidate.
+3. At `PART 1 / SIDE B`, select the second side (`TT1` Side B). When Zenpen reaches `TO BE CONTINUED...`, do not expect an automatic Kouhen-side request. Preserve the completed Zenpen disk state, power-cycle or reopen the same candidate with `TT1` Side A selected, choose `Part 2` from the title flow, and follow the normal request to `TT2` Side B (the fourth side). `TT2` Side A (the third side) is the Kouhen direct-boot guard and is tested separately as a negative path.
+4. Test the disk-error paths separately: reselect the currently mounted side for the same-side retry, and deliberately select an incorrect disk/side for wrong-disk recovery. The primary same-side retry is `Wrong side.` / `Try again.`; alternate compact headings may say `Bad side.`. The distinct wrong-disk path uses `Wrong disk!` / `Try another side`. Record which path actually appeared, then select the requested side and recover.
 5. Capture a screenshot before advancing every changed line listed in `audit/EDITORIAL_CHANGELOG.json`, prioritizing the high-risk records named in the integration regression test.
 6. For each text box, watch separately for wrapping/clipping, stale right-edge tiles, accidental blank lines, and typewriter/audio continuing over blank output.
 7. Save and reload through the game's own save system. Do not count emulator save states as save/load validation.
@@ -41,7 +41,7 @@ hashes forward from an earlier checklist or candidate.
 
 | ID | Side / bank focus | Scene and path | Required checks | Evidence | Status |
 | --- | --- | --- | --- | --- | --- |
-| NEG-01 | Kouhen direct boot / `SON-KOUH` | Boot Kouhen by itself as a negative test | Centered `PLEASE START WITH / PART 1`; no crash or stray Japanese | Screenshot + emulator/version | Pending |
+| NEG-01 | Kouhen direct boot / `SON-KOUH` | Boot `TT2` Side A by itself as a negative test | Centered `PLEASE START WITH / PART 1`; no crash or stray Japanese; do not treat this side as the normal Kouhen continuation entry | Screenshot + emulator/version | Pending |
 | Z-01 | TT1 Side A / `NOV4` | Cold boot, Nintendo phase, title build, clock, PUSH START | Exact split-logo animation; subtitle; lower machine art; blue hand center/rotation; no seam; START exits; B behavior unchanged | Video or frame sequence | Pending |
 | Z-02 | `TT1A` | Opening news and personality-test introduction | `TT1A/g0/r1` reads naturally; no invented TV wording; all narration clears; no overflow | Screenshot + record IDs | Pending |
 | Z-03 | `TT1A` | Complete personality questionnaire and every result profile | All yes/no prompts; every profile; punctuation; `consommé` accent baseline; no wrap corruption | Screenshots of all result pages | Pending |
@@ -58,13 +58,13 @@ hashes forward from an earlier checklist or candidate.
 | Z-11 | `TT3A` | POW camp, tunnel, town, Rebecca network, torn note | “Anti-Hitler plot”; Rebecca as organization; separate scientist/POW logic; note spatial layout; all command states | Screenshots, especially torn note | Pending |
 | Z-12 | `TT3A` / `TT3B` | Gestapo reveals, Schmidt, Hitler, border | Gestapo grammar; Schmidt’s reveal; military ranks; Hitler confrontation; charm/prayer; transition integrity | Changed-record screenshots | Pending |
 | SAVE-01 | Zenpen | Save before a major puzzle and before a disk request; power-cycle; reload | Correct position, inventory, puzzle flags, font/UI, and next transition | Save/load log | Pending |
-| DISK-03 | Zenpen→Kouhen | In-game `PART 2 / SIDE A` request | Select third side without opening a new game or resetting; engine/font/progression persist | Before/after screenshots | Pending |
+| DISK-03 | Zenpen→Kouhen | Retail second-half startup after completed Zenpen | Reach `TO BE CONTINUED...`; preserve candidate FDS writes; power-cycle/reopen with completed `TT1` Side A selected; choose `Part 2`; when prompted select `TT2` Side B (fourth side); Kouhen begins with carried completion state and no direct-boot warning | End-card screenshot + title/menu + requested-side + first Kouhen scene | Pending |
 | K-01 | `TT4` | Ancient Athens, Nicras, priest, Athena, town treatment | Period voice; no imported “Yomi”; commands; item acquisition; transitions | Changed-record screenshots | Pending |
 | K-02 | `TT4` | Hermes, Artemis, Hades, Cerberus, underworld riddles | “the underworld” consistency; riddle wording/answers; Alexander reveal; rival-city quiz | Screenshots of every riddle state | Pending |
 | K-03 | `TT5` | 1864 Atlanta opening, Belle, emancipation, racist violence | Historical register preserved without unsupported “Dixie”; Belle label not duplicated; no sanitizing or embellishment | Changed-record screenshots | Pending |
 | K-04 | `TT5` | Plantation work loop and farm commands | Exact quantities/measurements; every work state; menu clarity; no altered puzzle requirements | Step-by-step work log | Pending |
 | K-05 | `TT5` / `T25` | Meyer, Lincoln, mansion, kidnapping, river escape | Sarcasm/politeness; Lincoln voice; river math/puzzle exactness; faint-voices narration; all transitions | Screenshots + puzzle inputs | Pending |
-| SAVE-02 | Kouhen | Save in Kouhen, power-cycle from Part 1 as required, reload through normal flow | Inventory/flags/chapter continuity; correct disk prompts; no direct-boot shortcut | Save/load log | Pending |
+| SAVE-02 | Kouhen | Save in Kouhen, power-cycle to the normal second-half startup path, reload through normal flow | Inventory/flags/chapter continuity; correct disk prompts; no direct-boot shortcut | Save/load log | Pending |
 | K-06 | `TT6A` | Nazareth, Joseph, Mary, Kashim, angel/fiend transition | Pregnancy explanation complete; donkey voice; prophecy/census setup; article/punctuation fixes display correctly | Changed-record screenshots | Pending |
 | K-07 | `TT6B` / `TT6C` | Bethlehem, inn, Magi, child naming | Biblical names/register; gifts and puzzle states; `The perfect name`; no accidental theological rewrite | Screenshots + progression notes | Pending |
 | K-08 | `TT6C` | Return to final museum and date entry | September 25, 1995 transition; museum state; text clearing; no old tiles after short replacements | Video or screenshot sequence | Pending |
@@ -108,4 +108,4 @@ Remaining risk:
 
 ## Release gate
 
-Do not promote `work/release_target.json` or call the game release-ready until every blocker/major row passes in an end-to-end Zenpen→Kouhen continuity run, both documented disk changes succeed without reset, game saves reload correctly, and the final ending has been reached from a fresh boot.
+Do not promote `work/release_target.json` or call the game release-ready until every blocker/major row passes across the retail two-half flow: complete Zenpen from a fresh boot, preserve the completed Zenpen disk state, enter `Part 2` through the normal title flow after the required power-cycle/reopen, complete Kouhen to the ending, verify documented disk changes and recovery paths, and prove the game's own save/reload behavior.
