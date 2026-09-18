@@ -77,9 +77,13 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
     def test_herb_advice_names_the_ailment(self) -> None:
         """Do not reduce the three source treatment hints to bare plant names."""
         tt4 = _production()
-        self.assertIn("For a cough", tt4["TT4/g5/r16"])
-        self.assertIn("For food poisoning", tt4["TT4/g5/r17"])
-        self.assertIn("For sores", tt4["TT4/g5/r18"])
+        visible = {
+            record_id: tt4[record_id].replace("{CTRL:0}", " ")
+            for record_id in ("TT4/g5/r16", "TT4/g5/r17", "TT4/g5/r18")
+        }
+        self.assertIn("For a cough", visible["TT4/g5/r16"])
+        self.assertIn("For food poisoning", visible["TT4/g5/r17"])
+        self.assertIn("For sores", visible["TT4/g5/r18"])
 
     def test_fixed_menu_uses_the_same_identity(self) -> None:
         """Keep the selectable fisherman label aligned with dialogue."""
