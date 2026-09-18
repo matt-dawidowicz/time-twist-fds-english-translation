@@ -181,6 +181,13 @@ class PostMergePlaytestRegressionTests(unittest.TestCase):
             production = _production(bank_name)
             _validate_quiz_question_geometry(bank_name, base, production)
 
+    def test_first_fisherman_answer_menu_is_localized(self) -> None:
+        """Keep the first answer set meaningful for an English player."""
+        self.assertEqual(
+            ui.TT4_FIXED_TEXT_RECORDS[77:81],
+            ("Polis", "Agora", "Acropolis", "Colony"),
+        )
+
     def test_fisherman_quiz_stays_natural_and_two_line(self) -> None:
         """Freeze the runtime-safe natural Athens fisherman question forms."""
         tt4 = _production("TT4")
