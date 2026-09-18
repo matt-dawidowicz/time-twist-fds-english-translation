@@ -61,7 +61,9 @@ class PostMergePlaytestRegressionTests(unittest.TestCase):
 
     def test_shared_disk_card_uses_full_spacing(self) -> None:
         """Protect the production Part 2 / Side A spacing fix."""
-        records = unpack_entropy_stream(_INTERNAL_TABLE_STREAM, record_count=51)
+        records = unpack_entropy_stream(
+            _INTERNAL_TABLE_STREAM, record_count=51
+        )
         expected = (
             "Part 1",
             "Part 2",
@@ -113,7 +115,9 @@ class PostMergePlaytestRegressionTests(unittest.TestCase):
         }
         cache: dict[str, dict[str, str]] = {}
         for (bank_name, record_id), labels in cards.items():
-            text = cache.setdefault(bank_name, _production(bank_name))[record_id]
+            text = cache.setdefault(bank_name, _production(bank_name))[
+                record_id
+            ]
             segments = CONTROL_RE.split(text)
             for segment in segments:
                 present = [label for label in labels if label in segment]
