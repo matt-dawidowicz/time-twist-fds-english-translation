@@ -190,8 +190,8 @@ class PostMergePlaytestRegressionTests(unittest.TestCase):
             "TT4/g5/r11": "{CTRL:0}{CTRL:0}Greece's greatest hero?",
             "TT4/g5/r12": "{CTRL:0}{CTRL:0}Temple of Athena?",
             "TT4/g5/r13": (
-                "{CTRL:0}{CTRL:0}Three Greek crops:"
-                "{CTRL:0}olives, grapes, and…?"
+                "{CTRL:0}{CTRL:0}Greek staples: olives,"
+                "{CTRL:0}grapes, and what?"
             ),
         }
         for record_id, text in expected.items():
