@@ -197,8 +197,8 @@ class PostMergePlaytestRegressionTests(unittest.TestCase):
             "TT4/g5/r11": "{CTRL:0}{CTRL:0}Who was the great hero{CTRL:0}of Greek mythology?",
             "TT4/g5/r12": "{CTRL:0}{CTRL:0}Which temple was built{CTRL:0}for the goddess Athena?",
             "TT4/g5/r13": (
-                "{CTRL:0}{CTRL:0}Greek staples: olives,"
-                "{CTRL:0}grapes, and what?"
+                "{CTRL:0}{CTRL:0}What crop joined olives"
+                "{CTRL:0}and grapes in Greece?"
             ),
         }
         for record_id, text in expected.items():
