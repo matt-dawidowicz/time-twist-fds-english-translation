@@ -382,7 +382,7 @@ def _validate_quiz_question_geometry(
                     f"{record_id}: Athens quiz may use at most two visible rows "
                     "with CTRL:0 only"
                 )
-            segments = CONTROL_RE.split(tail)
+            segments = re.split(r"\{CTRL:[0-7]\}", tail)
             if not 1 <= len(segments) <= 2 or any(not segment for segment in segments):
                 raise ProductionTranslationError(
                     f"{record_id}: Athens quiz requires one or two non-empty rows"
