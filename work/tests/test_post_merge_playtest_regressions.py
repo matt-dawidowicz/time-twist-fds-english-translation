@@ -181,14 +181,14 @@ class PostMergePlaytestRegressionTests(unittest.TestCase):
             production = _production(bank_name)
             _validate_quiz_question_geometry(bank_name, base, production)
 
-    def test_fisherman_quiz_stays_compact(self) -> None:
-        """Freeze the runtime-safe Athens fisherman question forms."""
+    def test_fisherman_quiz_stays_natural_and_two_line(self) -> None:
+        """Freeze the runtime-safe natural Athens fisherman question forms."""
         tt4 = _production("TT4")
         expected = {
-            "TT4/g5/r7": "{CTRL:0}{CTRL:0}Term for Greek cities?",
-            "TT4/g5/r10": "{CTRL:0}{CTRL:0}Athens' rival city?",
-            "TT4/g5/r11": "{CTRL:0}{CTRL:0}Greece's greatest hero?",
-            "TT4/g5/r12": "{CTRL:0}{CTRL:0}Temple of Athena?",
+            "TT4/g5/r7": "{CTRL:0}{CTRL:0}What were city-states{CTRL:0}in Greece called?",
+            "TT4/g5/r10": "{CTRL:0}{CTRL:0}Which city-state was{CTRL:0}Athens' greatest rival?",
+            "TT4/g5/r11": "{CTRL:0}{CTRL:0}Who was the great hero{CTRL:0}of Greek mythology?",
+            "TT4/g5/r12": "{CTRL:0}{CTRL:0}Which temple was built{CTRL:0}for the goddess Athena?",
             "TT4/g5/r13": (
                 "{CTRL:0}{CTRL:0}Greek staples: olives,"
                 "{CTRL:0}grapes, and what?"
