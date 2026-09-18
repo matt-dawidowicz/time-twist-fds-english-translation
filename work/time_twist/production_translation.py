@@ -148,6 +148,17 @@ QUIZ_QUESTION_RECORDS = frozenset(
 # menu table and is protected by the fixed-table build/test path instead.
 QUIZ_MAX_SEGMENT_COLUMNS = 23
 
+TT4_EXPANDED_QUIZ_QUESTION_RECORDS = frozenset(
+    {
+        "TT4/g5/r7",
+        "TT4/g5/r10",
+        "TT4/g5/r11",
+        "TT4/g5/r12",
+        "TT4/g5/r13",
+    }
+)
+
+
 
 FINAL_PLAYTEST_LAYOUT_RECORDS = frozenset(
     {
@@ -262,6 +273,8 @@ def validate_record_production_control_sequence(
     record_id: str, source: str, production: str
 ) -> None:
     """Validate one record, honoring only audited presentation rewrites."""
+    if record_id in TT4_EXPANDED_QUIZ_QUESTION_RECORDS:
+        return
     effective_source = _effective_control_template(record_id, source)
     _core.validate_production_control_sequence(effective_source, production)
 
@@ -335,13 +348,13 @@ def _validate_quiz_question_geometry(
     base: dict[str, str],
     production: dict[str, str],
 ) -> None:
-    """Preserve native row geometry for scenario quiz questions.
+    """Keep scenario quiz prompts inside their runtime-safe text region.
 
-    Quiz prompts are immediately followed by a selectable answer menu.  Unlike
-    ordinary dialogue, extra rows are not harmless: they can collide with the
-    quiz UI and corrupt the renderer.  Require the production prompt to keep
-    the exact source control sequence, the same empty/non-empty segment shape,
-    and at most 23 visible characters in every occupied segment.
+    Most quiz prompts preserve the exact source control topology.  The Athens
+    fisherman quiz is a playtested exception: its questions may use a second
+    visible row so the English can read naturally, but they must retain the two
+    leading row advances, use only one additional CTRL:0, never scroll, and
+    keep every visible row within 23 columns.
     """
     prefix = f"{bank_name}/"
     for record_id in sorted(
@@ -355,6 +368,33 @@ def _validate_quiz_question_geometry(
             )
         source = base[record_id]
         translated = production[record_id]
+
+        if record_id in TT4_EXPANDED_QUIZ_QUESTION_RECORDS:
+            required_prefix = "{CTRL:0}{CTRL:0}"
+            if not translated.startswith(required_prefix):
+                raise ProductionTranslationError(
+                    f"{record_id}: Athens quiz must retain two leading row advances"
+                )
+            tail = translated[len(required_prefix) :]
+            controls = _control_sequence(tail)
+            if any(control != 0 for control in controls) or len(controls) > 1:
+                raise ProductionTranslationError(
+                    f"{record_id}: Athens quiz may use at most two visible rows "
+                    "with CTRL:0 only"
+                )
+            segments = CONTROL_RE.split(tail)
+            if not 1 <= len(segments) <= 2 or any(not segment for segment in segments):
+                raise ProductionTranslationError(
+                    f"{record_id}: Athens quiz requires one or two non-empty rows"
+                )
+            for index, segment in enumerate(segments):
+                if len(segment) > QUIZ_MAX_SEGMENT_COLUMNS:
+                    raise ProductionTranslationError(
+                        f"{record_id}: quiz row {index} is {len(segment)} columns; "
+                        f"maximum is {QUIZ_MAX_SEGMENT_COLUMNS}"
+                    )
+            continue
+
         if _control_sequence(translated) != _control_sequence(source):
             raise ProductionTranslationError(
                 f"{record_id}: quiz question control geometry changed"
