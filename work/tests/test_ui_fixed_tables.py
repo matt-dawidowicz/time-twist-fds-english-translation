@@ -32,7 +32,7 @@ PLAYTESTED_FIXED_TABLES = {
     ),
     "TT4": (
         97,
-        "0E0D53BADFC47768697F5470474762B267D27C1F81B1023559198BC434E61E2C",
+        "12767FC2BF13439F4B9BAEC80B1F95F7913B8F04DA1BE1E25C13CEDAA669F1AE",
     ),
     "TT5": (
         113,
@@ -134,6 +134,10 @@ class FixedMenuCopyTests(unittest.TestCase):
                 49: "Apply oil",
                 50: "Wrap with cloth",
                 56: "Plantain herb",
+                77: "Polis",
+                78: "Agora",
+                79: "Acropolis",
+                80: "Colony",
                 94: "Brown rice",
             },
             "TT5": {
