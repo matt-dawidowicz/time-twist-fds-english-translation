@@ -380,6 +380,42 @@ def _audit_menu(
             )
 
 
+def _patch_tt4_fisherman_quiz_branches(data: bytes) -> bytes:
+    """Move TT4 fisherman quiz correct-answer branches with reordered labels.
+
+    The five-choice temple quiz uses menu record $33 and originally marks choice
+    5 as correct. English places Parthenon at choice 3 so the 9-glyph answer is
+    not paired with another long top-row label.
+
+    The six-choice crop quiz uses menu record $34 and originally marks choice 3
+    as correct. English places Fig at choice 5 so Strawberry/Fig and
+    Melon/Coffee form the paired rows while Brown rice remains unpaired.
+    """
+    result = bytearray(data)
+    patches = (
+        (
+            0xAE3E,
+            bytes.fromhex("31 DB DB DB DB 06"),
+            bytes.fromhex("31 DB DB 06 DB DB"),
+        ),
+        (
+            0xAE4C,
+            bytes.fromhex("31 CD CD 07 CD CD CD"),
+            bytes.fromhex("31 CD CD CD CD 07 CD"),
+        ),
+    )
+    load_address = 0xA200
+    for address, expected, replacement in patches:
+        offset = address - load_address
+        actual = bytes(result[offset : offset + len(expected)])
+        if actual != expected:
+            raise ReleaseBuildError(
+                f"TT4 fisherman quiz branch bytes at ${address:04X} changed: "
+                f"{actual.hex(' ').upper()} != {expected.hex(' ').upper()}"
+            )
+        result[offset : offset + len(replacement)] = replacement
+    return bytes(result)
+
 def build_release_scenario_bank(
     source: bytes,
     bank_name: str,
@@ -434,6 +470,12 @@ def build_release_scenario_bank(
             literal_groups,
             variant.dictionary,
             layout,
+        )
+
+    if bank_name == "TT4":
+        layout = replace(
+            layout,
+            data=_patch_tt4_fisherman_quiz_branches(layout.data),
         )
 
     if literal_menu:
