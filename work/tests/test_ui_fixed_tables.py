@@ -32,7 +32,7 @@ PLAYTESTED_FIXED_TABLES = {
     ),
     "TT4": (
         97,
-        "12767FC2BF13439F4B9BAEC80B1F95F7913B8F04DA1BE1E25C13CEDAA669F1AE",
+        "07DFADB08CBB1CE483B1AF1D8B69AF24F3ECC6350245B2AAB53AD40A5DBF306C",
     ),
     "TT5": (
         113,
@@ -138,6 +138,11 @@ class FixedMenuCopyTests(unittest.TestCase):
                 78: "Agora",
                 79: "Acropolis",
                 80: "Colony",
+                86: "Delphi",
+                87: "Pantheon",
+                88: "Olympia",
+                89: "Karnak",
+                90: "Parthenon",
                 94: "Brown rice",
             },
             "TT5": {
