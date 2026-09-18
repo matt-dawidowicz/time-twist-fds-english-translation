@@ -51,18 +51,18 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
         """Keep question text out of the answer menu's reserved rows."""
         tt4 = _production()
         self.assertEqual(
-            tt4["TT4/g5/r7"], "{CTRL:0}{CTRL:0}Greek city-states?"
+            tt4["TT4/g5/r7"], "{CTRL:0}{CTRL:0}Term for Greek cities?"
         )
         self.assertEqual(
-            tt4["TT4/g5/r10"], "{CTRL:0}{CTRL:0}Athens' great rival?"
+            tt4["TT4/g5/r10"], "{CTRL:0}{CTRL:0}Athens' rival city?"
         )
         self.assertEqual(
-            tt4["TT4/g5/r11"], "{CTRL:0}{CTRL:0}Greatest Greek hero?"
+            tt4["TT4/g5/r11"], "{CTRL:0}{CTRL:0}Greece's greatest hero?"
         )
-        self.assertEqual(tt4["TT4/g5/r12"], "{CTRL:0}{CTRL:0}Athena's temple?")
+        self.assertEqual(tt4["TT4/g5/r12"], "{CTRL:0}{CTRL:0}Temple of Athena?")
         self.assertEqual(
             tt4["TT4/g5/r13"],
-            "{CTRL:0}{CTRL:0}Three Greek crops:{CTRL:0}olives, grapes, and…?",
+            "{CTRL:0}{CTRL:0}Greek staples: olives,{CTRL:0}grapes, and what?",
         )
 
     def test_fixed_menu_uses_the_same_identity(self) -> None:
