@@ -68,11 +68,27 @@ jobs:
           elif "work/production_overrides/TT6A.json" not in files:
               raise SystemExit("TT6A override source-lock entry is missing")
 
-          override_path = Path("work/production_overrides/TT3B.json")
-          raw = override_path.read_bytes().replace(b"\r\n", b"\n")
-          tt3b = lock["files"]["work/production_overrides/TT3B.json"]
-          tt3b["sha256"] = hashlib.sha256(raw).hexdigest().upper()
-          tt3b["bytes"] = len(raw)
+          for relative in (
+              "work/production_overrides/TT1B.json",
+              "work/production_overrides/TT2.json",
+              "work/production_overrides/TT3A.json",
+              "work/production_overrides/TT3B.json",
+              "work/production_overrides/TT4.json",
+              "work/production_overrides/TT5.json",
+              "work/production_overrides/T25.json",
+              "work/production_overrides/TT6A.json",
+              "work/production_overrides/TT6B.json",
+          ):
+              source_path = Path(relative)
+              raw = (
+                  source_path.read_bytes()
+                  .replace(b"\r\n", b"\n")
+                  .replace(b"\r", b"\n")
+              )
+              record = lock["files"][relative]
+              record["sha256"] = hashlib.sha256(raw).hexdigest().upper()
+              record["bytes"] = len(raw)
+
           lock_path.write_text(
               json.dumps(lock, ensure_ascii=False, indent=2) + "\n",
               encoding="utf-8",
