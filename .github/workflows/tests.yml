@@ -105,6 +105,10 @@ jobs:
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
+      - name: Run post-merge playtest regression gate
+        run: >-
+          python -m unittest discover -s work/tests
+          -p 'test_post_merge_playtest_regressions.py' -v
       - run: python work/run_tests.py unit
       - run: python -m build
       - run: python -m pip install --force-reinstall dist/*.whl
