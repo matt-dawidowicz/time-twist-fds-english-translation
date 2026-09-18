@@ -36,11 +36,12 @@ class MenuGeometryTests(unittest.TestCase):
         """Keep historically troublesome full-word pairings inside the screen."""
         pairs = (
             ("Montgomery", "Churchill"),
-            ("Delphi", "Parthenon"),
+            ("Delphi", "Karnak"),
             ("Projector", "Airplane"),
             ("Patton", "MacArthur"),
             ("Saddam", "Zoroaster"),
-            ("Strawberry", "Pearl"),
+            ("Strawberry", "Fig"),
+            ("Melon", "Coffee"),
             ("Fisherman", "Statue"),
             ("Lacoste", "U Thant"),
             ("Socrates", "Homer"),
