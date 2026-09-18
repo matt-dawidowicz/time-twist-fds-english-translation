@@ -477,14 +477,14 @@ TT4_FIXED_TEXT_RECORDS = (
     "Gorbachev",
     "Delphi",
     "Pantheon",
+    "Parthenon",
     "Olympia",
     "Karnak",
-    "Parthenon",
     "Strawberry",
     "Melon",
-    "Fig",
     "Brown rice",
     "Pearl",
+    "Fig",
     "Coffee",
 )
 
