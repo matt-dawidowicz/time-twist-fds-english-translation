@@ -74,6 +74,13 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
             "{CTRL:0}{CTRL:0}What crop joined olives{CTRL:0}and grapes in Greece?",
         )
 
+    def test_herb_advice_names_the_ailment(self) -> None:
+        """Do not reduce the three source treatment hints to bare plant names."""
+        tt4 = _production()
+        self.assertIn("For a cough", tt4["TT4/g5/r16"])
+        self.assertIn("For food poisoning", tt4["TT4/g5/r17"])
+        self.assertIn("For sores", tt4["TT4/g5/r18"])
+
     def test_fixed_menu_uses_the_same_identity(self) -> None:
         """Keep the selectable fisherman label aligned with dialogue."""
         self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[74], "Fisherman")
