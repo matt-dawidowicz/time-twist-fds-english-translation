@@ -28,12 +28,14 @@ generic dialogue renderer considers the record valid.
 Production registers all 25 scenario quiz-question records across TT2, TT3A, TT4,
 TT5, and TT6B. For those records:
 
-- the exact source control sequence is preserved;
+- most quiz prompts preserve the exact source control sequence;
 - empty leading row geometry is preserved;
-- the number of control-delimited segments is preserved;
 - every occupied English segment is limited to 23 visible columns;
 - each production question must be an explicit control-bearing override rather than
-  generic prose reflow.
+  generic prose reflow;
+- the five Athens fisherman questions are a playtested exception: they retain the
+  two leading row advances but may use one additional `CTRL:0` so natural English
+  can occupy two visible rows without invoking scroll behavior.
 
 The TT6C retrospective quiz is a different storage class: its prompts/answers live in
 a fixed-address table and remain protected by the fixed-table build and regression
