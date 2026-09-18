@@ -32,7 +32,7 @@ PLAYTESTED_FIXED_TABLES = {
     ),
     "TT4": (
         97,
-        "07DFADB08CBB1CE483B1AF1D8B69AF24F3ECC6350245B2AAB53AD40A5DBF306C",
+        "450E37664885E8FCF82F12D50B71302C9AB0B32C9343C111DFDF1D4AA4C0B666",
     ),
     "TT5": (
         113,
@@ -140,10 +140,12 @@ class FixedMenuCopyTests(unittest.TestCase):
                 80: "Colony",
                 86: "Delphi",
                 87: "Pantheon",
-                88: "Olympia",
-                89: "Karnak",
-                90: "Parthenon",
-                94: "Brown rice",
+                88: "Parthenon",
+                89: "Olympia",
+                90: "Karnak",
+                93: "Brown rice",
+                94: "Pearl",
+                95: "Fig",
             },
             "TT5": {
                 28: "Call Meyer",
