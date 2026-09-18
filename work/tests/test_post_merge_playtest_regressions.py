@@ -136,7 +136,8 @@ class PostMergePlaytestRegressionTests(unittest.TestCase):
         """Do not leave the priest's accusation hanging on 'some local'."""
         text = _production("TT4")["TT4/g0/r9"]
         self.assertIn(
-            "the statue! I nearly{CTRL:0}fainted…{CTRL:2}"
+            "Priest: They beheaded{CTRL:0}"
+            "the statue! I got dizzy…{CTRL:2}"
             "Probably local thugs{CTRL:0}did it.{CTRL:3}",
             text,
         )
