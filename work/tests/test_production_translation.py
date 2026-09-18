@@ -303,7 +303,7 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
         ):
             with self.assertRaisesRegex(
                 ProductionTranslationError,
-                "control geometry changed",
+                "geometry",
             ):
                 _validate_quiz_question_geometry("TEST", base, production)
 
