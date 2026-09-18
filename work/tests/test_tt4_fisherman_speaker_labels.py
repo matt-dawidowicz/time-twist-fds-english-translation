@@ -51,15 +51,24 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
         """Use natural English without scrolling beyond the quiz-safe rows."""
         tt4 = _production()
         self.assertEqual(
-            tt4["TT4/g5/r7"], "{CTRL:0}{CTRL:0}What were city-states{CTRL:0}in Greece called?"
+            tt4["TT4/g5/r7"],
+            "{CTRL:0}{CTRL:0}What were city-states{CTRL:0}in Greece called?",
         )
         self.assertEqual(
-            tt4["TT4/g5/r10"], "{CTRL:0}{CTRL:0}Which city-state was{CTRL:0}Athens' greatest rival?"
+            tt4["TT4/g5/r10"],
+            "{CTRL:0}{CTRL:0}Which city-state was{CTRL:0}"
+            "Athens' greatest rival?",
         )
         self.assertEqual(
-            tt4["TT4/g5/r11"], "{CTRL:0}{CTRL:0}Who was the great hero{CTRL:0}of Greek mythology?"
+            tt4["TT4/g5/r11"],
+            "{CTRL:0}{CTRL:0}Who was the great hero{CTRL:0}"
+            "of Greek mythology?",
         )
-        self.assertEqual(tt4["TT4/g5/r12"], "{CTRL:0}{CTRL:0}Which temple was built{CTRL:0}for the goddess Athena?")
+        self.assertEqual(
+            tt4["TT4/g5/r12"],
+            "{CTRL:0}{CTRL:0}Which temple was built{CTRL:0}"
+            "for the goddess Athena?",
+        )
         self.assertEqual(
             tt4["TT4/g5/r13"],
             "{CTRL:0}{CTRL:0}What crop joined olives{CTRL:0}and grapes in Greece?",
