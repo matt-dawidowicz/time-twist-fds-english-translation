@@ -1,0 +1,17 @@
+name: export-source-temp-7
+on:
+  push:
+    branches:
+      - fix/retail-kouhen-transition-protocol-20260917
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/upload-artifact@v6
+        with:
+          name: branch-source-v75
+          path: |
+            .
+            !.git
+          include-hidden-files: true
