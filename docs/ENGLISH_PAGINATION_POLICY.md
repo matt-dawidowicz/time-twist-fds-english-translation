@@ -19,12 +19,12 @@ trailing layout controls are retained when they affect record entry or exit.
 
 ### Global soft-wrap invariant
 
-For every scenario record other than the registered quiz prompts, `CTRL:0` and
-`CTRL:4` are generated output, never editorial input. Translation/retranslation
-overrides may change the visible words, but any supplied soft row controls are
-discarded before materialization. The layout engine then greedily fills the current
-24-column row at word boundaries and emits a row/scroll control only when the next
-word cannot fit.
+For ordinary scenario prose, interior `CTRL:0` and `CTRL:4` values are
+generated output rather than editorial line-break instructions. Translation or
+retranslation overrides may change the visible words, but interior soft row
+controls are regenerated during materialization. The layout engine greedily fills
+the current 24-column row at word boundaries and emits a row/scroll control only
+when the next word cannot fit.
 
 This rule also applies to records retained in the final-playtest tracking set.
 Record-scoped policies may preserve or demote semantic/timing controls, but they do
@@ -43,12 +43,14 @@ For ordinary controlled overrides, reviewed semantic-control positions and
 leading/trailing row controls remain authoritative. Only interior prose
 `CTRL:0`/`CTRL:4` wrapping is regenerated.
 
-Semantic controls that introduce a speaker turn are also source-pinned. If a
-certified base record has `CTRL:1`, `CTRL:2`, `CTRL:3`, or `CTRL:6`
-immediately before a speaker label, production reflow must keep that same control
-immediately before the same label. A build must fail rather than produce forms such
-as `Soldier{CTRL:3}2:` or move a speaker-changing control into the next speaker's
-sentence.
+Semantic controls that introduce a speaker turn are source-pinned during ordinary
+automatic reflow. If a certified base record has `CTRL:1`, `CTRL:2`,
+`CTRL:3`, or `CTRL:6` immediately before a speaker label, automatic layout must
+keep that control immediately before the same label. An explicit reviewed override
+may intentionally relocate a semantic boundary, but it retains its own semantic
+control positions while only interior soft wrapping is regenerated. In either path,
+a build must fail rather than produce forms such as `Soldier{CTRL:3}2:` or move a
+speaker-changing control accidentally into the next speaker's sentence.
 
 ## Scenario quiz questions: native geometry is authoritative
 
