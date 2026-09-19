@@ -292,78 +292,61 @@ def _speaker_label_spans(text: str) -> tuple[tuple[int, int], ...]:
     return tuple(spans)
 
 
-def _semantic_speaker_boundary_ordinals(
-    text: str,
-) -> tuple[tuple[int, int | None], ...]:
-    """Map semantic controls to the following speaker-turn ordinal, if any.
+def _source_speaker_ctrl2_labels(template: str) -> tuple[str | None, ...]:
+    """Return the source speaker label, if any, following each CTRL:2.
 
-    Row/layout controls become whitespace so they cannot affect speaker
-    recognition. Speaker turns are compared by order, not by literal label
-    spelling, so reviewed English may rename a label without allowing a native
-    semantic control to drift into the corresponding turn.
+    Japanese row controls may sit between the section control and the next
+    visible label, so look through source-only 0/4 geometry. This classification
+    is deliberately based on the certified source topology rather than a
+    provisional English layout, which may already have moved the control.
     """
-    segments, controls = _template_parts(text)
-    plain = segments[0]
-    semantic_offsets: list[tuple[int, int]] = []
+    segments, controls = _template_parts(template)
+    labels: list[str | None] = []
     for index, control in enumerate(controls):
-        if control in SEMANTIC_CONTROLS:
-            semantic_offsets.append((control, len(plain)))
-        plain += " " + segments[index + 1]
-
-    spans = _speaker_label_spans(plain)
-    boundaries: list[tuple[int, int | None]] = []
-    for control, offset in semantic_offsets:
-        ordinal: int | None = None
-        for index, (start, _end) in enumerate(spans):
-            if start < offset:
-                continue
-            if plain[offset:start].strip():
-                break
-            ordinal = index
-            break
-        boundaries.append((control, ordinal))
-    return tuple(boundaries)
-
-
-def _source_speaker_semantic_boundaries(
-    template: str,
-) -> tuple[tuple[int, int | None], ...]:
-    """Return source semantic controls and following speaker-turn ordinals."""
-    return _semantic_speaker_boundary_ordinals(template)
+        if control != 2:
+            continue
+        visible_after = [segments[index + 1]]
+        following = index + 1
+        while (
+            following < len(controls)
+            and controls[following] in INSERTABLE_LAYOUT_CONTROLS
+        ):
+            visible_after.append(segments[following + 1])
+            following += 1
+        after = " ".join(
+            part.strip() for part in visible_after if part.strip()
+        ).lstrip()
+        spans = _speaker_label_spans(after)
+        if spans and spans[0][0] == 0:
+            labels.append(after[: spans[0][1]])
+        else:
+            labels.append(None)
+    return tuple(labels)
 
 
-def _validate_source_speaker_semantic_boundaries(
+def _validate_source_speaker_ctrl2_boundaries(
     template: str, production: str
 ) -> None:
-    """Require source speaker-changing semantic controls to stay at that turn.
+    """Require source speaker-changing CTRL:2 controls to remain at the turn.
 
-    Speaker identity is compared by turn ordinal rather than literal label text.
-    This permits editorial label renaming while preventing automatic reflow from
-    sliding a semantic control into the next speaker's sentence or label.
+    A semantic speaker change must never be converted into pagination or slid
+    into the preceding speaker's English merely to satisfy the two-row re-entry
+    ceiling. If the reviewed first turn is too long, the build must fail closed
+    so the wording can be shortened explicitly.
     """
-    required = [
-        boundary
-        for boundary in _source_speaker_semantic_boundaries(template)
-        if boundary[1] is not None
-    ]
-    if not required:
-        return
-    actual = [
-        boundary
-        for boundary in _semantic_speaker_boundary_ordinals(production)
-        if boundary[1] is not None
-    ]
     cursor = 0
-    for boundary in required:
-        try:
-            position = actual.index(boundary, cursor)
-        except ValueError as error:
-            control, ordinal = boundary
+    for label in _source_speaker_ctrl2_labels(template):
+        if label is None:
+            continue
+        pattern = re.compile(
+            r"\{CTRL:2\}(?:\{CTRL:[04]\})*" + re.escape(label)
+        )
+        match = pattern.search(production, cursor)
+        if match is None:
             raise ProductionTranslationError(
-                f"source CTRL:{control} speaker boundary for turn "
-                f"{ordinal} was moved or lost"
-            ) from error
-        cursor = position + 1
+                f"source CTRL:2 speaker boundary before {label!r} was moved or lost"
+            )
+        cursor = match.end()
 
 
 def _speaker_turns(text: str) -> tuple[str, ...]:
@@ -694,37 +677,6 @@ def _split_visible_text(
         )
     forbidden_breaks = _forbidden_speaker_breaks(text)
 
-    # Pin source speaker-changing semantic controls to the corresponding
-    # reviewed speaker-turn ordinal. This prevents controls from drifting into
-    # labels while allowing editorial renaming of the labels themselves.
-    reviewed_speaker_spans = _speaker_label_spans(text)
-    reconstructed_template = template_segments[0] + "".join(
-        f"{{CTRL:{control}}}{segment}"
-        for control, segment in zip(
-            controls, template_segments[1:], strict=True
-        )
-    )
-    source_boundaries = _source_speaker_semantic_boundaries(
-        reconstructed_template
-    )
-    required_speaker_word_boundaries: dict[int, int] = {}
-    semantic_boundary_index = 0
-    for control_index, control in enumerate(controls):
-        if control not in SEMANTIC_CONTROLS:
-            continue
-        _source_control, ordinal = source_boundaries[semantic_boundary_index]
-        semantic_boundary_index += 1
-        if ordinal is None:
-            continue
-        if ordinal >= len(reviewed_speaker_spans):
-            raise ProductionTranslationError(
-                "reviewed English lost a source speaker turn"
-            )
-        start, _end = reviewed_speaker_spans[ordinal]
-        required_speaker_word_boundaries[control_index] = len(
-            text[:start].split()
-        )
-
     target_total = sum(
         max(1, len(template_segments[index])) for index in active
     )
@@ -771,14 +723,6 @@ def _split_visible_text(
 
             for end_word in ends:
                 if end_word in forbidden_breaks:
-                    continue
-                required_boundary = (
-                    required_speaker_word_boundaries.get(segment_index)
-                )
-                if (
-                    required_boundary is not None
-                    and end_word != required_boundary
-                ):
                     continue
                 chunk = (
                     " ".join(words[start_word:end_word])
@@ -1049,7 +993,7 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
     try:
         validate_production_control_sequence(template, output)
         validate_renderer_buffer_layout(output)
-        _validate_source_speaker_semantic_boundaries(template, output)
+        _validate_source_speaker_ctrl2_boundaries(template, output)
     except ProductionTranslationError as error:
         raise ProductionTranslationError(f"{record_id}: {error}") from error
     reviewed_visible_words = CONTROL_RE.sub(" ", reviewed).split()
