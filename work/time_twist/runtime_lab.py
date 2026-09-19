@@ -183,12 +183,6 @@ def command_build(args: argparse.Namespace) -> int:
             materialize_production_maps(
                 tuple(KNOWN_SCENARIO_BANKS),
                 base_directory=project_root / "work" / "translations",
-                override_directory=project_root
-                / "work"
-                / "production_overrides",
-                review_directory=(
-                    project_root / "review" / "production_retranslation"
-                ),
                 output_directory=translations,
             )
         outputs, manifest = build_release_images(
