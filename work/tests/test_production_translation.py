@@ -199,6 +199,43 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
             "Whatever… No time like{CTRL:0}the present!",
         )
 
+    def test_nonquiz_override_soft_controls_are_not_authoritative(self) -> None:
+        """Discard hand-authored CTRL0/CTRL4 geometry outside quiz prompts."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            base = root / "base"
+            overrides = root / "overrides"
+            base.mkdir()
+            overrides.mkdir()
+            (base / "TEST.json").write_text(
+                json.dumps(
+                    {"TEST/g0/r0": "Have you ever had sleep paralysis?"},
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            (overrides / "TEST.json").write_text(
+                json.dumps(
+                    {
+                        "TEST/g0/r0": (
+                            "Have you ever{CTRL:0}had sleep{CTRL:0}paralysis?"
+                        )
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            output = merged_translation_map(
+                "TEST",
+                base_directory=base,
+                override_directory=overrides,
+                review_directory=None,
+            )
+        self.assertEqual(
+            output["TEST/g0/r0"],
+            "Have you ever had sleep{CTRL:0}paralysis?",
+        )
+
     def test_new_speaker_starts_on_fresh_row(self) -> None:
         """Never append a new speaker label to the previous speaker's line."""
         output = layout_review_text(
