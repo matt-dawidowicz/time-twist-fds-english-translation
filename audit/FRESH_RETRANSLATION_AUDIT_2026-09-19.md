@@ -25,6 +25,7 @@ Provisional result: translation-complete, with two optional personality-test edi
 
 - TT1B/g2/r6 — RETRANSLATE: Japanese explicitly says "That voice—you're the person
   from before." Current shortened English drops the second clause.
+- TT1B/g2/r10 — RETRANSLATE: same omission as g2/r6; おや！そのこえはさっきのひとですね means "Ah! That voice—you’re the person from before," not merely "Ah! That voice."
 - TT1B/g0/r16 — RETRANSLATE: source says a pharaoh used the bell, not necessarily
   pharaohs collectively. Prefer "A legendary bell said to have been used by a
   pharaoh in ancient Egypt to ward off evil."
@@ -73,6 +74,8 @@ Provisional result: translation-complete, with two optional personality-test edi
   path will surely open…"
 
 ## TT3A / TT3B
+
+- TT3A/g4/r4 — LOCALIZATION: current "What was the French Resistance called?" is nearly tautological because the answer is Résistance. Source asks what the resistance movement in German-occupied France was called.
 
 - TT3A/g0/r28 — REVIEW: occult oath "human fat and sharpened stakes" is source-faithful
   but okite may read more naturally as "rites/precepts" than "law."
@@ -156,7 +159,10 @@ Major retranslation/localization bank.
   you" preserves the source better than generic similarity.
 
 
+- TT6A/g2/r8 — RETRANSLATE: source explicitly observes that the plane, saw, and hammer have not changed at all since ancient times; current "tools look unchanged" loses the time-traveler observation.
 - TT6A/g2/r7 — RETRANSLATE nuance: yakekuso -> planing wood in frustration/desperation.
+- TT6B/g0/r20 — RETRANSLATE clarity: source explicitly says "There’s no water. Hang in there." Avoid opaque "None. Hang in."
+- TT6B/g1/r9 — RETRANSLATE natural dialogue: "Joseph: Kashim really is dependable… / Mary: He is." Current "Trusty Kashim. Truly." is translationese.
 - TT6B/g1/r13 — TECHNICAL: natural "Sleep by the road" was shortened to "Sleep out"
   for native control staging; retest under current layout engine.
 - TT6B/g2/r18 — RETRANSLATE mare joke: "No nibbling—eat it in one big bite!"
