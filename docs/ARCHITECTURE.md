@@ -17,8 +17,8 @@ recommended evidence-to-fix workflow, see the
 The canonical playable pipeline is:
 
 ```text
-locked base maps + reviewed production JSON + explicit overrides
-  -> deterministic 24-column production layout
+canonical scenario maps (approved English + control layout)
+  -> validation/staging with no secondary English merge
   -> frozen entropy encoding and dictionary optimization
 locked Japanese FDS images
   -> entropy scenario/menu placement below resident NOV3 ($D7B5)
@@ -53,8 +53,9 @@ patched `.fds` files are intentionally excluded from Git.
 | `cli.py` | Compose the above layers into reproducible commands | Hide validation failures |
 
 The standalone scripts under `work/` render CHR data, preview fonts and title
-art, generate translation workbooks, and perform exploratory analysis. Core
-binary behavior belongs in `work/time_twist/` so it can be tested.
+art, and perform exploratory analysis. Core binary behavior belongs in
+`work/time_twist/` so it can be tested. Scenario English is read only from
+`work/translations/*.json`.
 
 ## Runtime organization
 
@@ -249,7 +250,7 @@ elsewhere.
 
 ## Public/private test boundary
 
-Fixture-free tests use synthetic FDS data and generated workbook inputs and run
+Fixture-free tests use synthetic FDS data and canonical-source fixtures and run
 in public CI. Exact tests against original or derived game bytes live under
 `work/integration_tests/`. Their local inputs are described only by hashes in
 `work/integration_fixtures.json` and are validated before discovery. This
