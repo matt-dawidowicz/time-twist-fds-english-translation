@@ -1,6 +1,6 @@
 {
-  "schema": "Time Twist release source lock v3",
-  "authority": "The locked Japanese baselines, base scenario maps, reviewed production English, production overrides, and title assets are the non-code release authority. The canonical builder materializes the game-facing English from those locked sources before entropy encoding.",
+  "schema": "Time Twist release source lock v4",
+  "authority": "The locked Japanese baselines, sole canonical current scenario maps, and title assets are the non-code release authority. The canonical builder does not consult any secondary English review, override, workbook, or fallback layer.",
   "subtitle": "On the Outskirts of History...",
   "files": {
     "work/baseline/time_twist_zenpen_japan.fds": {
@@ -23,200 +23,70 @@
       "sha256": "5218681DB3BC8F7631DC69BFB0B6A3C242B55B8018D3319CF9EC94C14DF10CA8",
       "bytes": 1709
     },
-    "work/translations/TT1A.json": {
-      "normalization": "lf",
-      "sha256": "92761D3E0197D5626A6017653248A839B70D1AA2EDEB7A9A347E0F4FFF6ECE12",
-      "bytes": 3636
-    },
-    "work/translations/TT1B.json": {
-      "normalization": "lf",
-      "sha256": "58BA2521CC89A30CE5796923DD985652446D7C724B64BAE951CB45C19339303D",
-      "bytes": 9813
-    },
-    "work/translations/TT2.json": {
-      "normalization": "lf",
-      "sha256": "E63B99F267982F8264A3BC790A50085C2C4AEFD98953E3D788A85528C2BA5587",
-      "bytes": 10146
-    },
     "work/translations/T22.json": {
       "normalization": "lf",
-      "sha256": "F7B9474CDDCA720C2B64BB3726EB4DE552394849A51A41D4055B7E93A227E0B2",
-      "bytes": 4328
-    },
-    "work/translations/TT3A.json": {
-      "normalization": "lf",
-      "sha256": "BD6BCBA4A72A940C985FA50FF2854EC950CD4D151245891FF0C0EB5F553C5BF1",
-      "bytes": 9667
-    },
-    "work/translations/TT3B.json": {
-      "normalization": "lf",
-      "sha256": "A28A10C434E7E528788E80515D8BEB4327AA286D815B37E7C17636EF7D97D8CC",
-      "bytes": 4569
-    },
-    "work/translations/TT4.json": {
-      "normalization": "lf",
-      "sha256": "28CE354469066B5906F6743A1FA6B64BD606EED2E5977326C5273E0B34218A7C",
-      "bytes": 11925
-    },
-    "work/translations/TT5.json": {
-      "normalization": "lf",
-      "sha256": "BA9FFDC3C3786CB1F5D5F6662AEB6D1FDCEA0CD80EA6E833DB51E5FD56E88BAC",
-      "bytes": 8941
+      "sha256": "2827DDE8367D99D6CB8C930A068B935B67047C76BBB906C70ED41123D76A4E8D",
+      "bytes": 4978
     },
     "work/translations/T25.json": {
       "normalization": "lf",
-      "sha256": "C77F7E5054FC215A7AFD26D2ADF412340D88B2C2443FA1B092FFE45245FB3747",
-      "bytes": 5622
+      "sha256": "3C20A6FC46EA22DFA87A31F3B3AFD19AD8A738696B051A91A81E99D23AE2C1EE",
+      "bytes": 6628
+    },
+    "work/translations/TT1A.json": {
+      "normalization": "lf",
+      "sha256": "83C907CDCB188C64B70818EBAC3C958B803C3FD93FF5DD5FAE5DC23A5DDBD621",
+      "bytes": 5121
+    },
+    "work/translations/TT1B.json": {
+      "normalization": "lf",
+      "sha256": "4F0E1DCCBAC0FEE576DCB6BAC424095682AC3330739D008839C28362FF65D708",
+      "bytes": 12205
+    },
+    "work/translations/TT2.json": {
+      "normalization": "lf",
+      "sha256": "B38676FAFE11A0CD37C249D5635E905961E29FBCB18D2BD6B1DA902A8A386E8E",
+      "bytes": 11325
+    },
+    "work/translations/TT3A.json": {
+      "normalization": "lf",
+      "sha256": "B9FF941427A98CCB4EEB11B80B9D898DCBAF9F6275EB8AB43CE940C0B8C0D8E8",
+      "bytes": 11182
+    },
+    "work/translations/TT3B.json": {
+      "normalization": "lf",
+      "sha256": "79133B4C570E6357F856F34D7B8F99D4AA677AEA9C45A2E9B385FA131946CBA2",
+      "bytes": 4989
+    },
+    "work/translations/TT4.json": {
+      "normalization": "lf",
+      "sha256": "0356458F2CEC3BC38870A97A218F6358E659077E2AD18BDFA5307A109B970375",
+      "bytes": 13390
+    },
+    "work/translations/TT5.json": {
+      "normalization": "lf",
+      "sha256": "DD78C33EAF733A365A3257171B75967784642751C98E664EC427750B36EEF306",
+      "bytes": 10690
     },
     "work/translations/TT6A.json": {
       "normalization": "lf",
-      "sha256": "97192F58DCF53A38E9D09DD6782CAB98DE7539076D03CB6C40144B56B122B43B",
-      "bytes": 6839
+      "sha256": "7803A5DAD8A85271C189627BA75C9A705BC3A99B42AE46CE0F37A47B10C34CB1",
+      "bytes": 8047
     },
     "work/translations/TT6B.json": {
       "normalization": "lf",
-      "sha256": "8D6A9DA24620B9383476F39C1CB0F57E823550CE7CAC151A97B9062A6993C83C",
-      "bytes": 5924
+      "sha256": "6A2A01D209840E6FF508D984102A216AE577B5F98113C4735AB222CCD98CE6B2",
+      "bytes": 6867
     },
     "work/translations/TT6C.json": {
       "normalization": "lf",
-      "sha256": "2376333244991F840B652CACC5E99F4C02FF4DEB8B92FAAA2265E3F9D2134A9A",
-      "bytes": 8740
+      "sha256": "D70EA8D0BDCD44CF376C0A002FBA499054A567D0F52A4D7B4C5CE9374AB5093E",
+      "bytes": 10493
     },
     "work/translations/TT6D.json": {
       "normalization": "lf",
-      "sha256": "9D9D20A66216FB7466C229F9A9F9E66F4548C828292A4E656893F2FB07A4896A",
-      "bytes": 786
-    },
-    "review/production_retranslation/TT1A_proposal.json": {
-      "normalization": "lf",
-      "sha256": "86F9BE77EB1428699463F94BD2DF1A164644DA91F75B0A0FBD1B51872E51F496",
-      "bytes": 4521
-    },
-    "review/production_retranslation/TT1B_proposal.json": {
-      "normalization": "lf",
-      "sha256": "172F67219FB6049A202A4BC77D8216D0DBF4EA52D968EB75BB9521FC734E9AF7",
-      "bytes": 10890
-    },
-    "review/production_retranslation/TT2_changes.json": {
-      "normalization": "lf",
-      "sha256": "F22CFA9030AE36205B3905264C01AC92BE23B06E9BDFC1ED552DDCC53D4DD740",
-      "bytes": 7067
-    },
-    "review/production_retranslation/T22_changes.json": {
-      "normalization": "lf",
-      "sha256": "89ED16ED66064B78149F8D51CB9A08CB4E1D3453A59C67B5EFE221A3BA2642A0",
-      "bytes": 3608
-    },
-    "review/production_retranslation/TT3A_changes.json": {
-      "normalization": "lf",
-      "sha256": "9777DF0160B58F01F13E7ADD9EB89C5F10D5C8F9D23EAD99C2E2E3671A1032A5",
-      "bytes": 7528
-    },
-    "review/production_retranslation/TT3B_changes.json": {
-      "normalization": "lf",
-      "sha256": "1204B4C33DB9F5F4CDAF03EE6042EC29CCBC817DF2495C156F23AE5B5B360875",
-      "bytes": 3512
-    },
-    "review/production_retranslation/TT4_changes.json": {
-      "normalization": "lf",
-      "sha256": "94F84D8ACB0E3DD30111F7CDD3AC518AD2A80692E41E5ED66CC107C2B14DD14D",
-      "bytes": 8884
-    },
-    "review/production_retranslation/TT5_changes.json": {
-      "normalization": "lf",
-      "sha256": "138970535D5229AAC50B65FFAC26E201B7D8877D1F32B78CE30A84CA27A6E2C8",
-      "bytes": 7572
-    },
-    "review/production_retranslation/T25_changes.json": {
-      "normalization": "lf",
-      "sha256": "3670A900A1E82470EA780CE0920EECA2B0A619FD873CC011C3DA9C74C50F9094",
-      "bytes": 4759
-    },
-    "review/production_retranslation/TT6A_changes.json": {
-      "normalization": "lf",
-      "sha256": "1DF1D1632FE07016D8FA37AA770FAFFC2DE13A685CC25419ACE150D4CB9A87D5",
-      "bytes": 6047
-    },
-    "review/production_retranslation/TT6B_changes.json": {
-      "normalization": "lf",
-      "sha256": "4A6B42CF48A31E0362CCCD8FBEC53F686EDA8A47B8451E0A3B65BDAEAB8284F4",
-      "bytes": 5292
-    },
-    "review/production_retranslation/TT6C_changes.json": {
-      "normalization": "lf",
-      "sha256": "ADA40EA6F61BA23787A2D196B612F0C5DDEEF002D22CC2A6689BF06D1D46111A",
-      "bytes": 8415
-    },
-    "review/production_retranslation/TT6D_proposal.json": {
-      "normalization": "lf",
-      "sha256": "7B1841F18112B538472CC589291BDE30D1CB31F3EF4F84BB142801B6894146D3",
-      "bytes": 770
-    },
-    "work/production_overrides/T22.json": {
-      "normalization": "lf",
-      "sha256": "96124E93343381A295399F04BBC3EC9C88BCF938D1EA146EB90D6695A0FB6B5A",
-      "bytes": 1182
-    },
-    "work/production_overrides/T25.json": {
-      "normalization": "lf",
-      "sha256": "659B7A657EC53BA6BE31F973695BA42ECD522AB26158EE9AEB802C21045768B2",
-      "bytes": 1193
-    },
-    "work/production_overrides/TT1A.json": {
-      "normalization": "lf",
-      "sha256": "987C4B9F981CF6FBBC32160152F1D31D214DAAEDBCDE30F84A6758B311B945B6",
-      "bytes": 2668
-    },
-    "work/production_overrides/TT1B.json": {
-      "normalization": "lf",
-      "sha256": "2DB1B6A330032F98A79E3EB95650E3FAB90ED2C33C97803881BC1EA97E4D76A8",
-      "bytes": 3736
-    },
-    "work/production_overrides/TT2.json": {
-      "normalization": "lf",
-      "sha256": "5032FCE504868966AB0BB43349E22B671D6FB53253BC3AC663D3BAB36CC0E244",
-      "bytes": 3260
-    },
-    "work/production_overrides/TT3A.json": {
-      "normalization": "lf",
-      "sha256": "5AEA5F526BE88031F68A6F6FB1CBFC7E6780FBE82FD33E47ABF21690B51162EF",
-      "bytes": 3549
-    },
-    "work/production_overrides/TT3B.json": {
-      "normalization": "lf",
-      "sha256": "B7F21FAF20E3430420F11E85B019E0BA2AE9167FA0FCFD655C1BF2C757A1E81F",
-      "bytes": 1765
-    },
-    "work/production_overrides/TT4.json": {
-      "normalization": "lf",
-      "sha256": "BFC5FBCA46BA2FFD44CF9A82FE502AC8F74D154A2655632C996CE1F9F1B6E1D5",
-      "bytes": 4071
-    },
-    "work/production_overrides/TT5.json": {
-      "normalization": "lf",
-      "sha256": "8B391F4F52C980D57EB65793D1E7008CBA3FD210B2D22DEC32DEE5795DB0D009",
-      "bytes": 3286
-    },
-    "work/production_overrides/TT6A.json": {
-      "normalization": "lf",
-      "sha256": "6E7BE1A4059DBD4298C8CE88EEFBBF7D2CE6E0B07FD4277F6005F3A6456C5CC7",
-      "bytes": 1685
-    },
-    "work/production_overrides/TT6B.json": {
-      "normalization": "lf",
-      "sha256": "FFF639C4BCF37132C966B0208BFF604C013F7EC18B7680A25141503B4B8F4388",
-      "bytes": 1423
-    },
-    "work/production_overrides/TT6C.json": {
-      "normalization": "lf",
-      "sha256": "9C653242AF1334CE229534FC68B67663E567BD723739C96F00A83F0F3A9839AC",
-      "bytes": 3496
-    },
-    "work/production_overrides/TT6D.json": {
-      "normalization": "lf",
-      "sha256": "9E079B44588FDD2CBD7A3192FF5EF962CE5B007D4C25B1559C3D4A57771EBAF5",
-      "bytes": 101
+      "sha256": "489D78656CAED41C5916713EFA0D699AB610C2C3F3C740CD4E9E8F16F7C9E1D5",
+      "bytes": 829
     }
   }
 }
