@@ -445,3 +445,97 @@ following genuine additions:
 
 The remaining heuristic candidates were manually rejected as false positives or
 already-faithful number-word normalizations.
+
+
+## Translationese / unfinished-natural-English pass
+
+These records are broadly source-faithful but are not acceptable as final natural
+English. They require editorial retranslation rather than semantic repair.
+
+### TT1B
+
+- TT1B/g0/r0 — "Made it… Devil Museum I've wanted to visit." is unfinished English.
+  Prefer "Here it is… the Devil Museum. I've been meaning to come here."
+- TT1B/g0/r15 — Demon-Sealing Jar plaque leaves "him" vague. Name the Devil explicitly
+  and form a complete museum-plaque sentence.
+- TT1B/g0/r17 — Devil's Hand plaque is grammatically broken ("19th-century U.S. a
+  devil cult's symbol"). Full rewrite required.
+- TT1B/g0/r18 — Romani Talisman plaque ends in fragment "A warding spell carved."
+  Full-sentence rewrite required.
+
+### TT2 / T22
+
+- TT2/g0/r25 — posted decree ending "French Kingdom Church" is not acceptable English.
+  Reformat the institutional/date signature naturally while preserving all source facts.
+- TT2/g0/r12 — Pierre's line is semantically correct but needs natural punctuation and
+  comic voice; preserve the humorous respectful "Mr. Devil" flavor of akuma no danna.
+- T22/g0/r0 — the Baron/Jailer exchange is source-faithful but heavily compressed and
+  mechanical; it needs a complete dialogue polish pass with formal period-appropriate
+  register rather than sentence fragments.
+
+### TT3A / TT3B
+
+- TT3A/g0/r19 — "Once you're out, escape now" is translationese. Prefer "As soon as
+  they let you out of solitary, escape. We'll take care of the arrangements."
+- TT3A/g0/r20 — meiiun wa omae ga nigitte iru is stronger than "The Allies rely on
+  you." Prefer "The fate of the Allied forces is in your hands."
+- TT3B/g0/r7 — Japanese explicitly labels Simon; the English natural/final layer drops
+  the speaker label. Restore "Simon:" unless runtime storage proves the label is supplied
+  elsewhere.
+- TT3B/g0/r8 — kireigoto wa takusan yo is more naturally "Enough with the idealistic
+  talk / pretty words" than clipped "Enough idealism."
+- TT3B/g0/r9 — "Kill or be killed. That's war, isn't it?" is more natural and closer
+  to korosu ka korosareru ka than "Kill or die."
+- TT3B/g0/r21 — daijoubu, anshin shiro is "Don't worry / You're safe," not merely
+  "You're safe." Preserve the reassuring reveal.
+
+### TT4
+
+- TT4/g0/r0 — Japanese says megamizou, "goddess statue"; current English drops
+  "statue." Prefer "That accursed goddess statue… It's so ugly it makes me sick!"
+- TT4/g0/r9 — restore the causal sequence: the priest became dizzy the instant he saw
+  the goddess statue had been beheaded; then he blames local thugs.
+- TT4/g0/r10 — "The dead ascend to the underworld" is awkward in English. Preserve the
+  source concept naturally: "When people die, they go to the underworld. I nearly
+  passed through its gate myself."
+- TT4/g0/r12 — kamigami no jogen o karite is counsel/guidance from the gods. Prefer
+  "Seek the gods' guidance and go to the underworld" over generic "Seek gods' aid."
+
+### TT5 / T25
+
+- TT5/g0/r7 — the attacker's direct contempt is weakened by the fragment "Born into
+  slavery." Source is "You people were born slaves." Preserve the aggressor's explicit
+  subject and hostility; do not sanitize.
+- TT5/g0/r18 — source is a direct threat: "Don't even think about leaving the South.
+  You'll devote your whole lives to us." Current "Stay in the South. Live your lives
+  for us" is too mild.
+- T25/g0/r12 — Lincoln's line is more naturally "If everyone were like you, Mr. Meyer,
+  this war would never have happened." Preserve the direct address and hypothetical
+  structure.
+
+### TT6A / TT6B
+
+- TT6A/g0/r18 — restore the narration cleanly: "That's when it happened… Suddenly,
+  that guy came down from the sky." Current "Then he came from above" is weak and
+  loses the abrupt scene beat.
+- TT6B/g0/r0 — Mary's nanto ka is "I'm all right… somehow / I'm managing," not the
+  unnatural standalone "Somehow…"
+- TT6B/g0/r7 — donkey internal narration needs natural first-person fatigue rather than
+  list-like "Heavy, tired, hungry…"
+- TT6B/g0/r10 — "The town should be coming into view by now… I think we're lost."
+- TT6B/g0/r11 — use full natural sentences: "We're out of food and water." /
+  "This is bad. It'll be dark soon…"
+- TT6B/g0/r12 — "Sand keeps getting up my nose" is more natural than "Dust fills my
+  nostrils."
+- TT6B/g0/r13 — preserve kouばしい as an appealing/fragrant smell and the sudden
+  recognition of hay rather than flat "That smell is hay."
+
+### TT6C
+
+- TT6C/g0/r3 — RUNTIME/CONTEXT REVIEW: Japanese omits the subject of "reaches for the
+  jar." Context suggests one of the Magi, not necessarily the protagonist. Do not
+  hard-code "He" or "I" until the animation/staging identifies the actor.
+- TT6C/g0/r18 — rewrite naturally: "This body is mine. The beautiful union of God's
+  child and the Devil is now complete!"
+- TT6C/g0/r19 — sou kantan ni iku ka na is naturally "You think it'll be that easy?"
+  rather than "Think it's easy?"
