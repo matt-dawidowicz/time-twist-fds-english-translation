@@ -6,12 +6,8 @@ on:
       - main
   pull_request:
 
-# Temporary one-shot cleanup for PR #75. The job repairs the two generated
-# source-authority defects found by the full unit suite, regenerates tracked
-# review artifacts, and commits them. This workflow is restored to read-only
-# validation immediately after the cleanup run.
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: tests-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
@@ -23,97 +19,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.14"]
+        python-version: ["3.11", "3.14"]
     steps:
       - uses: actions/checkout@v7
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
           cache: pip
-      - name: Repair final playtest source metadata
-        shell: bash
-        run: |
-          python - <<'PY'
-          from __future__ import annotations
-
-          import hashlib
-          import json
-          from pathlib import Path
-
-          ui_path = Path("work/time_twist/ui_fixed_tables.py")
-          ui_text = ui_path.read_text(encoding="utf-8")
-          old = '    "Room ",\n    "Wall",'
-          new = '    "Room",\n    "Wall",'
-          if old in ui_text:
-              ui_text = ui_text.replace(old, new, 1)
-              ui_path.write_text(ui_text, encoding="utf-8")
-          elif new not in ui_text:
-              raise SystemExit("TT3A Room label was not found in the expected form")
-
-          lock_path = Path("work/release_sources.json")
-          lock = json.loads(lock_path.read_text(encoding="utf-8"))
-          files = lock["files"]
-          if "work/production_overrides/TU6A.json" in files:
-              files = {
-                  (
-                      "work/production_overrides/TT6A.json"
-                      if path == "work/production_overrides/TU6A.json"
-                      else path
-                  ): metadata
-                  for path, metadata in files.items()
-              }
-              lock["files"] = files
-          elif "work/production_overrides/TT6A.json" not in files:
-              raise SystemExit("TT6A override source-lock entry is missing")
-
-          for relative in (
-              "work/production_overrides/TT1B.json",
-              "work/production_overrides/TT2.json",
-              "work/production_overrides/TT3A.json",
-              "work/production_overrides/TT3B.json",
-              "work/production_overrides/TT4.json",
-              "work/production_overrides/TT5.json",
-              "work/production_overrides/T25.json",
-              "work/production_overrides/TT6A.json",
-              "work/production_overrides/TT6B.json",
-          ):
-              source_path = Path(relative)
-              raw = (
-                  source_path.read_bytes()
-                  .replace(b"\r\n", b"\n")
-                  .replace(b"\r", b"\n")
-              )
-              record = lock["files"][relative]
-              record["sha256"] = hashlib.sha256(raw).hexdigest().upper()
-              record["bytes"] = len(raw)
-
-          lock_path.write_text(
-              json.dumps(lock, ensure_ascii=False, indent=2) + "\n",
-              encoding="utf-8",
-          )
-          PY
       - run: python work/tools/check_public_tree.py
       - run: python -m pip install --upgrade pip
       - run: python -m pip install -r requirements.txt
-      - name: Run focused canonical runtime tests
-        run: time-twist-runtime smoke
-      - run: python work/generate_bilingual_comparison_ci.py
-      - run: python work/generate_translation_workbook_ci.py
-      - name: Commit cleanup and regenerated review artifacts
-        shell: bash
-        run: |
-          if ! git diff --quiet; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add work/time_twist/ui_fixed_tables.py work/release_sources.json outputs work/translation_workbook_banks
-            git commit -m "Finalize playtest source and review artifacts"
-            git push origin HEAD:${{ github.head_ref }}
-          fi
-      - name: Verify generated translation review artifacts are current
-        run: git diff --exit-code -- outputs work/translation_workbook_banks
-      - name: Materialize production translation maps
+      - name: Validate and stage canonical scenario maps
         run: >-
           python work/tools/materialize_production_translations.py
           --repo-root . --output work/build/production_translations
@@ -121,10 +37,6 @@ jobs:
       - run: python -m ruff check work
       - run: python -m pydocstyle --convention=pep257 work
       - run: python -m mypy
-      - name: Run post-merge playtest regression gate
-        run: >-
-          python -m unittest discover -s work/tests
-          -p 'test_post_merge_playtest_regressions.py' -v
       - run: python work/run_tests.py unit
       - run: python -m build
       - run: python -m pip install --force-reinstall dist/*.whl
@@ -146,5 +58,5 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-      - name: Require cleanup validation to pass
+      - name: Require unit tests to pass
         run: test "${{ needs.unit-tests.result }}" = "success"
