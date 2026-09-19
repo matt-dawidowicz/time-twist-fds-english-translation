@@ -237,30 +237,84 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
         )
 
     def test_ctrl3_speaker_boundary_cannot_split_numbered_label(self) -> None:
-        """Keep a source CTRL:3 before Soldier 2 rather than inside the label."""
-        template = (
-            "Soldier 1: Your master is quite the man.{CTRL:3}"
-            "Soldier 2: Cut it out!"
-        )
-        reviewed = (
-            "Soldier 1: Your master is quite a man. "
-            "Soldier 2: Hey, knock it off!"
-        )
-        output = layout_review_text("TEST/g0/r10", reviewed, template)
+        """Keep an explicit CTRL:3 before Soldier 2, never inside the label."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            base = root / "base"
+            overrides = root / "overrides"
+            base.mkdir()
+            overrides.mkdir()
+            (base / "TEST.json").write_text(
+                json.dumps(
+                    {
+                        "TEST/g0/r10": (
+                            "Soldier 1: Your master is quite the man.{CTRL:3}"
+                            "Soldier 2: Cut it out!"
+                        )
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            (overrides / "TEST.json").write_text(
+                json.dumps(
+                    {
+                        "TEST/g0/r10": (
+                            "Soldier 1: Your master is quite a man.{CTRL:3}"
+                            "Soldier 2: Hey, knock it off!"
+                        )
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            output = merged_translation_map(
+                "TEST",
+                base_directory=base,
+                override_directory=overrides,
+                review_directory=None,
+            )["TEST/g0/r10"]
         self.assertIn("{CTRL:3}Soldier 2:", output)
         self.assertNotIn("Soldier{CTRL:3}2:", output)
 
     def test_ctrl6_speaker_boundary_stays_before_next_speaker(self) -> None:
-        """Keep a source CTRL:6 at Jeanne's turn instead of inside her sentence."""
-        template = (
-            "Lugot: Thank God…{CTRL:6}"
-            "Jeanne: From that cross I heard God's message."
-        )
-        reviewed = (
-            "Lugot: Thank God… sob… "
-            "Jeanne: From that cross, I heard God's message."
-        )
-        output = layout_review_text("TEST/g0/r11", reviewed, template)
+        """Keep an explicit CTRL:6 at Jeanne's reviewed speaker turn."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            base = root / "base"
+            overrides = root / "overrides"
+            base.mkdir()
+            overrides.mkdir()
+            (base / "TEST.json").write_text(
+                json.dumps(
+                    {
+                        "TEST/g0/r11": (
+                            "Lugot: Thank God…{CTRL:6}"
+                            "Jeanne: From that cross I heard God's message."
+                        )
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            (overrides / "TEST.json").write_text(
+                json.dumps(
+                    {
+                        "TEST/g0/r11": (
+                            "Lugot: Thank God… sob…{CTRL:6}"
+                            "Jeanne: From that cross, I heard God's message."
+                        )
+                    },
+                    indent=2,
+                ),
+                encoding="utf-8",
+            )
+            output = merged_translation_map(
+                "TEST",
+                base_directory=base,
+                override_directory=overrides,
+                review_directory=None,
+            )["TEST/g0/r11"]
         self.assertIn("{CTRL:6}Jeanne:", output)
         self.assertNotIn("From that cross,{CTRL:6}", output)
 
