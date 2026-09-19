@@ -17,6 +17,24 @@ It inserts `CTRL:0` while advancing through the first four physical rows and use
 `CTRL:4` when another visible row requires the native scroll behavior. Leading and
 trailing layout controls are retained when they affect record entry or exit.
 
+### Global soft-wrap invariant
+
+For every scenario record other than the registered quiz prompts, `CTRL:0` and
+`CTRL:4` are generated output, never editorial input. Translation/retranslation
+overrides may change the visible words, but any supplied soft row controls are
+discarded before materialization. The layout engine then greedily fills the current
+24-column row at word boundaries and emits a row/scroll control only when the next
+word cannot fit.
+
+This rule also applies to records retained in the final-playtest tracking set.
+Record-scoped policies may preserve or demote semantic/timing controls, but they do
+not preserve hand-balanced soft line breaks. A second application of the ordinary
+layout transform must therefore be idempotent: it may not find another removable or
+movable soft break.
+
+The only scenario-text exception is `QUIZ_QUESTION_RECORDS`, whose row geometry is
+native answer-menu state and is validated separately.
+
 ## Scenario quiz questions: native geometry is authoritative
 
 Scenario quiz prompts are a special case and are **not** ordinary reflowable
