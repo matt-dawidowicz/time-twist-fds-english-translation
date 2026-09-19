@@ -67,7 +67,7 @@ DEFAULT_KOUHEN_BASELINE = (
 )
 
 RELEASE_OUTPUT_KEYS = ("zenpen", "kouhen", "four_side")
-SOURCE_LOCK_SCHEMA = "Time Twist release source lock v3"
+SOURCE_LOCK_SCHEMA = "Time Twist release source lock v4"
 SOURCE_NORMALIZATION_RAW = "raw"
 SOURCE_NORMALIZATION_LF = "lf"
 CODE_PROVENANCE_SCHEMA = "Time Twist release code provenance v1"
@@ -118,8 +118,6 @@ class ReleasePaths:
     zenpen_baseline: Path
     kouhen_baseline: Path
     translations: Path
-    production_overrides: Path
-    production_review: Path
 
     @classmethod
     def from_project_root(cls, project_root: Path) -> ReleasePaths:
@@ -140,8 +138,6 @@ class ReleasePaths:
             zenpen_baseline=work / "baseline" / "time_twist_zenpen_japan.fds",
             kouhen_baseline=work / "baseline" / "time_twist_kouhen_japan.fds",
             translations=work / "translations",
-            production_overrides=work / "production_overrides",
-            production_review=root / "review" / "production_retranslation",
         )
 
 
@@ -414,19 +410,12 @@ def authoritative_source_paths(paths: ReleasePaths) -> tuple[Path, ...]:
     translations = tuple(
         paths.translations / f"{bank}.json" for bank in KNOWN_SCENARIO_BANKS
     )
-    reviews = tuple(
-        paths.production_review / REVIEW_FILES[bank][0]
-        for bank in KNOWN_SCENARIO_BANKS
-    )
-    overrides = tuple(sorted(paths.production_overrides.glob("*.json")))
     return (
         paths.zenpen_baseline,
         paths.kouhen_baseline,
         paths.title_asset,
         paths.slide_title_asset,
         *translations,
-        *reviews,
-        *overrides,
     )
 
 
@@ -462,10 +451,9 @@ def _validate_destination_collision(
 def _source_normalization(relative: str) -> str:
     """Return the established content policy for one locked source path."""
     logical_path = PurePosixPath(relative)
-    if logical_path.suffix == ".json" and (
-        logical_path.parts[:2] == ("work", "translations")
-        or logical_path.parts[:2] == ("work", "production_overrides")
-        or logical_path.parts[:2] == ("review", "production_retranslation")
+    if (
+        logical_path.suffix == ".json"
+        and logical_path.parts[:2] == ("work", "translations")
     ):
         return SOURCE_NORMALIZATION_LF
     return SOURCE_NORMALIZATION_RAW
