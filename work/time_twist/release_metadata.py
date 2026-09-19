@@ -18,7 +18,6 @@ from dataclasses import dataclass
 from importlib.metadata import version as package_version
 from pathlib import Path, PurePosixPath
 
-from .production_translation import REVIEW_FILES
 from .project import KNOWN_SCENARIO_BANKS
 from .title import DEFAULT_SUBTITLE
 
