@@ -292,18 +292,22 @@ def _speaker_label_spans(text: str) -> tuple[tuple[int, int], ...]:
     return tuple(spans)
 
 
-def _source_speaker_ctrl2_labels(template: str) -> tuple[str | None, ...]:
-    """Return the source speaker label, if any, following each CTRL:2.
+def _source_speaker_semantic_boundaries(
+    template: str,
+) -> tuple[tuple[int, str | None], ...]:
+    """Return semantic controls together with any following source speaker label.
 
-    Japanese row controls may sit between the section control and the next
-    visible label, so look through source-only 0/4 geometry. This classification
-    is deliberately based on the certified source topology rather than a
-    provisional English layout, which may already have moved the control.
+    Japanese row controls may sit between a semantic control and the next
+    visible label, so look through source-only 0/4 geometry. Speaker-changing
+    controls are pinned by source topology for *all* semantic control values,
+    not only CTRL:2. This prevents localization reflow from sliding CTRL:1,
+    CTRL:3, or CTRL:6 into the next speaker's sentence or even into the label
+    itself.
     """
     segments, controls = _template_parts(template)
-    labels: list[str | None] = []
+    boundaries: list[tuple[int, str | None]] = []
     for index, control in enumerate(controls):
-        if control != 2:
+        if control not in SEMANTIC_CONTROLS:
             continue
         visible_after = [segments[index + 1]]
         following = index + 1
@@ -317,34 +321,33 @@ def _source_speaker_ctrl2_labels(template: str) -> tuple[str | None, ...]:
             part.strip() for part in visible_after if part.strip()
         ).lstrip()
         spans = _speaker_label_spans(after)
-        if spans and spans[0][0] == 0:
-            labels.append(after[: spans[0][1]])
-        else:
-            labels.append(None)
-    return tuple(labels)
+        label = after[: spans[0][1]] if spans and spans[0][0] == 0 else None
+        boundaries.append((control, label))
+    return tuple(boundaries)
 
 
-def _validate_source_speaker_ctrl2_boundaries(
+def _validate_source_speaker_semantic_boundaries(
     template: str, production: str
 ) -> None:
-    """Require source speaker-changing CTRL:2 controls to remain at the turn.
+    """Require every source speaker-changing semantic control to stay at the turn.
 
-    A semantic speaker change must never be converted into pagination or slid
-    into the preceding speaker's English merely to satisfy the two-row re-entry
-    ceiling. If the reviewed first turn is too long, the build must fail closed
-    so the wording can be shortened explicitly.
+    A semantic speaker change must never slide into the preceding or following
+    speaker's English merely to satisfy renderer geometry. If the reviewed turn
+    cannot fit while preserving the source speaker boundary, the build fails
+    closed so wording or a record-scoped control policy can be reviewed.
     """
     cursor = 0
-    for label in _source_speaker_ctrl2_labels(template):
+    for control, label in _source_speaker_semantic_boundaries(template):
         if label is None:
             continue
         pattern = re.compile(
-            r"\{CTRL:2\}(?:\{CTRL:[04]\})*" + re.escape(label)
+            rf"\{{CTRL:{control}\}}(?:\{{CTRL:[04]\}})*" + re.escape(label)
         )
         match = pattern.search(production, cursor)
         if match is None:
             raise ProductionTranslationError(
-                f"source CTRL:2 speaker boundary before {label!r} was moved or lost"
+                f"source CTRL:{control} speaker boundary before {label!r} "
+                "was moved or lost"
             )
         cursor = match.end()
 
@@ -677,6 +680,22 @@ def _split_visible_text(
         )
     forbidden_breaks = _forbidden_speaker_breaks(text)
 
+    # If a source semantic control introduces a speaker turn, pin that control
+    # immediately before the same speaker label in the reviewed English. This
+    # is stricter than merely preventing a label from being orphaned: it stops
+    # dynamic-programming cadence choices from placing the control inside
+    # "Soldier 2:" or after the opening words of the next speaker.
+    required_speaker_labels: dict[int, str] = {}
+    for control_index, control in enumerate(controls):
+        if control not in SEMANTIC_CONTROLS:
+            continue
+        next_segment = template_segments[control_index + 1].lstrip()
+        spans = _speaker_label_spans(next_segment)
+        if spans and spans[0][0] == 0:
+            required_speaker_labels[control_index] = next_segment[
+                : spans[0][1]
+            ]
+
     target_total = sum(
         max(1, len(template_segments[index])) for index in active
     )
@@ -724,6 +743,14 @@ def _split_visible_text(
             for end_word in ends:
                 if end_word in forbidden_breaks:
                     continue
+                required_label = required_speaker_labels.get(segment_index)
+                if required_label is not None:
+                    remaining = " ".join(words[end_word:])
+                    if not (
+                        remaining == required_label
+                        or remaining.startswith(required_label + " ")
+                    ):
+                        continue
                 chunk = (
                     " ".join(words[start_word:end_word])
                     if template_segment
@@ -989,7 +1016,7 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
     try:
         validate_production_control_sequence(template, output)
         validate_renderer_buffer_layout(output)
-        _validate_source_speaker_ctrl2_boundaries(template, output)
+        _validate_source_speaker_semantic_boundaries(template, output)
     except ProductionTranslationError as error:
         raise ProductionTranslationError(f"{record_id}: {error}") from error
     reviewed_visible_words = CONTROL_RE.sub(" ", reviewed).split()
