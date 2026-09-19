@@ -265,3 +265,24 @@ Confirmed still actionable in v17:
 - TT6B/g2/r2 — still omits the source adjective describing Jerusalem's magnificent Temple.
 - TT6C/g1/r8 — still flattens Caspar's ceremonial register.
 - TT6D/g0/r3 — still contains an empty "Girl: !" where the source has a startled cry.
+
+
+## Punctuation-only reaction beats in v17
+
+The ROM extractor represents a strong nonverbal exclamation beat as `／`.
+Do not invent a spoken interjection when the source supplies none, but do not
+leave malformed English labels such as `Speaker: !` either.
+
+Recommended silent-shock localization:
+
+- `T25/g1/r0`: `Me: !` -> `Me: …!`
+- `T25/g1/r21`: `Lincoln: !` -> `Lincoln: …!`
+- `TT6C/g0/r2`: `Devil: !` -> `Devil: …!`
+- `TT6C/g0/r12`: `Devil: !!` -> `Devil: …!!`
+- `TT6C/g0/r17`: `Mary: !` -> `Mary: …!`
+- `TT6D/g0/r4`: `Me: !!` -> `Me: …!!`
+
+Exception:
+
+- `TT6D/g0/r3` should use an audible `Girl: Ah!` because the identical source
+  construction in `TT1B/g1/r13` is already contextually localized that way.
