@@ -31,8 +31,6 @@ class EllipsisPolicyTests(unittest.TestCase):
             production = merged_translation_map(
                 bank,
                 base_directory=ROOT / "work" / "translations",
-                override_directory=ROOT / "work" / "production_overrides",
-                review_directory=ROOT / "review" / "production_retranslation",
             )
             offenders.extend(
                 f"{record_id}: {text}"
