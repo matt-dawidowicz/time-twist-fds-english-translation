@@ -1027,6 +1027,98 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
     return output
 
 
+def _validate_no_semantic_control_splits_speaker_label(text: str) -> None:
+    """Reject a semantic control placed inside a recognized speaker label."""
+    pieces = CONTROL_RE.split(text)
+    plain_parts: list[str] = [pieces[0]]
+    semantic_positions: list[tuple[int, int]] = []
+    visible_length = len(pieces[0])
+    for value_text, segment in zip(
+        pieces[1::2], pieces[2::2], strict=True
+    ):
+        value = int(value_text)
+        if value in SEMANTIC_CONTROLS:
+            semantic_positions.append((value, visible_length))
+        elif value in INSERTABLE_LAYOUT_CONTROLS:
+            plain_parts.append(" ")
+            visible_length += 1
+        plain_parts.append(segment)
+        visible_length += len(segment)
+    plain = "".join(plain_parts)
+    spans = _speaker_label_spans(plain)
+    for control, position in semantic_positions:
+        for start, end in spans:
+            if start < position < end:
+                raise ProductionTranslationError(
+                    f"CTRL:{control} splits speaker label "
+                    f"{plain[start:end]!r}"
+                )
+
+
+def layout_controlled_review_text(
+    record_id: str, reviewed: str, template: str
+) -> str:
+    """Reflow an explicit override while preserving semantic/control intent.
+
+    Interior CTRL:0/CTRL:4 values are regenerated as English wrapping geometry.
+    Semantic controls keep the override's reviewed positions, while leading and
+    trailing soft controls remain authoritative because they can define record
+    entry/exit state.
+    """
+    raw_segments, raw_controls = _template_parts(reviewed)
+    visible = [index for index, segment in enumerate(raw_segments) if segment]
+    if not visible:
+        raise ProductionTranslationError(
+            f"{record_id}: explicit controlled review has no visible text"
+        )
+    first_visible = visible[0]
+    last_visible = visible[-1]
+
+    segments = [raw_segments[0]]
+    controls: list[int] = []
+    for index, control in enumerate(raw_controls):
+        keep = (
+            control in SEMANTIC_CONTROLS
+            or index < first_visible
+            or index >= last_visible
+        )
+        next_segment = raw_segments[index + 1]
+        if keep:
+            controls.append(control)
+            segments.append(next_segment)
+            continue
+        if control not in INSERTABLE_LAYOUT_CONTROLS:
+            raise ProductionTranslationError(
+                f"{record_id}: unsupported explicit control {control}"
+            )
+        left = segments[-1].strip()
+        right = next_segment.strip()
+        if left and right:
+            segments[-1] = f"{left} {right}"
+        else:
+            segments[-1] = left + right
+
+    segments = [" ".join(segment.split()) for segment in segments]
+    laid_out = _layout_fixed_segments(segments, controls)
+    output = laid_out[0]
+    for value, segment in zip(controls, laid_out[1:], strict=True):
+        output += f"{{CTRL:{value}}}{segment}"
+
+    try:
+        validate_production_control_sequence(template, output)
+        validate_renderer_buffer_layout(output)
+        _validate_no_semantic_control_splits_speaker_label(output)
+    except ProductionTranslationError as error:
+        raise ProductionTranslationError(f"{record_id}: {error}") from error
+
+    reviewed_visible_words = CONTROL_RE.sub(" ", reviewed).split()
+    if CONTROL_RE.sub(" ", output).split() != reviewed_visible_words:
+        raise ProductionTranslationError(
+            f"{record_id}: layout changed reviewed prose"
+        )
+    return output
+
+
 def merged_translation_map(
     bank_name: str,
     *,
