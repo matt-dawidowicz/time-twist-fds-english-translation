@@ -507,28 +507,35 @@ def merged_translation_map(
         effective_template = _effective_base_template(
             record_id, base[record_id]
         )
-        if record_id in explicit_control_overrides:
-            # Explicit semantic positions, plus leading/trailing row controls,
-            # are reviewed intent. Regenerate only interior CTRL:0/CTRL:4
-            # wrapping around them.
-            laid_out[record_id] = _core.layout_controlled_review_text(
+        try:
+            if record_id in explicit_control_overrides:
+                # Explicit semantic positions, plus leading/trailing row controls,
+                # are reviewed intent. Regenerate only interior CTRL:0/CTRL:4
+                # wrapping around them.
+                laid_out[record_id] = _core.layout_controlled_review_text(
+                    record_id,
+                    selected_text,
+                    effective_template,
+                )
+                continue
+
+            # Plain prose has no authoritative presentation controls. Rebuild its
+            # row geometry from visible English against the effective source
+            # semantic topology.
+            reviewed_text = " ".join(
+                CONTROL_RE.sub(" ", selected_text).split()
+            )
+            laid_out[record_id] = _core.layout_review_text(
                 record_id,
-                selected_text,
+                reviewed_text,
                 effective_template,
             )
-            continue
-
-        # Plain prose has no authoritative presentation controls. Rebuild its
-        # row geometry from visible English against the effective source
-        # semantic topology.
-        reviewed_text = " ".join(
-            CONTROL_RE.sub(" ", selected_text).split()
-        )
-        laid_out[record_id] = _core.layout_review_text(
-            record_id,
-            reviewed_text,
-            effective_template,
-        )
+        except ProductionTranslationError as error:
+            if str(error).startswith(f"{record_id}:"):
+                raise
+            raise ProductionTranslationError(
+                f"{record_id}: {error}"
+            ) from error
     _validate_quiz_question_geometry(bank_name, base, laid_out)
     _validate_cross_record_staging(bank_name, base, laid_out)
     return laid_out
