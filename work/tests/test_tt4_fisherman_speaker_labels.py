@@ -27,8 +27,6 @@ def _production() -> dict[str, str]:
     return merged_translation_map(
         "TT4",
         base_directory=ROOT / "work" / "translations",
-        override_directory=ROOT / "work" / "production_overrides",
-        review_directory=ROOT / "review" / "production_retranslation",
     )
 
 
@@ -51,18 +49,24 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
         """Keep question text out of the answer menu's reserved rows."""
         tt4 = _production()
         self.assertEqual(
-            tt4["TT4/g5/r7"], "{CTRL:0}{CTRL:0}Greek city-states?"
+            tt4["TT4/g5/r7"],
+            "{CTRL:0}{CTRL:0}What were city-states{CTRL:0}in Greece called?",
         )
         self.assertEqual(
-            tt4["TT4/g5/r10"], "{CTRL:0}{CTRL:0}Athens' great rival?"
+            tt4["TT4/g5/r10"],
+            "{CTRL:0}{CTRL:0}Which city-state was{CTRL:0}Athens' greatest rival?",
         )
         self.assertEqual(
-            tt4["TT4/g5/r11"], "{CTRL:0}{CTRL:0}Greatest Greek hero?"
+            tt4["TT4/g5/r11"],
+            "{CTRL:0}{CTRL:0}Who was the great hero{CTRL:0}of Greek mythology?",
         )
-        self.assertEqual(tt4["TT4/g5/r12"], "{CTRL:0}{CTRL:0}Athena's temple?")
+        self.assertEqual(
+            tt4["TT4/g5/r12"],
+            "{CTRL:0}{CTRL:0}Which temple was built{CTRL:0}for the goddess Athena?",
+        )
         self.assertEqual(
             tt4["TT4/g5/r13"],
-            "{CTRL:0}{CTRL:0}Three Greek crops:{CTRL:0}olives, grapes, and…?",
+            "{CTRL:0}{CTRL:0}What crop joined olives{CTRL:0}and grapes in Greece?",
         )
 
     def test_fixed_menu_uses_the_same_identity(self) -> None:
