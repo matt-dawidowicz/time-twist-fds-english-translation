@@ -29,7 +29,6 @@ Provisional result: translation-complete, with two optional personality-test edi
 - TT1B/g0/r16 — RETRANSLATE: source says a pharaoh used the bell, not necessarily
   pharaohs collectively. Prefer "A legendary bell said to have been used by a
   pharaoh in ancient Egypt to ward off evil."
-- TT1B/g3/r25 — RETRANSLATE natural congregant line: おはなしのとちゅうです -> "Shh! We’re in the middle of the sermon," not clipped "Preaching."
 - TT1B/g3/r23 — RETRANSLATE: "Lord, forgive our sins and the sins of our forefathers!"
 - TT1B/g4/r4 — OPTIONAL: preserve emphasis in "Take good care of my body."
 - TT1B/g1/r12 — OPTIONAL: "You've got lucky earlobes."
@@ -40,9 +39,6 @@ Provisional result: translation-complete, with two optional personality-test edi
 - TT1B businessman voice — LOCALIZATION: preserve marked Nagoya/Owari comic
   characterization through consistent diction/syntax, not an invented U.S. accent.
 
-- TT1B/g2/r16 — RETRANSLATE epistemic nuance: めが わるいようだ is an
-  observation/inference, so use "His eyesight seems poor," not categorical
-  "His eyesight's poor."
 
 ## TT2 / T22
 
@@ -102,7 +98,7 @@ Provisional result: translation-complete, with two optional personality-test edi
 
 Major retranslation/localization bank.
 
-- TT4/g0/r3 — RETRANSLATE inscription naturally: "Athena, goddess of wisdom, guardian deity of the people of Athens." Current noun pile is translationese.
+- TT4/g0/r3 — KEEP v17: current ROM already reads naturally as "Athena, goddess of wisdom and guardian of Athens."
 
 - TT4/g3/r23 — RETRANSLATE Hades: "Well done. I am Hades, guardian of the
   underworld. Very well—I'll make an exception and let you pass."
@@ -156,18 +152,13 @@ Major retranslation/localization bank.
 
 ## TT6A / TT6B / TT6C / TT6D
 
-- TT6A/g2/r26 — RETRANSLATE object category: だれかを まっているようだ means
-  "He seems to be waiting for someone," not something.
-- TT6C/g2/r12 — RETRANSLATE relation nuance: たにんのようなきが せん means the
-  Devil does not feel the protagonist is a stranger; "I feel a certain kinship with
-  you" preserves the source better than generic similarity.
 
 
 - TT6A/g1/r4 — RETRANSLATE omission: source explicitly says the sweet smell of hay tickles the protagonist's nose; current wording drops hay entirely.
-- TT6A/g2/r8 — RETRANSLATE: source explicitly observes that the plane, saw, and hammer have not changed at all since ancient times; current "tools look unchanged" loses the time-traveler observation.
+- TT6A/g2/r8 — OPTIONAL refinement: v17 already improved this to "Some tools really haven't changed much." Source more explicitly frames the comparison across time; consider making that temporal joke clearer, but it is no longer a mistranslation.
 - TT6A/g2/r7 — RETRANSLATE nuance: yakekuso -> planing wood in frustration/desperation.
 - TT6B/g2/r2 — RETRANSLATE omitted modifier: source asks which Jewish king built the magnificent/splendid Temple in Jerusalem.
-- TT6B/g0/r20 — RETRANSLATE clarity: source explicitly says "There’s no water. Hang in there." Avoid opaque "None. Hang in."
+- TT6B/g0/r20 — OPTIONAL/context: v17 already says "There's none left. Hang in there." If the immediately preceding interaction makes water explicit on screen, this is acceptable; otherwise prefer "There's no water left."
 - TT6B/g1/r9 — RETRANSLATE natural dialogue: "Joseph: Kashim really is dependable… / Mary: He is." Current "Trusty Kashim. Truly." is translationese.
 - TT6B/g1/r13 — TECHNICAL: natural "Sleep by the road" was shortened to "Sleep out"
   for native control staging; retest under current layout engine.
@@ -249,3 +240,28 @@ themselves wrong in context.
   "Deceive and coax" is a false context-free parse.
 - `TT4/fixed/r78` — KEEP "Alice." Japanese `ありす` is the deliberately odd
   answer distractor Alice; do not replace it with workbook gloss "Aris."
+
+
+## Actual-v17 verification pass
+
+The fresh audit was cross-checked against the decoded v17 ROM rather than only
+workbook/current-analysis fields.
+
+Already fixed in v17 and therefore removed from the actionable list:
+
+- TT1B/g2/r16 — already "His eyesight seems poor."
+- TT1B/g3/r25 — already "We're in the middle of the sermon."
+- TT6A/g2/r26 — already "waiting for someone."
+- TT6C/g2/r12 — already preserves "I feel a certain kinship with you."
+- TT4/g0/r3 — current inscription is already natural and source-faithful enough.
+
+Confirmed still actionable in v17:
+
+- TT1B/g2/r10 — still ends at "Ah! That voice…" and drops "you're the person from before."
+- TT3A/g4/r4 — still reads awkwardly as "France's resistance movement was called?"
+- T25/g1/r17 — still drops "Belle" and the opening "What's wrong?"
+- TT6A/g1/r4 — still omits hay from the sweet-smell observation.
+- TT6B/g1/r9 — still has stiff "Good old Kashim. / Mary: Truly."
+- TT6B/g2/r2 — still omits the source adjective describing Jerusalem's magnificent Temple.
+- TT6C/g1/r8 — still flattens Caspar's ceremonial register.
+- TT6D/g0/r3 — still contains an empty "Girl: !" where the source has a startled cry.
