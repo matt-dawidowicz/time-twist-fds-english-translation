@@ -366,18 +366,6 @@ def _greedy_turn_rows(text: str, columns: int) -> tuple[str, ...]:
             current = word
     rows.append(current)
 
-    # Greedy fill is authoritative. The only aesthetic exception is a final
-    # one- or two-character word stranded by itself; borrow the previous row's
-    # last word when that produces two legal rows.
-    if len(rows) >= 2 and len(rows[-1]) <= 2:
-        previous_words = rows[-2].split()
-        if len(previous_words) >= 2:
-            borrowed = previous_words[-1]
-            revised_last = f"{borrowed} {rows[-1]}"
-            revised_previous = " ".join(previous_words[:-1])
-            if revised_previous and len(revised_last) <= columns:
-                rows[-2] = revised_previous
-                rows[-1] = revised_last
     return tuple(rows)
 
 
