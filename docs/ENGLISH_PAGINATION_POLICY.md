@@ -35,6 +35,13 @@ movable soft break.
 The only scenario-text exception is `QUIZ_QUESTION_RECORDS`, whose row geometry is
 native answer-menu state and is validated separately.
 
+Semantic controls that introduce a speaker turn are also source-pinned. If a
+certified base record has `CTRL:1`, `CTRL:2`, `CTRL:3`, or `CTRL:6`
+immediately before a speaker label, production reflow must keep that same control
+immediately before the same label. A build must fail rather than produce forms such
+as `Soldier{CTRL:3}2:` or move a speaker-changing control into the next speaker's
+sentence.
+
 ## Scenario quiz questions: native geometry is authoritative
 
 Scenario quiz prompts are a special case and are **not** ordinary reflowable
