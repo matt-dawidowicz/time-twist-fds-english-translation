@@ -29,6 +29,7 @@ Provisional result: translation-complete, with two optional personality-test edi
 - TT1B/g0/r16 — RETRANSLATE: source says a pharaoh used the bell, not necessarily
   pharaohs collectively. Prefer "A legendary bell said to have been used by a
   pharaoh in ancient Egypt to ward off evil."
+- TT1B/g3/r25 — RETRANSLATE natural congregant line: おはなしのとちゅうです -> "Shh! We’re in the middle of the sermon," not clipped "Preaching."
 - TT1B/g3/r23 — RETRANSLATE: "Lord, forgive our sins and the sins of our forefathers!"
 - TT1B/g4/r4 — OPTIONAL: preserve emphasis in "Take good care of my body."
 - TT1B/g1/r12 — OPTIONAL: "You've got lucky earlobes."
@@ -101,6 +102,8 @@ Provisional result: translation-complete, with two optional personality-test edi
 
 Major retranslation/localization bank.
 
+- TT4/g0/r3 — RETRANSLATE inscription naturally: "Athena, goddess of wisdom, guardian deity of the people of Athens." Current noun pile is translationese.
+
 - TT4/g3/r23 — RETRANSLATE Hades: "Well done. I am Hades, guardian of the
   underworld. Very well—I'll make an exception and let you pass."
 - TT4/g4/r4 — RETRANSLATE Cerberus exchange in natural conversational English;
@@ -143,6 +146,7 @@ Major retranslation/localization bank.
   Cotton gin, Plow, Camera, Airplane, and VCR. The intended answer is Projector.
   Rewrite the question as the third of the game's stated Edison trio alongside the
   phonograph and generator.
+- T25/g1/r17 — RETRANSLATE omission: Meyer explicitly says "What’s wrong, Belle… need something?" Current shortened line drops Belle’s name and the concerned opening.
 - T25/g2/r7 — RETRANSLATE definite omission: source explicitly says "Let's save all
   the coyotes too!"
 - T25/g0/r11 — KEEP later "lands on his feet" localization for sarcastic yo-watari
@@ -161,11 +165,13 @@ Major retranslation/localization bank.
 
 - TT6A/g2/r8 — RETRANSLATE: source explicitly observes that the plane, saw, and hammer have not changed at all since ancient times; current "tools look unchanged" loses the time-traveler observation.
 - TT6A/g2/r7 — RETRANSLATE nuance: yakekuso -> planing wood in frustration/desperation.
+- TT6B/g2/r2 — RETRANSLATE omitted modifier: source asks which Jewish king built the magnificent/splendid Temple in Jerusalem.
 - TT6B/g0/r20 — RETRANSLATE clarity: source explicitly says "There’s no water. Hang in there." Avoid opaque "None. Hang in."
 - TT6B/g1/r9 — RETRANSLATE natural dialogue: "Joseph: Kashim really is dependable… / Mary: He is." Current "Trusty Kashim. Truly." is translationese.
 - TT6B/g1/r13 — TECHNICAL: natural "Sleep by the road" was shortened to "Sleep out"
   for native control staging; retest under current layout engine.
 - TT6B/g2/r18 — RETRANSLATE mare joke: "No nibbling—eat it in one big bite!"
+- TT6C/g1/r8 — RETRANSLATE ceremonial register: "This is our humble offering. Please accept it…" better preserves the marked polite/honorific Japanese.
 - TT6C/g1/r9 — RETRANSLATE Devil voice: "Ominous? On the contrary—it's the perfect
   name."
 - TT6C/g1/r15 — RETRANSLATE for clarity: explicitly return to the museum "before the
