@@ -1,66 +1,93 @@
 # Contributing translation
 
-This guide is for editors and reviewers who want to improve the English text
-without modifying the FDS engine or working with game-image bytes.
+This guide is for editors and reviewers changing scenario English without
+editing ROM bytes directly.
 
-## Start with the right source
+## One scenario-English source
 
-The playable scenario text is composed from `work/translations/<BANK>.json`
-plus the bank's registered file under `review/production_retranslation/`; an
-optional `work/production_overrides/<BANK>.json` is the final explicit layer.
-The searchable workbook in
-[`outputs/Time_Twist_complete_translation_workbook.html`](outputs/Time_Twist_complete_translation_workbook.html)
-is the best review surface, but it is generated. Do not edit a workbook row as
-the only source change.
+Every playable scenario record has exactly one current English source:
 
-Each record has two useful English fields:
+```text
+work/translations/<BANK>.json
+```
 
-- `patch_safe_english_translation` is the exact text used by the current
-  playable build.
-- `final_natural_english_translation` preserves a fuller editorial reading
-  when the current renderer, control layout, or bank budget cannot display it
-  safely. The canonical release already installs the configured full-word menu
-  labels; this distinction still matters for constrained scenario prose.
+Edit that record directly. There is no secondary English layer that can replace
+it later.
 
-Read [the translation workflow](docs/TRANSLATION_WORKFLOW.md) before changing
-a record. It explains the record IDs, control codes, width limits, and bank
-footprints that are not visible in ordinary prose.
+Use `work/source_records/<BANK>.json` to inspect the decoded Japanese and
+stable record ID. Source records are evidence; they are not an alternate
+English translation source.
 
-## Safe contribution workflow
+Fixed menus and other non-scenario UI use
+`work/time_twist/ui_fixed_tables.py` and `work/time_twist/ui.py`.
 
-1. Find the stable record ID in the workbook and read its Japanese source,
-   scene context, and existing notes.
-2. Edit the source layer that actually owns the wording: the registered
-   production-review JSON for current reviewed prose, the base map for a deliberate
-   base/topology correction, or a narrowly scoped final override.
-3. Keep the exact Japanese source and native semantic-control sequence unchanged.
-4. Keep the patch-safe text within the existing display, packing, and capacity
-   limits. If the natural wording does not fit, retain it in the natural field
-   and explain the tradeoff instead of silently weakening the translation.
-5. Run the public tests:
+## Required translation standard
+
+For every edit:
+
+1. Preserve the Japanese meaning, referents, speaker identity, and scene logic.
+2. Prefer natural contemporary English over literal or compressed fragments.
+3. Do not weaken, embellish, or sanitize source content.
+4. Keep established names and terminology consistent.
+5. Do not silently shorten a line merely to make it easier to pack. If the
+   preferred wording cannot be represented safely, document the exact engine
+   limitation and address that limitation deliberately.
+
+## Dialogue layout
+
+The canonical JSON stores the approved control layout together with the words.
+
+- Every recognized new speaker heading starts on a **fresh row**.
+- Fill ordinary rows greedily to the 24-column limit within that speaker turn.
+- Never split a speaker heading.
+- Do not add short aesthetic lines when the next word still fits.
+- Preserve intentional waits, reveals, and re-entry controls.
+- Quiz prompts and identity/info cards are structural UI and may intentionally
+  retain non-prose row geometry.
+
+See [docs/ENGLISH_PAGINATION_POLICY.md](docs/ENGLISH_PAGINATION_POLICY.md).
+
+## Safe edit workflow
+
+1. Locate the record ID in `work/source_records/<BANK>.json`.
+2. Read the Japanese source and surrounding records.
+3. Edit only the corresponding entry in `work/translations/<BANK>.json`.
+4. If control placement must change, verify why the control is presentation
+   geometry versus a semantic/timing boundary.
+5. Run:
 
    ```powershell
    python -m pip install -e ".[dev]"
+   python work/tools/materialize_production_translations.py \
+     --repo-root . --output work/build/production_translations
    python work/run_tests.py unit
    ```
 
-6. In your pull request, name every changed record ID, give the scene context,
-   explain the wording decision, and report the checks you ran.
+6. Build a candidate and playtest the changed scene before promotion.
+
+In a pull request, name every changed record ID and explain the source meaning,
+wording choice, control/layout change, and tests performed.
 
 ## Do not do these things
 
-- Do not edit generated FDS images, extracted banks, or workbook outputs as
-  authoritative translation source.
-- Do not change `exact_japanese` to match a reconstruction or a guess.
-- Do not reorder, remove, or invent control tags.
-- Do not expand a fixed record, scenario tail, or bank footprint without a
-  separately proven engine-level plan.
-- Do not commit game images, private fixtures, save states, screenshots, or
-  generated candidates.
+- Do not edit generated FDS images, rebuilt banks, save states, or emulator
+  memory as translation source.
+- Do not introduce another English fallback, review, or override directory.
+- Do not copy an older English string from Git history into the canonical map
+  merely because it once fit.
+- Do not change decoded Japanese to make an English decision look correct.
+- Do not move a semantic control across a speaker turn just to gain space.
+- Do not expand into unknown RAM or storage without proving the relevant engine
+  boundary.
+- Do not commit retail images or private fixtures.
 
-## Need more context?
+Historical engineering records are for explanation only. Current accepted
+English always lives in `work/translations/<BANK>.json`.
 
-- [Workbook pipeline](docs/WORKBOOK_PIPELINE.md)
+## More context
+
+- [Translation workflow](docs/TRANSLATION_WORKFLOW.md)
+- [English pagination policy](docs/ENGLISH_PAGINATION_POLICY.md)
 - [Scenario-bank format](docs/FORMATS.md#scenario-bank-layout)
 - [Project architecture](docs/ARCHITECTURE.md)
 - [General contribution rules](CONTRIBUTING.md)
