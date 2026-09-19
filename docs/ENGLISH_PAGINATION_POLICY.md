@@ -43,14 +43,14 @@ For ordinary controlled overrides, reviewed semantic-control positions and
 leading/trailing row controls remain authoritative. Only interior prose
 `CTRL:0`/`CTRL:4` wrapping is regenerated.
 
-Semantic controls that introduce a speaker turn are source-pinned during ordinary
-automatic reflow. If a certified base record has `CTRL:1`, `CTRL:2`,
-`CTRL:3`, or `CTRL:6` immediately before a speaker label, automatic layout must
-keep that control immediately before the same label. An explicit reviewed override
-may intentionally relocate a semantic boundary, but it retains its own semantic
-control positions while only interior soft wrapping is regenerated. In either path,
-a build must fail rather than produce forms such as `Soldier{CTRL:3}2:` or move a
-speaker-changing control accidentally into the next speaker's sentence.
+Source speaker-changing `CTRL:2` boundaries remain pinned during ordinary
+automatic reflow because that control has mixed page/speaker semantics and a strict
+re-entry limit. Other semantic controls may need record-specific relocation when
+expanded English cannot fit before the native re-entry point. Such relocations are
+not inferred as a global rule: once audited, they are encoded as explicit production
+overrides whose semantic-control positions remain authoritative while only interior
+soft wrapping is regenerated. All layout paths reject a semantic control placed
+inside a recognized speaker label, such as `Soldier{CTRL:3}2:`.
 
 ## Scenario quiz questions: native geometry is authoritative
 
