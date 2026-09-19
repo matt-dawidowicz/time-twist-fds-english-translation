@@ -884,7 +884,11 @@ def _weak_non_speaker_ctrl2_ordinals(
     control into the preceding turn.
     """
     segments, controls = _template_parts(text)
-    source_speaker_labels = _source_speaker_ctrl2_labels(template)
+    source_speaker_labels = tuple(
+        label
+        for control, label in _source_speaker_semantic_boundaries(template)
+        if control == 2
+    )
     visible_before = ""
     ctrl2_ordinal = -1
     demoted: set[int] = set()
