@@ -236,6 +236,34 @@ class ProductionTranslationLayoutTests(unittest.TestCase):
             "Have you ever had sleep{CTRL:0}paralysis?",
         )
 
+    def test_ctrl3_speaker_boundary_cannot_split_numbered_label(self) -> None:
+        """Keep a source CTRL:3 before Soldier 2 rather than inside the label."""
+        template = (
+            "Soldier 1: Your master is quite the man.{CTRL:3}"
+            "Soldier 2: Cut it out!"
+        )
+        reviewed = (
+            "Soldier 1: Your master is quite a man. "
+            "Soldier 2: Hey, knock it off!"
+        )
+        output = layout_review_text("TEST/g0/r10", reviewed, template)
+        self.assertIn("{CTRL:3}Soldier 2:", output)
+        self.assertNotIn("Soldier{CTRL:3}2:", output)
+
+    def test_ctrl6_speaker_boundary_stays_before_next_speaker(self) -> None:
+        """Keep a source CTRL:6 at Jeanne's turn instead of inside her sentence."""
+        template = (
+            "Lugot: Thank God…{CTRL:6}"
+            "Jeanne: From that cross I heard God's message."
+        )
+        reviewed = (
+            "Lugot: Thank God… sob… "
+            "Jeanne: From that cross, I heard God's message."
+        )
+        output = layout_review_text("TEST/g0/r11", reviewed, template)
+        self.assertIn("{CTRL:6}Jeanne:", output)
+        self.assertNotIn("From that cross,{CTRL:6}", output)
+
     def test_new_speaker_starts_on_fresh_row(self) -> None:
         """Never append a new speaker label to the previous speaker's line."""
         output = layout_review_text(
