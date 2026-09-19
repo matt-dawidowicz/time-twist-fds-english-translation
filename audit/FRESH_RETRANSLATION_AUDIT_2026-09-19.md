@@ -46,8 +46,9 @@ Provisional result: translation-complete, with two optional personality-test edi
   "What are you doing?!").
 - TT2/g0/r22 — RETRANSLATE: formal church decree should preserve tavernkeeper Lugot
   relationship and "in the name of the Church."
-- TT2/g1/r12 — LOCALIZATION: Crusades quiz should ask which holy city/holy land was
-  sought; verify answer choices before final English.
+- TT2/g1/r12 — LOCALIZATION CONFIRMED: fixed answer choices are Damascus /
+  Jerusalem / Crimea, so the intended answer is Jerusalem. Rewrite the prompt to ask
+  which place/city the Crusaders sought to recapture rather than vague "what land."
 - TT2/g1/r21 — RETRANSLATE after source-byte verification; likely "You're giving it
   to me? Heh-heh!"
 - TT2/g1/r26 — OPTIONAL: "Oh, you want some wine? Here—it's your reward."
@@ -72,6 +73,8 @@ Provisional result: translation-complete, with two optional personality-test edi
 - TT3A/g0/r28 — REVIEW: occult oath "human fat and sharpened stakes" is source-faithful
   but okite may read more naturally as "rites/precepts" than "law."
 - TT3A/g2/r29 — OPTIONAL: nigirishimeru -> "clutching a scrap of paper."
+- TT3A/g2/r7 — RUNTIME REVIEW: identity of the off-screen "Wait, Cougar…" voice
+  cannot be settled from text alone.
 - TT3A/g2/r30 — RUNTIME REVIEW: torn-note spatial order requires screenshot/nametable
   evidence; blue ink is source-verified.
 - TT3A/g3/r3 — RETRANSLATE: tsute o tadotte + boumei -> "Through my contacts, I asked
@@ -100,9 +103,11 @@ Major retranslation/localization bank.
 - TT4/g4/r6 — RETRANSLATE: "Now tell each man his name to his face."
 - TT4/g4/r7 — OPTIONAL: "Too bad. Start over."
 - TT4/g4/r9 — RETRANSLATE: "Ask the historian sitting next to me."
-- TT4/g4/r11 — LOCALIZATION BUG: Japanese four-character-name clue must become
-  five-letter-name in English. Homer and Plato are both 5 letters; all other candidate
-  names are longer, preserving puzzle logic.
+- TT4/g4/r11 — LOCALIZATION BUG CONFIRMED: Japanese says the end man's name has four
+  kana. In Japanese the short-name ambiguity is Homer/Plato; in English both Homer and
+  Plato are five letters while Socrates, Herodotus, and Pythagoras are longer.
+  Therefore "the man at the end has a five-letter name" preserves the intended clue
+  class and puzzle logic.
 - TT4/g4/r13 — RETRANSLATE Cerberus success line with natural voice and promise.
 - TT4/g4/r14 — RUNTIME REVIEW: anonymous "Wait." immediately before Devil entrance;
   determine whether to label Devil, Voice, or leave anonymous.
@@ -119,14 +124,18 @@ Major retranslation/localization bank.
 - TT5/g0/r30 — RETRANSLATE idiomatically: "cold, hard reality."
 - TT5/g0/r31 — RETRANSLATE: tachi ga warui gives a mean/cruel-joke nuance, stronger
   than simply "Don't tease your mother."
-- TT5/g2/r12 — LOCALIZATION: verify answer; likely ask which U.S. military force
-  fought Native Americans to protect white settlers in the West.
-- TT5/g2/r15 — LOCALIZATION: if answer is Black Ships, ask what Commodore Perry's
-  ships were called, not generic "what American fleet".
+- TT5/g2/r12 — LOCALIZATION CONFIRMED: the fixed answer table contains Marine Corps /
+  Cavalry, and Cavalry is the intended answer. Rewrite the prompt naturally around the
+  western-frontier historical claim without changing the answer.
+- TT5/g2/r15 — LOCALIZATION CONFIRMED: the fixed answer choices are Red ship / White
+  ship / Black ship; the intended answer is Black ship(s). Ask what Commodore Perry's
+  ships were called rather than generic "what fleet".
 - TT5/g2/r16 — RETRANSLATE with attribution: "the novel said to have helped spark
   the Civil War."
-- TT5/g2/r18 — RETRANSLATE question structure: identify the third of Edison's stated
-  "three great inventions" alongside phonograph and generator.
+- TT5/g2/r18 — LOCALIZATION CONFIRMED: the fixed answer table includes Projector,
+  Cotton gin, Plow, Camera, Airplane, and VCR. The intended answer is Projector.
+  Rewrite the question as the third of the game's stated Edison trio alongside the
+  phonograph and generator.
 - T25/g2/r7 — RETRANSLATE definite omission: source explicitly says "Let's save all
   the coyotes too!"
 - T25/g0/r11 — KEEP later "lands on his feet" localization for sarcastic yo-watari
@@ -157,3 +166,19 @@ Major retranslation/localization bank.
 3. Materialize proposed canonical English independently of legacy translation layers.
 4. Run layout/control/bank-capacity checks; document every natural line that cannot fit.
 5. Build v18 only after the audit corpus is stable.
+
+
+## Audit-of-audit corrections
+
+A second review of this audit confirmed the following:
+
+- The TT4 four-kana -> five-letter clue adaptation preserves the same Homer/Plato
+  short-name ambiguity rather than inventing a new solution.
+- TT2/g1/r12's answer is confirmed as Jerusalem from the fixed answer table.
+- TT5/g2/r12, g2/r15, and g2/r18 have confirmed answer targets of Cavalry,
+  Black ship(s), and Projector respectively.
+- TT3A/g2/r7 must remain in the runtime-evidence set; it was accidentally omitted
+  from the first draft.
+- This document currently audits the 1,299 scenario records. Fixed-address menus,
+  answer labels, command labels, graphics text, and other non-scenario English still
+  require a separate source-first audit before claiming full-game retranslation.
