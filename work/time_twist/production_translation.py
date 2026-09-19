@@ -465,31 +465,31 @@ def merged_translation_map(
 
     laid_out: dict[str, str] = {}
     for record_id, selected_text in selected.items():
-        reviewed_text = selected_text
-        if record_id not in explicit_control_overrides:
-            reviewed_text = " ".join(
-                CONTROL_RE.sub(" ", selected_text).split()
-            )
-        if (
-            record_id in FINAL_PLAYTEST_LAYOUT_RECORDS
-            or record_id in QUIZ_QUESTION_RECORDS
-        ):
+        # Quiz prompts are the sole geometry-preserving exception: their text
+        # box is shared with the native answer-selection UI, so row placement
+        # is interface state rather than ordinary prose presentation.
+        if record_id in QUIZ_QUESTION_RECORDS:
             if record_id not in explicit_control_overrides:
-                kind = (
-                    "quiz question"
-                    if record_id in QUIZ_QUESTION_RECORDS
-                    else "final-playtest layout"
-                )
                 raise ProductionTranslationError(
-                    f"{record_id}: {kind} must be an explicit control override"
+                    f"{record_id}: quiz question must be an explicit control override"
                 )
             _effective_base_template(record_id, base[record_id])
             validate_record_production_control_sequence(
-                record_id, base[record_id], reviewed_text
+                record_id, base[record_id], selected_text
             )
-            validate_renderer_buffer_layout(reviewed_text)
-            laid_out[record_id] = reviewed_text
+            validate_renderer_buffer_layout(selected_text)
+            laid_out[record_id] = selected_text
             continue
+
+        # All other scenario prose, including records retained in the
+        # final-playtest tracking set, is reflowed from visible English.
+        # Override-supplied CTRL:0/CTRL:4 values therefore cannot freeze old
+        # Japanese-era or hand-balanced row breaks. Native semantic controls
+        # are reconstructed from the certified base topology and the audited
+        # record-scoped presentation-control policy.
+        reviewed_text = " ".join(
+            CONTROL_RE.sub(" ", selected_text).split()
+        )
         laid_out[record_id] = layout_review_text(
             record_id,
             reviewed_text,
