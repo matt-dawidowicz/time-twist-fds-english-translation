@@ -163,6 +163,7 @@ Major retranslation/localization bank.
   you" preserves the source better than generic similarity.
 
 
+- TT6A/g1/r4 — RETRANSLATE omission: source explicitly says the sweet smell of hay tickles the protagonist's nose; current wording drops hay entirely.
 - TT6A/g2/r8 — RETRANSLATE: source explicitly observes that the plane, saw, and hammer have not changed at all since ancient times; current "tools look unchanged" loses the time-traveler observation.
 - TT6A/g2/r7 — RETRANSLATE nuance: yakekuso -> planing wood in frustration/desperation.
 - TT6B/g2/r2 — RETRANSLATE omitted modifier: source asks which Jewish king built the magnificent/splendid Temple in Jerusalem.
@@ -180,6 +181,7 @@ Major retranslation/localization bank.
   forth like catch rather than merely "weapons were exchanged."
 - TT6C/g3/r8 — MAJOR MISTRANSLATION: いえす is Iesu = Jesus, not English "yes".
   Correct sequence: "Me: Jesus. / Mary and Joseph: Jesus… / Me: Right. Jesus Christ."
+- TT6D/g0/r3 — RETRANSLATE omission: source is identical to TT1B/g1/r13 and includes the girl's startled cry before "An earthquake!"; current layer reduced it to an empty "Girl: !".
 - TT6D/g0/r5 — current natural "You'll meet a wonderful man" is source-faithful.
 
 ## Next
