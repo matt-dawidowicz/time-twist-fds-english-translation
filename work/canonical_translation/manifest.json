@@ -1,0 +1,22 @@
+{
+  "schema": "time-twist-canonical-scenario-english-v1",
+  "source_rom": "Time-Twist-v17-LATEST-NATURAL-TRANSLATION-AUDIT.fds",
+  "source_rom_sha256": "f269d129ca1ad0db6595566476877840a37275bfa9407e6dad62b1435fe93f0d",
+  "record_count": 1299,
+  "banks": {
+    "TT1A": 35,
+    "TT1B": 137,
+    "TT2": 169,
+    "T22": 58,
+    "TT3A": 152,
+    "TT3B": 58,
+    "TT4": 183,
+    "TT5": 123,
+    "T25": 76,
+    "TT6A": 100,
+    "TT6B": 94,
+    "TT6C": 106,
+    "TT6D": 8
+  },
+  "policy": "These files are the sole active playable scenario-English source. Historical/base/review English must not be consumed by release builds."
+}
