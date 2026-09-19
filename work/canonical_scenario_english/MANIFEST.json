@@ -1,0 +1,20 @@
+{
+  "canonical_source": "Time-Twist-v17-LATEST-NATURAL-TRANSLATION-AUDIT.fds",
+  "rom_sha256": "f269d129ca1ad0db6595566476877840a37275bfa9407e6dad62b1435fe93f0d",
+  "scenario_records": 1299,
+  "banks": [
+    {"bank":"T22","records":58,"sha256":"2827dde8367d99d6cb8c930a068b935b67047c76bbb906c70ed41123d76a4e8d"},
+    {"bank":"T25","records":76,"sha256":"3c20a6fc46ea22dfa87a31f3b3afd19ad8a738696b051a91a81e99d23ae2c1ee"},
+    {"bank":"TT1A","records":35,"sha256":"83c907cdcb188c64b70818ebac3c958b803c3fd93ff5dd5fae5dc23a5ddbd621"},
+    {"bank":"TT1B","records":137,"sha256":"4f0e1dccbac0fee576dcb6bac424095682ac3330739d008839c28362ff65d708"},
+    {"bank":"TT2","records":169,"sha256":"b38676fafe11a0cd37c249d5635e905961e29fbcb18d2bd6b1da902a8a386e8e"},
+    {"bank":"TT3A","records":152,"sha256":"b9ff941427a98ccb4eeb11b80b9d898dcbaf9f6275eb8ab43ce940c0b8c0d8e8"},
+    {"bank":"TT3B","records":58,"sha256":"79133b4c570e6357f856f34d7b8f99d4aa677aea9c45a2e9b385fa131946cba2"},
+    {"bank":"TT4","records":183,"sha256":"0356458f2cec3bc38870a97a218f6358e659077e2ad18bdfa5307a109b970375"},
+    {"bank":"TT5","records":123,"sha256":"dd78c33eaf733a365a3257171b75967784642751c98e664ec427750b36eef306"},
+    {"bank":"TT6A","records":100,"sha256":"7803a5dad8a85271c189627ba75c9a705bc3a99b42ae46ce0f37a47b10c34cb1"},
+    {"bank":"TT6B","records":94,"sha256":"6a2a01d209840e6ff508d984102a216ae577b5f98113c4735ab222ccd98ce6b2"},
+    {"bank":"TT6C","records":106,"sha256":"d70ea8d0bdcd44cf376c0a002fba499054a567d0f52a4d7b4c5ce9374ab5093e"},
+    {"bank":"TT6D","records":8,"sha256":"489d78656caed41c5916713efa0d699ab610c2c3f3c740cd4e9e8f16f7c9e1d5"}
+  ]
+}
