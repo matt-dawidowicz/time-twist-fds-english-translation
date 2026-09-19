@@ -286,8 +286,6 @@ def build_release(
         materialize_production_maps(
             tuple(KNOWN_SCENARIO_BANKS),
             base_directory=paths.translations,
-            override_directory=paths.production_overrides,
-            review_directory=paths.production_review,
             output_directory=production_translations,
         )
         output_bytes, build_audit = build_release_images(
