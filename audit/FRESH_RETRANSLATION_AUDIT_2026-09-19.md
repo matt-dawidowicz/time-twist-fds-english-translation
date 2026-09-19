@@ -207,3 +207,45 @@ A second review of this audit confirmed the following:
 - This document currently audits the 1,299 scenario records. Fixed-address menus,
   answer labels, command labels, graphics text, and other non-scenario English still
   require a separate source-first audit before claiming full-game retranslation.
+
+
+## Fixed-address / menu / answer text audit
+
+This section is source-first and does not trust the workbook's generated
+`final_natural_english_translation` field blindly. Several generated glosses are
+themselves wrong in context.
+
+### Confirmed fixes
+
+- `TT3A/fixed/r75` — RETRANSLATE distractor: `じーぼーと` is "G-boat",
+  not "Gunboat." It sits beside Nazi boat / U-boat / Banana boat as a deliberately
+  patterned submarine-quiz distractor.
+- `TT5/fixed/r29` — RETRANSLATE action: `みずくみ` is "Fetch water."
+  Current "Water" turns a fetching task into an ambiguous noun/verb.
+- `TT6B/fixed/r55` — RETRANSLATE action: `のみをとる` is "Pick off fleas"
+  (or a similarly compact verb phrase), not the noun "Fleas."
+- `TT6C/fixed/r46` — RETRANSLATE answer label: `さかや` is "Tavern keeper"
+  in the occupation-answer set Glazier / Blacksmith / Tavern keeper / Tailor.
+  "Tavern" is the wrong semantic category.
+
+### Technical expansion candidates
+
+- `TT3A/fixed/r84` — current "Mont" represents Montgomery. The full-word menu is
+  repacked, so test whether "Montgomery" now fits safely.
+- `TT3A/fixed/r89` — current "MacA." represents MacArthur. Test full "MacArthur"
+  under the current repacked table rather than preserving an obsolete abbreviation
+  automatically.
+
+### Runtime/context review
+
+- `TT4/fixed/r9` — `くび` is literally neck, but can cover head/neck depending on
+  the medical-selection context. Current "Head" should not be changed without
+  confirming the actual target graphic/menu behavior.
+
+### Do-not-regress source corrections
+
+- `TT2/fixed/r26` — KEEP "Damascus." In this Crusades quiz-answer table,
+  hiragana `だますかす` represents Damascus. The generated workbook gloss
+  "Deceive and coax" is a false context-free parse.
+- `TT4/fixed/r78` — KEEP "Alice." Japanese `ありす` is the deliberately odd
+  answer distractor Alice; do not replace it with workbook gloss "Aris."
