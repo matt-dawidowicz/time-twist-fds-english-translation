@@ -148,6 +148,24 @@ QUIZ_QUESTION_RECORDS = frozenset(
 # menu table and is protected by the fixed-table build/test path instead.
 QUIZ_MAX_SEGMENT_COLUMNS = 23
 
+# Identity/info cards use row boundaries as field structure at both the automatic
+# chapter intro and the Info-button entry point. They are not ordinary prose
+# wrapping and therefore retain their reviewed control geometry exactly.
+INFO_CARD_RECORDS = frozenset(
+    {
+        "TT2/g1/r4",
+        "TT2/g1/r5",
+        "TT2/g1/r6",
+        "TT3A/g0/r14",
+        "TT4/g1/r22",
+        "TT5/g1/r6",
+        "TT6A/g0/r8",
+        "TT6A/g1/r10",
+    }
+)
+
+STRUCTURAL_LAYOUT_RECORDS = QUIZ_QUESTION_RECORDS | INFO_CARD_RECORDS
+
 
 FINAL_PLAYTEST_LAYOUT_RECORDS = frozenset(
     {
@@ -465,36 +483,59 @@ def merged_translation_map(
 
     laid_out: dict[str, str] = {}
     for record_id, selected_text in selected.items():
-        reviewed_text = selected_text
-        if record_id not in explicit_control_overrides:
-            reviewed_text = " ".join(
-                CONTROL_RE.sub(" ", selected_text).split()
-            )
-        if (
-            record_id in FINAL_PLAYTEST_LAYOUT_RECORDS
-            or record_id in QUIZ_QUESTION_RECORDS
-        ):
+        # Quiz prompts and identity/info cards use row geometry as interface
+        # state. Preserve their reviewed controls exactly rather than treating
+        # them as ordinary prose wrapping.
+        if record_id in STRUCTURAL_LAYOUT_RECORDS:
             if record_id not in explicit_control_overrides:
                 kind = (
                     "quiz question"
                     if record_id in QUIZ_QUESTION_RECORDS
-                    else "final-playtest layout"
+                    else "info card"
                 )
                 raise ProductionTranslationError(
                     f"{record_id}: {kind} must be an explicit control override"
                 )
             _effective_base_template(record_id, base[record_id])
             validate_record_production_control_sequence(
-                record_id, base[record_id], reviewed_text
+                record_id, base[record_id], selected_text
             )
-            validate_renderer_buffer_layout(reviewed_text)
-            laid_out[record_id] = reviewed_text
+            validate_renderer_buffer_layout(selected_text)
+            laid_out[record_id] = selected_text
             continue
-        laid_out[record_id] = layout_review_text(
-            record_id,
-            reviewed_text,
-            base[record_id],
+
+        effective_template = _effective_base_template(
+            record_id, base[record_id]
         )
+        try:
+            if record_id in explicit_control_overrides:
+                # Explicit semantic positions, plus leading/trailing row controls,
+                # are reviewed intent. Regenerate only interior CTRL:0/CTRL:4
+                # wrapping around them.
+                laid_out[record_id] = _core.layout_controlled_review_text(
+                    record_id,
+                    selected_text,
+                    effective_template,
+                )
+                continue
+
+            # Plain prose has no authoritative presentation controls. Rebuild its
+            # row geometry from visible English against the effective source
+            # semantic topology.
+            reviewed_text = " ".join(
+                CONTROL_RE.sub(" ", selected_text).split()
+            )
+            laid_out[record_id] = _core.layout_review_text(
+                record_id,
+                reviewed_text,
+                effective_template,
+            )
+        except ProductionTranslationError as error:
+            if str(error).startswith(f"{record_id}:"):
+                raise
+            raise ProductionTranslationError(
+                f"{record_id}: {error}"
+            ) from error
     _validate_quiz_question_geometry(bank_name, base, laid_out)
     _validate_cross_record_staging(bank_name, base, laid_out)
     return laid_out

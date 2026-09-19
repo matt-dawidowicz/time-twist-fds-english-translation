@@ -17,6 +17,41 @@ It inserts `CTRL:0` while advancing through the first four physical rows and use
 `CTRL:4` when another visible row requires the native scroll behavior. Leading and
 trailing layout controls are retained when they affect record entry or exit.
 
+### Global soft-wrap invariant
+
+For ordinary scenario prose, interior `CTRL:0` and `CTRL:4` values are
+generated output rather than editorial line-break instructions. Translation or
+retranslation overrides may change the visible words, but interior soft row
+controls are regenerated during materialization. The layout engine greedily fills
+the current 24-column row at word boundaries and emits a row/scroll control only
+when the next word cannot fit.
+
+This rule also applies to records retained in the final-playtest tracking set.
+Record-scoped policies may preserve or demote semantic/timing controls, but they do
+not preserve hand-balanced soft line breaks. A second application of the ordinary
+layout transform must therefore be idempotent: it may not find another removable or
+movable soft break.
+
+Two scenario-text classes preserve reviewed row geometry instead of ordinary prose
+wrapping:
+
+- `QUIZ_QUESTION_RECORDS`, because their rows share the native answer-menu state;
+- identity/info cards, because row boundaries separate fields such as TIME, PLACE,
+  NAME, and OCCUPATION at both the automatic intro and Info-button entry point.
+
+For ordinary controlled overrides, reviewed semantic-control positions and
+leading/trailing row controls remain authoritative. Only interior prose
+`CTRL:0`/`CTRL:4` wrapping is regenerated.
+
+Source speaker-changing `CTRL:2` boundaries remain pinned during ordinary
+automatic reflow because that control has mixed page/speaker semantics and a strict
+re-entry limit. Other semantic controls may need record-specific relocation when
+expanded English cannot fit before the native re-entry point. Such relocations are
+not inferred as a global rule: once audited, they are encoded as explicit production
+overrides whose semantic-control positions remain authoritative while only interior
+soft wrapping is regenerated. All layout paths reject a semantic control placed
+inside a recognized speaker label, such as `Soldier{CTRL:3}2:`.
+
 ## Scenario quiz questions: native geometry is authoritative
 
 Scenario quiz prompts are a special case and are **not** ordinary reflowable
