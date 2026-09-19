@@ -38,6 +38,10 @@ Provisional result: translation-complete, with two optional personality-test edi
 - TT1B businessman voice — LOCALIZATION: preserve marked Nagoya/Owari comic
   characterization through consistent diction/syntax, not an invented U.S. accent.
 
+- TT1B/g2/r16 — RETRANSLATE epistemic nuance: めが わるいようだ is an
+  observation/inference, so use "His eyesight seems poor," not categorical
+  "His eyesight's poor."
+
 ## TT2 / T22
 
 - TT2/g0/r7 — OPTIONAL/RUNTIME REVIEW: koshi o nukasu is physical collapse from fright;
@@ -144,6 +148,13 @@ Major retranslation/localization bank.
   pre-CTRL:1 row budget; must be solved by layout/engine work or remain documented.
 
 ## TT6A / TT6B / TT6C / TT6D
+
+- TT6A/g2/r26 — RETRANSLATE object category: だれかを まっているようだ means
+  "He seems to be waiting for someone," not something.
+- TT6C/g2/r12 — RETRANSLATE relation nuance: たにんのようなきが せん means the
+  Devil does not feel the protagonist is a stranger; "I feel a certain kinship with
+  you" preserves the source better than generic similarity.
+
 
 - TT6A/g2/r7 — RETRANSLATE nuance: yakekuso -> planing wood in frustration/desperation.
 - TT6B/g1/r13 — TECHNICAL: natural "Sleep by the road" was shortened to "Sleep out"
