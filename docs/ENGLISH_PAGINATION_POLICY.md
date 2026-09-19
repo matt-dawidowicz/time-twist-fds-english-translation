@@ -32,8 +32,16 @@ not preserve hand-balanced soft line breaks. A second application of the ordinar
 layout transform must therefore be idempotent: it may not find another removable or
 movable soft break.
 
-The only scenario-text exception is `QUIZ_QUESTION_RECORDS`, whose row geometry is
-native answer-menu state and is validated separately.
+Two scenario-text classes preserve reviewed row geometry instead of ordinary prose
+wrapping:
+
+- `QUIZ_QUESTION_RECORDS`, because their rows share the native answer-menu state;
+- identity/info cards, because row boundaries separate fields such as TIME, PLACE,
+  NAME, and OCCUPATION at both the automatic intro and Info-button entry point.
+
+For ordinary controlled overrides, reviewed semantic-control positions and
+leading/trailing row controls remain authoritative. Only interior prose
+`CTRL:0`/`CTRL:4` wrapping is regenerated.
 
 Semantic controls that introduce a speaker turn are also source-pinned. If a
 certified base record has `CTRL:1`, `CTRL:2`, `CTRL:3`, or `CTRL:6`
