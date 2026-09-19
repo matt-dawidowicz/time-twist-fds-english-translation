@@ -286,3 +286,131 @@ Exception:
 
 - `TT6D/g0/r3` should use an audible `Girl: Ah!` because the identical source
   construction in `TT1B/g1/r13` is already contextually localized that way.
+
+
+# Superseding current-v17 disposition
+
+This section supersedes earlier action labels when they conflict. It was checked
+against the decoded v17 ROM, not only workbook fields.
+
+## Still actionable for v18
+
+### TT1A
+- g0/r14 — optional personality-test wording polish.
+- g0/r17 — optional "in the end, you can only rely on yourself" nuance.
+
+### TT1B
+- g0/r16 — singular "a pharaoh" rather than plural pharaohs.
+- g2/r5 — make the land-pressure misunderstanding natural without opaque jargon.
+- g2/r6 — restore "you're the person from before."
+- g2/r10 — same missing clause as g2/r6.
+- g1/r12 — optional natural "You've got lucky earlobes."
+- g4/r7 — optional stronger dismissive "So what?" for それがどうした.
+
+### TT2
+- g0/r22 — restore the fuller/formal decree, including Lugot's tavernkeeper identity
+  if layout permits.
+- g1/r21 — source-byte reading still needs verification before final wording.
+- g3/r26 — "wait until her trial is over," not wording that can imply awaiting trial start.
+- g4/r12 — restore "take him home."
+- g4/r27 — restore that Jeanne is suspended/hoisted by the thick rope.
+- g0/r7 — optional/runtime check for physical collapse-from-fright nuance.
+
+### T22
+- g0/r6 — source says "I won't speak to churchmen"; current "I've never trusted
+  churchmen" invents a different proposition.
+- g0/r11 — prefer explicit "the bishop's handwriting" over opaque "his own hand."
+- g1/r6 — restore the bishop's "more interesting once a larger crowd gathers" sadism.
+- g1/r11 — hanaseba wakaru -> "We can talk this out!" rather than generic "Listen to me."
+- g1/r20 — optional prophetic-register polish; current v17 is substantially improved.
+
+### TT3A
+- g0/r28 — review "law" versus "rites/precepts" in the occult oath.
+- g3/r3 — restore Simon's agency and 亡命/asylum-defection meaning.
+- g4/r4 — rewrite broken quiz English "France's resistance movement was called?"
+- g3/r9 / g3/r29 — keep identical coded gesture wording.
+- g2/r29 — optional "clutching a scrap of paper" nuance.
+
+### TT3B
+- g1/r23 — restore the contractual duty/obligation nuance.
+- g1/r24 — restore the explicit body-possession mechanism if natural layout permits.
+
+### TT4
+- g3/r23 — restore Hades's "special exception" and fuller self-identification naturally.
+- g4/r4 — Cerberus exchange can still be made more conversational/source-complete.
+- g4/r13 — optional fuller promise/return-the-child wording.
+
+### TT5
+- g0/r31 — optional stronger mean-spirited-joke nuance in Belle's line.
+- g2/r12 — confirmed Cavalry quiz should ask for the military force naturally.
+- g2/r15 — confirmed Black Ships quiz should ask what Perry's ships were called.
+- g2/r18 — confirmed Projector quiz needs grammatical natural wording.
+- g2/r16 — current cautious "linked to Civil War" is acceptable; do not overstate causation.
+
+### T25
+- g1/r17 — restore "What's wrong, Belle… need something?"
+- g2/r7 — restore explicit coyotes.
+- g1/r22 — technical exception: "Mr. President" does not fit the native pre-CTRL:1
+  staging under current constraints.
+
+### TT6A
+- g1/r4 — restore hay in the smell description.
+- g2/r7 — consider "in frustration/desperation" for やけくそ rather than only "furiously."
+- g2/r8 — optional stronger across-time joke; v17 is already acceptable.
+
+### TT6B
+- g1/r9 — naturalize "Good old Kashim. / Mary: Truly."
+- g1/r13 — technical exception: retest "Sleep by the road" against current staging.
+- g2/r18 — replace odd "commit to it" with the source's playful "all at once / one big bite."
+- g2/r2 — restore "magnificent" Temple modifier.
+- g0/r20 — optional explicit "water" if surrounding UI does not make the referent obvious.
+
+### TT6C
+- g1/r8 — restore Caspar's ceremonial/humble offering register.
+- g1/r9 — strengthen Devil's "most fitting/perfect name" certainty.
+- g1/r15 — replace ambiguous "before he arrived" with "before the Devil appeared."
+- g2/r6 — consider preserving the vivid nuclear-bombs-thrown-back-and-forth source image.
+- g3/r8 — MAJOR: いえす is Jesus, not English "Yes."
+
+### TT6D
+- g0/r3 — restore the girl's audible earthquake cry.
+- g0/r4 — preserve the nonverbal double-reaction naturally as "Me: …!!"
+
+## Runtime evidence still required
+
+- TT2/g0/r15 — context-sensitive なにを reaction.
+- TT3A/g2/r7 — off-screen "Wait, Cougar…" speaker identity.
+- TT3A/g2/r30 — torn-note spatial reconstruction.
+- TT3B/g0/r24 — Hitler versus Devil-speaking-through-Hitler identity.
+- TT4/g4/r14 — anonymous "Wait" speaker identity.
+- TT4/fixed/r9 — head/neck menu-target interpretation.
+
+## Already fixed in v17; do not re-open without new evidence
+
+- TT1B/g0/r5 — sign is explicitly at the entrance.
+- TT1B/g2/r16 — "His eyesight seems poor."
+- TT1B/g3/r23 — prayer restores sins + forefathers.
+- TT1B/g3/r25 — natural "middle of the sermon."
+- TT1B/g4/r4 — "Take good care of my body."
+- TT3B/g1/r21 — intentionally unlabeled disembodied line.
+- TT4/g0/r3 — natural Athena inscription.
+- TT4/g4/r9 — historian-beside-me clue already repaired.
+- TT4/g4/r11 — English five-letter clue already repaired.
+- TT4/g4/r7 — natural retry line already present.
+- TT4/g5/r7 and g5/r12 — quiz wording already substantially repaired.
+- TT6A/g2/r26 — "waiting for someone."
+- TT6C/g2/r12 — kinship nuance already restored.
+
+## Fixed UI still actionable
+
+- TT3A/fixed/r75 — G-boat, not Gunboat.
+- TT5/fixed/r29 — Fetch water, not Water.
+- TT6B/fixed/r55 — Pick off fleas, not Fleas.
+- TT6C/fixed/r46 — Tavern keeper, not Tavern.
+- TT3A/fixed/r84 — test full Montgomery.
+- TT3A/fixed/r89 — test full MacArthur.
+
+## Fixed UI do-not-regress
+
+- TT2/fixed/r26 — Damascus is correct; do not use false workbook gloss "Deceive and coax."
+- TT4/fixed/r78 — Alice is correct; do not use stale workbook gloss "Aris."
