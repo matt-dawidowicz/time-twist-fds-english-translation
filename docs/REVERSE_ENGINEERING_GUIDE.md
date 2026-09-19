@@ -109,11 +109,11 @@ Japanese source
 stable semantic tokens
 (common / extended / dictionary / control / separator)
        |
-       +--> workbook and source analysis
+       +--> source and historical analysis
        |
        v
-English production layout
-24-column/four-row renderer geometry
+canonical English scenario map
+approved 24-column/four-row renderer geometry
        |
        v
 frozen entropy grammar
@@ -450,21 +450,18 @@ position even without visible text on both sides.
 Speaker labels are recognized as layout units. A recognized `Name:` label starts a
 fresh turn and may not be stranded on a row without its first spoken word.
 
-### Semantic controls and the two audited demotion classes
+### Semantic controls in the canonical maps
 
-Controls `1`, `3`, and `6` are normally mandatory and remain in source order.
-`CTRL:2` is mixed: production may omit a source `CTRL:2` when it is only page geometry
-inside continuous English, but it may never invent a new `CTRL:2` or move a source
-speaker-changing `CTRL:2` away from that speaker turn.
+Controls `1`, `2`, `3`, and `6` can carry page, wait, re-entry, reveal, or
+speaker-transition semantics. The canonical scenario maps contain the currently
+approved control positions after playtesting and source review.
 
-Playtesting exposed a second, narrower exception: ten exact source `CTRL:1` waits are
-presentation-only for the English layout. They are keyed by stable record ID and
-locked to the exact certified base template in `production_translation.py`. The base
-maps remain unchanged. If any locked template changes, the build fails and requires a
-fresh audit instead of silently carrying the exception forward.
+Do not move one of these controls merely to gain room for a longer English line.
+A control that changes speakers must stay attached to the intended turn, and every
+re-entry point must remain safe for text already staged in the four-row buffer.
 
-This is the safe pattern for future control exceptions: **record-scoped, source-
-locked, and fail-closed**, never “change every control N.”
+Future control changes are **record-scoped and fail-closed**: document the runtime
+reason, modify the canonical record, and validate/playtest that exact scene.
 
 ---
 
