@@ -414,3 +414,34 @@ against the decoded v17 ROM, not only workbook fields.
 
 - TT2/fixed/r26 — Damascus is correct; do not use false workbook gloss "Deceive and coax."
 - TT4/fixed/r78 — Alice is correct; do not use stale workbook gloss "Aris."
+
+
+## Quiet-record adversarial pass — confirmed additions
+
+A second-pass scan of records not previously flagged checked numbers, directions,
+negation, sequencing, temporal language, and other gameplay-relevant semantics.
+The heuristic produced 39 candidates; manual source review reduced these to the
+following genuine additions:
+
+- TT1A/g1/r1 — OPTIONAL/source-specificity: Japanese explicitly says the 21st
+  century is almost here. "A new century nears" is natural but less specific.
+  Prefer "The 21st century is almost here…" if layout permits.
+- TT3A/g0/r14 — HISTORICAL LOCALIZATION: July 1944 identity text currently says
+  "U.S. AIR FORCE 1ST LT." The Japanese generically says American air-force
+  lieutenant, but the independent U.S. Air Force did not exist in 1944. Prefer
+  historically correct "U.S. ARMY AIR FORCES / 1ST LT." if the info-card geometry
+  can accommodate it.
+- TT3A/g4/r11 — RETRANSLATE definite omission: source explicitly says
+  hitosashiyubi (index finger). Use "Rub the tip of your nose twice with your
+  index finger." This is gameplay-relevant because it teaches the resistance
+  recognition signal.
+- T25/g1/r4 — RETRANSLATE/gameplay context: source says the player peers through
+  the gap left by removing the second drawer. Restore the second-drawer reference.
+- T25/g1/r6 — RETRANSLATE/gameplay context: same second-drawer gap reference must
+  be retained when describing the whip and hood inside.
+- TT6C/g1/r16 — RETRANSLATE for agency/naturalness: source is "I appeared before
+  him while he was in training and tried to tempt him," not the wooden/ambiguous
+  "I came as he trained and tried to tempt him."
+
+The remaining heuristic candidates were manually rejected as false positives or
+already-faithful number-word normalizations.
