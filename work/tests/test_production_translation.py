@@ -112,7 +112,7 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             ),
         )
         self.assertIn(
-            "Mary: I was sure she'd{CTRL:4}believe me…",
+            "Mary: I was sure he'd{CTRL:4}believe me…",
             _canonical("TT6A")["TT6A/g1/r28"],
         )
 
