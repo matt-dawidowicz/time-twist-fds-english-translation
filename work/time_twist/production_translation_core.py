@@ -950,4 +950,4 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
         raise ProductionTranslationError(
             f"{record_id}: layout changed reviewed prose"
         )
-    return output\n
+    return output
