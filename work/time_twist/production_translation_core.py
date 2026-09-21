@@ -52,6 +52,7 @@ CONTROL_REENTRY_CURSOR = {
     6: TEXT_ROW_BYTES * 3,
 }
 
+
 class ProductionTranslationError(ValueError):
     """Report malformed review data or a layout that cannot preserve controls."""
 
