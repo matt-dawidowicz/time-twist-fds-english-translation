@@ -1,6 +1,9 @@
 # Translation workflow
 
-This document defines the current workflow for scenario English.
+This document defines the editing workflow for scenario English. The current
+release is frozen to v38: see [V38_CANONICAL_BUILD.md](V38_CANONICAL_BUILD.md).
+New edits need a separately reviewed checkpoint; refreshing the lock cannot
+bypass the 1,299-record regression gate.
 
 ## Canonical data model
 
@@ -78,7 +81,9 @@ time-twist release-lock --update
 time-twist release-build --candidate --output-dir build/candidate
 ```
 
-Then playtest the affected scene.
+For v38 these commands reject any changed record. For a future candidate,
+review and update the checkpoint/compiler contract explicitly, then playtest
+the affected scene.
 
 ## Control-code policy
 
@@ -96,7 +101,10 @@ See [ENGLISH_PAGINATION_POLICY.md](ENGLISH_PAGINATION_POLICY.md) and
 
 ## Fixed-address English
 
-Scenario maps do not own every English string in the game.
+Scenario maps do not own every English string in the game. In the current v38
+release, fixed menu and runtime changes come from the frozen compiler bundle,
+and font/title payloads come from the hash-locked v25 baseline. The following
+modules are historical engineering tools, not active v38 release inputs.
 
 - fixed menu/table wording: `work/time_twist/ui_fixed_tables.py`
 - fixed interface patches: `work/time_twist/ui.py`

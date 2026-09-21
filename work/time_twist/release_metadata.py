@@ -66,7 +66,7 @@ DEFAULT_KOUHEN_BASELINE = (
 )
 
 RELEASE_OUTPUT_KEYS = ("zenpen", "kouhen", "four_side")
-SOURCE_LOCK_SCHEMA = "Time Twist release source lock v4"
+SOURCE_LOCK_SCHEMA = "Time Twist release source lock v5"
 SOURCE_NORMALIZATION_RAW = "raw"
 SOURCE_NORMALIZATION_LF = "lf"
 CODE_PROVENANCE_SCHEMA = "Time Twist release code provenance v1"
@@ -75,7 +75,7 @@ CODE_TREE_HASH_ALGORITHM = (
 )
 CODE_LOGICAL_ROOT = "work/time_twist"
 BUILD_ENVIRONMENT_SCHEMA = "Time Twist build environment v1"
-RELEASE_MANIFEST_SCHEMA = "Time Twist reproducible release manifest v5"
+RELEASE_MANIFEST_SCHEMA = "Time Twist reproducible release manifest v6"
 RELEASE_TARGET_SCHEMA = "Time Twist release target v2"
 RELEASE_FILENAMES = {
     "zenpen": "Time Twist Zenpen - reproducible English playtest.fds",
@@ -117,6 +117,8 @@ class ReleasePaths:
     zenpen_baseline: Path
     kouhen_baseline: Path
     translations: Path
+    checkpoint_baseline: Path
+    compiler_bundle: Path
 
     @classmethod
     def from_project_root(cls, project_root: Path) -> ReleasePaths:
@@ -137,6 +139,10 @@ class ReleasePaths:
             zenpen_baseline=work / "baseline" / "time_twist_zenpen_japan.fds",
             kouhen_baseline=work / "baseline" / "time_twist_kouhen_japan.fds",
             translations=work / "translations",
+            checkpoint_baseline=work
+            / "baseline"
+            / "time_twist_v25_safe_encoding.fds",
+            compiler_bundle=root / "recovery" / "v38" / "repro_bundle",
         )
 
 
@@ -410,10 +416,9 @@ def authoritative_source_paths(paths: ReleasePaths) -> tuple[Path, ...]:
         paths.translations / f"{bank}.json" for bank in KNOWN_SCENARIO_BANKS
     )
     return (
-        paths.zenpen_baseline,
-        paths.kouhen_baseline,
-        paths.title_asset,
-        paths.slide_title_asset,
+        paths.checkpoint_baseline,
+        paths.compiler_bundle / "manifest.json",
+        *sorted((paths.compiler_bundle / "payload").glob("*.b64")),
         *translations,
     )
 
@@ -493,10 +498,11 @@ def build_source_lock_payload(
     return {
         "schema": SOURCE_LOCK_SCHEMA,
         "authority": (
-            "The locked Japanese baselines, base scenario maps, reviewed production "
-            "English, production overrides, and title assets are the non-code release "
-            "authority. The canonical builder materializes the game-facing English "
-            "from those locked sources before entropy encoding."
+            "The exact private v25 safe-encoding baseline, frozen v38 compiler "
+            "bundle and 13 active translation maps are the non-code-lock inputs. "
+            "Compiler payloads are also hash-checked before execution. Active "
+            "maps must exactly match the approved v38 wording and controls; "
+            "the output must match the approved v38 ROM hash."
         ),
         "subtitle": DEFAULT_SUBTITLE,
         "files": files,
@@ -636,7 +642,11 @@ def validate_source_lock_metadata(payload: object) -> dict[str, object]:
             or logical_path.is_absolute()
             or logical_path.as_posix() != relative
             or not logical_path.parts
-            or logical_path.parts[0] not in {"work", "review"}
+            or (
+                logical_path.parts[0] not in {"work", "review"}
+                and logical_path.parts[:3]
+                != ("recovery", "v38", "repro_bundle")
+            )
             or ".." in logical_path.parts
         ):
             raise ReleaseBuildError(
@@ -816,7 +826,21 @@ def _validated_scenario_report(
     output: dict[str, dict[str, object]] = {}
     for bank_name in SCENARIO_LOCATIONS:
         record = payload[bank_name]
-        if not isinstance(record, dict) or set(record) != required_fields:
+        checkpoint_fields = {
+            "records",
+            "dictionary_entries",
+            "source_bytes",
+            "output_bytes",
+            "loaded_end",
+            "nov3_headroom",
+            "sha256",
+        }
+        checkpoint = (
+            isinstance(record, dict) and set(record) == checkpoint_fields
+        )
+        if not isinstance(record, dict) or (
+            not checkpoint and set(record) != required_fields
+        ):
             raise ReleaseBuildError(
                 f"{label} scenario bank {bank_name} fields must be exactly "
                 f"{sorted(required_fields)}"
@@ -831,22 +855,29 @@ def _validated_scenario_report(
             raise ReleaseBuildError(
                 f"{label} scenario bank {bank_name} has invalid dictionary count"
             )
-        for field in (
-            "scenario_bytes",
-            "menu_bytes",
-            "dictionary_bytes",
-            "optimizer_bytes",
-            "source_bytes",
-            "grown_bytes",
-            "spill_bytes",
-            "nov3_headroom",
-        ):
+        size_fields = (
+            ("source_bytes", "output_bytes", "nov3_headroom")
+            if checkpoint
+            else (
+                "scenario_bytes",
+                "menu_bytes",
+                "dictionary_bytes",
+                "optimizer_bytes",
+                "source_bytes",
+                "grown_bytes",
+                "spill_bytes",
+                "nov3_headroom",
+            )
+        )
+        for field in size_fields:
             value = record.get(field)
             if type(value) is not int or value < 0:
                 raise ReleaseBuildError(
                     f"{label} scenario bank {bank_name} has invalid {field}"
                 )
-        for field in ("resident_groups", "spilled_groups"):
+        for field in (
+            () if checkpoint else ("resident_groups", "spilled_groups")
+        ):
             groups = record.get(field)
             if not isinstance(groups, list) or any(
                 type(group) is not int or group < 0 for group in groups

@@ -1,6 +1,6 @@
 """Canonical release build, publication, and promotion API.
 
-All playable image construction is delegated to :mod:`time_twist.release_build`,
+All playable image construction is delegated to :mod:`time_twist.v38_build`,
 which uses the frozen entropy codec and runtime. This module owns release-source
 locking, provenance checks, transactional publication, and promotion.
 """
@@ -16,7 +16,6 @@ from pathlib import Path
 
 from .production_translation import materialize_production_maps
 from .project import KNOWN_SCENARIO_BANKS
-from .release_build import build_release_images
 from .release_metadata import (
     BUILD_ENVIRONMENT_SCHEMA,
     CODE_LOGICAL_ROOT,
@@ -65,6 +64,7 @@ from .release_metadata import (
     write_source_lock,
 )
 from .title import DEFAULT_SUBTITLE
+from .v38_build import build_release_images
 
 
 def _validate_release_code_stable(
@@ -289,12 +289,9 @@ def build_release(
             output_directory=production_translations,
         )
         output_bytes, build_audit = build_release_images(
-            paths.zenpen_baseline.read_bytes(),
-            paths.kouhen_baseline.read_bytes(),
+            paths.checkpoint_baseline.read_bytes(),
             translations_directory=production_translations,
-            title_asset=paths.title_asset,
-            slide_title_asset=paths.slide_title_asset,
-            subtitle=subtitle,
+            compiler_bundle=paths.compiler_bundle,
         )
 
     outputs = _output_records(output_bytes)

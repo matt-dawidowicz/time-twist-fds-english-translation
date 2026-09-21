@@ -53,6 +53,7 @@ def main() -> None:
         "test_v38_recovered_checkpoint.py",
         "-v",
     )
+    run(python, "work/run_tests.py", "unit")
 
 
 if __name__ == "__main__":

@@ -38,11 +38,10 @@ See [private integration fixtures](PRIVATE_FIXTURES.md) for its local layout.
 
 ## Build an unpromoted candidate
 
-Place legal Japanese inputs only at the ignored local paths:
+Place the exact private v25 safe-encoding baseline at the ignored local path:
 
 ```text
-work/baseline/time_twist_zenpen_japan.fds
-work/baseline/time_twist_kouhen_japan.fds
+work/baseline/time_twist_v25_safe_encoding.fds
 ```
 
 First validate the approved inputs. If this fails, stop and investigate; do

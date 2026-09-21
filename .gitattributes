@@ -3,3 +3,6 @@
 /work/translations/*.json text eol=lf
 /work/title_assets/*.gif binary
 /work/title_assets/*.png binary
+
+/recovery/v38/repro_bundle/manifest.json text eol=lf
+/recovery/v38/repro_bundle/payload/*.b64 text eol=lf

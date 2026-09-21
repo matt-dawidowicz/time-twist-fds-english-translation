@@ -9,14 +9,11 @@ from pathlib import Path
 
 from time_twist.release import ReleasePaths, authoritative_source_paths
 from time_twist.title import DEFAULT_SUBTITLE
+from time_twist.v38_build import BASELINE_SHA256, IMAGE_BYTES
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SOURCE_LOCK = PROJECT_ROOT / "work" / "release_sources.json"
-INTEGRATION_FIXTURES = PROJECT_ROOT / "work" / "integration_fixtures.json"
-PRIVATE_RETAIL_BASELINES = {
-    "work/baseline/time_twist_zenpen_japan.fds",
-    "work/baseline/time_twist_kouhen_japan.fds",
-}
+PRIVATE_BASELINE = "work/baseline/time_twist_v25_safe_encoding.fds"
 
 
 def _locked_bytes(path: Path, normalization: str) -> bytes:
@@ -43,20 +40,16 @@ class CurrentPublicSourceLockTests(unittest.TestCase):
             path.resolve().relative_to(PROJECT_ROOT.resolve()).as_posix()
             for path in authoritative_source_paths(paths)
         }
-        fixtures = json.loads(
-            INTEGRATION_FIXTURES.read_text(encoding="utf-8")
-        )["files"]
 
         self.assertEqual(payload["subtitle"], DEFAULT_SUBTITLE)
         self.assertEqual(set(files), authoritative)
 
         for relative in sorted(authoritative):
             record = files[relative]
-            if relative in PRIVATE_RETAIL_BASELINES:
-                fixture = fixtures[relative]
+            if relative == PRIVATE_BASELINE:
                 self.assertEqual(record["normalization"], "raw")
-                self.assertEqual(record["bytes"], fixture["bytes"])
-                self.assertEqual(record["sha256"], fixture["sha256"])
+                self.assertEqual(record["bytes"], IMAGE_BYTES)
+                self.assertEqual(record["sha256"], BASELINE_SHA256.upper())
                 continue
 
             path = PROJECT_ROOT / relative

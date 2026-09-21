@@ -1,11 +1,8 @@
-"""Canonical entropy image construction for the playable English release.
+"""Historical Japanese-baseline compiler and reusable entropy packing helpers.
 
-This module owns the one ROM-building implementation. It consumes already
-materialized production English, builds a deterministic nested dictionary for
-the frozen entropy cost model, chooses a NOV3-safe layout, converts every
-decoder-visible fixed stream to the same entropy grammar, and installs the
-matching NOV2 runtime. Release locking, publication, and promotion remain in
-:mod:`time_twist.release`.
+The canonical release entry point uses :mod:`time_twist.v38_build`. This
+module remains available for historical integration tests and deliberate
+future compiler development; it is not selected by release-build.
 """
 
 from __future__ import annotations

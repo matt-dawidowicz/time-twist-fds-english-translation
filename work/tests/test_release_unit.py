@@ -6,6 +6,7 @@ import contextlib
 import io
 import json
 import os
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -65,6 +66,11 @@ def make_synthetic_project(root: Path) -> Path:
     )
     (baseline / "time_twist_zenpen_japan.fds").write_bytes(b"zenpen")
     (baseline / "time_twist_kouhen_japan.fds").write_bytes(b"kouhen")
+    (baseline / "time_twist_v25_safe_encoding.fds").write_bytes(b"v25")
+    shutil.copytree(
+        PROJECT_ROOT / "recovery/v38/repro_bundle",
+        root / "recovery/v38/repro_bundle",
+    )
     return root
 
 
@@ -182,16 +188,20 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             self.assertEqual(validate_source_lock(project_root=root), payload)
 
     def test_source_lock_contains_only_current_release_inputs(self) -> None:
-        """Lock canonical maps, baselines, and title assets with no English fallback."""
+        """Lock active maps, private v25 baseline, and every frozen compiler input."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             payload = write_source_lock(project_root=root)
             files = set(payload["files"])
             expected = {
-                "work/baseline/time_twist_zenpen_japan.fds",
-                "work/baseline/time_twist_kouhen_japan.fds",
-                "work/title_assets/Time Twist approved native title.png",
-                "work/title_assets/Time Twist approved native slide.png",
+                "work/baseline/time_twist_v25_safe_encoding.fds",
+                "recovery/v38/repro_bundle/manifest.json",
+                *{
+                    path.relative_to(root).as_posix()
+                    for path in (
+                        root / "recovery/v38/repro_bundle/payload"
+                    ).glob("*.b64")
+                },
                 *{
                     f"work/translations/{bank}.json"
                     for bank in KNOWN_SCENARIO_BANKS
@@ -227,7 +237,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             payload = write_source_lock(project_root=root)
-            relative = "work/baseline/time_twist_zenpen_japan.fds"
+            relative = "work/baseline/time_twist_v25_safe_encoding.fds"
             self.assertEqual(
                 payload["files"][relative]["normalization"],
                 SOURCE_NORMALIZATION_RAW,
@@ -257,7 +267,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             payload = build_source_lock_payload(root)
-            relative = "work/baseline/time_twist_zenpen_japan.fds"
+            relative = "work/baseline/time_twist_v25_safe_encoding.fds"
             payload["files"][relative][
                 "normalization"
             ] = SOURCE_NORMALIZATION_LF

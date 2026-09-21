@@ -1,92 +1,167 @@
 {
-  "schema": "Time Twist release source lock v4",
-  "authority": "The locked Japanese baselines, sole canonical current scenario maps, and title assets are the non-code release authority. The canonical builder does not consult any secondary English review, override, workbook, or fallback layer.",
+  "schema": "Time Twist release source lock v5",
+  "authority": "The exact private v25 safe-encoding baseline, frozen v38 compiler bundle and 13 active translation maps are the non-code-lock inputs. Compiler payloads are also hash-checked before execution. Active maps must exactly match the approved v38 wording and controls; the output must match the approved v38 ROM hash.",
   "subtitle": "On the Outskirts of History...",
   "files": {
-    "work/baseline/time_twist_zenpen_japan.fds": {
+    "work/baseline/time_twist_v25_safe_encoding.fds": {
       "normalization": "raw",
-      "sha256": "B9424DD29EE195A9FA9AC4F844F058C380E30F7ACA741218789FA8611F741916",
-      "bytes": 131000
+      "sha256": "813CDCEB190E9714F7489C1BD5500F8E2EAD3B3942F789CCF68BC6F3696BFC19",
+      "bytes": 262000
     },
-    "work/baseline/time_twist_kouhen_japan.fds": {
+    "recovery/v38/repro_bundle/manifest.json": {
       "normalization": "raw",
-      "sha256": "F62A7424FE489CBE479C3EBAABE4CE62D85127601FFD3D08ABD4E5A0DC39442A",
-      "bytes": 131000
+      "sha256": "86138510EF10C99FAD424B4DB9E06FE54B8F60DB1AE6635DCA380A09FEF8735E",
+      "bytes": 3162
     },
-    "work/title_assets/Time Twist approved native title.png": {
+    "recovery/v38/repro_bundle/payload/T25_dictionary_v29.json.gz.b64": {
       "normalization": "raw",
-      "sha256": "220E1755BEBFCEFCA408D5E18A323FC6AE9EDEB03C3B01CA22B30163A2E0016F",
-      "bytes": 2137
+      "sha256": "D1256C007D7BBEFF595B1202E981EE6E46812261F910A8356C4ABD9CD1C4537F",
+      "bytes": 1076
     },
-    "work/title_assets/Time Twist approved native slide.png": {
+    "recovery/v38/repro_bundle/payload/TT1B_dictionary_v34.json.gz.b64": {
       "normalization": "raw",
-      "sha256": "5218681DB3BC8F7631DC69BFB0B6A3C242B55B8018D3319CF9EC94C14DF10CA8",
-      "bytes": 1709
+      "sha256": "E776486A7361B370470D15A0517C8CFBE15C47F4F273DE15D9E55C3F3E88D275",
+      "bytes": 2404
     },
-    "work/translations/T22.json": {
-      "normalization": "lf",
-      "sha256": "2827DDE8367D99D6CB8C930A068B935B67047C76BBB906C70ED41123D76A4E8D",
-      "bytes": 4978
+    "recovery/v38/repro_bundle/payload/TT2_dictionary_v32.json.gz.b64": {
+      "normalization": "raw",
+      "sha256": "D8766E6F53F224385E30B213D9292EC4CF4CD451EFD2B25D5B8209CD2E4D85AB",
+      "bytes": 2072
     },
-    "work/translations/T25.json": {
-      "normalization": "lf",
-      "sha256": "3C20A6FC46EA22DFA87A31F3B3AFD19AD8A738696B051A91A81E99D23AE2C1EE",
-      "bytes": 6628
+    "recovery/v38/repro_bundle/payload/TT3A_dictionary_v34.json.gz.b64": {
+      "normalization": "raw",
+      "sha256": "B65B4017A3181C3858E1259AB9014665BBB3A82F5687E7E98CCAC91781EDD75B",
+      "bytes": 2164
+    },
+    "recovery/v38/repro_bundle/payload/TT4_dictionary_v34.json.gz.b64": {
+      "normalization": "raw",
+      "sha256": "DE2781534F8829B4F5516755558AB77F5C84016FBC8B9E8393974C317AA7C846",
+      "bytes": 3208
+    },
+    "recovery/v38/repro_bundle/payload/TT5_dictionary_v32.json.gz.b64": {
+      "normalization": "raw",
+      "sha256": "A7F9D69D7361DB10837B0D6F532D7D61C88DDBA51BD43E1A04F6D6876C28AB53",
+      "bytes": 1872
+    },
+    "recovery/v38/repro_bundle/payload/TT6B_dictionary_v32.json.gz.b64": {
+      "normalization": "raw",
+      "sha256": "8B350A37AAC46BA10B81A690101472CE201C1F67F92AEFE72DCE43CBC1D4F376",
+      "bytes": 1056
+    },
+    "recovery/v38/repro_bundle/payload/TT6C_dictionary_v32.json.gz.b64": {
+      "normalization": "raw",
+      "sha256": "D5D4D2915BF9F5061FCFD84FD7B455BFFCC2954BB00C63BA3D85722875530CD4",
+      "bytes": 1704
+    },
+    "recovery/v38/repro_bundle/payload/build_v38.py.gz.b64": {
+      "normalization": "raw",
+      "sha256": "5AC1B0020BB96E43DB44C402664C8512FA30D9A68FE695EAC7668FE4FEADDDE9",
+      "bytes": 11108
+    },
+    "recovery/v38/repro_bundle/payload/codec.py.gz.b64": {
+      "normalization": "raw",
+      "sha256": "CD022B6BCADC0FF36635579A4A73D680DECBF85AAE3075DC6412F74959067CF0",
+      "bytes": 6244
+    },
+    "recovery/v38/repro_bundle/payload/determinate_english.json.gz.b64": {
+      "normalization": "raw",
+      "sha256": "557CFC16DFEA04AE3E76EAC04A083D4E813DAA8309E25F12917AA169CCBC4E3B",
+      "bytes": 84544
+    },
+    "recovery/v38/repro_bundle/payload/input_probe.json.gz.b64": {
+      "normalization": "raw",
+      "sha256": "E89CF2B00179BA0A8CD19FAF867154FAEF1394EA42F8E3AA938CFE88E75B72D7",
+      "bytes": 1292
+    },
+    "recovery/v38/repro_bundle/payload/layouts.json.gz.b64": {
+      "normalization": "raw",
+      "sha256": "E853DDB253D8B0D839614E32DF508F59ED29EEA870DF5CB26002B55DAA2EB72A",
+      "bytes": 54260
+    },
+    "recovery/v38/repro_bundle/payload/menu_overrides_v29.json.gz.b64": {
+      "normalization": "raw",
+      "sha256": "6BA29BBBC2CC6D3E02665214396A45AB8E777A863B6F161D057E56C53BD73143",
+      "bytes": 236
+    },
+    "recovery/v38/repro_bundle/payload/menu_overrides_v32.json.gz.b64": {
+      "normalization": "raw",
+      "sha256": "DF477E4EAC67F04F05F3DFD332E95E76038B5B452C8C41664C7F72B3D8C9CD9F",
+      "bytes": 552
+    },
+    "recovery/v38/repro_bundle/payload/regions.json.gz.b64": {
+      "normalization": "raw",
+      "sha256": "E4340D8AAD407A9458594F057081938A37BBAC68EDC617D512A4602DF9B9C7D6",
+      "bytes": 400
+    },
+    "recovery/v38/repro_bundle/payload/support.py.gz.b64": {
+      "normalization": "raw",
+      "sha256": "378302515DC41BF14541916EEC27DF131BF91F90B35E0400897C9A7B870A15F7",
+      "bytes": 1860
     },
     "work/translations/TT1A.json": {
       "normalization": "lf",
-      "sha256": "83C907CDCB188C64B70818EBAC3C958B803C3FD93FF5DD5FAE5DC23A5DDBD621",
-      "bytes": 5121
+      "sha256": "A1F9D0FBEEE8CC7AFBC2E5DB43571C5B57E4792C3A8D1A44D6FB9519BB334E7B",
+      "bytes": 5119
     },
     "work/translations/TT1B.json": {
       "normalization": "lf",
-      "sha256": "4F0E1DCCBAC0FEE576DCB6BAC424095682AC3330739D008839C28362FF65D708",
-      "bytes": 12205
+      "sha256": "1DBCBE0477DA4DA9935734B9FA9ADDD177FB675A6DB7EC3432D55D35DDEF0791",
+      "bytes": 13065
     },
     "work/translations/TT2.json": {
       "normalization": "lf",
-      "sha256": "B38676FAFE11A0CD37C249D5635E905961E29FBCB18D2BD6B1DA902A8A386E8E",
-      "bytes": 11325
+      "sha256": "5A34ED39C4EEF687B413B1E6B6FEB18A3978A998E5B3888A40AEB21D89EFEA88",
+      "bytes": 11742
+    },
+    "work/translations/T22.json": {
+      "normalization": "lf",
+      "sha256": "EA105AE7FC94B382615BFF783EAE003B70EADACB16F3F404A0AE4D8CEB9B4AF1",
+      "bytes": 5313
     },
     "work/translations/TT3A.json": {
       "normalization": "lf",
-      "sha256": "B9FF941427A98CCB4EEB11B80B9D898DCBAF9F6275EB8AB43CE940C0B8C0D8E8",
-      "bytes": 11182
+      "sha256": "FCA14A0E726D65D000FE3369D0F8B4FFF47349A061AF9D2781972215B88E0554",
+      "bytes": 11689
     },
     "work/translations/TT3B.json": {
       "normalization": "lf",
-      "sha256": "79133B4C570E6357F856F34D7B8F99D4AA677AEA9C45A2E9B385FA131946CBA2",
-      "bytes": 4989
+      "sha256": "0B7583792CE1F9B3E389FFE01E33CEE4A3D595E29DD3DC021FF53790A297D7CC",
+      "bytes": 5551
     },
     "work/translations/TT4.json": {
       "normalization": "lf",
-      "sha256": "0356458F2CEC3BC38870A97A218F6358E659077E2AD18BDFA5307A109B970375",
-      "bytes": 13390
+      "sha256": "19C3CD61F7BD650414235D899EBA2A8C5EC62F9DECFFA40ACD131EBD9388699A",
+      "bytes": 14164
     },
     "work/translations/TT5.json": {
       "normalization": "lf",
-      "sha256": "DD78C33EAF733A365A3257171B75967784642751C98E664EC427750B36EEF306",
-      "bytes": 10690
+      "sha256": "F81ECA76C32D7D6E5400DCF5B5C76019A73ECA64F7AB7A13FB0870FDE7EB187B",
+      "bytes": 10964
+    },
+    "work/translations/T25.json": {
+      "normalization": "lf",
+      "sha256": "31B018D6AD95F7A49982E28FEC32D34185BD1132F9E2766A2B2D0A1D8FABE09A",
+      "bytes": 6988
     },
     "work/translations/TT6A.json": {
       "normalization": "lf",
-      "sha256": "7803A5DAD8A85271C189627BA75C9A705BC3A99B42AE46CE0F37A47B10C34CB1",
-      "bytes": 8047
+      "sha256": "704A5A23ECE475E1A09235F0AB250BEF6636AB6B90BBDD36EF8770444E5B7EAE",
+      "bytes": 8263
     },
     "work/translations/TT6B.json": {
       "normalization": "lf",
-      "sha256": "6A2A01D209840E6FF508D984102A216AE577B5F98113C4735AB222CCD98CE6B2",
-      "bytes": 6867
+      "sha256": "C755124E53EAB9C5EB44FAD0104F194C30693C656B14C127ED611A815D2F62B0",
+      "bytes": 7345
     },
     "work/translations/TT6C.json": {
       "normalization": "lf",
-      "sha256": "D70EA8D0BDCD44CF376C0A002FBA499054A567D0F52A4D7B4C5CE9374AB5093E",
-      "bytes": 10493
+      "sha256": "ADC4B97D972E6E5D2FAF7C3DD6A98E64F5D4D91F2AB3FD084A2D20BF2ADEDFCF",
+      "bytes": 11601
     },
     "work/translations/TT6D.json": {
       "normalization": "lf",
-      "sha256": "489D78656CAED41C5916713EFA0D699AB610C2C3F3C740CD4E9E8F16F7C9E1D5",
-      "bytes": 829
+      "sha256": "7DBCD461897FC2FBC60D00BD410CE2124A9142266FF47091E81FAF6CD3A37DAB",
+      "bytes": 906
     }
   }
 }

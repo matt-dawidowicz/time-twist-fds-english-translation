@@ -46,13 +46,12 @@ Most translation contributors do not need to run low-level FDS commands.
 
 ## Build a local playtest candidate
 
-You can skip this unless you have legally obtained Japanese FDS inputs and are
+You can skip this unless you have the exact private v25 safe-encoding baseline and are
 working from a checkout whose source lock is already approved. Place the inputs
 only in the ignored local locations:
 
 ```text
-work/baseline/time_twist_zenpen_japan.fds
-work/baseline/time_twist_kouhen_japan.fds
+work/baseline/time_twist_v25_safe_encoding.fds
 ```
 
 Then verify the inputs and build an unpromoted candidate:

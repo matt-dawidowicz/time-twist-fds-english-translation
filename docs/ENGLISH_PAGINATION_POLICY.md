@@ -4,6 +4,15 @@ The canonical scenario maps already contain the approved English wording and
 control placement. Release construction validates that layout; it does not
 derive a different translation from another source.
 
+## Frozen v38 exception
+
+The current release preserves the exact checkpoint controls. Nineteen
+record-hash-scoped exceptions retain twelve non-greedy wraps and seven quiz
+records with 24-column segments. Generic edits retain the stricter rules below.
+These exceptions do not waive four-row buffer safety or establish complete
+in-game quiz coverage. The compact France and Nazareth identity-card layouts
+also remain exactly v38; runtime review is still required.
+
 ## Renderer geometry
 
 NOV2 stages dialogue in four physical rows:

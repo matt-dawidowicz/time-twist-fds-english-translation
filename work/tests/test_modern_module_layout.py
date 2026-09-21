@@ -10,7 +10,6 @@ from time_twist import (
     cli,
     cli_parser,
     release,
-    release_build,
     release_metadata,
     title,
     title_assets,
@@ -18,6 +17,7 @@ from time_twist import (
     title_patch,
     ui,
     ui_fixed_tables,
+    v38_build,
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -45,7 +45,7 @@ class ModernModuleLayoutTests(unittest.TestCase):
     ) -> None:
         """Expose one release image implementation and remove superseded modules."""
         self.assertIs(
-            release.build_release_images, release_build.build_release_images
+            release.build_release_images, v38_build.build_release_images
         )
         package_root = PROJECT_ROOT / "work" / "time_twist"
         for filename in (

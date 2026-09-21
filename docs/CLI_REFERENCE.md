@@ -81,13 +81,13 @@ All release commands accept `--project-root PATH`.
 
 ### `release-lock [--lock PATH] [--update]`
 
-Without `--update`, verifies the Japanese baselines, all 13 playable scenario
-maps, and both title assets against the source lock. The default is
+Without `--update`, verifies the private v25 baseline, all 13 playable scenario
+maps, and every frozen v38 compiler payload against the source lock. The default is
 `PROJECT/work/release_sources.json`.
 
 Source-lock schema v3 hashes base translation, reviewed production, and
 production-override JSON after CRLF/bare-CR to LF normalization, while FDS
-baselines and PNG artwork remain byte-exact `raw` inputs. The lock document's identity is also LF-normalized, so the same
+baseline and frozen compiler payloads remain byte-exact `raw` inputs. The lock document's identity is also LF-normalized, so the same
 approved checkout has one `source_lock_sha256` on Windows and Unix.
 
 `--update` rewrites the lock from the current project inputs. It approves input
