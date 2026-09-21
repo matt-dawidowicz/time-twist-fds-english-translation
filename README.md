@@ -174,6 +174,9 @@ The release lock covers the Japanese baselines, the 13 canonical scenario maps,
 and the approved title assets. Release-critical Python code is independently
 hashed and must match the executing package.
 
+No release target is checked in. Until a candidate is explicitly promoted,
+the repository remains in a documented pre-promotion state.
+
 ## Documentation
 
 - [PLAYTESTING.md](PLAYTESTING.md)
