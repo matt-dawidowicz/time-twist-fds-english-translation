@@ -108,7 +108,7 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             tt3a["TT3A/g2/r30"],
             (
                 "A torn piece of a note,{CTRL:0}written in blue ink: "
-                "\"…4{CTRL:0}km southwest…\"{CTRL:0}\"…Rebecca\""
+                '"…4{CTRL:0}km southwest…"{CTRL:0}"…Rebecca"'
             ),
         )
         self.assertIn(
