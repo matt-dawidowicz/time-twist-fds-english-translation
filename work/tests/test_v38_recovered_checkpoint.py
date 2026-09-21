@@ -16,7 +16,6 @@ import json
 import unittest
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[2]
 BUNDLE = ROOT / "recovery" / "v38" / "repro_bundle"
 MANIFEST = BUNDLE / "manifest.json"
