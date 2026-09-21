@@ -1,0 +1,28 @@
+{
+  "version": "v38",
+  "purpose": "Replace Talisman with Amulet for the source term 守り札 while retaining the source-explicit ethnonym Gypsy.",
+  "changes": [
+    {
+      "record": "TT1B/g0/r18",
+      "before": "\"Gypsy Talisman\": A star-shaped medal worn by nomadic Gypsies in the late 17th century to protect themselves from the dangers of travel. A warding spell is engraved on it.",
+      "after": "\"Gypsy Amulet\": A star-shaped medal worn by nomadic Gypsies in the late 17th century to protect themselves from the dangers of travel. A warding spell is engraved on it.",
+      "reason": "Amulet is closer to Japanese 守り札 than talisman and avoids implying a formal historical artifact name."
+    },
+    {
+      "record": "TT3A/g1/r9",
+      "before": "Frankie: Grandma gave me this the night before I left for war. It's a Gypsy talisman.",
+      "after": "Frankie: Grandma gave me this the night before I left for war. It's a Gypsy amulet.",
+      "reason": "Keep the recurring artifact terminology consistent."
+    }
+  ],
+  "attempted_full_label": "Gypsy Protective Amulet",
+  "full_label_result": "Rejected for production because TT1B exceeded the safe entropy-bank layout. The agreed fallback Gypsy Amulet fits without semantic loss.",
+  "rom_sha256": "62c5dbc2de33c484de9f8c1318fc903642eb08e2b4d5fa8e28384dc699c4c400",
+  "validation": {
+    "independent_decoding": "1299/1299",
+    "native_cpu_selection": "1299/1299",
+    "native_renderer": "1299/1299",
+    "fixed_menu_semantics": "PASS",
+    "clean_rebuild": "byte-identical"
+  }
+}

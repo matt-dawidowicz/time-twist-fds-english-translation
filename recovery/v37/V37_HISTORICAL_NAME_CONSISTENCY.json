@@ -1,0 +1,35 @@
+{
+  "version": "v37",
+  "policy": "Use conventional English historical names where established; preserve source-specific names/terms when changing them would alter source meaning.",
+  "changes": [
+    {"record":"T22/g1/r19","before":"Lugot: Hold on, Jeanne! Jeanne: Ugh…","after":"Lugot: Hold on, Joan! Joan: Ugh…"},
+    {"record":"T22/g1/r20","before":"Lugot: Thank goodness… W-waaaah! Jeanne: Just now… while I was on that cross, I heard God's message… Lugot: A revelation?! Jeanne: \"Put on pure white armor and fight for your homeland. Wherever you charge, a new path will surely open in your wake…\" Lugot: Jeanne…","after":"Lugot: Thank goodness… W-waaaah! Joan: Just now… while I was on that cross, I heard God's message… Lugot: A revelation?! Joan: \"Put on pure white armor and fight for your homeland. Wherever you charge, a new path will surely open in your wake…\" Lugot: Joan…"},
+    {"record":"T22/g1/r21","before":"Jeanne d'Arc… hailed as a child of God, the fair savior of France…","after":"Joan of Arc… hailed as a child of God, the fair savior of France…"},
+    {"record":"T22/g1/r7","before":"Bishop: Jeanne d'Arc, Lugot's granddaughter, was baptized by the Devil and enslaved by vile desires. By order of the Church, she is sentenced to death.","after":"Bishop: Joan of Arc, Lugot's granddaughter, was baptized by the Devil and enslaved by vile desires. By order of the Church, she is sentenced to death."},
+    {"record":"TT1B/g0/r18","before":"\"Romani Talisman\": A star-shaped medal worn by nomadic Romani in the late 17th century to protect themselves from the dangers of travel. A warding spell is engraved on it.","after":"\"Gypsy Talisman\": A star-shaped medal worn by nomadic Gypsies in the late 17th century to protect themselves from the dangers of travel. A warding spell is engraved on it."},
+    {"record":"TT2/g0/r22","before":"\"Jeanne d'Arc, granddaughter of Lugot the wine merchant, is declared a witch and sentenced to death in the name of the Church.\"","after":"\"Wine merchant Lugot's granddaughter, Joan of Arc, is declared a witch and sentenced to death by order of the Church.\"","note":"Joan naming plus source-faithful tightening to recover TT2 packing efficiently."},
+    {"record":"TT2/g2/r15","before":"Gordo: Pierre, listen to this! I hear Chino the locksmith fell for Jeanne the moment he saw her.","after":"Gordo: Pierre, listen! I hear Chino fell for Joan at first sight.","note":"Joan naming plus source-faithful tightening to recover TT2 packing efficiently."},
+    {"record":"TT2/g2/r6","before":"Chino: Damn it! Poor Jeanne's going to burn!","after":"Chino: Damn it! Poor Joan's going to burn!"},
+    {"record":"TT2/g3/r10","before":"Lugot: My granddaughter Jeanne is such a kind-hearted girl. Calling her a witch is absurd!","after":"Lugot: My granddaughter Joan is a good girl. She's no witch!","note":"Joan naming plus source-faithful tightening to recover TT2 packing efficiently."},
+    {"record":"TT2/g3/r11","before":"Lugot: Oh, Jeanne…","after":"Lugot: Oh, Joan…"},
+    {"record":"TT2/g3/r12","before":"Lugot: I'm an old man. Please, Chino… save Jeanne for me!","after":"Lugot: I'm an old man. Please, Chino… save Joan in my place!","note":"Joan naming plus source-faithful tightening to recover TT2 packing efficiently."},
+    {"record":"TT2/g3/r15","before":"Lugot: Jeanne is deeply devout. She never misses her daily prayers.","after":"Lugot: Joan is devout. She never misses her daily prayers.","note":"Joan naming plus source-faithful tightening to recover TT2 packing efficiently."},
+    {"record":"TT2/g3/r23","before":"Pierre: Save Jeanne, you coward!\nChino: What about you?!\nPierre: You idiot! Like I've got the guts!","after":"Pierre: Save Joan, you coward!\nChino: What about you?!\nPierre: You idiot! Like I've got the guts!"},
+    {"record":"TT2/g3/r24","before":"Pierre: You're a locksmith! A cell lock should be nothing to you. Pop it open! Hic! Chino: Are you insane?! Lugot: Poor Jeanne…","after":"Pierre: You're a locksmith! A cell lock's nothing. Pop it open! Hic! Chino: Are you nuts?! Lugot: Poor Joan…","note":"Joan naming plus source-faithful tightening to recover TT2 packing efficiently."},
+    {"record":"TT2/g4/r23","before":"Bishop: State your name. Girl: …Jeanne d'Arc. Bishop: Jeanne d'Arc?! So… it really is you.","after":"Bishop: State your name. Girl: …Joan of Arc. Bishop: Joan of Arc?! So… it really is you."},
+    {"record":"TT2/g4/r27","before":"A thick rope holds Jeanne suspended in the air.","after":"A thick rope holds Joan suspended in the air."},
+    {"record":"TT2/g5/r1","before":"Jeanne: Please… help me!","after":"Joan: Please… help me!"},
+    {"record":"TT2/g5/r2","before":"Jeanne: We have to get out of here!","after":"Joan: We have to get out of here!"},
+    {"record":"TT2/g5/r3","before":"Bishop: Someone I worship told me this: \"Kill Jeanne d'Arc! If she lives, she will become a threat in years to come.\" Jeanne: … Bishop: I've been hunting witches in hopes of finding you someday… I never expected it to happen this soon.","after":"Bishop: The one I worship commanded me: \"Kill Joan of Arc! If she lives, she'll cause trouble later.\" Joan: … Bishop: I kept hunting witches, hoping I'd find you someday… I never thought it'd be this soon.","note":"Joan naming plus source-faithful tightening to recover TT2 packing efficiently."},
+    {"record":"TT2/g5/r5","before":"Jeanne: I'm… not a witch.","after":"Joan: I'm… not a witch."},
+    {"record":"TT2/g5/r6","before":"I untie the thick rope and gently lower Jeanne to the floor.","after":"I untie the thick rope and gently lower Joan to the floor."},
+    {"record":"TT2/g5/r7","before":"Jeanne: …Thank you.","after":"Joan: …Thank you."},
+    {"record":"TT3A/g1/r9","before":"Frankie: Take this…\nHe holds out a pendant.\nFrankie: Grandma gave me this the night before I left for war. It's a Romani talisman. With this, there's nothing to fear.\nI take the pendant and slip it around my neck.\nFrankie: Good luck…","after":"Frankie: Take this…\nHe holds out a pendant.\nFrankie: Grandma gave me this the night before I left for war. It's a Gypsy talisman. With this, there's nothing to fear.\nI take the pendant and slip it around my neck.\nFrankie: Good luck…"}
+  ],
+  "reviewed_retained": [
+    {"term":"Jehovah","reason":"Japanese explicitly uses エホバ (Jehovah); Yahweh would change the source term."},
+    {"term":"Alexander of Macedonia","reason":"Accurate context-specific identification; Alexander the Great would add an epithet absent from the scene."},
+    {"term":"Melchior / Balthazar / Caspar","reason":"Established English forms matching the Japanese traditional Magi names."},
+    {"term":"Orion","reason":"Name is correct; any mythological-role looseness originates in the source."}
+  ]
+}
