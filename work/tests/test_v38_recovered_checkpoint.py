@@ -13,8 +13,8 @@ import base64
 import gzip
 import hashlib
 import json
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
