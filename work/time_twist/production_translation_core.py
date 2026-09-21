@@ -472,6 +472,7 @@ def validate_renderer_buffer_layout(text: str) -> None:
     """Reject implicit row crossing and writes beyond NOV2's four-row buffer."""
     segments, controls = _template_parts(text)
     cursor = 0
+    line_state = 0
     for index, segment in enumerate(segments):
         row_end = _row_end_for_cursor(cursor)
         end_cursor = cursor + len(segment) * 2
@@ -495,7 +496,15 @@ def validate_renderer_buffer_layout(text: str) -> None:
                     f"renderer control {control} re-enters at X=${overwrite_limit:02X} "
                     f"and would overwrite staged prose through X=${cursor:02X}"
                 )
-            cursor = _cursor_after_control(cursor, control)
+            if control == 0:
+                if cursor < 49 and not line_state:
+                    cursor, line_state = 48, 1
+                elif cursor < 97:
+                    cursor, line_state = 96, 2
+                elif cursor < 145:
+                    cursor, line_state = 144, 3
+            else:
+                cursor = _cursor_after_control(cursor, control)
 
 
 def validate_production_control_sequence(source: str, production: str) -> None:

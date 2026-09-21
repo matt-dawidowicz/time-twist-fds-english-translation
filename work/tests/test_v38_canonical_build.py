@@ -1,4 +1,4 @@
-"""Guard the full active checkpoint and its single v39 continuation revision."""
+"""Guard the active checkpoint and its reviewed dialogue-layout revisions."""
 
 from __future__ import annotations
 
@@ -11,9 +11,9 @@ from time_twist.release_metadata import ReleaseBuildError
 from time_twist.v38_build import (
     build_release_images,
     restore_checkpoint,
-    v39_checkpoint_records,
     validate_checkpoint_records,
 )
+from time_twist.v40_checkpoint import RECORD_SHA256, v40_checkpoint_records
 
 ROOT = Path(__file__).resolve().parents[2]
 BUNDLE = ROOT / "recovery/v38/repro_bundle"
@@ -27,7 +27,6 @@ class V38CanonicalBuildTests(unittest.TestCase):
         """Read the independently hash-checked checkpoint without private ROMs."""
         with tempfile.TemporaryDirectory() as directory:
             cls.archived = restore_checkpoint(BUNDLE, Path(directory))
-        cls.approved = v39_checkpoint_records(cls.archived)
         cls.actual = {
             record: text
             for path in (ROOT / "work/translations").glob("*.json")
@@ -35,6 +34,7 @@ class V38CanonicalBuildTests(unittest.TestCase):
                 path.read_text(encoding="utf-8")
             ).items()
         }
+        cls.approved = v40_checkpoint_records(cls.archived, cls.actual)
 
     def test_every_active_record_matches_approved_wording_and_controls(
         self,
@@ -72,20 +72,22 @@ class V38CanonicalBuildTests(unittest.TestCase):
                 b"wrong", translations_directory=ROOT, compiler_bundle=BUNDLE
             )
 
-    def test_only_gate_continuation_changes_from_v38(self) -> None:
-        """Restore the source-leading advance without changing other records."""
+    def test_only_reviewed_layouts_change_from_v38(self) -> None:
+        """Allow only fingerprinted revisions and keep the gate regression fixed."""
         changed = {
             key
             for key in self.actual
             if self.actual[key] != self.archived[key]
         }
-        self.assertEqual(changed, {"TT1B/g1/r30"})
+        self.assertEqual(changed, set(RECORD_SHA256))
         self.assertEqual(
             self.actual["TT1B/g1/r30"],
             "{CTRL:0}" + self.archived["TT1B/g1/r30"],
         )
         with self.assertRaisesRegex(ReleaseBuildError, "TT1B/g1/r30"):
-            validate_checkpoint_records(self.archived, self.approved)
+            changed_text = dict(self.actual)
+            changed_text["TT1B/g1/r30"] = self.archived["TT1B/g1/r30"]
+            validate_checkpoint_records(changed_text, self.approved)
 
     def test_gate_continuation_leaves_room_for_previous_description(
         self,

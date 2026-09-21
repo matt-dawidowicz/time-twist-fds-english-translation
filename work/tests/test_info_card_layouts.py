@@ -27,7 +27,7 @@ class InfoCardLayoutTests(unittest.TestCase):
     """Keep identity-card fields visually separate at both runtime entry points."""
 
     def test_france_card_retains_playtested_four_row_geometry(self) -> None:
-        """Keep the compact France/Pierre/Chino cards on their approved rows."""
+        """Retain France's first two rows and append separate name/trade fields."""
         tt2 = _production("TT2")
         self.assertEqual(
             tt2["TT2/g1/r4"],
@@ -35,17 +35,17 @@ class InfoCardLayoutTests(unittest.TestCase):
         )
         self.assertEqual(
             tt2["TT2/g1/r5"],
-            "Name: Pierre Trade:{CTRL:0}glassmaker",
+            "{CTRL:0}{CTRL:0}Name: Pierre{CTRL:0}Trade: glassmaker",
         )
         self.assertEqual(
             tt2["TT2/g1/r6"],
-            "Name: Chino Trade:{CTRL:0}locksmith",
+            "{CTRL:0}{CTRL:0}Name: Chino{CTRL:0}Trade: locksmith",
         )
 
     def test_long_identity_cards_keep_fields_on_separate_segments(
         self,
     ) -> None:
-        """Preserve v38 field geometry, including its compact Nazareth row."""
+        """Start every field on a new row, including the Nazareth identity card."""
         cards = {
             ("TT3A", "TT3A/g0/r14"): (
                 "TIME:",
@@ -83,11 +83,6 @@ class InfoCardLayoutTests(unittest.TestCase):
             production = cache.setdefault(bank_name, _production(bank_name))
             text = production[record_id]
             validate_renderer_buffer_layout(text)
-            if record_id == "TT6A/g1/r10":
-                # Preserve the exact v38 checkpoint; a revised field layout
-                # requires a separately reviewed candidate.
-                self.assertIn("PLACE: NAZARETH. NAME:", text)
-                continue
             for segment in CONTROL_RE.split(text):
                 present = [label for label in labels if label in segment]
                 with self.subTest(record_id=record_id, segment=segment):

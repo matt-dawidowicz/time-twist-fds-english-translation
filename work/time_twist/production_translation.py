@@ -18,6 +18,8 @@ import re
 from pathlib import Path
 
 from . import production_translation_core as _core
+from .dialogue_flow import trace_dialogue, validate_continuation
+from .v40_checkpoint import CONTINUATION_PREDECESSORS
 
 CONTROL_RE = _core.CONTROL_RE
 DISPLAY_COLUMNS = _core.DISPLAY_COLUMNS
@@ -51,36 +53,25 @@ CANONICAL_RECORD_COUNTS = {
     "TT6D": 8,
 }
 
-# Exact v38 layouts that predate the generic greedy/23-column policy.
-# Hashes scope exceptions to reviewed text; edits use the strict policy.
-V38_LAYOUT_EXCEPTIONS = {
-    "TT2/g0/r22": "3cba5cd2b8fee1e75261d3d3098a58d05a8af70a2065cefb9109d7914597c5c0",
-    "TT2/g2/r15": "fa7aaa2992a33c430be9ade7d9e398792b345f36f2e8fcb11e2c25d93f7a6deb",
-    "TT2/g2/r28": "8139965aaf9bdc4ad3d36918e20d1d01f9c111d1984109634c9f6c0df5ff6215",
-    "TT2/g3/r12": "04d89ae538f91bd9676ff04fc5311082a6354ba6d6eede9a45349b444a3ca994",
-    "TT2/g4/r27": "c4e83f4571cebe41aab18ec44c78fd11ea9c7ee539ae1b14928eb4ad7f8325a5",
-    "TT2/g5/r2": "aa72ae4985299a9ece62b6473dcd812a29f9e6dde23d8f5626f598db8ecd789d",
-    "TT2/g5/r3": "6b2324696eed8798560ef26b8bc48e0f2681df7b0640ee7ae6dcb1f4d9a687fa",
-    "TT2/g5/r5": "efdcf68e7c8e25108c7dde77ed2525cc57655387c66aefe1cf34cefd01b27cc2",
-    "TT2/g5/r6": "2672c44baf6acf3853f076c1454b4228a71587d215018ef7af222cb0dd20c973",
-    "TT1A/g0/r3": "e6c13126c16df824fbb951c650e512ff8b20f267ddcaabbfe4544be793e332c6",
-    "TT5/g2/r16": "3ea8b405bfe5e4ac0f7e6e8020acb2d2776b6cdb4bb6ab3adfbb15b949f77de5",
-    "TT1B/g3/r26": "43153837ea5680be55c8bc640e8f3c34a5991741611d111c48a7e2673ab1faae",
-    "TT3A/g4/r7": "35e87952c633e7e59ba0276764ce9c9eeb41aa1e4ad624ed612109b7d956f643",
-    "TT6B/g1/r30": "924190a4c2608ae6db2b89a17dbac572664817d3b48d9b0685a9d7e9b5500063",
-    "TT6B/g2/r1": "552c39d9409803f56fe98172202930ef41376957bc79d46f995c5c119ae44c23",
-    "TT6B/g2/r2": "629387fb4ef02450d5c32aacf922e35b79fba8088a7ef8b88b8855f3441bda25",
-    "TT6B/g2/r3": "ef44ae455716a0ff0f0baafab2d607a59ceb96e01c0b315b0374b55cc53405a3",
-    "T22/g1/r21": "74a09abc32d846c38010456b2f048ad931b8f5259e6074ab1462c4788546824e",
+# Exact 24-column quiz layouts validated against the native renderer.
+# Ordinary prose has no exception from greedy wrapping.
+CHECKPOINT_QUIZ_LAYOUTS = {
+    "TT3A/g4/r7": "9ffab733c0aed46e95e2d614df47a580fcac494715e059f74c94188be5dcad29",
     "TT4/g5/r11": "1689722348c6a4e9f262a3517b9ecdcc7bb160683e76fda559541d4d7b11127e",
+    "TT4/g5/r7": "9111ed5fa33029a04156a87bed0f3d2f4f6d1885f9692246bf13ff54e02e5f79",
+    "TT5/g2/r16": "3ea8b405bfe5e4ac0f7e6e8020acb2d2776b6cdb4bb6ab3adfbb15b949f77de5",
+    "TT6B/g1/r30": "9f2b496483e317a51adcfb3d0112c2041a6f73f1b48d4dcea4d4b417469113a0",
+    "TT6B/g2/r1": "552c39d9409803f56fe98172202930ef41376957bc79d46f995c5c119ae44c23",
+    "TT6B/g2/r2": "344c34761b58d878b6d11d1af1c3ab2bf493cabb240d919071f0e5cf95ef892a",
+    "TT6B/g2/r3": "ef44ae455716a0ff0f0baafab2d607a59ceb96e01c0b315b0374b55cc53405a3",
 }
 
 
 def _is_checkpoint_layout(record_id: str, text: str) -> bool:
-    """Recognize only the exact preserved v38 layout exceptions."""
+    """Recognize only the exact reviewed 24-column quiz layouts."""
     return hashlib.sha256(
         text.encode("utf-8")
-    ).hexdigest() == V38_LAYOUT_EXCEPTIONS.get(record_id)
+    ).hexdigest() == CHECKPOINT_QUIZ_LAYOUTS.get(record_id)
 
 
 QUIZ_QUESTION_RECORDS = frozenset(
@@ -312,6 +303,7 @@ def _validate_canonical_bank(bank_name: str, data: dict[str, str]) -> None:
     for record_id, text in data.items():
         try:
             validate_renderer_buffer_layout(text)
+            trace_dialogue(record_id, text)
             _validate_greedy_soft_wrap(record_id, text)
         except ProductionTranslationError as error:
             if str(error).startswith(f"{record_id}:"):
@@ -321,6 +313,10 @@ def _validate_canonical_bank(bank_name: str, data: dict[str, str]) -> None:
             ) from error
 
     _validate_quiz_question_geometry(bank_name, data, data)
+    for next_id, predecessors in CONTINUATION_PREDECESSORS.items():
+        if next_id.startswith(f"{bank_name}/"):
+            for previous_id in predecessors:
+                validate_continuation(previous_id, next_id, data)
 
 
 def merged_translation_map(

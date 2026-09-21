@@ -4,14 +4,18 @@ The canonical scenario maps already contain the approved English wording and
 control placement. Release construction validates that layout; it does not
 derive a different translation from another source.
 
-## Frozen v38 exception
+## Current v40 layout contract
 
-The current release preserves the exact checkpoint controls. Nineteen
-record-hash-scoped exceptions retain twelve non-greedy wraps and seven quiz
-records with 24-column segments. Generic edits retain the stricter rules below.
-These exceptions do not waive four-row buffer safety or establish complete
-in-game quiz coverage. The compact France and Nazareth identity-card layouts
-also remain exactly v38; runtime review is still required.
+Ordinary prose has no non-greedy checkpoint exceptions. Eight exact-hash quiz
+layouts use the renderer's full 24-column width. Identity-card fields start on
+separate rows. These exceptions do not waive buffer safety or establish complete
+in-game quiz coverage.
+
+All 63 source-marked continuation records have reviewed predecessor contracts.
+Validation retains the predecessor's text and rejects overwrites. Two leading
+`CTRL:0` controls enter row three: the native line-state byte matters as well as
+the cursor. Entry controls must be adapted to the preceding English row count;
+copying Japanese control placement alone is insufficient.
 
 ## Renderer geometry
 
@@ -109,7 +113,8 @@ not use `CTRL:7`, and canonical English does not invent it.
 
 Every canonical scenario record is checked for:
 
-- four-row renderer safety;
+- four-row renderer safety, including native line state;
+- retained-buffer safety at all registered continuation pairs;
 - no implicit row crossing;
 - speaker headings beginning at row starts;
 - no controls splitting a speaker heading;

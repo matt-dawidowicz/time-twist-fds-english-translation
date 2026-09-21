@@ -56,10 +56,10 @@ validates and consumes those maps directly.
 `work/source_records/*.json` is the Japanese/source-structure evidence. It is
 not an alternate English source.
 
-The current v39 candidate uses the frozen v38 compiler inputs in
+The current v40 candidate uses the frozen v38 compiler inputs in
 `recovery/v38/repro_bundle` for dictionaries, menus and runtime patches. The
 private v25 baseline supplies its existing title, font and unchanged engine.
-The older UI/title modules remain engineering tools, not v38 release inputs.
+The older UI/title modules remain engineering tools, not current release inputs.
 
 No generated ROM or rebuilt bank is authoritative source material.
 
@@ -69,8 +69,8 @@ No generated ROM or rebuilt bank is authoritative source material.
 - Canonical scenario maps are validated against the four-row, 24-column NOV2
   renderer model.
 - Every recognized new speaker heading must start on a fresh row.
-- Generic editing tools fill rows greedily; 19 exact v38 layout exceptions
-  are hash-scoped to preserve the approved checkpoint.
+- Ordinary prose fills rows greedily; eight exact 24-column quiz layouts
+  are hash-scoped. All 63 source-marked continuations check retained text.
 - Quiz prompts and identity/info cards retain their audited structural geometry.
 - Fixed UI, title, font, scenario text, and FDS-container changes are built by
   one source-locked release pipeline.
@@ -147,7 +147,7 @@ are not committed.
 
 ## Build and promote a release
 
-The normal command builds the v39 gate-continuation checkpoint from the exact
+The normal command builds the v40 dialogue-flow checkpoint from the exact
 private v25 safe-encoding baseline. Put your supplied baseline at:
 
 ```text
@@ -164,9 +164,10 @@ time-twist release-build --candidate --output-dir build/candidate
 ```
 
 The resulting four-side SHA-256 must be:
-`bb42d56dc80f8d7adbc2e2cf908693307946bee29ae7f13f6d5f9d538ca56546`.
-The sole change from v38 restores the source-leading line advance in
-`TT1B/g1/r30`, preserving the previous house description. All 1,299 active
+`18baaecda65e2cf2406672da3c803669c3e5bafbe43af1c5b06216c93dfd2f03`.
+v40 changes 77 layouts from v38 (76 beyond the v39 gate fix), preserving all
+English wording. It adapts continuation rows and scrolling to English length;
+see [the dialogue-flow audit](docs/V40_DIALOGUE_FLOW_AUDIT.md). All 1,299 active
 records and decoded output records must match this checkpoint exactly,
 including controls. Updating the source lock alone cannot approve older text.
 The lock covers the baseline, active maps, and every frozen compiler payload.

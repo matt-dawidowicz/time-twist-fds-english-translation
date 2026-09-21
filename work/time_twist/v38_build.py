@@ -1,4 +1,4 @@
-"""Build the v39 gate-continuation checkpoint using the frozen v38 compiler.
+"""Build the v40 dialogue-flow checkpoint using the frozen v38 compiler.
 
 The private v25 baseline supplies the established font, title and engine. The
 hash-checked recovery compiler supplies v38 dictionaries, allocation and runtime
@@ -25,12 +25,13 @@ from .release_metadata import (
     ReleaseBuildError,
     sha256_bytes,
 )
+from .v40_checkpoint import prepare_v40_dictionaries, v40_checkpoint_records
 
 BASELINE_SHA256 = (
     "813cdceb190e9714f7489c1bd5500f8e2ead3b3942f789ccf68bc6f3696bfc19"
 )
 OUTPUT_SHA256 = (
-    "bb42d56dc80f8d7adbc2e2cf908693307946bee29ae7f13f6d5f9d538ca56546"
+    "18baaecda65e2cf2406672da3c803669c3e5bafbe43af1c5b06216c93dfd2f03"
 )
 IMAGE_BYTES = 262000
 
@@ -104,7 +105,7 @@ def build_release_images(
     translations_directory: Path,
     compiler_bundle: Path,
 ) -> tuple[dict[str, bytes], dict[str, object]]:
-    """Reproduce v39 exactly, rejecting source drift before publishing bytes."""
+    """Reproduce v40 exactly, rejecting source drift before publishing bytes."""
     if (
         len(baseline) != IMAGE_BYTES
         or hashlib.sha256(baseline).hexdigest() != BASELINE_SHA256
@@ -121,13 +122,14 @@ def build_release_images(
                 )
             )
         )
-    with tempfile.TemporaryDirectory(prefix="time_twist_v39_") as directory:
+    with tempfile.TemporaryDirectory(prefix="time_twist_v40_") as directory:
         root = Path(directory)
         source = root / "source"
-        approved = v39_checkpoint_records(
-            restore_checkpoint(compiler_bundle, source)
+        approved = v40_checkpoint_records(
+            restore_checkpoint(compiler_bundle, source), actual
         )
         validate_checkpoint_records(actual, approved)
+        prepare_v40_dictionaries(source)
         # These are the only scenario text inputs read by the frozen compiler.
         (source / "data/layouts.json").write_text(
             json.dumps(
@@ -187,7 +189,7 @@ def build_release_images(
             or hashlib.sha256(built).hexdigest() != OUTPUT_SHA256
         ):
             raise ReleaseBuildError(
-                "v39 output is not byte-identical to the approved checkpoint"
+                "v40 output is not byte-identical to the approved checkpoint"
             )
         report = json.loads(
             (output / "reports/v38_build.json").read_text(encoding="utf-8")
