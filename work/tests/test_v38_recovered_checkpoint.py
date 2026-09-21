@@ -44,8 +44,12 @@ class V38RecoveredCheckpointTests(unittest.TestCase):
         self.assertEqual(len(files), 17)
         for item in files:
             with self.subTest(path=item["path"]):
-                encoded = (PAYLOAD / item["payload"]).read_text(encoding="ascii")
-                raw = gzip.decompress(base64.b64decode("".join(encoded.split())))
+                encoded = (PAYLOAD / item["payload"]).read_text(
+                    encoding="ascii"
+                )
+                raw = gzip.decompress(
+                    base64.b64decode("".join(encoded.split()))
+                )
                 self.assertEqual(len(raw), item["bytes"])
                 self.assertEqual(
                     hashlib.sha256(raw).hexdigest(), item["sha256"]
