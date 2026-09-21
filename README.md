@@ -56,7 +56,7 @@ validates and consumes those maps directly.
 `work/source_records/*.json` is the Japanese/source-structure evidence. It is
 not an alternate English source.
 
-The current v40 candidate uses the frozen v38 compiler inputs in
+The current v41 candidate uses the frozen v38 compiler inputs in
 `recovery/v38/repro_bundle` for dictionaries, menus and runtime patches. The
 private v25 baseline supplies its existing title, font and unchanged engine.
 The older UI/title modules remain engineering tools, not current release inputs.
@@ -147,7 +147,7 @@ are not committed.
 
 ## Build and promote a release
 
-The normal command builds the v40 dialogue-flow checkpoint from the exact
+The normal command builds the v41 menu-cancel checkpoint from the exact
 private v25 safe-encoding baseline. Put your supplied baseline at:
 
 ```text
@@ -164,7 +164,7 @@ time-twist release-build --candidate --output-dir build/candidate
 ```
 
 The resulting four-side SHA-256 must be:
-`18baaecda65e2cf2406672da3c803669c3e5bafbe43af1c5b06216c93dfd2f03`.
+`0e9d93ede88231fd5a864b172d32d035d6aad3a378574ceffd633df4cedd5530`.
 v40 changes 77 layouts from v38 (76 beyond the v39 gate fix), preserving all
 English wording. It adapts continuation rows and scrolling to English length;
 see [the dialogue-flow audit](docs/V40_DIALOGUE_FLOW_AUDIT.md). All 1,299 active
@@ -215,3 +215,10 @@ to the original game or any third-party software or assets. See
 This is an unofficial fan translation and reverse-engineering project. It is
 not affiliated with, authorized by, or endorsed by Nintendo or the original
 rights holders.
+
+## v41 menu correction
+
+v41 retains every v40 text byte and changes three NOV2 branch operands. Child
+menus preserve their inherited return destination. Rejected Back input at a
+root or parentless menu follows normal redraw instead of leaving a blank menu.
+See [the menu-cancel audit](docs/V41_MENU_CANCEL.md). Use the v41 save with v41; the old state retains the old engine.

@@ -1,10 +1,10 @@
-# Canonical build: v40 dialogue flow
+# Canonical build: v41 menu cancellation
 
-`time-twist release-build --candidate` builds v40 using the frozen v38 compiler
+`time-twist release-build --candidate` builds v41 using the frozen v38 compiler
 and explicitly reviewed layout/dictionary revisions. The four-side result is
 262,000 bytes with SHA-256:
 
-`18baaecda65e2cf2406672da3c803669c3e5bafbe43af1c5b06216c93dfd2f03`
+`0e9d93ede88231fd5a864b172d32d035d6aad3a378574ceffd633df4cedd5530`
 
 See [the v40 audit](V40_DIALOGUE_FLOW_AUDIT.md) for scope, fixes and limitations.
 The earlier v39 gate correction is included.
@@ -64,3 +64,10 @@ runtime review. No ROM, BIOS, emulator or save state is committed.
 
 Old save states retain loaded bank data. Use the converted v40 state with v40,
 or reset the new ROM; loading an old state does not establish that new text runs.
+
+## v41 menu correction
+
+v41 retains every v40 text byte and changes three NOV2 branch operands. Child
+menus preserve their inherited return destination. Rejected Back input at a
+root or parentless menu follows normal redraw instead of leaving a blank menu.
+See [the menu-cancel audit](V41_MENU_CANCEL.md). Use the v41 save with v41; the old state retains the old engine.

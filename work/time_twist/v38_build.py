@@ -1,4 +1,4 @@
-"""Build the v40 dialogue-flow checkpoint using the frozen v38 compiler.
+"""Build the v41 menu-cancel checkpoint using the frozen v38 compiler.
 
 The private v25 baseline supplies the established font, title and engine. The
 hash-checked recovery compiler supplies v38 dictionaries, allocation and runtime
@@ -19,6 +19,7 @@ import tempfile
 from pathlib import Path
 
 from .fds import FdsImage
+from .menu_cancel import patch_menu_cancel
 from .production_translation import CANONICAL_RECORD_COUNTS
 from .release_metadata import (
     SCENARIO_LOCATIONS,
@@ -30,8 +31,11 @@ from .v40_checkpoint import prepare_v40_dictionaries, v40_checkpoint_records
 BASELINE_SHA256 = (
     "813cdceb190e9714f7489c1bd5500f8e2ead3b3942f789ccf68bc6f3696bfc19"
 )
-OUTPUT_SHA256 = (
+V40_OUTPUT_SHA256 = (
     "18baaecda65e2cf2406672da3c803669c3e5bafbe43af1c5b06216c93dfd2f03"
+)
+OUTPUT_SHA256 = (
+    "0e9d93ede88231fd5a864b172d32d035d6aad3a378574ceffd633df4cedd5530"
 )
 IMAGE_BYTES = 262000
 
@@ -186,11 +190,17 @@ def build_release_images(
         validate_checkpoint_records(emitted, actual)
         if (
             len(built) != IMAGE_BYTES
-            or hashlib.sha256(built).hexdigest() != OUTPUT_SHA256
+            or hashlib.sha256(built).hexdigest() != V40_OUTPUT_SHA256
         ):
             raise ReleaseBuildError(
                 "v40 output is not byte-identical to the approved checkpoint"
             )
+        image = FdsImage.from_bytes(built)
+        engine = image.sides[0].find_file("NOV2")
+        engine.data = patch_menu_cancel(engine.data)
+        built = image.to_bytes()
+        if hashlib.sha256(built).hexdigest() != OUTPUT_SHA256:
+            raise ReleaseBuildError("v41 output hash differs from checkpoint")
         report = json.loads(
             (output / "reports/v38_build.json").read_text(encoding="utf-8")
         )
