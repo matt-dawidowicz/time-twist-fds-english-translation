@@ -203,13 +203,13 @@ runtime state, emulator evidence, and remaining unknowns using the template in t
 
 The release layer separates four approvals that were previously conflated:
 
-1. `work/release_sources.json` approves every non-code input that can affect
-   the playable image: both Japanese baselines, base scenario maps, registered
-   production-review JSON, optional explicit override JSON, and both title
-   assets. Schema v3 declares LF-normalized identity for editable JSON and
-   raw-byte identity for FDS/PNG inputs. The lock document is itself hashed
-   after LF normalization, so Windows checkout policy cannot change its release
-   identity.
+1. `work/release_sources.json` schema v5 locks the exact private v25
+   safe-encoding baseline, 13 active scenario maps, and the frozen v38 compiler
+   bundle. Editable maps use LF normalization; ROM and compiler payloads use
+   exact bytes. The normal command uses `v38_build.py`, generating both compiler
+   text inputs from active maps and checking them against the immutable v38
+   oracle. The historical Japanese-baseline compiler is not the release path.
+   See [V38_CANONICAL_BUILD.md](V38_CANONICAL_BUILD.md).
 2. Code provenance records the checkout Git commit/dirty state when available.
    It computes the same authoritative digest for the imported/executing
    `time_twist` package and the checkout's `work/time_twist/**/*.py`, using

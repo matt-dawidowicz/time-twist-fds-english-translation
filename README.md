@@ -56,9 +56,10 @@ validates and consumes those maps directly.
 `work/source_records/*.json` is the Japanese/source-structure evidence. It is
 not an alternate English source.
 
-Fixed-address/menu English is maintained separately in
-`work/time_twist/ui_fixed_tables.py` and `work/time_twist/ui.py`; title/font
-transformations live in `font.py` and `title.py`.
+The current v38 release uses the frozen compiler inputs in
+`recovery/v38/repro_bundle` for dictionaries, menus and runtime patches. The
+private v25 baseline supplies its existing title, font and unchanged engine.
+The older UI/title modules remain engineering tools, not v38 release inputs.
 
 No generated ROM or rebuilt bank is authoritative source material.
 
@@ -68,7 +69,8 @@ No generated ROM or rebuilt bank is authoritative source material.
 - Canonical scenario maps are validated against the four-row, 24-column NOV2
   renderer model.
 - Every recognized new speaker heading must start on a fresh row.
-- Ordinary rows are filled greedily within each speaker turn.
+- Generic editing tools fill rows greedily; 19 exact v38 layout exceptions
+  are hash-scoped to preserve the approved checkpoint.
 - Quiz prompts and identity/info cards retain their audited structural geometry.
 - Fixed UI, title, font, scenario text, and FDS-container changes are built by
   one source-locked release pipeline.
@@ -81,8 +83,8 @@ No generated ROM or rebuilt bank is authoritative source material.
 | --- | --- |
 | `work/translations/*.json` | Sole current scenario-English wording and approved control layout |
 | `work/source_records/*.json` | Decoded Japanese/source evidence and stable record IDs |
-| `work/time_twist/ui_fixed_tables.py`, `ui.py` | Fixed menus and interface text |
-| `work/time_twist/font.py`, `title.py` | Font/title transformations |
+| `recovery/v38/repro_bundle/` | Frozen v38 compiler, dictionaries, menus, runtime patches and immutable regression oracle |
+| Private v25 safe-encoding baseline | Existing title, font and unchanged engine payloads |
 | `work/release_sources.json` | Approved non-code release inputs and hashes |
 | `work/release_target.json` | Promoted output/provenance authority when present |
 | `docs/history/` and `audit/` | Historical engineering evidence only; never release input |
@@ -145,34 +147,40 @@ are not committed.
 
 ## Build and promote a release
 
-Place legally obtained Japanese images at:
+The normal command reproduces the approved v38 checkpoint from the exact
+private v25 safe-encoding baseline. Put your supplied baseline at:
 
 ```text
-work/baseline/time_twist_zenpen_japan.fds
-work/baseline/time_twist_kouhen_japan.fds
+work/baseline/time_twist_v25_safe_encoding.fds
 ```
 
-Then:
+Required SHA-256:
+`813cdceb190e9714f7489c1bd5500f8e2ead3b3942f789ccf68bc6f3696bfc19`.
+It is a 262,000-byte four-side image, not either Japanese retail image.
 
 ```powershell
 time-twist release-lock
-time-twist release-build
+time-twist release-build --candidate --output-dir build/candidate
 ```
 
-For an intentional source change:
+The resulting four-side SHA-256 must be:
+`62c5dbc2de33c484de9f8c1318fc903642eb08e2b4d5fa8e28384dc699c4c400`.
+All 1,299 active records and decoded output records must match v38 exactly,
+including controls. Updating the source lock alone cannot approve older text.
+The lock covers the baseline, active maps, and every frozen compiler payload.
+The executing package is independently hashed. Compilation and source checks
+finish before outputs are published.
+
+After complete playtesting and review, a maintainer can promote that candidate:
 
 ```powershell
-time-twist release-lock --update
-time-twist release-build --candidate --output-dir build/candidate
-# Review and playtest the candidate.
 time-twist release-promote build/candidate/release_manifest.json \
   --release-id english-playtest-YYYY-MM-DD
 time-twist release-build
 ```
 
-The release lock covers the Japanese baselines, the 13 canonical scenario maps,
-and the approved title assets. Release-critical Python code is independently
-hashed and must match the executing package.
+Future wording or layout changes require a separately reviewed checkpoint and
+compiler/output expectations; see [the v38 integration notes](docs/V38_CANONICAL_BUILD.md).
 
 No release target is checked in. Until a candidate is explicitly promoted,
 the repository remains in a documented pre-promotion state.

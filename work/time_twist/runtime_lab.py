@@ -2,8 +2,8 @@
 
 This module deliberately avoids the broad public CLI. Runtime debugging needs a
 small number of repeatable operations: inspect the code delta, compare two FDS
-images, run the focused tests in one interpreter, and build the current entropy
-candidate without spawning helper scripts or exposing discarded runtime modes.
+images, run the focused tests in one interpreter, and inspect historical Japanese-baseline compiler behavior. The canonical
+v38 candidate is built with time-twist release-build.
 """
 
 from __future__ import annotations
@@ -161,10 +161,10 @@ def command_smoke(_args: argparse.Namespace) -> int:
 
 
 def command_build(args: argparse.Namespace) -> int:
-    """Build the canonical entropy image path without release publication."""
+    """Build a historical Japanese-baseline diagnostic image."""
     from .production_translation import materialize_production_maps
     from .project import KNOWN_SCENARIO_BANKS
-    from .release import build_release_images
+    from .release_build import build_release_images
     from .title import DEFAULT_SUBTITLE
 
     project_root = Path(__file__).resolve().parents[2]
@@ -237,7 +237,8 @@ def build_parser() -> argparse.ArgumentParser:
     smoke.set_defaults(function=command_smoke)
 
     build = sub.add_parser(
-        "build", help="build through the canonical entropy path"
+        "build-historical",
+        help="run the historical Japanese-baseline compiler",
     )
     build.add_argument("--zenpen", type=Path, required=True)
     build.add_argument("--kouhen", type=Path, required=True)

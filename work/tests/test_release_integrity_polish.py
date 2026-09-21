@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import json
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -50,6 +51,11 @@ def make_synthetic_project(root: Path) -> Path:
     )
     (baseline / "time_twist_zenpen_japan.fds").write_bytes(b"zenpen")
     (baseline / "time_twist_kouhen_japan.fds").write_bytes(b"kouhen")
+    (baseline / "time_twist_v25_safe_encoding.fds").write_bytes(b"v25")
+    shutil.copytree(
+        Path(__file__).resolve().parents[2] / "recovery/v38/repro_bundle",
+        root / "recovery/v38/repro_bundle",
+    )
     return root
 
 
@@ -291,7 +297,7 @@ class ReleaseIntegrityPolishTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             baseline = (
-                root / "work" / "baseline" / "time_twist_zenpen_japan.fds"
+                root / "work" / "baseline" / "time_twist_v25_safe_encoding.fds"
             )
             original = baseline.read_bytes()
             with self.assertRaisesRegex(
