@@ -54,19 +54,40 @@ See [docs/ENGLISH_PAGINATION_POLICY.md](docs/ENGLISH_PAGINATION_POLICY.md).
 3. Edit only the corresponding entry in `work/translations/<BANK>.json`.
 4. If control placement must change, verify why the control is presentation
    geometry versus a semantic/timing boundary.
-5. Run:
+5. Install the development environment and hook once per clone:
 
    ```powershell
    python -m pip install -e ".[dev]"
-   python work/tools/materialize_production_translations.py \
-     --repo-root . --output work/build/production_translations
+   pre-commit install
+   ```
+
+6. Before every commit or pull-request update, run the canonical hygiene gate:
+
+   ```powershell
+   python work/tools/premerge_hygiene.py
+   ```
+
+   A translation or release change is not considered complete until this passes.
+   The gate checks Python syntax, production-map materialization, Black, Ruff,
+   pydocstyle, mypy, canonical translation tests, and the v38 recovery gate.
+
+7. Run the complete unit suite:
+
+   ```powershell
    python work/run_tests.py unit
    ```
 
-6. Build a candidate and playtest the changed scene before promotion.
+8. Build a candidate and playtest the changed scene before promotion.
 
 In a pull request, name every changed record ID and explain the source meaning,
 wording choice, control/layout change, and tests performed.
+
+## Pipeline rule
+
+If CI catches a cheap, deterministic class of failure that the pre-merge hygiene
+script did not catch, fix the immediate defect **and add that check to
+`work/tools/premerge_hygiene.py`** when practical. The same category of failure
+should not have to be rediscovered by a later pull request.
 
 ## Do not do these things
 
