@@ -450,9 +450,9 @@ def _validate_destination_collision(
 def _source_normalization(relative: str) -> str:
     """Return the established content policy for one locked source path."""
     logical_path = PurePosixPath(relative)
-    if (
-        logical_path.suffix == ".json"
-        and logical_path.parts[:2] == ("work", "translations")
+    if logical_path.suffix == ".json" and logical_path.parts[:2] == (
+        "work",
+        "translations",
     ):
         return SOURCE_NORMALIZATION_LF
     return SOURCE_NORMALIZATION_RAW
