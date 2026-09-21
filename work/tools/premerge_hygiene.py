@@ -28,6 +28,7 @@ def main() -> None:
         "work/build/production_translations",
     )
     run(python, "-m", "black", "--check", "--diff", "work")
+    run(python, "-m", "ruff", "check", "work")
     run(
         python,
         "-m",
