@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: time-twist-premerge-hygiene
+        name: Time Twist pre-merge hygiene
+        entry: python work/tools/premerge_hygiene.py
+        language: system
+        pass_filenames: false
+        always_run: true
