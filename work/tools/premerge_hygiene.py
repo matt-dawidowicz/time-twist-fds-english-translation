@@ -16,7 +16,7 @@ def run(*args: str) -> None:
 
 
 def main() -> None:
-    """Fail fast on syntax, formatting, materialization, or checkpoint drift."""
+    """Fail fast on syntax, style, typing, materialization, or checkpoint drift."""
     python = sys.executable
     run(python, "-m", "compileall", "-q", "work")
     run(
@@ -29,6 +29,8 @@ def main() -> None:
     )
     run(python, "-m", "black", "--check", "--diff", "work")
     run(python, "-m", "ruff", "check", "work")
+    run(python, "-m", "pydocstyle", "--convention=pep257", "work")
+    run(python, "-m", "mypy")
     run(
         python,
         "-m",
