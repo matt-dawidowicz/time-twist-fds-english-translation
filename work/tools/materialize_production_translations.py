@@ -1,4 +1,4 @@
-"""Materialize complete production translation maps from reviewed prose."""
+"""Validate and stage the sole canonical scenario-translation maps."""
 
 from __future__ import annotations
 
@@ -35,8 +35,6 @@ def main() -> int:
     counts = materialize_production_maps(
         BANK_NAMES,
         base_directory=root / "work" / "translations",
-        override_directory=root / "work" / "production_overrides",
-        review_directory=root / "review" / "production_retranslation",
         output_directory=args.output.resolve(),
     )
     total = sum(counts.values())

@@ -1,147 +1,128 @@
 # Translation workflow
 
-This is the maintained path from Japanese source evidence to a reviewable English
-candidate. Playable scenario English is a deterministic composition of locked
-base maps, registered production-review JSON, and any intentional final override.
+This document defines the current workflow for scenario English.
 
-## 1. Provide private source images
+## Canonical data model
 
-Place legally obtained clean Japanese images in the private overlay:
+Each scenario record has:
 
-```text
-work/baseline/time_twist_zenpen_japan.fds
-work/baseline/time_twist_kouhen_japan.fds
-```
+- a stable ID such as `TT3A/g2/r30`;
+- decoded Japanese/source structure in `work/source_records/<BANK>.json`;
+- exactly one current playable English entry in
+  `work/translations/<BANK>.json`.
 
-Validate and extract them without committing the retail data:
+The canonical English entry includes both visible English and approved
+`{CTRL:n}` tokens. There is no additional English source-selection step during
+release construction.
 
-```powershell
-time-twist manifest work/baseline/time_twist_zenpen_japan.fds --output work/manifests/zenpen.json
-time-twist manifest work/baseline/time_twist_kouhen_japan.fds --output work/manifests/kouhen.json
-time-twist roundtrip work/baseline/time_twist_zenpen_japan.fds work/build/zenpen_roundtrip.fds
-time-twist roundtrip work/baseline/time_twist_kouhen_japan.fds work/build/kouhen_roundtrip.fds
-time-twist extract work/baseline/time_twist_zenpen_japan.fds work/extracted_zenpen
-time-twist extract work/baseline/time_twist_kouhen_japan.fds work/extracted_kouhen
-```
+## Editing a record
 
-See [Private fixtures](PRIVATE_FIXTURES.md) for the complete overlay policy.
+### 1. Establish the source meaning
 
-## 2. Refresh decoded source records only when source evidence changes
+Start from `work/source_records/<BANK>.json`. Confirm:
 
-`scenario-extract` writes Japanese/source-structure records. It deliberately does
-not carry English forward from an older output. Example:
+- the exact Japanese;
+- speaker identity;
+- surrounding records and scene context;
+- any source control sequence;
+- puzzle/UI role, if applicable.
 
-```powershell
-time-twist scenario-extract `
-  work/extracted_zenpen/side1_01_TT1A_A200.bin `
-  work/source_records/TT1A.json
-```
+Do not infer a speaker or referent from an older English rendering when the
+Japanese or runtime context provides stronger evidence.
 
-The checked-in source record contains stable IDs, exact decoded Japanese, and raw
-symbol metadata. It is not a translation file.
+### 2. Write the natural English
 
-## 3. Edit the correct English source layer
+Prefer the most natural source-faithful wording that the current engine can
+actually present.
 
-`work/translations/BANK.json` is the certified base layer: stable IDs, playable
-baseline English, and native semantic-control topology. The registered files under
-`review/production_retranslation/` supply the reviewed production wording used by
-the current build. An intentionally created `work/production_overrides/BANK.json`
-is the final per-record layer and should be used only for a narrow reviewed
-last-mile correction.
+Do not intentionally preserve compressed, telegraphic English simply because a
+shorter form was once convenient. If natural wording fails a real renderer,
+control, or bank-capacity constraint, document that constraint explicitly.
 
-Preserve source semantic-control order, supported characters, character voice,
-terminology, and renderer limits. The canonical materializer regenerates ordinary
-English row/scroll controls after composing those layers. The shared validators
-enforce the technical contracts; translation review still requires reading the
-Japanese and gameplay context.
+### 3. Lay it out for the renderer
 
-## 4. Optionally generate a merged review document
+The dialogue box has four physical 24-column rows.
 
-`scenario-merge` is a validator/review utility. It requires a separate output so
-it cannot silently turn a checked-in source record into a second English source:
+For ordinary dialogue:
 
-```powershell
-time-twist scenario-merge `
-  work/source_records/TT1A.json `
-  work/translations/TT1A.json `
-  --output work/build/TT1A_review.json
-```
+- every recognized new speaker heading starts on a fresh row;
+- each row within the same speaker turn is filled greedily;
+- a line breaks only when the next complete word cannot fit;
+- a speaker label is never split;
+- semantic waits/re-entry controls remain at their approved dramatic boundary.
 
-Do not commit merged review JSON as a translation authority.
+Structural exceptions:
 
-For a quick bank-capacity diagnostic with private source bytes:
+- scenario quiz prompts share space with answer-selection UI;
+- identity/info cards use row placement as field structure.
+
+These records keep their audited structural geometry.
+
+### 4. Validate
+
+Run:
 
 ```powershell
-time-twist scenario-footprint `
-  work/extracted_zenpen/side1_01_TT1A_A200.bin `
-  --translations work/translations/TT1A.json
-```
-
-This is a conservative native/flat analysis diagnostic, not the canonical entropy
-release footprint.
-
-## 5. Regenerate public review artifacts
-
-```powershell
-python work/generate_bilingual_comparison.py
-python work/generate_translation_workbook.py
+python work/tools/materialize_production_translations.py \
+  --repo-root . --output work/build/production_translations
 python work/run_tests.py unit
 ```
 
-CI uses the fixture-free comparison generator and requires checked-in generated
-review artifacts to match their sources. `work/translation_workbook_banks/` holds
-per-bank review checkpoints; `outputs/Time_Twist_translation_progress.md` is the
-canonical aggregate progress report.
+The materializer does **not** rewrite or choose wording. It validates the
+canonical maps and copies them into a deterministic staging directory.
 
-## 6. Build one canonical candidate
-
-There is no separate maintained scenario/UI construction path. `release-build`
-first materializes the locked base/review/override composition, then encodes
-dialogue, shared menus, fixed UI, font, title, and container changes through the
-single frozen entropy builder under one source lock:
+For a release candidate:
 
 ```powershell
-time-twist release-lock
 time-twist release-lock --update
 time-twist release-build --candidate --output-dir build/candidate
 ```
 
-Use `release-lock` without `--update` first to inspect drift. Refresh the lock only
-for reviewed intentional source changes.
+Then playtest the affected scene.
 
-Audit full-word fixed-menu output:
+## Control-code policy
 
-```powershell
-python work/tools/audit_fixed_menu_labels.py `
-  --candidate-fds "build/candidate/Time Twist - reproducible English four-side playtest.fds" `
-  --output-csv build/candidate/fixed_menu_label_audit.csv
-```
+`CTRL:0` and `CTRL:4` are commonly row/scroll geometry. Their placement in
+the canonical maps represents the current approved English layout.
 
-Require `full-word=721` and `failures=0` for the current menu inventory.
-Mismatched or abbreviated labels and display-width errors count as failures.
+`CTRL:1`, `CTRL:2`, `CTRL:3`, and `CTRL:6` may carry timing, page,
+re-entry, reveal, or speaker-transition semantics. Do not move them solely to
+make text fit. Use runtime evidence when a semantic boundary is uncertain.
 
-## 7. Run private integration tests and playtest
+`CTRL:5` is the packed record separator and is not translated text.
 
-With the complete legal private overlay:
+See [ENGLISH_PAGINATION_POLICY.md](ENGLISH_PAGINATION_POLICY.md) and
+[REVERSE_ENGINEERING_GUIDE.md](REVERSE_ENGINEERING_GUIDE.md).
 
-```powershell
-python work/run_tests.py integration
-python work/run_tests.py all
-```
+## Fixed-address English
 
-Then play the exact candidate named by its manifest. Focus on disk transitions,
-save/load, long lines, menus, page clearing, title behavior, and the records still
-flagged for gameplay/visual verification in the generated progress report.
+Scenario maps do not own every English string in the game.
 
-## 8. Promote only the reviewed candidate
+- fixed menu/table wording: `work/time_twist/ui_fixed_tables.py`
+- fixed interface patches: `work/time_twist/ui.py`
+- font transformations: `work/time_twist/font.py`
+- title transformations: `work/time_twist/title.py`
 
-```powershell
-time-twist release-promote build/candidate/release_manifest.json `
-  --release-id english-playtest-YYYY-MM-DD
-time-twist release-build
-```
+Changes there must satisfy the corresponding fixed-slot/runtime tests.
 
-Promotion independently rebuilds and verifies the candidate before establishing a
-strict release target. Never edit generated ROMs, materialized build maps,
-workbooks, or archived documents as a substitute for changing a locked source
-layer.
+## Review checklist
+
+Before accepting a scenario change, verify:
+
+- [ ] Japanese meaning preserved
+- [ ] speaker/referent verified
+- [ ] terminology consistent
+- [ ] no unnecessary compression of English
+- [ ] every new speaker starts on a fresh row
+- [ ] ordinary rows are maximally filled
+- [ ] no speaker label is split
+- [ ] semantic controls remain defensible
+- [ ] quiz/info-card geometry preserved where applicable
+- [ ] bank/runtime validators pass
+- [ ] changed scene playtested
+
+## Historical material
+
+Historical engineering records may explain why an older design or wording once
+existed, but they are not translation source. Any accepted change is made
+directly to the current canonical bank map.

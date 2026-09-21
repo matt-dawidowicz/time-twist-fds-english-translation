@@ -9,7 +9,6 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from time_twist.production_translation import REVIEW_FILES
 from time_twist.project import KNOWN_SCENARIO_BANKS
 from time_twist.release import (
     BUILD_ENVIRONMENT_SCHEMA,
@@ -32,14 +31,10 @@ def make_synthetic_project(root: Path) -> Path:
     translations = work / "translations"
     title_assets = work / "title_assets"
     baseline = work / "baseline"
-    overrides = work / "production_overrides"
-    review = root / "review" / "production_retranslation"
     code = work / "time_twist"
     translations.mkdir(parents=True)
     title_assets.mkdir()
     baseline.mkdir()
-    overrides.mkdir()
-    review.mkdir(parents=True)
     code.mkdir()
     (root / "pyproject.toml").write_text(
         "[project]\nname='test'\n", encoding="utf-8"
@@ -47,10 +42,6 @@ def make_synthetic_project(root: Path) -> Path:
     (code / "__init__.py").write_text('"""Synthetic package."""\n')
     for bank in KNOWN_SCENARIO_BANKS:
         (translations / f"{bank}.json").write_text("{}\n", encoding="utf-8")
-        review_name, review_field = REVIEW_FILES[bank]
-        (review / review_name).write_text(
-            json.dumps({review_field: {}}) + "\n", encoding="utf-8"
-        )
     (title_assets / "Time Twist approved native title.png").write_bytes(
         b"title"
     )

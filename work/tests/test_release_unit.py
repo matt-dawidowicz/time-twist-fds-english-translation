@@ -12,7 +12,6 @@ from pathlib import Path
 from unittest import mock
 
 from time_twist.cli import build_parser, main
-from time_twist.production_translation import REVIEW_FILES
 from time_twist.project import KNOWN_SCENARIO_BANKS
 from time_twist.release import (
     RELEASE_FILENAMES,
@@ -47,14 +46,10 @@ def make_synthetic_project(root: Path) -> Path:
     translations = work / "translations"
     title_assets = work / "title_assets"
     baseline = work / "baseline"
-    overrides = work / "production_overrides"
-    review = root / "review" / "production_retranslation"
     code = work / "time_twist"
     translations.mkdir(parents=True)
     title_assets.mkdir()
     baseline.mkdir()
-    overrides.mkdir()
-    review.mkdir(parents=True)
     code.mkdir()
     (root / "pyproject.toml").write_text(
         "[project]\nname='test'\n", encoding="utf-8"
@@ -62,10 +57,6 @@ def make_synthetic_project(root: Path) -> Path:
     (code / "__init__.py").write_text('"""Synthetic package."""\n')
     for bank in KNOWN_SCENARIO_BANKS:
         (translations / f"{bank}.json").write_text("{}\n", encoding="utf-8")
-        review_name, review_field = REVIEW_FILES[bank]
-        (review / review_name).write_text(
-            json.dumps({review_field: {}}) + "\n", encoding="utf-8"
-        )
     (title_assets / "Time Twist approved native title.png").write_bytes(
         b"title"
     )
@@ -190,33 +181,33 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
 
             self.assertEqual(validate_source_lock(project_root=root), payload)
 
-    def test_source_lock_covers_review_and_optional_override_inputs(
-        self,
-    ) -> None:
-        """Lock every editable layer that can change materialized production text."""
+    def test_source_lock_contains_only_current_release_inputs(self) -> None:
+        """Lock canonical maps, baselines, and title assets with no English fallback."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
-            override = root / "work" / "production_overrides" / "TT1A.json"
-            override.write_text(
-                '{"TT1A/g0/r0": "Override."}\n', encoding="utf-8"
-            )
             payload = write_source_lock(project_root=root)
-
-            review_name, _ = REVIEW_FILES["TT1A"]
-            review_key = f"review/production_retranslation/{review_name}"
-            override_key = "work/production_overrides/TT1A.json"
-            self.assertEqual(
-                payload["files"][review_key]["normalization"],
-                SOURCE_NORMALIZATION_LF,
+            files = set(payload["files"])
+            expected = {
+                "work/baseline/time_twist_zenpen_japan.fds",
+                "work/baseline/time_twist_kouhen_japan.fds",
+                "work/title_assets/Time Twist approved native title.png",
+                "work/title_assets/Time Twist approved native slide.png",
+                *{
+                    f"work/translations/{bank}.json"
+                    for bank in KNOWN_SCENARIO_BANKS
+                },
+            }
+            self.assertEqual(files, expected)
+            self.assertEqual(payload["schema"], SOURCE_LOCK_SCHEMA)
+            self.assertTrue(
+                all(
+                    payload["files"][f"work/translations/{bank}.json"][
+                        "normalization"
+                    ]
+                    == SOURCE_NORMALIZATION_LF
+                    for bank in KNOWN_SCENARIO_BANKS
+                )
             )
-            self.assertEqual(
-                payload["files"][override_key]["normalization"],
-                SOURCE_NORMALIZATION_LF,
-            )
-
-            review = root / review_key
-            review.write_bytes(review.read_bytes().replace(b"\n", b"\r\n"))
-            self.assertEqual(validate_source_lock(project_root=root), payload)
 
     def test_source_lock_rejects_changed_normalized_translation(self) -> None:
         """Line-ending tolerance must not hide a text-content change."""
@@ -393,7 +384,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             lock.assert_not_called()
 
     def test_release_build_delegates_to_canonical_entropy_images(self) -> None:
-        """Materialize reviewed prose once and call the single image builder."""
+        """Stage canonical prose once and call the single image builder."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             write_source_lock(project_root=root)

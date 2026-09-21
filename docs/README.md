@@ -1,9 +1,8 @@
 # Documentation index
 
-The maintained documentation describes the current source-only translation and
-release pipeline. Exact retired implementation snapshots remain in Git history, while
-important architectural transitions and superseded constraints are also preserved in
-`docs/history/` as permanent engineering records.
+The maintained documentation describes the **current** source-only translation
+and release pipeline. Retired implementation history lives under
+[`docs/history/`](history/README.md) or in Git history and is not release input.
 
 ## Start here
 
@@ -11,26 +10,29 @@ important architectural transitions and superseded constraints are also preserve
 - **Set up a checkout:** [Quickstart](../QUICKSTART.md)
 - **Improve English text:** [Translation contributor guide](../CONTRIBUTING_TRANSLATION.md)
 - **Change Python tooling or tests:** [Code contributor guide](../CONTRIBUTING_CODE.md)
-- **Reverse-engineer or fix runtime behavior:** [Text and graphics reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md)
+- **Reverse-engineer runtime behavior:** [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md)
 - **Tour the implementation:** [Code tour](CODE_TOUR.md)
 
-The public repository contains no original or patched FDS images, BIOS files,
-extracted retail payloads, emulator states, or other private fixtures.
+## Translation source
 
-## Translation and review
+Scenario English has one authority:
+
+```text
+work/translations/<BANK>.json
+```
+
+Those maps contain both the accepted words and the approved control layout.
+Decoded Japanese/source evidence is in `work/source_records/*.json`.
+
+Current translation documentation:
 
 1. [Translation workflow](TRANSLATION_WORKFLOW.md)
-2. [Workbook pipeline](WORKBOOK_PIPELINE.md)
-3. [Cross-bank editorial decisions](../work/audits/final_cross_bank_consistency.md)
-4. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
+2. [English pagination policy](ENGLISH_PAGINATION_POLICY.md)
+3. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
+4. [Cross-bank terminology decisions](../work/audits/final_cross_bank_consistency.md)
 
-Scenario English is composed from locked source layers: `work/translations/*.json`
-provides stable IDs and certified native control topology, registered
-`review/production_retranslation/*.json` provides the reviewed production wording,
-and an optional `work/production_overrides/*.json` file is the final explicit
-last-mile layer. `work/source_records/*.json` contains decoded Japanese, stable
-record IDs, and source structure only. Generated workbooks are review surfaces,
-not replacement sources.
+Fixed menus and other interface strings are maintained in
+`work/time_twist/ui_fixed_tables.py` and `work/time_twist/ui.py`.
 
 ## Binary and release architecture
 
@@ -47,68 +49,9 @@ not replacement sources.
 11. [Private fixtures](PRIVATE_FIXTURES.md)
 12. [Permanent engineering history](history/README.md)
 
-The reverse-engineering guide is the maintainer-level runtime map: it connects FDS
-file offsets, CPU load addresses, packed-text streams, NOV2 renderer behavior,
-scenario/menu addressing, font/CHR ownership, NOV4 title PPU/NMI sequencing, known
-failure modes, debugger breakpoints, and a repeatable evidence-to-fix workflow.
+The release lock covers only non-code inputs that can affect current output:
+the two Japanese baselines, the 13 canonical scenario maps, and approved title
+assets. Release-critical Python code has a separate deterministic tree hash.
 
-The gameplay script reference records the recovered high-nibble interpreter families,
-script label/subroutine table, persistent flag bank, predicate/control-flow model,
-audio command latches, exploration primitives, runtime CHR transform command,
-scene transitions, and the 98.6504% source-reachability baseline. The retail opcode
-reference is its canonical source-reachable language inventory: 61 shipped opcodes
-with stable low-level semantic names, operand grammars, native handlers, and evidence
-grades, kept explicitly separate from native interpreter forms that retail source does
-not reach. The remaining VM frontier is value-level semantic correlation rather than
-discovery of the VM skeleton.
-
-The gameplay graphics reference records the recovered `OB*`/`OBJ*`/`BG*` raw-CHR
-format, PPU destinations, NOV2 scene file-ID table, partial-overlay behavior,
-metasprites, actor layouts, hotspot rectangles, direct nametable patches, palette
-records/animation, and animation/motion stream ownership. Remaining unknowns are
-narrow value-level semantics and human-facing names, not the basic data architecture.
-
-Candidate and strict release builds use the single source-locked release builder.
-Low-level parsing and inspection commands remain available, but obsolete standalone
-bank/UI construction commands are no longer part of the public CLI.
-
-## Menus, fixed UI, title, font, and graphics
-
-- [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md)
-- [English dialogue pagination policy](ENGLISH_PAGINATION_POLICY.md)
-- [NOV4 font-source safety](NOV4_FONT_SOURCE_SAFETY.md)
-- [Gameplay script and event VM](GAMEPLAY_SCRIPT_ENGINE.md)
-- [Gameplay graphics and scene engine](GAMEPLAY_GRAPHICS_ENGINE.md)
-- [Title sequence](TITLE_SEQUENCE.md)
-- [Runtime playtest matrix](PLAYTEST_MATRIX.md)
-
-## Authority map
-
-| Representation | Purpose |
-| --- | --- |
-| `work/translations/*.json` | Certified base scenario English and native control topology |
-| `review/production_retranslation/*.json` | Registered reviewed production wording layered over the base maps |
-| `work/production_overrides/*.json` | Optional final explicit per-record overrides, when intentionally present |
-| `work/source_records/*.json` | Decoded Japanese/source structure; no English authority |
-| `work/time_twist/ui.py` and `ui_fixed_tables.py` | Playable fixed/interface text and guarded patch logic |
-| `work/title_assets/Time Twist approved native title.png` | Native ROM-bound title geometry |
-| `work/title_assets/Time Twist approved native slide.png` | Native ROM-bound swipe geometry |
-| `work/release_sources.json` | Approved non-code input hashes |
-| `work/release_target.json` | Reviewed release-output authority after promotion |
-| `work/translation_workbook_banks/*.json` | Generated per-bank linguistic review |
-| `outputs/Time_Twist_complete_translation_workbook.*` | Generated aggregate review artifacts |
-| User-supplied FDS bytes | Authoritative original binary layout |
-
-Never replace exact Japanese evidence with reconstructed kanji, and never use an
-archived or generated English string as the playable source.
-
-## Completed source reviews
-
-- [Japanese-source review evidence](../audit/AUTHENTICITY_SECOND_PASS.md):
-  semantic findings and manual terminology.
-- [Editorial change ledger](../audit/EDITORIAL_CHANGELOG.md): source readings,
-  recorded edits, and scene checks used by the playtest matrix.
-- [`../audit/third_party/`](../audit/third_party/README.md): completed third-party
-  comparison evidence.
-- [Permanent engineering history](history/README.md): preserved architectural transitions, failed experiments, and superseded constraints that must survive ordinary stale-documentation cleanup.
-- Git history: exact deleted code, old command implementations, and prior file states.
+The public repository contains no original or patched FDS images, BIOS files,
+extracted retail payloads, emulator states, or private fixtures.

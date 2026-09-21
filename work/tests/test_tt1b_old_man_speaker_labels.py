@@ -15,8 +15,6 @@ def _production(bank_name: str) -> dict[str, str]:
     return merged_translation_map(
         bank_name,
         base_directory=ROOT / "work" / "translations",
-        override_directory=ROOT / "work" / "production_overrides",
-        review_directory=ROOT / "review" / "production_retranslation",
     )
 
 

@@ -1,10 +1,8 @@
-"""Materialize canonical production English over the certified base maps.
+"""Generic English layout and renderer-validation helpers.
 
-The base maps supply stable record IDs and native semantic-control topology.
-Reviewed retranslation JSON and explicit overrides choose the visible English;
-this module then regenerates 24-column row/scroll geometry for the NOV2
-four-row renderer. Semantic controls remain in order while source-only Japanese
-presentation breaks are replaced by English layout controls.
+Canonical release source selection lives in :mod:`production_translation`.
+This module contains reusable layout algorithms only and does not merge or
+select competing translation layers.
 """
 
 from __future__ import annotations
@@ -54,22 +52,6 @@ CONTROL_REENTRY_CURSOR = {
     6: TEXT_ROW_BYTES * 3,
 }
 
-REVIEW_FILES = {
-    "TT1A": ("TT1A_proposal.json", "records"),
-    "TT1B": ("TT1B_proposal.json", "records"),
-    "TT2": ("TT2_changes.json", "changes"),
-    "T22": ("T22_changes.json", "changes"),
-    "TT3A": ("TT3A_changes.json", "changes"),
-    "TT3B": ("TT3B_changes.json", "changes"),
-    "TT4": ("TT4_changes.json", "changes"),
-    "TT5": ("TT5_changes.json", "changes"),
-    "T25": ("T25_changes.json", "changes"),
-    "TT6A": ("TT6A_changes.json", "changes"),
-    "TT6B": ("TT6B_changes.json", "changes"),
-    "TT6C": ("TT6C_changes.json", "changes"),
-    "TT6D": ("TT6D_proposal.json", "records"),
-}
-
 
 class ProductionTranslationError(ValueError):
     """Report malformed review data or a layout that cannot preserve controls."""
@@ -107,22 +89,6 @@ def _string_map(value: object, *, label: str) -> dict[str, str]:
 def _load_string_map(path: Path, *, label: str) -> dict[str, str]:
     """Load a JSON object whose keys and values are all strings."""
     return _string_map(_load_json_object(path, label=label), label=label)
-
-
-def _review_map(bank_name: str, review_directory: Path) -> dict[str, str]:
-    """Load the reviewed unconstrained English for one scenario bank."""
-    try:
-        filename, field = REVIEW_FILES[bank_name]
-    except KeyError as error:
-        raise ProductionTranslationError(
-            f"no production-review source registered for {bank_name}"
-        ) from error
-    path = review_directory / filename
-    payload = _load_json_object(path, label=f"{bank_name} production review")
-    return _string_map(
-        payload.get(field),
-        label=f"{bank_name} production review field {field!r}",
-    )
 
 
 def _template_parts(template: str) -> tuple[list[str], list[int]]:
@@ -401,18 +367,6 @@ def _greedy_turn_rows(text: str, columns: int) -> tuple[str, ...]:
             current = word
     rows.append(current)
 
-    # Greedy fill is authoritative. The only aesthetic exception is a final
-    # one- or two-character word stranded by itself; borrow the previous row's
-    # last word when that produces two legal rows.
-    if len(rows) >= 2 and len(rows[-1]) <= 2:
-        previous_words = rows[-2].split()
-        if len(previous_words) >= 2:
-            borrowed = previous_words[-1]
-            revised_last = f"{borrowed} {rows[-1]}"
-            revised_previous = " ".join(previous_words[:-1])
-            if revised_previous and len(revised_last) <= columns:
-                rows[-2] = revised_previous
-                rows[-1] = revised_last
     return tuple(rows)
 
 
@@ -998,100 +952,3 @@ def layout_review_text(record_id: str, reviewed: str, template: str) -> str:
             f"{record_id}: layout changed reviewed prose"
         )
     return output
-
-
-def merged_translation_map(
-    bank_name: str,
-    *,
-    base_directory: Path,
-    override_directory: Path | None = None,
-    review_directory: Path | None = None,
-) -> dict[str, str]:
-    """Return one complete production map with ROM-wide English reflow.
-
-    Editorial overrides choose the visible prose, but every scenario record is
-    then re-laid out against the certified base record's native semantic-control
-    topology. This keeps unchanged baseline lines from retaining obsolete
-    Japanese-era spacing while preserving the exact selected English words.
-    """
-    base = _load_string_map(
-        base_directory / f"{bank_name}.json",
-        label=f"{bank_name} base translation",
-    )
-    selected = dict(base)
-    explicit_control_overrides: set[str] = set()
-
-    if review_directory is not None:
-        review = _review_map(bank_name, review_directory)
-        unknown = sorted(set(review) - set(base))
-        if unknown:
-            raise ProductionTranslationError(
-                f"{bank_name} production review contains unknown IDs: "
-                f"{unknown[:3]}"
-            )
-        selected.update(review)
-
-    # Explicit overrides are the final editorial layer. Keeping this narrow
-    # hook permits a reviewed last-mile correction without creating another
-    # translation or build pipeline.
-    if override_directory is not None:
-        override_path = override_directory / f"{bank_name}.json"
-        if override_path.exists():
-            overrides = _load_string_map(
-                override_path,
-                label=f"{bank_name} production override",
-            )
-            unknown = sorted(set(overrides) - set(base))
-            if unknown:
-                raise ProductionTranslationError(
-                    f"{bank_name} production overrides contain unknown IDs: "
-                    f"{unknown[:3]}"
-                )
-            selected.update(overrides)
-            explicit_control_overrides.update(
-                record_id
-                for record_id, override_text in overrides.items()
-                if CONTROL_RE.search(override_text)
-            )
-
-    laid_out: dict[str, str] = {}
-    for record_id, selected_text in selected.items():
-        reviewed_text = selected_text
-        if record_id not in explicit_control_overrides:
-            reviewed_text = " ".join(
-                CONTROL_RE.sub(" ", selected_text).split()
-            )
-        laid_out[record_id] = layout_review_text(
-            record_id,
-            reviewed_text,
-            base[record_id],
-        )
-    return laid_out
-
-
-def materialize_production_maps(
-    bank_names: tuple[str, ...],
-    *,
-    base_directory: Path,
-    override_directory: Path | None,
-    review_directory: Path | None,
-    output_directory: Path,
-) -> dict[str, int]:
-    """Write deterministic complete translation maps for a production build."""
-    output_directory.mkdir(parents=True, exist_ok=True)
-    counts: dict[str, int] = {}
-    for bank_name in bank_names:
-        merged = merged_translation_map(
-            bank_name,
-            base_directory=base_directory,
-            override_directory=override_directory,
-            review_directory=review_directory,
-        )
-        path = output_directory / f"{bank_name}.json"
-        path.write_text(
-            json.dumps(merged, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-            newline="\n",
-        )
-        counts[bank_name] = len(merged)
-    return counts
