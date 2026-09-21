@@ -1,0 +1,25 @@
+{
+  "format": "time-twist-v38-minimal-repro-v1",
+  "expected_rom_sha256": "62c5dbc2de33c484de9f8c1318fc903642eb08e2b4d5fa8e28384dc699c4c400",
+  "expected_rom_size": 262000,
+  "baseline_filename": "Time-Twist-v25-DETERMINISTIC-ENGLISH-SAFE-ENCODING-CANDIDATE.fds",
+  "files": [
+    {"path":"build_v38.py","sha256":"23528bb82d39924ef092478d8ffc73be96ddb5ec8c34cba2e19d39262310c6d4","bytes":33148,"payload":"build_v38.py.gz.b64"},
+    {"path":"support.py","sha256":"9b820b3529c7b32ec00f68397474fb25d2fb7632f004d5c83d947cb545e77650","bytes":3230,"payload":"support.py.gz.b64"},
+    {"path":"codec.py","sha256":"1e2108bada756fce0b1be0f3aa2f68f8d22b3e550911a0d17fadc0142d6cb124","bytes":13376,"payload":"codec.py.gz.b64"},
+    {"path":"data/T25_dictionary_v29.json","sha256":"93f99d4628a349584621d0ba345da3be7873033224aede5d78d3ed7619d6f8bc","bytes":12888,"payload":"T25_dictionary_v29.json.gz.b64"},
+    {"path":"data/TT1B_dictionary_v34.json","sha256":"96dff98a83a0c676c6bd9514cb959a013eacfebd34c692d7342b9e2a0104f237","bytes":37166,"payload":"TT1B_dictionary_v34.json.gz.b64"},
+    {"path":"data/TT2_dictionary_v32.json","sha256":"52d36e97ed5b940c40c7c4e8afc8ba3f88478e8fb02be4e05953adac674b0c62","bytes":23573,"payload":"TT2_dictionary_v32.json.gz.b64"},
+    {"path":"data/TT3A_dictionary_v34.json","sha256":"6d104ac3b01688b82537fd819f26854f50c4a5e72708a4c439b2f382e05926f3","bytes":21436,"payload":"TT3A_dictionary_v34.json.gz.b64"},
+    {"path":"data/TT4_dictionary_v34.json","sha256":"75d973522a23e01b7517a91c05e62c4f0c120bba96ccfb1968133d88adf3de68","bytes":49553,"payload":"TT4_dictionary_v34.json.gz.b64"},
+    {"path":"data/TT5_dictionary_v32.json","sha256":"293f09d3662fd4ec513e1c7855702aa84c36eaab38fc111239ca09585d8f298a","bytes":24868,"payload":"TT5_dictionary_v32.json.gz.b64"},
+    {"path":"data/TT6B_dictionary_v32.json","sha256":"73be1ba1deca60677c18bf17435b58e78867f0e6943a4f836078f8225714929b","bytes":12719,"payload":"TT6B_dictionary_v32.json.gz.b64"},
+    {"path":"data/TT6C_dictionary_v32.json","sha256":"4473783c9b474aacc63447f761bede5167542ecf516db7b4cd80a5aff62c1c09","bytes":21726,"payload":"TT6C_dictionary_v32.json.gz.b64"},
+    {"path":"data/determinate_english.json","sha256":"d264391bfdd1ef55b1d932553687fb33a9517ed68ff09e1ae77857cd59fe3553","bytes":374381,"payload":"determinate_english.json.gz.b64"},
+    {"path":"data/input_probe.json","sha256":"911316dd9adaef26e7168a84741a2d73fb0c881239ab8b1ca5da9ea89845de95","bytes":5043,"payload":"input_probe.json.gz.b64"},
+    {"path":"data/layouts.json","sha256":"6dbeb5a523ebdc4d4ca7e1690b49b700fff19a3cdf8558dad9411efb6d84d4ac","bytes":180726,"payload":"layouts.json.gz.b64"},
+    {"path":"data/menu_overrides_v29.json","sha256":"23f0f43d282144e92130f00dfb281b901501530eb38a93eac81f8bc6baeecc0f","bytes":278,"payload":"menu_overrides_v29.json.gz.b64"},
+    {"path":"data/menu_overrides_v32.json","sha256":"5f7e3e66ce809974259f88a8da54c4a72a725406368b0fc8556a168cbb4fa76b","bytes":842,"payload":"menu_overrides_v32.json.gz.b64"},
+    {"path":"data/regions.json","sha256":"811fef6727cc84dc1979f8b6c52a050d5530f93fcbdba15c5029d5f261fdec4f","bytes":1222,"payload":"regions.json.gz.b64"}
+  ]
+}
