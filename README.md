@@ -56,7 +56,7 @@ validates and consumes those maps directly.
 `work/source_records/*.json` is the Japanese/source-structure evidence. It is
 not an alternate English source.
 
-The current v38 release uses the frozen compiler inputs in
+The current v39 candidate uses the frozen v38 compiler inputs in
 `recovery/v38/repro_bundle` for dictionaries, menus and runtime patches. The
 private v25 baseline supplies its existing title, font and unchanged engine.
 The older UI/title modules remain engineering tools, not v38 release inputs.
@@ -147,7 +147,7 @@ are not committed.
 
 ## Build and promote a release
 
-The normal command reproduces the approved v38 checkpoint from the exact
+The normal command builds the v39 gate-continuation checkpoint from the exact
 private v25 safe-encoding baseline. Put your supplied baseline at:
 
 ```text
@@ -164,8 +164,10 @@ time-twist release-build --candidate --output-dir build/candidate
 ```
 
 The resulting four-side SHA-256 must be:
-`62c5dbc2de33c484de9f8c1318fc903642eb08e2b4d5fa8e28384dc699c4c400`.
-All 1,299 active records and decoded output records must match v38 exactly,
+`bb42d56dc80f8d7adbc2e2cf908693307946bee29ae7f13f6d5f9d538ca56546`.
+The sole change from v38 restores the source-leading line advance in
+`TT1B/g1/r30`, preserving the previous house description. All 1,299 active
+records and decoded output records must match this checkpoint exactly,
 including controls. Updating the source lock alone cannot approve older text.
 The lock covers the baseline, active maps, and every frozen compiler payload.
 The executing package is independently hashed. Compilation and source checks
@@ -180,7 +182,7 @@ time-twist release-build
 ```
 
 Future wording or layout changes require a separately reviewed checkpoint and
-compiler/output expectations; see [the v38 integration notes](docs/V38_CANONICAL_BUILD.md).
+compiler/output expectations; see [the canonical build notes](docs/V38_CANONICAL_BUILD.md).
 
 No release target is checked in. Until a candidate is explicitly promoted,
 the repository remains in a documented pre-promotion state.

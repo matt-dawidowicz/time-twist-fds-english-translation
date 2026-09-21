@@ -1,4 +1,4 @@
-"""Guard the full active v38 text set and the default compiler selection."""
+"""Guard the full active checkpoint and its single v39 continuation revision."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from time_twist.release_metadata import ReleaseBuildError
 from time_twist.v38_build import (
     build_release_images,
     restore_checkpoint,
+    v39_checkpoint_records,
     validate_checkpoint_records,
 )
 
@@ -25,7 +26,8 @@ class V38CanonicalBuildTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         """Read the independently hash-checked checkpoint without private ROMs."""
         with tempfile.TemporaryDirectory() as directory:
-            cls.approved = restore_checkpoint(BUNDLE, Path(directory))
+            cls.archived = restore_checkpoint(BUNDLE, Path(directory))
+        cls.approved = v39_checkpoint_records(cls.archived)
         cls.actual = {
             record: text
             for path in (ROOT / "work/translations").glob("*.json")
@@ -69,6 +71,45 @@ class V38CanonicalBuildTests(unittest.TestCase):
             build_release_images(
                 b"wrong", translations_directory=ROOT, compiler_bundle=BUNDLE
             )
+
+    def test_only_gate_continuation_changes_from_v38(self) -> None:
+        """Restore the source-leading advance without changing other records."""
+        changed = {
+            key
+            for key in self.actual
+            if self.actual[key] != self.archived[key]
+        }
+        self.assertEqual(changed, {"TT1B/g1/r30"})
+        self.assertEqual(
+            self.actual["TT1B/g1/r30"],
+            "{CTRL:0}" + self.archived["TT1B/g1/r30"],
+        )
+        with self.assertRaisesRegex(ReleaseBuildError, "TT1B/g1/r30"):
+            validate_checkpoint_records(self.archived, self.approved)
+
+    def test_gate_continuation_leaves_room_for_previous_description(
+        self,
+    ) -> None:
+        """Keep the source's continuation row and fit both records in one box."""
+        bank = json.loads(
+            (ROOT / "work/source_records/TT1B.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        previous = self.actual["TT1B/g1/r29"]
+        continuation = self.actual["TT1B/g1/r30"]
+        source = {
+            record["id"]: record["japanese"]
+            for group in bank["groups"]
+            for record in group["records"]
+        }
+        self.assertTrue(source["TT1B/g1/r30"].startswith("{CTRL:0}"))
+        self.assertNotIn("{CTRL:", previous)
+        self.assertLessEqual(len(previous), 24)
+        rows = continuation.split("{CTRL:0}")
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(rows[0], "")
+        self.assertTrue(all(0 < len(row) <= 24 for row in rows[1:]))
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""Build the approved v38 checkpoint from active maps and frozen compiler inputs.
+"""Build the v39 gate-continuation checkpoint using the frozen v38 compiler.
 
 The private v25 baseline supplies the established font, title and engine. The
 hash-checked recovery compiler supplies v38 dictionaries, allocation and runtime
@@ -30,7 +30,7 @@ BASELINE_SHA256 = (
     "813cdceb190e9714f7489c1bd5500f8e2ead3b3942f789ccf68bc6f3696bfc19"
 )
 OUTPUT_SHA256 = (
-    "62c5dbc2de33c484de9f8c1318fc903642eb08e2b4d5fa8e28384dc699c4c400"
+    "bb42d56dc80f8d7adbc2e2cf908693307946bee29ae7f13f6d5f9d538ca56546"
 )
 IMAGE_BYTES = 262000
 
@@ -66,14 +66,26 @@ def restore_checkpoint(bundle: Path, destination: Path) -> dict[str, str]:
     return {record: layout["literal"] for record, layout in layouts.items()}
 
 
+def v39_checkpoint_records(archived: dict[str, str]) -> dict[str, str]:
+    """Apply the sole v39 control revision to the immutable v38 text oracle.
+
+    The gate description continues after TT1B/g1/r29 in the same text box.
+    Its source-leading CTRL:0 must survive translation to preserve row zero.
+    Deriving this delta retains the archive without a second editable English
+    source or an exemption from exact record comparison.
+    """
+    approved = dict(archived)
+    record = "TT1B/g1/r30"
+    approved[record] = "{CTRL:0}" + archived[record]
+    return approved
+
+
 def validate_checkpoint_records(
     actual: dict[str, str], approved: dict[str, str]
 ) -> None:
-    """Reject any missing, extra or changed v38 wording or layout control."""
+    """Reject any missing, extra or changed checkpoint wording or control."""
     if len(approved) != 1299:
-        raise ReleaseBuildError(
-            "v38 checkpoint must contain exactly 1299 records"
-        )
+        raise ReleaseBuildError("checkpoint must contain exactly 1299 records")
     different = sorted(
         key
         for key in actual.keys() | approved.keys()
@@ -81,7 +93,7 @@ def validate_checkpoint_records(
     )
     if different:
         raise ReleaseBuildError(
-            f"active text differs from approved v38 in {len(different)} records: "
+            f"active text differs from checkpoint in {len(different)} records: "
             + ", ".join(different[:10])
         )
 
@@ -92,7 +104,7 @@ def build_release_images(
     translations_directory: Path,
     compiler_bundle: Path,
 ) -> tuple[dict[str, bytes], dict[str, object]]:
-    """Reproduce v38 exactly, rejecting source drift before publishing bytes."""
+    """Reproduce v39 exactly, rejecting source drift before publishing bytes."""
     if (
         len(baseline) != IMAGE_BYTES
         or hashlib.sha256(baseline).hexdigest() != BASELINE_SHA256
@@ -109,10 +121,12 @@ def build_release_images(
                 )
             )
         )
-    with tempfile.TemporaryDirectory(prefix="time_twist_v38_") as directory:
+    with tempfile.TemporaryDirectory(prefix="time_twist_v39_") as directory:
         root = Path(directory)
         source = root / "source"
-        approved = restore_checkpoint(compiler_bundle, source)
+        approved = v39_checkpoint_records(
+            restore_checkpoint(compiler_bundle, source)
+        )
         validate_checkpoint_records(actual, approved)
         # These are the only scenario text inputs read by the frozen compiler.
         (source / "data/layouts.json").write_text(
@@ -173,7 +187,7 @@ def build_release_images(
             or hashlib.sha256(built).hexdigest() != OUTPUT_SHA256
         ):
             raise ReleaseBuildError(
-                "v38 output is not byte-identical to the approved checkpoint"
+                "v39 output is not byte-identical to the approved checkpoint"
             )
         report = json.loads(
             (output / "reports/v38_build.json").read_text(encoding="utf-8")
