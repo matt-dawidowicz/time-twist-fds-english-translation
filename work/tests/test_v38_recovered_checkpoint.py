@@ -28,17 +28,22 @@ EXPECTED_ROM_SIZE = 262000
 
 
 class V38RecoveredCheckpointTests(unittest.TestCase):
+    """Protect the recovered v38 source bundle and canonical ROM identity."""
+
     @classmethod
     def setUpClass(cls) -> None:
+        """Load the recovered v38 manifest once for all checkpoint tests."""
         cls.manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 
     def test_canonical_rom_gate_is_frozen(self) -> None:
+        """Keep the approved v38 ROM size and SHA-256 immutable."""
         self.assertEqual(
             self.manifest["expected_rom_sha256"], EXPECTED_ROM_SHA256
         )
         self.assertEqual(self.manifest["expected_rom_size"], EXPECTED_ROM_SIZE)
 
     def test_all_recovered_payloads_are_exact(self) -> None:
+        """Require every archived source payload to match its recorded digest."""
         files = self.manifest["files"]
         self.assertEqual(len(files), 17)
         for item in files:
