@@ -33,7 +33,9 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
 
     def test_all_thirteen_banks_are_complete(self) -> None:
         """Require exactly 1,299 canonical scenario records."""
-        self.assertEqual(set(CANONICAL_RECORD_COUNTS), set(KNOWN_SCENARIO_BANKS))
+        self.assertEqual(
+            set(CANONICAL_RECORD_COUNTS), set(KNOWN_SCENARIO_BANKS)
+        )
         self.assertEqual(sum(CANONICAL_RECORD_COUNTS.values()), 1299)
         total = 0
         for bank in KNOWN_SCENARIO_BANKS:
@@ -156,7 +158,9 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         ):
             self.assertFalse((ROOT / "work" / filename).exists(), filename)
 
-    def test_active_tree_has_no_retired_translation_path_references(self) -> None:
+    def test_active_tree_has_no_retired_translation_path_references(
+        self,
+    ) -> None:
         """Allow retired path names only in audit/history documentation."""
         forbidden = (
             "/".join(("review", "production_retranslation")),
