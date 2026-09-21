@@ -29,7 +29,9 @@ INSERTABLE_LAYOUT_CONTROLS = _core.INSERTABLE_LAYOUT_CONTROLS
 SEMANTIC_CONTROLS = _core.SEMANTIC_CONTROLS
 ProductionTranslationError = _core.ProductionTranslationError
 validate_renderer_buffer_layout = _core.validate_renderer_buffer_layout
-validate_production_control_sequence = _core.validate_production_control_sequence
+validate_production_control_sequence = (
+    _core.validate_production_control_sequence
+)
 layout_review_text = _core.layout_review_text
 
 CANONICAL_RECORD_COUNTS = {
@@ -200,7 +202,9 @@ def _speaker_geometry(text: str) -> tuple[set[int], list[str]]:
     plain = "".join(segments)
     char_map: list[tuple[int, int]] = []
     for segment_index, segment in enumerate(segments):
-        char_map.extend((segment_index, offset) for offset in range(len(segment)))
+        char_map.extend(
+            (segment_index, offset) for offset in range(len(segment))
+        )
 
     starts: set[int] = set()
     errors: list[str] = []
@@ -214,7 +218,9 @@ def _speaker_geometry(text: str) -> tuple[set[int], list[str]]:
             errors.append(f"speaker label {label!r} is split by a control")
             continue
         if start_offset != 0:
-            errors.append(f"speaker label {label!r} does not start a fresh row")
+            errors.append(
+                f"speaker label {label!r} does not start a fresh row"
+            )
             continue
         starts.add(start_segment)
     return starts, errors
@@ -227,9 +233,7 @@ def _validate_greedy_soft_wrap(record_id: str, text: str) -> None:
     segments, controls = _core._template_parts(text)
     speaker_starts, errors = _speaker_geometry(text)
     if errors:
-        raise ProductionTranslationError(
-            f"{record_id}: " + "; ".join(errors)
-        )
+        raise ProductionTranslationError(f"{record_id}: " + "; ".join(errors))
 
     for index, control in enumerate(controls):
         if control not in INSERTABLE_LAYOUT_CONTROLS:
@@ -260,7 +264,9 @@ def _validate_canonical_bank(bank_name: str, data: dict[str, str]) -> None:
             f"{bank_name}: expected {expected} canonical records, found {len(data)}"
         )
     pattern = re.compile(rf"^{re.escape(bank_name)}/g\d+/r\d+$")
-    malformed = [record_id for record_id in data if not pattern.match(record_id)]
+    malformed = [
+        record_id for record_id in data if not pattern.match(record_id)
+    ]
     if malformed:
         raise ProductionTranslationError(
             f"{bank_name}: malformed canonical record IDs: {malformed[:3]}"
