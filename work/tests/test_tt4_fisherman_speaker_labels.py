@@ -46,11 +46,11 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
         self.assertTrue(_production()["TT4/g5/r16"].startswith("Fisherman:"))
 
     def test_quiz_questions_keep_native_compact_geometry(self) -> None:
-        """Keep question text out of the answer menu's reserved rows."""
+        """Retain the introduction and scroll longer questions without overlap."""
         tt4 = _production()
         self.assertEqual(
             tt4["TT4/g5/r7"],
-            "{CTRL:0}{CTRL:0}What were city-states{CTRL:0}in Greece called?",
+            "{CTRL:0}{CTRL:0}What were city-states in{CTRL:0}Greece called?",
         )
         self.assertEqual(
             tt4["TT4/g5/r10"],
@@ -62,11 +62,11 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
         )
         self.assertEqual(
             tt4["TT4/g5/r12"],
-            "Which temple was{CTRL:0}dedicated to Athena,{CTRL:0}goddess of wisdom?",
+            "{CTRL:0}{CTRL:0}Which temple was{CTRL:0}dedicated to Athena,{CTRL:4}goddess of wisdom?",
         )
         self.assertEqual(
             tt4["TT4/g5/r13"],
-            "Alongside olives and{CTRL:0}grapes, what was{CTRL:0}Greece's third major{CTRL:0}crop?",
+            "{CTRL:0}{CTRL:0}Alongside olives and{CTRL:0}grapes, what was{CTRL:4}Greece's third major{CTRL:4}crop?",
         )
 
     def test_fixed_menu_uses_the_same_identity(self) -> None:
