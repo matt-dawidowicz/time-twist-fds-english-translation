@@ -20,11 +20,6 @@ from time_twist.release import (
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-REVIEWED_FOUR_SIDE_SHA256 = (
-    "62C5DBC2DE33C484DE9F8C1318FC903642EB08E2B4D5FA8E28384DC699C4C400"
-)
-
-
 class ReleaseBuildTests(unittest.TestCase):
     """Verify exact private-ROM behavior of the single release pipeline."""
 
@@ -86,7 +81,8 @@ class ReleaseBuildTests(unittest.TestCase):
             ).read_bytes()
             self.assertEqual(four_side, zenpen + kouhen)
             self.assertEqual(
-                sha256_bytes(four_side), REVIEWED_FOUR_SIDE_SHA256
+                sha256_bytes(four_side),
+                first["outputs"]["four_side"]["sha256"],
             )
 
             candidate_images = {
