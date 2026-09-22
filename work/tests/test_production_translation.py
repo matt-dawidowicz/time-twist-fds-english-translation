@@ -110,7 +110,7 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             tt1a["TT1A/g0/r3"],
             (
                 "The Fortune-Telling{CTRL:0}Service Center presents:{CTRL:0}"
-                "\"Today's Fortune\"{CTRL:6}Enter your blood type."
+                '"Today\'s Fortune"{CTRL:6}Enter your blood type.'
             ),
         )
 
