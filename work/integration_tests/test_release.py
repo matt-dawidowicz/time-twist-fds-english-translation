@@ -20,6 +20,8 @@ from time_twist.release import (
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
+
 class ReleaseBuildTests(unittest.TestCase):
     """Verify exact private-ROM behavior of the single release pipeline."""
 
