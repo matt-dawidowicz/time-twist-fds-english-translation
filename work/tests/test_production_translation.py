@@ -9,6 +9,8 @@ from pathlib import Path
 
 from time_twist.production_translation import (
     CANONICAL_RECORD_COUNTS,
+    STRUCTURAL_LAYOUT_RECORDS,
+    V38_LAYOUT_EXCEPTIONS,
     ProductionTranslationError,
     layout_review_text,
     materialize_production_maps,
@@ -103,6 +105,15 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         )
         self.assertNotIn("When did I last see it?", tt1b.values())
 
+        tt1a = _canonical("TT1A")
+        self.assertEqual(
+            tt1a["TT1A/g0/r3"],
+            (
+                "The Fortune-Telling{CTRL:0}Service Center presents:{CTRL:0}"
+                '"Today\'s Fortune"{CTRL:0}Enter your blood type.'
+            ),
+        )
+
         tt3a = _canonical("TT3A")
         self.assertEqual(
             tt3a["TT3A/g2/r30"],
@@ -114,6 +125,24 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         self.assertIn(
             "Mary: I was sure he'd{CTRL:4}believe me…",
             _canonical("TT6A")["TT6A/g1/r28"],
+        )
+
+    def test_legacy_layout_exceptions_are_structural_only(self) -> None:
+        """Do not grandfather ordinary prose around the modern wrap policy."""
+        self.assertIn("TT1A/g0/r3", STRUCTURAL_LAYOUT_RECORDS)
+        self.assertNotIn("TT1A/g0/r3", V38_LAYOUT_EXCEPTIONS)
+        expected = {
+            "TT5/g2/r16",
+            "TT3A/g4/r7",
+            "TT6B/g1/r30",
+            "TT6B/g2/r1",
+            "TT6B/g2/r2",
+            "TT6B/g2/r3",
+            "TT4/g5/r11",
+        }
+        self.assertEqual(set(V38_LAYOUT_EXCEPTIONS), expected)
+        self.assertLessEqual(
+            set(V38_LAYOUT_EXCEPTIONS), STRUCTURAL_LAYOUT_RECORDS
         )
 
     def test_generic_layout_is_strictly_greedy(self) -> None:

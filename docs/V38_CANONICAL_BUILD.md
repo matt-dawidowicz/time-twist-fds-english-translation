@@ -1,8 +1,9 @@
 # Canonical v38 build
 
-`time-twist release-build --candidate` now reproduces the approved v38 image.
-Previously, the recovered bundle reproduced v38, but the normal builder and
-active maps still followed older inputs: 429 records differed in visible wording.
+The recovered v38 bundle remains the immutable historical checkpoint for the
+approved v38 image. When the active maps are restored to the exact v38 text,
+`time-twist release-build --candidate` must still reproduce that image.
+Current source-locked maps may contain later reviewed wording/layout changes.
 
 The four-side result is 262,000 bytes with SHA-256
 `62c5dbc2de33c484de9f8c1318fc903642eb08e2b4d5fa8e28384dc699c4c400`.
@@ -21,10 +22,11 @@ The four-side result is 262,000 bytes with SHA-256
 The recovery bundle remains unchanged. Its scenario layout snapshot is used
 only as an immutable regression oracle. Before compilation, both restored
 scenario text inputs are replaced with values generated from the active maps.
-Any missing, added or changed record aborts the build. After compilation, every
-decoded output record is compared with those same maps, and the full ROM must
-match the approved hash. Neither an old translation layer nor a source-lock
-refresh can silently select different English.
+Any missing or added record ID aborts the build. After compilation, every
+decoded output record is compared with the active maps. If those maps are
+exactly the v38 text, the full ROM must match the approved v38 hash. Otherwise
+the build is a later candidate whose exact identity is recorded in its manifest
+and must be explicitly promoted after review.
 
 The baseline supplies the existing font, title and unchanged engine. This is
 reproduction from a patched v25 baseline, not a demonstrated build from original
@@ -33,26 +35,28 @@ engineering work as `time-twist-runtime build-historical`.
 
 ## Layout and future edits
 
-Exact reproduction intentionally preserves v38 controls, including compact
-France/Nazareth identity cards. Twelve non-greedy wraps and seven 24-column quiz
-records have exact-text hash exceptions to later formatting policy. Changed
-text loses the exception. All records still pass the four-row buffer validator.
-These exceptions preserve a checkpoint; they do not certify in-game appearance.
+The historical v38 snapshot intentionally preserves its original controls and
+layout. The active maps are no longer required to preserve obsolete non-greedy
+prose solely for byte-identical v38 reproduction: reviewed post-v38 reflows are
+source-locked separately. Seven hash-scoped v38 exceptions remain only for
+audited structural quiz/UI geometry, while explicit presentation records may
+also opt out of generic greedy wrapping.
 
-A future v39 change must explicitly revise the compiler/checkpoint contract,
-review changed text and menus, and establish a new output hash with runtime
-evidence. Do not reflow v38 while claiming byte-identical reproduction.
+Do not modify the recovered v38 bundle itself. Later candidate changes belong in
+the active maps, require runtime evidence, and receive a new promoted output
+identity rather than claiming byte-identical v38 reproduction.
 
 ## Verification
 
-Public CI compares every active record with the restored checkpoint and tests
-rejection of a change to each of the 1,299 records, plus missing/extra IDs,
-control-only changes and an invalid baseline. It needs no game files.
+Public CI protects the restored v38 checkpoint against any one-record mutation,
+requires active maps to retain all 1,299 recovered record IDs, validates current
+layout/control policy, and verifies the checked-in source lock. It needs no game
+files.
 
 With the private v25 baseline installed, the focused release integration suite
-builds twice, compares all three images and manifests, checks the approved hash,
-checks unchanged non-scenario payloads and FDS structure, and checks that strict
-release mode rejects an unpromoted candidate:
+builds twice, compares all three images and manifests, checks deterministic
+candidate hashes, unchanged non-scenario payloads and FDS structure, and checks
+that strict release mode rejects an unpromoted candidate:
 
 ```sh
 PYTHONPATH=work python -m unittest work.integration_tests.test_release -v

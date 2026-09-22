@@ -86,13 +86,35 @@ def validate_checkpoint_records(
         )
 
 
+def validate_checkpoint_record_ids(
+    actual: dict[str, str], approved: dict[str, str]
+) -> None:
+    """Require active maps to retain the complete recovered v38 record topology."""
+    if len(approved) != 1299:
+        raise ReleaseBuildError(
+            "v38 checkpoint must contain exactly 1299 records"
+        )
+    missing = sorted(approved.keys() - actual.keys())
+    extra = sorted(actual.keys() - approved.keys())
+    if missing or extra:
+        raise ReleaseBuildError(
+            "active text record topology differs from recovered v38; "
+            f"missing={missing[:10]}, extra={extra[:10]}"
+        )
+
+
 def build_release_images(
     baseline: bytes,
     *,
     translations_directory: Path,
     compiler_bundle: Path,
 ) -> tuple[dict[str, bytes], dict[str, object]]:
-    """Reproduce v38 exactly, rejecting source drift before publishing bytes."""
+    """Build source-locked active text with the recovered v38 compiler.
+
+    Exact v38 text must still reproduce the historical v38 ROM hash. Later
+    reviewed text revisions retain the recovered record topology and compiler
+    contract but receive their release identity through candidate promotion.
+    """
     if (
         len(baseline) != IMAGE_BYTES
         or hashlib.sha256(baseline).hexdigest() != BASELINE_SHA256
@@ -113,7 +135,10 @@ def build_release_images(
         root = Path(directory)
         source = root / "source"
         approved = restore_checkpoint(compiler_bundle, source)
-        validate_checkpoint_records(actual, approved)
+        validate_checkpoint_record_ids(actual, approved)
+        # Active maps are source-locked release inputs. The recovered v38 text
+        # remains the immutable historical oracle, but later reviewed candidates
+        # may intentionally differ in wording or presentation controls.
         # These are the only scenario text inputs read by the frozen compiler.
         (source / "data/layouts.json").write_text(
             json.dumps(
@@ -168,12 +193,16 @@ def build_release_images(
             )
         )
         validate_checkpoint_records(emitted, actual)
+        if len(built) != IMAGE_BYTES:
+            raise ReleaseBuildError(
+                f"release output has {len(built)} bytes; expected {IMAGE_BYTES}"
+            )
         if (
-            len(built) != IMAGE_BYTES
-            or hashlib.sha256(built).hexdigest() != OUTPUT_SHA256
+            actual == approved
+            and hashlib.sha256(built).hexdigest() != OUTPUT_SHA256
         ):
             raise ReleaseBuildError(
-                "v38 output is not byte-identical to the approved checkpoint"
+                "v38 text did not reproduce the approved v38 checkpoint"
             )
         report = json.loads(
             (output / "reports/v38_build.json").read_text(encoding="utf-8")

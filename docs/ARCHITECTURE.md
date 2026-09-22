@@ -207,8 +207,10 @@ The release layer separates four approvals that were previously conflated:
    safe-encoding baseline, 13 active scenario maps, and the frozen v38 compiler
    bundle. Editable maps use LF normalization; ROM and compiler payloads use
    exact bytes. The normal command uses `v38_build.py`, generating both compiler
-   text inputs from active maps and checking them against the immutable v38
-   oracle. The historical Japanese-baseline compiler is not the release path.
+   text inputs from active maps and requiring the recovered v38 record topology.
+   Exact v38 text still reproduces the immutable v38 ROM hash; reviewed post-v38
+   maps are identified by their source lock and later candidate promotion. The
+   historical Japanese-baseline compiler is not the release path.
    See [V38_CANONICAL_BUILD.md](V38_CANONICAL_BUILD.md).
 2. Code provenance records the checkout Git commit/dirty state when available.
    It computes the same authoritative digest for the imported/executing

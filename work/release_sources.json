@@ -1,6 +1,6 @@
 {
   "schema": "Time Twist release source lock v5",
-  "authority": "The exact private v25 safe-encoding baseline, frozen v38 compiler bundle and 13 active translation maps are the non-code-lock inputs. Compiler payloads are also hash-checked before execution. Active maps must exactly match the approved v38 wording and controls; the output must match the approved v38 ROM hash.",
+  "authority": "The exact private v25 safe-encoding baseline, frozen v38 compiler bundle and 13 active translation maps are the non-code-lock inputs. Compiler payloads are independently hash-checked before execution. The recovered v38 bundle remains an immutable historical checkpoint; source-locked active maps may contain reviewed post-v38 text/layout changes, whose final ROM identity is established by candidate promotion rather than the historical v38 ROM hash.",
   "subtitle": "On the Outskirts of History...",
   "files": {
     "work/baseline/time_twist_v25_safe_encoding.fds": {
@@ -105,17 +105,17 @@
     },
     "work/translations/TT1B.json": {
       "normalization": "lf",
-      "sha256": "1DBCBE0477DA4DA9935734B9FA9ADDD177FB675A6DB7EC3432D55D35DDEF0791",
+      "sha256": "C26F5253C9B330A219BB2D76DB58E27EC91DB77ED81113EA75445812EB94363D",
       "bytes": 13065
     },
     "work/translations/TT2.json": {
       "normalization": "lf",
-      "sha256": "5A34ED39C4EEF687B413B1E6B6FEB18A3978A998E5B3888A40AEB21D89EFEA88",
-      "bytes": 11742
+      "sha256": "269FA08A9AA8A83A361EC9C694526BDCF4441807003108793AADF9B3EDB7FC31",
+      "bytes": 11721
     },
     "work/translations/T22.json": {
       "normalization": "lf",
-      "sha256": "EA105AE7FC94B382615BFF783EAE003B70EADACB16F3F404A0AE4D8CEB9B4AF1",
+      "sha256": "2481F265BFF685F07BAE9DB7B79E7F24BCB21726A189CA6FF718FEDDDF9116CE",
       "bytes": 5313
     },
     "work/translations/TT3A.json": {

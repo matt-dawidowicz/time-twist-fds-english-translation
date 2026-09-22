@@ -1,9 +1,10 @@
 # Translation workflow
 
-This document defines the editing workflow for scenario English. The current
-release is frozen to v38: see [V38_CANONICAL_BUILD.md](V38_CANONICAL_BUILD.md).
-New edits need a separately reviewed checkpoint; refreshing the lock cannot
-bypass the 1,299-record regression gate.
+This document defines the editing workflow for scenario English. The recovered
+v38 text and ROM are frozen historical checkpoints: see
+[V38_CANONICAL_BUILD.md](V38_CANONICAL_BUILD.md). Current source-locked maps may
+advance beyond v38 after review, while retaining the recovered 1,299-record
+topology and passing runtime/layout validation.
 
 ## Canonical data model
 
@@ -81,9 +82,11 @@ time-twist release-lock --update
 time-twist release-build --candidate --output-dir build/candidate
 ```
 
-For v38 these commands reject any changed record. For a future candidate,
-review and update the checkpoint/compiler contract explicitly, then playtest
-the affected scene.
+The source-lock update approves the exact active map bytes as candidate inputs;
+it does not promote the resulting ROM. Review the text/control change, rebuild
+deterministically, playtest the affected scene, and promote only the reviewed
+candidate. Restoring the exact v38 maps still activates the historical v38 ROM
+hash gate.
 
 ## Control-code policy
 
@@ -101,10 +104,11 @@ See [ENGLISH_PAGINATION_POLICY.md](ENGLISH_PAGINATION_POLICY.md) and
 
 ## Fixed-address English
 
-Scenario maps do not own every English string in the game. In the current v38
-release, fixed menu and runtime changes come from the frozen compiler bundle,
-and font/title payloads come from the hash-locked v25 baseline. The following
-modules are historical engineering tools, not active v38 release inputs.
+Scenario maps do not own every English string in the game. In the current
+release pipeline, fixed menu and runtime changes come from the frozen v38
+compiler bundle, and font/title payloads come from the hash-locked v25 baseline.
+The following modules are historical engineering tools, not active release
+inputs.
 
 - fixed menu/table wording: `work/time_twist/ui_fixed_tables.py`
 - fixed interface patches: `work/time_twist/ui.py`
