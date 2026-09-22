@@ -501,8 +501,10 @@ def build_source_lock_payload(
             "The exact private v25 safe-encoding baseline, frozen v38 compiler "
             "bundle and 13 active translation maps are the non-code-lock inputs. "
             "Compiler payloads are also hash-checked before execution. Active "
-            "maps must exactly match the approved v38 wording and controls; "
-            "the output must match the approved v38 ROM hash."
+            "maps must match the reviewed v40 layout checkpoint: 77 approved "
+            "layout revisions from v38 with unchanged visible wording. The "
+            "canonical builder applies the v41 menu-cancel correction; the "
+            "final output must match the approved v41 ROM hash."
         ),
         "subtitle": DEFAULT_SUBTITLE,
         "files": files,
