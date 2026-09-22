@@ -245,7 +245,7 @@ class EntropyProductionTests(unittest.TestCase):
             patch.expected,
             bytes.fromhex(
                 "A5 2B 29 01 F0 1C A9 00 85 63 85 66 A5 69 C9 08 F0 0D "
-                "C9 11 F0 09 C9 15 F0 05 C9 19 F0 01 60"
+                "C9 11 F0 09 C9 15 F0 05 C9 19 F0 01 60 4C 31 7F"
             ),
         )
         self.assertEqual(
