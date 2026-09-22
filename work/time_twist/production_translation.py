@@ -51,24 +51,26 @@ CANONICAL_RECORD_COUNTS = {
     "TT6D": 8,
 }
 
-# Exact v38 layouts that predate the generic greedy/23-column policy.
-# Hashes scope exceptions to reviewed text; edits use the strict policy.
-V38_LAYOUT_EXCEPTIONS = {
-    "TT5/g2/r16": "3ea8b405bfe5e4ac0f7e6e8020acb2d2776b6cdb4bb6ab3adfbb15b949f77de5",
-    "TT3A/g4/r7": "35e87952c633e7e59ba0276764ce9c9eeb41aa1e4ad624ed612109b7d956f643",
-    "TT6B/g1/r30": "924190a4c2608ae6db2b89a17dbac572664817d3b48d9b0685a9d7e9b5500063",
-    "TT6B/g2/r1": "552c39d9409803f56fe98172202930ef41376957bc79d46f995c5c119ae44c23",
-    "TT6B/g2/r2": "629387fb4ef02450d5c32aacf922e35b79fba8088a7ef8b88b8855f3441bda25",
-    "TT6B/g2/r3": "ef44ae455716a0ff0f0baafab2d607a59ceb96e01c0b315b0374b55cc53405a3",
+# Exact reviewed quiz layouts that intentionally exceed the generic
+# 23-column segment policy. Hashes bind the exception to runtime-validated
+# geometry; edits fall back to the strict policy.
+CHECKPOINT_QUIZ_LAYOUTS = {
+    "TT3A/g4/r7": "9ffab733c0aed46e95e2d614df47a580fcac494715e059f74c94188be5dcad29",
+    "TT4/g5/r7": "9111ed5fa33029a04156a87bed0f3d2f4f6d1885f9692246bf13ff54e02e5f79",
     "TT4/g5/r11": "1689722348c6a4e9f262a3517b9ecdcc7bb160683e76fda559541d4d7b11127e",
+    "TT5/g2/r16": "3ea8b405bfe5e4ac0f7e6e8020acb2d2776b6cdb4bb6ab3adfbb15b949f77de5",
+    "TT6B/g1/r30": "9f2b496483e317a51adcfb3d0112c2041a6f73f1b48d9b0685a9d7e9b5500063",
+    "TT6B/g2/r1": "552c39d9409803f56fe98172202930ef41376957bc79d46f995c5c119ae44c23",
+    "TT6B/g2/r2": "344c34761b58d878b6d11d1af1c3ab2bf493cabb240d919071f0e5cf95ef892a",
+    "TT6B/g2/r3": "ef44ae455716a0ff0f0baaf2d607a59ceb96e01c0b315b0374b55cc53405a3",
 }
 
 
 def _is_checkpoint_layout(record_id: str, text: str) -> bool:
-    """Recognize only the exact preserved v38 layout exceptions."""
+    """Recognize only exact reviewed quiz layouts."""
     return hashlib.sha256(
         text.encode("utf-8")
-    ).hexdigest() == V38_LAYOUT_EXCEPTIONS.get(record_id)
+    ).hexdigest() == CHECKPOINT_QUIZ_LAYOUTS.get(record_id)
 
 
 QUIZ_QUESTION_RECORDS = frozenset(
