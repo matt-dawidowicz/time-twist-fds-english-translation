@@ -25,9 +25,7 @@ NOV3_GUARDS = {
         "20 04 D8 20 7E D8 20 3C DA A9 00 8D E3 07"
     ),
     0xD804: bytes.fromhex("AD E5 07 AC E0 07 30 60 4A B0 51 4E E0 07"),
-    0xD82A: bytes.fromhex(
-        "8C E5 07 A9 04 8D D5 07 A2 1D A9 13 A0 18"
-    ),
+    0xD82A: bytes.fromhex("8C E5 07 A9 04 8D D5 07 A2 1D A9 13 A0 18"),
     0xD843: bytes.fromhex("8C E5 07 A9 0A 8D D5 07"),
     0xD87E: bytes.fromhex(
         "AD E7 07 29 70 D0 4B AD E2 07 D0 06 AD E8 07 D0 25 60"
@@ -69,9 +67,7 @@ OVERLAY_AUDIO_GUARDS = {
         ),
     },
     "TT6C": {
-        0xCDC9: bytes.fromhex(
-            "AD E6 07 AC E1 07 30 35 4E E1 07 B0 3C"
-        ),
+        0xCDC9: bytes.fromhex("AD E6 07 AC E1 07 30 35 4E E1 07 B0 3C"),
     },
     "TT6D": {
         0xAB98: bytes.fromhex(
