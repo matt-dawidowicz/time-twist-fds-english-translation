@@ -328,13 +328,14 @@ RETAIL_VM_OPCODES = (
     _op(
         0xB9,
         "save_exploration_checkpoint",
-        "slot_id:u8",
+        "exploration_selector:u8",
         "2 bytes",
         notes=(
             "Saves script PC and software-stack continuation in "
-            "$9B/$9C/$9F/$A0, clears any previous matching slot, and the "
-            "exploration continuation snapshots the current actor coordinates "
-            "into a free $07B3 three-byte slot record."
+            "$9B/$9C/$9F/$A0, copies the selector to $BA, clears any "
+            "previous matching $07B3 slot, and enters exploration. $768F "
+            "later uses the same $BA value as a one-based $A20C hotspot-group "
+            "selector and exports group count/index through $91/$A7."
         ),
     ),
     _op(
