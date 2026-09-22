@@ -19,6 +19,9 @@ TEXT_BUFFER_BYTES = TEXT_ROW_BYTES * TEXT_BUFFER_ROWS
 LINE_ADVANCE_CONTROL = 0
 SCROLL_CONTROL = 4
 INSERTABLE_LAYOUT_CONTROLS = frozenset({LINE_ADVANCE_CONTROL, SCROLL_CONTROL})
+# Native NOV2 semantics: all four controls flush staged text and wait for a
+# fresh A press. They differ only in post-A geometry:
+# 1 -> row 2, 2 -> row 3, 3 -> scroll then row 4, 6 -> row 4 without scroll.
 SEMANTIC_CONTROLS = frozenset({1, 2, 3, 6})
 NON_SPEAKER_LABELS = frozenset(
     {
@@ -499,12 +502,14 @@ def validate_renderer_buffer_layout(text: str) -> None:
 
 
 def validate_production_control_sequence(source: str, production: str) -> None:
-    """Preserve native semantics while allowing safe CTRL:2 pagination removal.
+    """Preserve native A-wait controls while allowing reviewed CTRL:2 removal.
 
-    Controls 1, 3, and 6 remain mandatory. CTRL:2 is a mixed page/timing
-    control: production layout may omit it when it interrupts continuous prose,
-    but may never invent one or move surviving semantic controls out of source
-    order.
+    Native controls 1, 2, 3, and 6 all wait for a fresh A press. Their post-A
+    geometry is row 2, row 3, scrolled row 4, and unscrolled row 4
+    respectively. Controls 1, 3, and 6 remain mandatory. Production may omit a
+    source CTRL:2 only when record-scoped review establishes that the Japanese
+    wait was pagination-only in context; surviving semantic controls may never
+    be invented or reordered.
     """
     _source_segments, source_controls = _semantic_template_parts(source)
     _production_segments, production_controls = _template_parts(production)
