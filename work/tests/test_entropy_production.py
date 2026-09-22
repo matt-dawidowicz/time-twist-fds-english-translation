@@ -223,14 +223,39 @@ class EntropyProductionTests(unittest.TestCase):
         """Keep the proven pre-entropy renderer repairs byte-identical."""
         self.assertEqual(
             tuple(patch.cpu_address for patch in BASE_RUNTIME_PATCHES),
-            (0x81D3, 0x8378),
+            (0x81D3, 0x8378, 0x847E),
         )
         self.assertEqual(
             tuple(patch.replacement for patch in BASE_RUNTIME_PATCHES),
             (
                 bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
                 bytes.fromhex("B0"),
+                bytes.fromhex("20 8A 98"),
             ),
+        )
+
+    def test_typewriter_space_sfx_filter_is_isolated(self) -> None:
+        """Keep space-silencing limited to the typewriter call and NOP helper."""
+        base = {patch.label: patch for patch in BASE_RUNTIME_PATCHES}
+        route = base["route typewriter SFX through space filter"]
+        self.assertEqual(route.cpu_address, 0x847E)
+        self.assertEqual(route.expected, bytes.fromhex("20 C5 85"))
+        self.assertEqual(route.replacement, bytes.fromhex("20 8A 98"))
+
+        menu = {patch.label: patch for patch in DYNAMIC_MENU_LAYOUT_PATCHES}
+        helper = menu[
+            "width-aware leading menu cursor and typewriter SFX helper"
+        ]
+        self.assertEqual(helper.cpu_address, 0x9885)
+        self.assertEqual(
+            helper.replacement,
+            bytes.fromhex(
+                "20 8D 6D 85 14 C9 C0 F0 03 4C C5 85 60 EA EA"
+            ),
+        )
+        self.assertEqual(
+            helper.replacement[5:13],
+            bytes.fromhex("C9 C0 F0 03 4C C5 85 60"),
         )
 
     def test_dynamic_menu_layout_patches_are_source_locked(self) -> None:
@@ -366,7 +391,7 @@ class EntropyProductionTests(unittest.TestCase):
         }
         self.assertTrue(
             menu_patches[
-                "width-aware leading menu cursor"
+                "width-aware leading menu cursor and typewriter SFX helper"
             ].replacement.startswith(bytes.fromhex("20 8D 6D"))
         )
 
