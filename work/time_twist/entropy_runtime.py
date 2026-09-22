@@ -34,8 +34,6 @@ CATEGORY_CPU_ADDRESS = 0x81E0
 CATEGORY_REGION_SIZE = 70
 MENU_WIDTH_WORK_RAM_ADDRESS = 0x042D
 MENU_MAX_STAGED_GLYPHS = 18
-TYPEWRITER_SFX_CPU_ADDRESS = 0x85C5
-MENU_SFX_RELOCATED_CPU_ADDRESS = 0x988D
 
 
 class EntropyRuntimeError(ValueError):
@@ -102,26 +100,6 @@ BASE_RUNTIME_PATCHES = (
         replacement=_hex("B0"),
         label="extended code 63 dollar-sign tile redirect",
     ),
-    RuntimePatch(
-        file_offset=0x1F0F,
-        expected=_hex(
-            "A5 2B 29 01 F0 1C A9 00 85 63 85 66 A5 69 C9 08 F0 0D "
-            "C9 11 F0 09 C9 15 F0 05 C9 19 F0 01 60 4C 31 7F "
-            "A5 69 0A AA BD 42 7F 85 3C BD 43 7F 85 3D 6C 3C 00"
-        ),
-        replacement=_hex(
-            "A5 2B 29 01 F0 23 4A 85 63 85 66 A5 69 C9 04 D0 07 "
-            "A5 2B 29 06 F0 12 60 C9 08 F0 0D C9 0B F0 09 C9 0F "
-            "F0 05 C9 13 F0 01 60 A6 69 A9 42 A0 7F 4C 2A 61 EA"
-        ),
-        label="25-percent faster dialogue cadence",
-    ),
-    RuntimePatch(
-        file_offset=0x25C5,
-        expected=_hex("A9 04 8D E0 07 60 A9 01 8D E0 07 60"),
-        replacement=_hex("C9 C0 F0 05 A9 04 8D E0 07 60 EA EA"),
-        label="silent common-space typewriter SFX",
-    ),
 )
 
 # The Japanese menu renderer used fixed six-glyph geometry. Earlier English
@@ -180,32 +158,8 @@ DYNAMIC_MENU_LAYOUT_PATCHES = (
     RuntimePatch(
         file_offset=0x3885,
         expected=_hex("A5 32 C9 04 90 05 A9 80 4C 92 98 A9 40 85 14"),
-        replacement=_hex("20 8D 6D 85 14 4C 94 98 A9 01 8D E0 07 60 EA"),
-        label="width-aware leading menu cursor and relocated menu SFX",
-    ),
-    RuntimePatch(
-        file_offset=0x38F9,
-        expected=_hex("20 CB 85"),
-        replacement=_hex("20 8D 98"),
-        label="menu SFX call 1 relocation",
-    ),
-    RuntimePatch(
-        file_offset=0x3918,
-        expected=_hex("20 CB 85"),
-        replacement=_hex("20 8D 98"),
-        label="menu SFX call 2 relocation",
-    ),
-    RuntimePatch(
-        file_offset=0x3940,
-        expected=_hex("20 CB 85"),
-        replacement=_hex("20 8D 98"),
-        label="menu SFX call 3 relocation",
-    ),
-    RuntimePatch(
-        file_offset=0x3973,
-        expected=_hex("20 CB 85"),
-        replacement=_hex("20 8D 98"),
-        label="menu SFX call 4 relocation",
+        replacement=_hex("20 8D 6D 85 14 EA EA EA EA EA EA EA EA EA EA"),
+        label="width-aware leading menu cursor",
     ),
 )
 
