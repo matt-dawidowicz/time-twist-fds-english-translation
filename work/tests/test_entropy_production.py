@@ -38,8 +38,8 @@ from time_twist.entropy_runtime import (
     PALETTE_CPU_RANGE,
     PARENT_BACK_GUARD_PATCHES,
     SCANNER_CODE_BYTES,
-    TEXT_CADENCE_ODD_FRAME_TABLE,
-    TYPEWRITER_SFX_FILTER_CPU_ADDRESS,
+    MENU_SFX_RELOCATED_CPU_ADDRESS,
+    TYPEWRITER_SFX_CPU_ADDRESS,
 )
 from time_twist.entropy_scenario import build_entropy_scenario_bank
 from time_twist.scenario import ScenarioBank, ScenarioRecord
@@ -249,36 +249,43 @@ class EntropyProductionTests(unittest.TestCase):
         self.assertEqual(cadence.cpu_address, 0x7F0F)
         self.assertEqual(len(cadence.expected), len(cadence.replacement))
         self.assertIn(
-            bytes.fromhex("A6 69 BD 0E 87"),
+            bytes.fromhex("A5 69 C9 04 D0 07 A5 2B 29 06"),
             cadence.replacement,
         )
         self.assertIn(
-            bytes.fromhex("A5 2B 29 07 C9 01"),
+            bytes.fromhex("C9 08 F0 0D C9 0B F0 09 C9 0F F0 05 C9 13"),
+            cadence.replacement,
+        )
+        self.assertIn(
+            bytes.fromhex("A6 69 A9 42 A0 7F 4C 2A 61"),
             cadence.replacement,
         )
 
         sfx = patches["silent common-space typewriter SFX"]
-        self.assertEqual(sfx.cpu_address, 0x847E)
-        self.assertEqual(sfx.replacement, bytes.fromhex("20 1B 82"))
-        self.assertEqual(TYPEWRITER_SFX_FILTER_CPU_ADDRESS, 0x821B)
-
-        # State $04 is the only newly-enabled odd-frame state. Existing
-        # exceptions ($08/$0B/$0F/$13) remain represented by nonzero values.
-        self.assertEqual(TEXT_CADENCE_ODD_FRAME_TABLE[4], 2)
+        self.assertEqual(sfx.cpu_address, 0x85C5)
         self.assertEqual(
-            tuple(
-                index
-                for index, value in enumerate(TEXT_CADENCE_ODD_FRAME_TABLE)
-                if value
-            ),
-            (4, 8, 11, 15, 19),
+            sfx.replacement,
+            bytes.fromhex("C9 C0 F0 05 A9 04 8D E0 07 60 EA EA"),
         )
+        self.assertEqual(TYPEWRITER_SFX_CPU_ADDRESS, 0x85C5)
+        self.assertEqual(MENU_SFX_RELOCATED_CPU_ADDRESS, 0x988D)
 
     def test_dynamic_menu_layout_patches_are_source_locked(self) -> None:
         """Freeze the variable-width renderer without touching palette RAM."""
         self.assertEqual(
             tuple(patch.cpu_address for patch in DYNAMIC_MENU_LAYOUT_PATCHES),
-            (0x6D8A, 0x6DDC, 0x945D, 0x9481, 0x94E5, 0x9885),
+            (
+                0x6D8A,
+                0x6DDC,
+                0x945D,
+                0x9481,
+                0x94E5,
+                0x9885,
+                0x98F9,
+                0x9918,
+                0x9940,
+                0x9973,
+            ),
         )
         patches = {patch.label: patch for patch in DYNAMIC_MENU_LAYOUT_PATCHES}
         self.assertEqual(
@@ -407,7 +414,7 @@ class EntropyProductionTests(unittest.TestCase):
         }
         self.assertTrue(
             menu_patches[
-                "width-aware leading menu cursor"
+                "width-aware leading menu cursor and relocated menu SFX"
             ].replacement.startswith(bytes.fromhex("20 8D 6D"))
         )
 
