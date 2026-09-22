@@ -110,7 +110,7 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             tt1a["TT1A/g0/r3"],
             (
                 "The Fortune-Telling{CTRL:0}Service Center presents:{CTRL:0}"
-                "\"Today's Fortune\"{CTRL:0}Enter your blood type."
+                '"Today\'s Fortune"{CTRL:0}Enter your blood type.'
             ),
         )
 
@@ -141,7 +141,9 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             "TT4/g5/r11",
         }
         self.assertEqual(set(V38_LAYOUT_EXCEPTIONS), expected)
-        self.assertLessEqual(set(V38_LAYOUT_EXCEPTIONS), STRUCTURAL_LAYOUT_RECORDS)
+        self.assertLessEqual(
+            set(V38_LAYOUT_EXCEPTIONS), STRUCTURAL_LAYOUT_RECORDS
+        )
 
     def test_generic_layout_is_strictly_greedy(self) -> None:
         """Future prose edits must fill rows before inserting soft breaks."""
