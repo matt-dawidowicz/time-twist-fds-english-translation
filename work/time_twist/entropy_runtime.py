@@ -114,7 +114,7 @@ DIALOGUE_CADENCE_PATCHES = (
         file_offset=0x1F0F,
         expected=_hex(
             "A5 2B 29 01 F0 1C A9 00 85 63 85 66 A5 69 C9 08 F0 0D "
-            "C9 11 F0 09 C9 15 F0 05 C9 19 F0 01 60"
+            "C9 11 F0 09 C9 15 F0 05 C9 19 F0 01 60 4C 31 7F"
         ),
         replacement=_hex(
             "A5 2B 29 01 F0 1C 4A 85 63 85 66 A5 69 C9 04 D0 06 "
