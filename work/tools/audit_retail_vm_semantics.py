@@ -111,8 +111,7 @@ NOV2_GUARDS = {
         "46 72 9F 72 86 73 DD 73 C6 72 46 72 46 72 46 72"
     ),
     0x729F: bytes.fromhex(
-        "A5 C5 85 9B A5 C6 85 9C A5 9D 85 9F A5 9E 85 A0 "
-        "A0 01 B1 C5 85 BA"
+        "A5 C5 85 9B A5 C6 85 9C A5 9D 85 9F A5 9E 85 A0 " "A0 01 B1 C5 85 BA"
     ),
     0x7363: bytes.fromhex("A9 FF 85 4A A9 1B A2 07 4C 19 61"),
     0x76CF: bytes.fromhex(
@@ -120,9 +119,7 @@ NOV2_GUARDS = {
         "B1 3E 0A 0A 18 69 01 18 65 3E 85 3E A5 3F 69 00 "
         "85 3F 4C DA 76"
     ),
-    0x76F4: bytes.fromhex(
-        "A0 00 B1 3E 85 91 AA A9 00 85 A7 C8 B1 3E"
-    ),
+    0x76F4: bytes.fromhex("A0 00 B1 3E 85 91 AA A9 00 85 A7 C8 B1 3E"),
     0x78BA: bytes.fromhex(
         "A9 C1 A0 78 4C 2A 61 CB 78 6A 79 6D 79 72 79 98 79"
     ),
