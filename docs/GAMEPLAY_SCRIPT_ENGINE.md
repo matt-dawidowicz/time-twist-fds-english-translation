@@ -341,8 +341,10 @@ All source-used `Bx` forms now have stable verified low-level names:
 - `B7 configure_hotspot_boundaries` stores operand 1 in `$07AC`, operand 2
   in `$07AA`, and `operand2+1` in `$07AB`;
 - `B9 save_exploration_checkpoint` saves script PC/software-stack continuation
-  in `$9B/$9C/$9F/$A0`, clears a stale matching slot, and snapshots the current
-  actor coordinates into a free three-byte `$07B3` slot record;
+  in `$9B/$9C/$9F/$A0`, copies its operand into `$BA`, clears a stale matching
+  `$07B3` slot, and enters exploration. The scanner at `$768F` then reuses `$BA`
+  as a one-based `$A20C` hotspot-group selector and exports the selected group's
+  count/index through `$91/$A7` for `30/31` result dispatch;
 - `BA restore_exploration_coordinate_slot` finds the requested `$07B3` slot,
   restores its coordinates into the active actor records selected by `$07AC`,
   calls `$75F3` to update world/camera coordinates, and consumes the slot;
