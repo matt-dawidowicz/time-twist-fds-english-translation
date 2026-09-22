@@ -417,25 +417,33 @@ row starts: X=$00, $30, $60, $90
 A visible segment may not cross a physical row without an explicit control. The
 validator simulates X and rejects implicit crossing or writes beyond `$C0`.
 
-### Recovered control geometry
+### Recovered control state machine
 
-Control values are context-sensitive native operations, so this table documents only
-behavior the production layout is allowed to rely on.
+The native NOV2 behavior is now recovered through the control dispatcher at
+`$8242`, renderer-state table at `$7F42`, controller poll at `$67F2`,
+dirty-row selector at `$837E`, and scroll worker at `$84AE`. See
+[Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md) for the
+instruction-level trace.
 
-| Control | Production treatment | Re-entry geometry / known effect |
-| ---: | --- | --- |
-| `0` | layout control; regenerated | rounds X to the next `$30` row start until row four |
-| `1` | semantic by default | re-enters at X=`$30`; can overwrite staged text if used too late |
-| `2` | mixed semantic/page control | re-enters at X=`$60`; may be demoted only under strict continuity rules |
-| `3` | mandatory semantic control | continues at X=`$90` |
-| `4` | layout scroll control; regenerated | scrolls dialogue rows and continues at X=`$90` |
-| `5` | record separator | structural only; never ordinary translated markup |
-| `6` | mandatory semantic control | continues at X=`$90` |
-| `7` | decoder-supported, not generalized by production layout | treat as unrecovered for editing unless a call site is proved |
+| Control | Native operation | A wait? | Continuation |
+| ---: | --- | :---: | --- |
+| `0` | ordinary row advance | no | next `$30` row start |
+| `1` | `WAIT_ROW2` | yes | X=`$30`, no scroll |
+| `2` | `WAIT_ROW3` | yes | X=`$60`, no scroll |
+| `3` | `WAIT_SCROLL_ROW4` | yes | one-row scroll, then X=`$90` |
+| `4` | `SCROLL_ROW4` | no | one-row scroll, then X=`$90` |
+| `5` | record/dictionary terminator | no | return from dictionary or finish record |
+| `6` | `WAIT_ROW4` | yes | X=`$90`, no scroll |
+| `7` | unused alias of control-0 fallthrough | no | same low-level row path as `0` |
 
-The overwrite guards are especially important for controls that re-enter earlier
-rows. Current validation rejects a `CTRL:1` after staged bytes have passed `$30`, a
-`CTRL:2` after `$60`, and a `CTRL:6` after `$90`.
+Controls `1/2/3/6` are therefore all mechanically **fresh-A-button waits**.
+Their semantic difference is the post-A geometry, not whether they pause. The
+A edge is bit 7 of the new-press mask at `$1F`; held A is not auto-repeated.
+
+The overwrite guards are especially important for the direct re-entry controls.
+Current validation rejects a `CTRL:1` after staged bytes have passed `$30`, a
+`CTRL:2` after `$60`, and a `CTRL:6` after `$90`. `CTRL:3` does not
+have the same direct-overwrite hazard because it scrolls before resuming row 4.
 
 ### What production layout is allowed to regenerate
 
@@ -452,13 +460,20 @@ fresh turn and may not be stranded on a row without its first spoken word.
 
 ### Semantic controls in the canonical maps
 
-Controls `1`, `2`, `3`, and `6` can carry page, wait, re-entry, reveal, or
-speaker-transition semantics. The canonical scenario maps contain the currently
-approved control positions after playtesting and source review.
+Controls `1`, `2`, `3`, and `6` all perform a native A-button wait, but
+they resume differently: row 2, row 3, scrolled row 4, and unscrolled row 4
+respectively. Speaker changes and dramatic reveals are narrative uses of those
+mechanics, not separate opcode meanings.
+
+Production preserves `CTRL:1/3/6` as mandatory reviewed state. A source
+`CTRL:2` may be removed only when record-scoped review establishes that the
+Japanese wait was pagination-only and continuous English should not pause there;
+if retained, its runtime behavior is still exactly `WAIT_ROW3`.
 
 Do not move one of these controls merely to gain room for a longer English line.
-A control that changes speakers must stay attached to the intended turn, and every
-re-entry point must remain safe for text already staged in the four-row buffer.
+A speaker-changing boundary must remain attached to the intended turn, and every
+direct re-entry point must remain safe for text already staged in the four-row
+buffer.
 
 Future control changes are **record-scoped and fail-closed**: document the runtime
 reason, modify the canonical record, and validate/playtest that exact scene.
