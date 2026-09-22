@@ -247,29 +247,28 @@ block at `$07E0-$07E3`:
 
 Retail uses only `83` and `90-93`.
 
-NOV3 is the resident audio driver. It writes NES APU registers `$4000-$4017` and FDS
-audio registers `$4040-$4089` and consumes these latches. Static source references
-establish the broad roles:
+The value-level selector map is now recovered and machine-readable in
+`work/time_twist/audio_commands.py`; the full address-level evidence is in
+`docs/AUDIO_COMMAND_MAP.md`.
 
-- `$07E0`: resident APU/noise-SFX command latch;
-- `$07E1`: scene-overlay audio/SFX command latch;
-- `$07E2`: resident pulse-channel SFX command latch;
-- `$07E3`: resident music/FDS-audio command latch.
+- `90 02` selects NOV3's ten-step resident noise sweep at `$D843`; `90 80`
+  stops/resets that resident SFX path. The native typewriter separately writes
+  `$07E0=$04` directly and reaches the fixed four-tick noise click at `$D82A`.
+- `92 01/02/04/08/80` select the five exact paired-pulse sequence definitions
+  through the selector table at `$D945` and sequence stream at `$D958`.
+- `83/93` share the `$07E3` music selector. `01/02/04` select the three
+  recovered sequence groups; `08/10/20/40` select fixed scene-music table slots
+  3/4/5/6; `80` stops the active music/FDS-audio state. `83` additionally
+  mirrors the command into `$D1` for scene-transition continuity.
+- `91` is intentionally **scene-local**. The active TT1B/TT2/TT3A/TT4/TT5/
+  TT6B/TT6C/TT6D overlay decodes `$07E1` through its own bit dispatcher, so the
+  same numeric bit is not one global Foley ID. Every supported fresh-command bit
+  is now bound to its exact overlay entry point.
 
-`83` therefore writes the music/FDS-audio latch and also mirrors its value into `$D1`.
-NOV2 preserves/restores `$D1` across scene-loading paths, consistent with audio-state
-continuity.
-
-Observed retail values are:
-
-- `83`: `80`, `01`, `02`, `08`, `04`;
-- `90`: `02`, `80`;
-- `91`: `01`, `80`, `02`, `04`, `10`, `08`, `20`, `40`, `03`;
-- `92`: `01`, `04`, `02`, `08`, `80`;
-- `93`: `10`, `40`, `20`, `80`, `04`, `01`, `02`.
-
-These values are not yet assigned specific song/SFX names without an audio-table
-correlation.
+This distinction prevents a recurring category error: music selectors are global
+slot-selection mechanics over scene-specific tables, while `91` values are
+scene-overlay commands. Human-facing soundtrack/Foley labels should only be added
+where an individual script call site proves them.
 
 ## 10. Palette-animation table at `$A21C`
 
@@ -322,24 +321,32 @@ Both channels recognize control values:
 
 ## 12. `$Bx` exploration primitives and hotspot sentinels
 
-The source-used exploration family is no longer treated as one opaque movement state
-machine. The strongest verified forms are:
+All source-used `Bx` forms now have stable verified low-level names:
 
-- `B5` - fixed-point move-to-target setup. Four payload bytes populate
-  `$07AD-$07B0`; native code selects coordinate pair `$57/$58` or `$18/$19`, converts
-  to 1/16 fixed point in `$07B1/$07B2`, and the per-frame mover at `$777F` approaches
-  the target by scripted step `$07AE`, stopping exactly on the target;
-- `B7` - configure active hotspot/exploration boundary selection. Operand 1 becomes
-  `$07AC`; operand 2 becomes `$07AA`, with `$07AB = operand2 + 1`;
-- `B9` - save script/stack continuation context into `$9B/$9C/$9F/$A0`;
-- `BA` - restore/move actor coordinate slots using IDs stored in the `$07B3` record
-  area;
-- `BB` - clear one saved-coordinate slot ID from the `$07B3` table;
-- `BC` - shares the `$72C6` exploration reset/continuation path; its higher-level
-  narrative name remains deliberately conservative.
+- `B0 begin_exploration` saves `$0796` in `$07C0`, initializes
+  `$0794/$0795/$07A8/$07A9`, configures `$4025`, and takes the fresh
+  coordinate/camera initialization path;
+- `B2/B3` install the two fixed FDS IRQ raster-transition timing sweeps;
+- `B5 move_coordinate_to_target` stores its four operands in `$07AD-$07B0`.
+  Modes 1/2 move `$57/$58` positive/negative, while mode 3 and 4+ move
+  `$18/$19` positive/negative. The per-frame mover at `$777F` uses 1/16
+  fixed point and stops exactly on the target;
+- `B6 enable_raster_scroll_wave` sets `$4A=$FF` and enters exploration
+  substate 7, activating the raster-time PPU-scroll waveform;
+- `B7 configure_hotspot_boundaries` stores operand 1 in `$07AC`, operand 2
+  in `$07AA`, and `operand2+1` in `$07AB`;
+- `B9 save_exploration_checkpoint` saves script PC/software-stack continuation
+  in `$9B/$9C/$9F/$A0`, clears a stale matching slot, and snapshots the current
+  actor coordinates into a free three-byte `$07B3` slot record;
+- `BA restore_exploration_coordinate_slot` finds the requested `$07B3` slot,
+  restores its coordinates into the active actor records selected by `$07AC`,
+  calls `$75F3` to update world/camera coordinates, and consumes the slot;
+- `BB clear_saved_coordinate_slot` removes the matching slot without restoring it;
+- `BC resume_exploration` shares B0's `$72C6` setup but restores `$0796`
+  from saved `$07C0` instead of performing the fresh coordinate/camera reset.
 
-`B0/B2/B3/B6` have recovered setup routines but are not assigned narrative names until
-their state correlations are complete.
+The remaining directional uncertainty belongs to the `$FD/$FE` hotspot
+sentinels, not to the source-used `Bx` opcode identities themselves.
 
 Hotspot rectangles are selected through `$A20C`. NOV2 `$768F` recognizes `$FD` and
 `$FE` as successful terminal hotspot results instead of Y bounds. The exploration
@@ -422,15 +429,17 @@ used by predicates.
 
 ## 16. Remaining reverse-engineering frontier
 
-The retail gameplay VM is structurally recovered. Remaining work is value-level and
-semantic refinement, not discovery of the interpreter skeleton:
+The retail gameplay VM is structurally recovered. The audio-selector and source-used
+`Bx` completion passes are now closed; remaining work is narrower value-level
+refinement:
 
-1. correlate individual `$07E0-$07E3` values with exact music/SFX identities;
-2. finish stable low-level names for remaining source-used `Bx` forms;
-3. identify real runtime conditions, if any, that enter the **327 non-reached source
+1. identify real runtime conditions, if any, that enter the **327 non-reached source
    bytes** without connecting them speculatively;
-4. assign human-facing world directions to verified opposing `$FD/$FE` sentinels;
-5. finish the remaining high-bit palette-animation control semantics.
+2. assign human-facing world directions to verified opposing `$FD/$FE` sentinels;
+3. finish the remaining high-bit palette-animation control semantics;
+4. add story-facing names to individual audio call sites only when clean replay
+   context proves them, without replacing the verified driver identities in
+   `docs/AUDIO_COMMAND_MAP.md`.
 
 Do not inflate source coverage by decoding arbitrary source islands without a proven
 incoming VM state. Engine capability is not evidence of retail source usage, and a

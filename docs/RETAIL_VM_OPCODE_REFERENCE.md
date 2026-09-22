@@ -67,16 +67,16 @@ Evidence labels follow `REVERSE_ENGINEERING_GUIDE.md`. A mnemonic is deliberatel
 | `$92` | `write_audio_latch_2` | `value:u8` | 2 bytes | `$7192` | **VERIFIED** |
 | `$93` | `write_audio_latch_3` | `value:u8` | 2 bytes | `$7192` | **VERIFIED** |
 | `$A1` | `delay_ticks` | `duration:u8` | 2 bytes | `$71A4` | **VERIFIED** |
-| `$B0` | `begin_exploration` | `exploration_mode:u8` | 2 bytes | `$71F5` | **DERIVED** |
+| `$B0` | `begin_exploration` | `exploration_mode:u8` | 2 bytes | `$71F5` | **VERIFIED** |
 | `$B2` | `start_irq_raster_transition_mode_2` | `none` | 1 byte | `$71F5` | **VERIFIED** |
 | `$B3` | `start_irq_raster_transition_mode_3` | `none` | 1 byte | `$71F5` | **VERIFIED** |
-| `$B5` | `move_fixed_point_to_target` | `axis_mode:u8, step:u8, target:u16` | 5 bytes | `$71F5` | **DERIVED** |
-| `$B6` | `enable_raster_scroll_wave` | `none` | 1 byte | `$71F5` | **DERIVED** |
+| `$B5` | `move_coordinate_to_target` | `coordinate_mode:u8, step:u8, target:u16` | 5 bytes | `$71F5` | **VERIFIED** |
+| `$B6` | `enable_raster_scroll_wave` | `none` | 1 byte | `$71F5` | **VERIFIED** |
 | `$B7` | `configure_hotspot_boundaries` | `hotspot_set:u8, boundary_selector:u8` | 3 bytes | `$71F5` | **VERIFIED** |
-| `$B9` | `save_exploration_continuation` | `slot_or_mode:u8` | 2 bytes | `$71F5` | **DERIVED** |
-| `$BA` | `restore_saved_coordinate_slot` | `slot_id:u8` | 2 bytes | `$71F5` | **DERIVED** |
+| `$B9` | `save_exploration_checkpoint` | `slot_id:u8` | 2 bytes | `$71F5` | **VERIFIED** |
+| `$BA` | `restore_exploration_coordinate_slot` | `slot_id:u8` | 2 bytes | `$71F5` | **VERIFIED** |
 | `$BB` | `clear_saved_coordinate_slot` | `slot_id:u8` | 2 bytes | `$71F5` | **VERIFIED** |
-| `$BC` | `resume_exploration` | `exploration_mode:u8` | 2 bytes | `$71F5` | **DERIVED** |
+| `$BC` | `resume_exploration` | `exploration_mode:u8` | 2 bytes | `$71F5` | **VERIFIED** |
 | `$D2` | `clone_flip_background_chr` | `count:u8, records[count]:(source_tile:u8, destination_tile:u8, flags:u8)` | 2 + 3*count bytes | `$78BA` | **VERIFIED** |
 | `$E0` | `fds_scene_transition` | `transition_selector:u8` | 2 bytes | `$79A7` | **DERIVED** |
 
@@ -120,11 +120,17 @@ The generic “parameter write” description is obsolete. `83` writes `$07E3` a
 
 ### `$Bx`: exploration / raster primitives
 
-- `B0` enters the fresh exploration initialization path; `BC` shares setup but restores saved exploration state, hence `begin_exploration` versus `resume_exploration` (**DERIVED** names).
-- `B2/B3` install distinct fixed FDS IRQ timing sweeps. Their low-level raster-transition behavior is verified; narrative/directional names are intentionally withheld.
-- `B5` configures a fixed-point coordinate move that stops exactly at the scripted target.
-- `B6` enables the raster-time PPU-scroll waveform/distortion path via `$4A`.
-- `B7` configures active hotspot/boundary selectors. `B9/BA/BB` manage exploration continuation and saved coordinate slots.
+The source-used `Bx` forms now all have verified low-level names.
+
+- `B0 begin_exploration` saves `$0796` in `$07C0`, initializes the exploration-state fields, configures `$4025`, and takes the **fresh** coordinate/camera initialization path.
+- `BC resume_exploration` shares the `$72C6` setup but restores `$0796` from `$07C0` instead of taking B0's fresh coordinate/camera reset.
+- `B2/B3` install the two fixed FDS IRQ raster-transition timing sweeps. Their world-facing direction names remain intentionally separate from their verified engine identity.
+- `B5 move_coordinate_to_target` selects one of two coordinate pairs and moves it in 1/16 fixed point until it reaches the exact target. Mode 1 increments `$57/$58`; mode 2 decrements it; mode 3 increments `$18/$19`; mode 4+ decrements `$18/$19`.
+- `B6 enable_raster_scroll_wave` sets `$4A=$FF` and enters exploration substate 7, activating the raster-time PPU-scroll waveform path.
+- `B7 configure_hotspot_boundaries` writes actor/hotspot count `$07AC`, lower boundary selector `$07AA`, and upper selector `$07AB=operand+1`.
+- `B9 save_exploration_checkpoint` stores VM PC/stack continuation in `$9B/$9C/$9F/$A0`, clears an older matching slot, and snapshots the current actor coordinates into a free three-byte `$07B3` slot record.
+- `BA restore_exploration_coordinate_slot` finds the requested slot, copies its coordinate pair into the active actor records selected by `$07AC`, recomputes world/camera coordinates through `$75F3`, and consumes the slot.
+- `BB clear_saved_coordinate_slot` deletes a matching `$07B3` slot ID without restoring it.
 
 ### `D2`: dynamic background CHR transform
 
@@ -140,4 +146,4 @@ The registry is **not** a list of everything the interpreter can theoretically d
 
 ## Remaining semantic-completion work
 
-The first-pass registry gives every reachable opcode a stable low-level name and operand grammar. Follow-up work should now refine values *within* commands rather than invent new opcode families: correlate audio command values, determine human-facing direction names for raster/hotspot transitions, classify the 327 non-reached bytes only if a runtime entry is proven, and correlate FDS transition selectors with exact scene/file outcomes.
+Every source-used `Bx` opcode now has a verified low-level name and operand contract, and `docs/AUDIO_COMMAND_MAP.md` binds every source-used audio selector to its resident or scene-specific driver identity. Remaining work is narrower: determine human-facing direction names for the verified `$FD/$FE` hotspot sentinels, classify the 327 non-reached bytes only if a runtime entry is proven, finish high-bit palette-animation semantics, and correlate FDS transition selectors with exact scene/file outcomes.
