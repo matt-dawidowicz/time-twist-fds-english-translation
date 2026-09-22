@@ -139,7 +139,9 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             "TT4/g5/r11",
         }
         self.assertEqual(set(V38_LAYOUT_EXCEPTIONS), expected)
-        self.assertLessEqual(set(V38_LAYOUT_EXCEPTIONS), STRUCTURAL_LAYOUT_RECORDS)
+        self.assertLessEqual(
+            set(V38_LAYOUT_EXCEPTIONS), STRUCTURAL_LAYOUT_RECORDS
+        )
 
     def test_generic_layout_is_strictly_greedy(self) -> None:
         """Future prose edits must fill rows before inserting soft breaks."""
