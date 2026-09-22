@@ -38,6 +38,8 @@ from time_twist.entropy_runtime import (
     PALETTE_CPU_RANGE,
     PARENT_BACK_GUARD_PATCHES,
     SCANNER_CODE_BYTES,
+    TEXT_CADENCE_ODD_FRAME_TABLE,
+    TYPEWRITER_SFX_FILTER_CPU_ADDRESS,
 )
 from time_twist.entropy_scenario import build_entropy_scenario_bank
 from time_twist.scenario import ScenarioBank, ScenarioRecord
@@ -231,6 +233,39 @@ class EntropyProductionTests(unittest.TestCase):
                 bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
                 bytes.fromhex("B0"),
             ),
+        )
+
+    def test_dialogue_timing_polish_is_source_locked(self) -> None:
+        """Lock the text-only cadence bump and silent-space SFX filter."""
+        patches = {patch.label: patch for patch in BASE_RUNTIME_PATCHES}
+
+        cadence = patches["25-percent faster dialogue cadence"]
+        self.assertEqual(cadence.cpu_address, 0x7F0F)
+        self.assertEqual(len(cadence.expected), len(cadence.replacement))
+        self.assertIn(
+            bytes.fromhex("A6 69 BD 0E 87"),
+            cadence.replacement,
+        )
+        self.assertIn(
+            bytes.fromhex("A5 2B 29 07 C9 01"),
+            cadence.replacement,
+        )
+
+        sfx = patches["silent common-space typewriter SFX"]
+        self.assertEqual(sfx.cpu_address, 0x847E)
+        self.assertEqual(sfx.replacement, bytes.fromhex("20 1B 82"))
+        self.assertEqual(TYPEWRITER_SFX_FILTER_CPU_ADDRESS, 0x821B)
+
+        # State $04 is the only newly-enabled odd-frame state. Existing
+        # exceptions ($08/$0B/$0F/$13) remain represented by nonzero values.
+        self.assertEqual(TEXT_CADENCE_ODD_FRAME_TABLE[4], 2)
+        self.assertEqual(
+            tuple(
+                index
+                for index, value in enumerate(TEXT_CADENCE_ODD_FRAME_TABLE)
+                if value
+            ),
+            (4, 8, 11, 15, 19),
         )
 
     def test_dynamic_menu_layout_patches_are_source_locked(self) -> None:
