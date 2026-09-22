@@ -277,9 +277,10 @@ RETAIL_VM_OPCODES = (
         "begin_exploration",
         "exploration_mode:u8",
         "2 bytes",
-        evidence="DERIVED",
         notes=(
-            "Fresh-initialization path through the exploration state machine."
+            "Fresh setup saves $0796 in $07C0, initializes $0794/$0795/"
+            "$07A8/$07A9, configures $4025, and takes the fresh coordinate/"
+            "camera initialization path rather than BC's restore path."
         ),
     ),
     _op(
@@ -298,19 +299,25 @@ RETAIL_VM_OPCODES = (
     ),
     _op(
         0xB5,
-        "move_fixed_point_to_target",
-        "axis_mode:u8, step:u8, target:u16",
+        "move_coordinate_to_target",
+        "coordinate_mode:u8, step:u8, target:u16",
         "5 bytes",
-        evidence="DERIVED",
-        notes="Per-frame mover approaches the selected coordinate exactly.",
+        notes=(
+            "Modes 1/2 move coordinate pair $57/$58 positive/negative; "
+            "mode 3 and higher select $18/$19, with 3 positive and 4+ "
+            "negative. Native state uses 1/16 fixed point and stops exactly "
+            "on the scripted target."
+        ),
     ),
     _op(
         0xB6,
         "enable_raster_scroll_wave",
         "none",
         "1 byte",
-        evidence="DERIVED",
-        notes="Enables the raster-time PPU-scroll waveform path through $4A.",
+        notes=(
+            "Sets $4A=$FF and enters exploration substate 7, enabling the "
+            "verified raster-time PPU-scroll waveform path."
+        ),
     ),
     _op(
         0xB7,
@@ -320,18 +327,26 @@ RETAIL_VM_OPCODES = (
     ),
     _op(
         0xB9,
-        "save_exploration_continuation",
-        "slot_or_mode:u8",
+        "save_exploration_checkpoint",
+        "slot_id:u8",
         "2 bytes",
-        evidence="DERIVED",
-        notes="Saves script PC and software-stack continuation state.",
+        notes=(
+            "Saves script PC and software-stack continuation in "
+            "$9B/$9C/$9F/$A0, clears any previous matching slot, and the "
+            "exploration continuation snapshots the current actor coordinates "
+            "into a free $07B3 three-byte slot record."
+        ),
     ),
     _op(
         0xBA,
-        "restore_saved_coordinate_slot",
+        "restore_exploration_coordinate_slot",
         "slot_id:u8",
         "2 bytes",
-        evidence="DERIVED",
+        notes=(
+            "Finds the matching $07B3 slot record, copies its saved coordinate "
+            "pair into the active actor records selected by $07AC, updates "
+            "world/camera coordinates through $75F3, then consumes the slot."
+        ),
     ),
     _op(
         0xBB,
@@ -344,8 +359,11 @@ RETAIL_VM_OPCODES = (
         "resume_exploration",
         "exploration_mode:u8",
         "2 bytes",
-        evidence="DERIVED",
-        notes="Shares B0 setup but restores saved exploration state.",
+        notes=(
+            "Shares B0's $72C6 setup, but the continuation restores $0796 "
+            "from saved $07C0 instead of performing B0's fresh coordinate/"
+            "camera initialization."
+        ),
     ),
     _op(
         0xD2,
