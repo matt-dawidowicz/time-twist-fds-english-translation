@@ -25,10 +25,59 @@ NOV3_GUARDS = {
         "20 04 D8 20 7E D8 20 3C DA A9 00 8D E3 07"
     ),
     0xD804: bytes.fromhex("AD E5 07 AC E0 07 30 60 4A B0 51 4E E0 07"),
+    0xD82A: bytes.fromhex(
+        "8C E5 07 A9 04 8D D5 07 A2 1D A9 13 A0 18"
+    ),
+    0xD843: bytes.fromhex("8C E5 07 A9 0A 8D D5 07"),
     0xD87E: bytes.fromhex(
         "AD E7 07 29 70 D0 4B AD E2 07 D0 06 AD E8 07 D0 25 60"
     ),
+    0xD946: bytes.fromhex("08 0A 0E 10 10 0C 0C 0C"),
+    0xD958: bytes.fromhex(
+        "85 2F 2A 25 1F 1A 15 8F 11 00 85 35 2F 2A 25 1F 1A"
+    ),
     0xDA3C: bytes.fromhex("AD E3 07 30 F8 D0 06 AD E7 07 D0 EE 60 20 3E DB"),
+}
+
+OVERLAY_AUDIO_GUARDS = {
+    "TT1B": {
+        0xCEDE: bytes.fromhex("AC E1 07 30 71 4A B0 4F 4E E1 07 B0 38"),
+    },
+    "TT2": {
+        0xD121: bytes.fromhex(
+            "AD E6 07 AC E1 07 30 2D 4A B0 D9 4E E1 07 B0 C2"
+        ),
+    },
+    "TT3A": {
+        0xD003: bytes.fromhex(
+            "AC E1 07 30 50 C0 03 F0 65 AD E6 07 C9 03 F0 60"
+        ),
+    },
+    "TT4": {
+        0xD2E4: bytes.fromhex(
+            "AD E6 07 AC E1 07 30 64 4A B0 38 4E E1 07 B0 1C"
+        ),
+    },
+    "TT5": {
+        0xCC5E: bytes.fromhex(
+            "AD E6 07 AC E1 07 30 59 4A B0 37 4E E1 07 B0 20"
+        ),
+    },
+    "TT6B": {
+        0xBED0: bytes.fromhex(
+            "AD E6 07 AC E1 07 30 43 4A B0 61 4E E1 07 B0 4A"
+        ),
+    },
+    "TT6C": {
+        0xCDC9: bytes.fromhex(
+            "AD E6 07 AC E1 07 30 35 4E E1 07 B0 3C"
+        ),
+    },
+    "TT6D": {
+        0xAB98: bytes.fromhex(
+            "AD E6 07 AC E1 07 30 56 4A B0 34 4E E1 07 B0 18"
+        ),
+    },
 }
 
 # NMOS 6502 absolute-address opcodes relevant for a conservative static reference count.
@@ -102,11 +151,24 @@ def audit_audio_latches(zenpen: Path, kouhen: Path) -> dict[str, object]:
     overlay_files: dict[str, list[str]] = {
         f"0x{target:04X}": [] for target in AUDIO_LATCHES
     }
+    guarded_overlays: set[str] = set()
     for image_name, image in images.items():
         for side in image.sides:
             for file in side.files:
                 if file.kind != 0 or file.load_address != 0xA200:
                     continue
+                if file.name in OVERLAY_AUDIO_GUARDS:
+                    for address, expected in OVERLAY_AUDIO_GUARDS[
+                        file.name
+                    ].items():
+                        _guard(
+                            file.data,
+                            file.load_address,
+                            address,
+                            expected,
+                            f"{file.name} scene-audio dispatcher",
+                        )
+                    guarded_overlays.add(file.name)
                 for target in AUDIO_LATCHES:
                     refs = _absolute_references(
                         file.data, file.load_address, target
@@ -119,6 +181,12 @@ def audit_audio_latches(zenpen: Path, kouhen: Path) -> dict[str, object]:
     if not overlay_refs[0x07E1]:
         raise AudioLatchAuditError(
             "no overlay-local $07E1 audio consumers found"
+        )
+    missing_guards = set(OVERLAY_AUDIO_GUARDS) - guarded_overlays
+    if missing_guards:
+        raise AudioLatchAuditError(
+            "missing guarded scene-audio overlays: "
+            + ", ".join(sorted(missing_guards))
         )
 
     return {
