@@ -114,7 +114,18 @@ INFO_CARD_RECORDS = frozenset(
     }
 )
 
-STRUCTURAL_LAYOUT_RECORDS = QUIZ_QUESTION_RECORDS | INFO_CARD_RECORDS
+PRESENTATION_LAYOUT_RECORDS = frozenset(
+    {
+        # The quoted service title is a complete presentation unit. Keep the
+        # following input instruction on a fresh row even though "Enter" would
+        # technically fit beside the title under the generic greedy wrapper.
+        "TT1A/g0/r3",
+    }
+)
+
+STRUCTURAL_LAYOUT_RECORDS = (
+    QUIZ_QUESTION_RECORDS | INFO_CARD_RECORDS | PRESENTATION_LAYOUT_RECORDS
+)
 QUIZ_MAX_SEGMENT_COLUMNS = 23
 
 
