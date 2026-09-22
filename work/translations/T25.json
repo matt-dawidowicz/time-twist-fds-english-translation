@@ -36,7 +36,7 @@
   "T25/g1/r2": "It has three drawers.",
   "T25/g1/r3": "Nothing useful here.",
   "T25/g1/r4": "I peer into the gap{CTRL:0}where the middle drawer{CTRL:0}was…",
-  "T25/g1/r5": "A black leather whip…{CTRL:0}and a cloth hood with{CTRL:0}holes for the eyes and{CTRL:0}nose.",
+  "T25/g1/r5": "{CTRL:4}A black leather whip…{CTRL:4}and a cloth hood with{CTRL:4}holes for the eyes and{CTRL:4}nose.",
   "T25/g1/r6": "Through the gap where{CTRL:0}the middle drawer was, I{CTRL:0}can see… a black leather{CTRL:0}whip and a cloth hood{CTRL:4}with holes for the eyes{CTRL:4}and nose.",
   "T25/g1/r7": "Can't reach it.",
   "T25/g1/r8": "I pull the drawer all{CTRL:0}the way out.",
@@ -71,7 +71,7 @@
   "T25/g2/r5": "George: Oh, no! It looks{CTRL:0}like the boat can only{CTRL:0}hold two.",
   "T25/g2/r6": "George: We all made it!",
   "T25/g2/r7": "George: Let's save all{CTRL:0}the coyotes too!",
-  "T25/g2/r8": "George: They'll eat us{CTRL:0}alive!",
+  "T25/g2/r8": "{CTRL:0}George: They'll eat us{CTRL:0}alive!",
   "T25/g2/r9": "George: Mom's too heavy!{CTRL:0}The boat might sink!!",
   "T25/g2/r10": "George: Hurry, let's get{CTRL:0}in!",
   "T25/g2/r11": "George: The coyotes{CTRL:0}can't take the boat on{CTRL:0}their own."
