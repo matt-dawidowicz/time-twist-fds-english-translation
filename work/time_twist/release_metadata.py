@@ -500,9 +500,11 @@ def build_source_lock_payload(
         "authority": (
             "The exact private v25 safe-encoding baseline, frozen v38 compiler "
             "bundle and 13 active translation maps are the non-code-lock inputs. "
-            "Compiler payloads are also hash-checked before execution. Active "
-            "maps must exactly match the approved v38 wording and controls; "
-            "the output must match the approved v38 ROM hash."
+            "Compiler payloads are independently hash-checked before execution. "
+            "The recovered v38 bundle remains an immutable historical checkpoint; "
+            "source-locked active maps may contain reviewed post-v38 text/layout "
+            "changes, whose final ROM identity is established by candidate "
+            "promotion rather than the historical v38 ROM hash."
         ),
         "subtitle": DEFAULT_SUBTITLE,
         "files": files,
