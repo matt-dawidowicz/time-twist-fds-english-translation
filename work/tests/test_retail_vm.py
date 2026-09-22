@@ -104,6 +104,33 @@ class RetailVmRegistryTests(unittest.TestCase):
                     entry.evidence, {"VERIFIED", "DERIVED", "INFERRED"}
                 )
 
+    def test_source_used_bx_forms_have_verified_low_level_names(self) -> None:
+        """Lock the completed exploration-opcode semantic pass."""
+        expected = {
+            0xB0: ("begin_exploration", "exploration_mode:u8"),
+            0xB2: ("start_irq_raster_transition_mode_2", "none"),
+            0xB3: ("start_irq_raster_transition_mode_3", "none"),
+            0xB5: (
+                "move_coordinate_to_target",
+                "coordinate_mode:u8, step:u8, target:u16",
+            ),
+            0xB6: ("enable_raster_scroll_wave", "none"),
+            0xB7: (
+                "configure_hotspot_boundaries",
+                "hotspot_set:u8, boundary_selector:u8",
+            ),
+            0xB9: ("save_exploration_checkpoint", "slot_id:u8"),
+            0xBA: ("restore_exploration_coordinate_slot", "slot_id:u8"),
+            0xBB: ("clear_saved_coordinate_slot", "slot_id:u8"),
+            0xBC: ("resume_exploration", "exploration_mode:u8"),
+        }
+        for opcode, (name, operands) in expected.items():
+            with self.subTest(opcode=f"{opcode:02X}"):
+                entry = retail_vm_opcode(opcode)
+                self.assertEqual(entry.mnemonic, name)
+                self.assertEqual(entry.operand_grammar, operands)
+                self.assertEqual(entry.evidence, "VERIFIED")
+
     def test_lookup_rejects_engine_only_opcode(self) -> None:
         """Keep source-unused native forms outside the retail registry."""
         with self.assertRaises(KeyError):
