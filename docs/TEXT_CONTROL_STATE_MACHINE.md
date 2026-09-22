@@ -234,6 +234,36 @@ This explains the overwrite constraints enforced by production validation:
 `CTRL:1`, `CTRL:2`, and `CTRL:6` directly re-enter earlier fixed rows,
 whereas `CTRL:3` scrolls before re-entering row 4.
 
+## Scenario usage census
+
+A repository-wide count of the 13 decoded Japanese scenario banks versus the
+13 current canonical English maps gives:
+
+| Control | Japanese source | Current English | Difference |
+| ---: | ---: | ---: | ---: |
+| `0` | 744 | 1,353 | +609 |
+| `1` | 160 | 90 | -70 |
+| `2` | 151 | 89 | -62 |
+| `3` | 192 | 178 | -14 |
+| `4` | 202 | 640 | +438 |
+| `6` | 98 | 70 | -28 |
+| `7` | 0 | 0 | 0 |
+
+Control 5 is the record separator and is not represented as an ordinary
+`{CTRL:5}` tag in these JSON maps.
+
+The large increases in controls 0 and 4 are expected: English layout
+regenerates row advances and scrolling for longer English prose. The smaller
+counts for controls 1, 2, 3, and 6 show that historical localization work
+already removed some Japanese A-wait boundaries before the current canonical
+policy was frozen.
+
+That census is **not** evidence that the native controls have variable
+semantics. Their machine behavior is fixed as documented above. It is also not
+a blanket endorsement of every historical removal. The current English map is
+reviewed state; any future change to a semantic wait should remain
+record-scoped, source-aware, and runtime-tested.
+
 ## Canonical names
 
 For engineering discussion, these names describe the recovered operations more
