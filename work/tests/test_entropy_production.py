@@ -257,6 +257,7 @@ class EntropyProductionTests(unittest.TestCase):
         )
 
         def dispatches(state: int, frame: int) -> bool:
+            """Model whether the patched scheduler runs this state this frame."""
             if frame & 1 == 0:
                 return True
             if state == 0x04 and frame & 0x06 == 0:
