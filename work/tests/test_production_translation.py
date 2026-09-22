@@ -103,6 +103,15 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         )
         self.assertNotIn("When did I last see it?", tt1b.values())
 
+        tt1a = _canonical("TT1A")
+        self.assertEqual(
+            tt1a["TT1A/g0/r3"],
+            (
+                "The Fortune-Telling{CTRL:0}Service Center presents:{CTRL:0}"
+                "\"Today's Fortune\"{CTRL:6}Enter your blood type."
+            ),
+        )
+
         tt3a = _canonical("TT3A")
         self.assertEqual(
             tt3a["TT3A/g2/r30"],
