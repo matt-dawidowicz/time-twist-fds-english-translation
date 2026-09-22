@@ -34,8 +34,8 @@ CATEGORY_CPU_ADDRESS = 0x81E0
 CATEGORY_REGION_SIZE = 70
 MENU_WIDTH_WORK_RAM_ADDRESS = 0x042D
 MENU_MAX_STAGED_GLYPHS = 18
-TYPEWRITER_SFX_FILTER_CPU_ADDRESS = 0x821B
-TEXT_CADENCE_ODD_FRAME_TABLE_CPU_ADDRESS = 0x870E
+TYPEWRITER_SFX_CPU_ADDRESS = 0x85C5
+MENU_SFX_RELOCATED_CPU_ADDRESS = 0x988D
 
 
 class EntropyRuntimeError(ValueError):
@@ -106,18 +106,20 @@ BASE_RUNTIME_PATCHES = (
         file_offset=0x1F0F,
         expected=_hex(
             "A5 2B 29 01 F0 1C A9 00 85 63 85 66 A5 69 C9 08 F0 0D "
-            "C9 11 F0 09 C9 15 F0 05 C9 19 F0 01 60 4C 31 7F"
+            "C9 11 F0 09 C9 15 F0 05 C9 19 F0 01 60 4C 31 7F "
+            "A5 69 0A AA BD 42 7F 85 3C BD 43 7F 85 3D 6C 3C 00"
         ),
         replacement=_hex(
-            "A5 2B 29 01 F0 1C 4A 85 63 85 66 A6 69 BD 0E 87 F0 0C "
-            "C9 01 F0 0C A5 2B 29 07 C9 01 F0 04 60 EA EA EA"
+            "A5 2B 29 01 F0 23 4A 85 63 85 66 A5 69 C9 04 D0 07 "
+            "A5 2B 29 06 F0 12 60 C9 08 F0 0D C9 0B F0 09 C9 0F "
+            "F0 05 C9 13 F0 01 60 A6 69 A9 42 A0 7F 4C 2A 61 EA"
         ),
         label="25-percent faster dialogue cadence",
     ),
     RuntimePatch(
-        file_offset=0x247E,
-        expected=_hex("20 C5 85"),
-        replacement=_hex("20 1B 82"),
+        file_offset=0x25C5,
+        expected=_hex("A9 04 8D E0 07 60 A9 01 8D E0 07 60"),
+        replacement=_hex("C9 C0 F0 05 A9 04 8D E0 07 60 EA EA"),
         label="silent common-space typewriter SFX",
     ),
 )
@@ -178,8 +180,32 @@ DYNAMIC_MENU_LAYOUT_PATCHES = (
     RuntimePatch(
         file_offset=0x3885,
         expected=_hex("A5 32 C9 04 90 05 A9 80 4C 92 98 A9 40 85 14"),
-        replacement=_hex("20 8D 6D 85 14 EA EA EA EA EA EA EA EA EA EA"),
-        label="width-aware leading menu cursor",
+        replacement=_hex("20 8D 6D 85 14 4C 94 98 A9 01 8D E0 07 60 EA"),
+        label="width-aware leading menu cursor and relocated menu SFX",
+    ),
+    RuntimePatch(
+        file_offset=0x38F9,
+        expected=_hex("20 CB 85"),
+        replacement=_hex("20 8D 98"),
+        label="menu SFX call 1 relocation",
+    ),
+    RuntimePatch(
+        file_offset=0x3918,
+        expected=_hex("20 CB 85"),
+        replacement=_hex("20 8D 98"),
+        label="menu SFX call 2 relocation",
+    ),
+    RuntimePatch(
+        file_offset=0x3940,
+        expected=_hex("20 CB 85"),
+        replacement=_hex("20 8D 98"),
+        label="menu SFX call 3 relocation",
+    ),
+    RuntimePatch(
+        file_offset=0x3973,
+        expected=_hex("20 CB 85"),
+        replacement=_hex("20 8D 98"),
+        label="menu SFX call 4 relocation",
     ),
 )
 
@@ -573,18 +599,8 @@ _SCANNER_BLOCK = (
 _FRONTEND_BLOCK = _FRONTEND_CODE + bytes((0xEA,)) * (
     FRONTEND_REGION_SIZE - len(_FRONTEND_CODE)
 )
-_TYPEWRITER_SFX_FILTER = _hex("A5 65 C9 C0 F0 03 4C C5 85 60")
-if CATEGORY_CPU_ADDRESS + len(_CATEGORY_CODE) != TYPEWRITER_SFX_FILTER_CPU_ADDRESS:
-    raise EntropyRuntimeError("typewriter SFX filter address drifted")
-_CATEGORY_BLOCK = (
-    _CATEGORY_CODE
-    + _TYPEWRITER_SFX_FILTER
-    + bytes((0xEA,))
-    * (
-        CATEGORY_REGION_SIZE
-        - len(_CATEGORY_CODE)
-        - len(_TYPEWRITER_SFX_FILTER)
-    )
+_CATEGORY_BLOCK = _CATEGORY_CODE + bytes((0xEA,)) * (
+    CATEGORY_REGION_SIZE - len(_CATEGORY_CODE)
 )
 
 # Production replaces NOV2's complete fixed 51-record text region with this
@@ -605,49 +621,10 @@ _INTERNAL_TABLE_STREAM = bytes.fromhex(
     "00653a79f313d4769e1cb575fb92dfdaa75f66d2caf8a119abb84f5fbdfbf725b"
     "fb9ba564dcd2a069cce827659aec9828466ce0"
 )
-TEXT_CADENCE_ODD_FRAME_TABLE = bytes(
-    (
-        0,
-        0,
-        0,
-        0,
-        2,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        1,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-    )
+_INTERNAL_TABLE_BLOCK = _INTERNAL_TABLE_STREAM + bytes(
+    338 - len(_INTERNAL_TABLE_STREAM)
 )
-if 0x85D9 + len(_INTERNAL_TABLE_STREAM) != TEXT_CADENCE_ODD_FRAME_TABLE_CPU_ADDRESS:
-    raise EntropyRuntimeError("dialogue cadence table address drifted")
-_INTERNAL_TABLE_BLOCK = (
-    _INTERNAL_TABLE_STREAM
-    + TEXT_CADENCE_ODD_FRAME_TABLE
-    + bytes(338 - len(_INTERNAL_TABLE_STREAM) - len(TEXT_CADENCE_ODD_FRAME_TABLE))
-)
-if (
-    len(_INTERNAL_TABLE_STREAM) != 309
-    or len(TEXT_CADENCE_ODD_FRAME_TABLE) != 27
-    or len(_INTERNAL_TABLE_BLOCK) != 338
-):
+if len(_INTERNAL_TABLE_STREAM) != 309 or len(_INTERNAL_TABLE_BLOCK) != 338:
     raise EntropyRuntimeError("internal entropy table size changed")
 
 
