@@ -56,19 +56,40 @@ ordinary interior word wrapping.
 
 ## Semantic controls
 
-`CTRL:1`, `CTRL:2`, `CTRL:3`, and `CTRL:6` can carry timing, page,
-re-entry, reveal, or speaker-transition meaning.
+The native behavior of these controls is now recovered exactly:
+
+| Control | Native operation after the preceding text is committed |
+| ---: | --- |
+| `CTRL:1` | wait for a fresh A press, then continue at row 2 |
+| `CTRL:2` | wait for a fresh A press, then continue at row 3 |
+| `CTRL:3` | wait for a fresh A press, scroll up one text row, then continue at row 4 |
+| `CTRL:6` | wait for a fresh A press, then continue at row 4 without scrolling |
+
+See [Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md) for the
+instruction-level trace.
+
+Thus all four are mechanically A-button waits. “Speaker change,” “reveal,” and
+“dramatic beat” describe how a scene uses the wait/re-entry operation; they are
+not separate meanings encoded by the control value.
 
 Their placement in the canonical map is reviewed state. Do not move one merely
 to gain room for a longer sentence.
 
 Important constraints include:
 
+- `CTRL:1` must occur before staged text passes row-2 start;
+- `CTRL:2` must occur before staged text passes row-3 start;
+- `CTRL:6` must occur before staged text passes row-4 start;
+- `CTRL:3` intentionally scrolls before row-4 continuation;
 - a semantic control may not split a speaker heading;
 - a speaker-changing boundary must remain attached to the intended turn;
-- re-entry controls must not overwrite text staged earlier in the same record;
 - cross-record entry geometry must not overwrite text still visible from the
   preceding record.
+
+Localization policy still permits a source `CTRL:2` to be removed when
+record-scoped review establishes that the Japanese A wait was pagination-only
+and continuous English should not pause there. That is an editorial demotion of
+a source wait, not a different native meaning for control 2.
 
 When a preferred translation cannot fit without moving a meaningful control,
 the problem is an engine/layout constraint. Shorten only with an explicit,
