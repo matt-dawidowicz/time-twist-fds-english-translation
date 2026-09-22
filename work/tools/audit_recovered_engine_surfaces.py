@@ -246,9 +246,7 @@ def _text_control_report(nov2: bytes) -> dict[str, object]:
     _expect_nov2_bytes(
         nov2,
         0x7FF2,
-        bytes.fromhex(
-            "A9 40 85 6E 20 4F 84 A0 00 A2 90 20 5E 81 60"
-        ),
+        bytes.fromhex("A9 40 85 6E 20 4F 84 A0 00 A2 90 20 5E 81 60"),
         "post-scroll row-four continuation",
     )
     _expect_nov2_bytes(
