@@ -34,9 +34,7 @@ class ContinuationGeometryTests(unittest.TestCase):
             for previous_id in predecessors:
                 self.assertIn(previous_id, self.texts)
                 with self.subTest(previous=previous_id, next=next_id):
-                    validate_continuation(
-                        previous_id, next_id, self.texts
-                    )
+                    validate_continuation(previous_id, next_id, self.texts)
 
 
 if __name__ == "__main__":
