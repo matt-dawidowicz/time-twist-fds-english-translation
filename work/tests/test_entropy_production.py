@@ -33,13 +33,11 @@ from time_twist.entropy_runtime import (
     ENTROPY_SELECTION_SPAN_CPU_ADDRESS,
     FRONTEND_CODE_BYTES,
     MENU_MAX_STAGED_GLYPHS,
-    MENU_SFX_RELOCATED_CPU_ADDRESS,
     MENU_WIDTH_WORK_RAM_ADDRESS,
     NOV3_LOAD_ADDRESS,
     PALETTE_CPU_RANGE,
     PARENT_BACK_GUARD_PATCHES,
     SCANNER_CODE_BYTES,
-    TYPEWRITER_SFX_CPU_ADDRESS,
 )
 from time_twist.entropy_scenario import build_entropy_scenario_bank
 from time_twist.scenario import ScenarioBank, ScenarioRecord
@@ -223,69 +221,23 @@ class EntropyProductionTests(unittest.TestCase):
 
     def test_base_renderer_patches_are_frozen(self) -> None:
         """Keep the proven pre-entropy renderer repairs byte-identical."""
-        patches = {patch.label: patch for patch in BASE_RUNTIME_PATCHES}
         self.assertEqual(
-            patches["extended dictionary entry-point fix"].cpu_address,
-            0x81D3,
-        )
-        self.assertEqual(
-            patches["extended dictionary entry-point fix"].replacement,
-            bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
+            tuple(patch.cpu_address for patch in BASE_RUNTIME_PATCHES),
+            (0x81D3, 0x8378),
         )
         self.assertEqual(
-            patches["extended code 63 dollar-sign tile redirect"].cpu_address,
-            0x8378,
+            tuple(patch.replacement for patch in BASE_RUNTIME_PATCHES),
+            (
+                bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
+                bytes.fromhex("B0"),
+            ),
         )
-        self.assertEqual(
-            patches["extended code 63 dollar-sign tile redirect"].replacement,
-            bytes.fromhex("B0"),
-        )
-
-    def test_dialogue_timing_polish_is_source_locked(self) -> None:
-        """Lock the text-only cadence bump and silent-space SFX filter."""
-        patches = {patch.label: patch for patch in BASE_RUNTIME_PATCHES}
-
-        cadence = patches["25-percent faster dialogue cadence"]
-        self.assertEqual(cadence.cpu_address, 0x7F0F)
-        self.assertEqual(len(cadence.expected), len(cadence.replacement))
-        self.assertIn(
-            bytes.fromhex("A5 69 C9 04 D0 07 A5 2B 29 06"),
-            cadence.replacement,
-        )
-        self.assertIn(
-            bytes.fromhex("C9 08 F0 0D C9 0B F0 09 C9 0F F0 05 C9 13"),
-            cadence.replacement,
-        )
-        self.assertIn(
-            bytes.fromhex("A6 69 A9 42 A0 7F 4C 2A 61"),
-            cadence.replacement,
-        )
-
-        sfx = patches["silent common-space typewriter SFX"]
-        self.assertEqual(sfx.cpu_address, 0x85C5)
-        self.assertEqual(
-            sfx.replacement,
-            bytes.fromhex("C9 C0 F0 05 A9 04 8D E0 07 60 EA EA"),
-        )
-        self.assertEqual(TYPEWRITER_SFX_CPU_ADDRESS, 0x85C5)
-        self.assertEqual(MENU_SFX_RELOCATED_CPU_ADDRESS, 0x988D)
 
     def test_dynamic_menu_layout_patches_are_source_locked(self) -> None:
         """Freeze the variable-width renderer without touching palette RAM."""
         self.assertEqual(
             tuple(patch.cpu_address for patch in DYNAMIC_MENU_LAYOUT_PATCHES),
-            (
-                0x6D8A,
-                0x6DDC,
-                0x945D,
-                0x9481,
-                0x94E5,
-                0x9885,
-                0x98F9,
-                0x9918,
-                0x9940,
-                0x9973,
-            ),
+            (0x6D8A, 0x6DDC, 0x945D, 0x9481, 0x94E5, 0x9885),
         )
         patches = {patch.label: patch for patch in DYNAMIC_MENU_LAYOUT_PATCHES}
         self.assertEqual(
@@ -414,7 +366,7 @@ class EntropyProductionTests(unittest.TestCase):
         }
         self.assertTrue(
             menu_patches[
-                "width-aware leading menu cursor and relocated menu SFX"
+                "width-aware leading menu cursor"
             ].replacement.startswith(bytes.fromhex("20 8D 6D"))
         )
 
