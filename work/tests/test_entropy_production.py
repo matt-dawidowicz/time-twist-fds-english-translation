@@ -249,9 +249,7 @@ class EntropyProductionTests(unittest.TestCase):
         self.assertEqual(helper.cpu_address, 0x9885)
         self.assertEqual(
             helper.replacement,
-            bytes.fromhex(
-                "20 8D 6D 85 14 C9 C0 F0 03 4C C5 85 60 EA EA"
-            ),
+            bytes.fromhex("20 8D 6D 85 14 C9 C0 F0 03 4C C5 85 60 EA EA"),
         )
         self.assertEqual(
             helper.replacement[5:13],
