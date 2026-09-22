@@ -223,16 +223,22 @@ class EntropyProductionTests(unittest.TestCase):
 
     def test_base_renderer_patches_are_frozen(self) -> None:
         """Keep the proven pre-entropy renderer repairs byte-identical."""
+        patches = {patch.label: patch for patch in BASE_RUNTIME_PATCHES}
         self.assertEqual(
-            tuple(patch.cpu_address for patch in BASE_RUNTIME_PATCHES),
-            (0x81D3, 0x8378),
+            patches["extended dictionary entry-point fix"].cpu_address,
+            0x81D3,
         )
         self.assertEqual(
-            tuple(patch.replacement for patch in BASE_RUNTIME_PATCHES),
-            (
-                bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
-                bytes.fromhex("B0"),
-            ),
+            patches["extended dictionary entry-point fix"].replacement,
+            bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
+        )
+        self.assertEqual(
+            patches["extended code 63 dollar-sign tile redirect"].cpu_address,
+            0x8378,
+        )
+        self.assertEqual(
+            patches["extended code 63 dollar-sign tile redirect"].replacement,
+            bytes.fromhex("B0"),
         )
 
     def test_dialogue_timing_polish_is_source_locked(self) -> None:
