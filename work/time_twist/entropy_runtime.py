@@ -34,6 +34,8 @@ CATEGORY_CPU_ADDRESS = 0x81E0
 CATEGORY_REGION_SIZE = 70
 MENU_WIDTH_WORK_RAM_ADDRESS = 0x042D
 MENU_MAX_STAGED_GLYPHS = 18
+TYPEWRITER_SFX_FILTER_CPU_ADDRESS = 0x821B
+TEXT_CADENCE_ODD_FRAME_TABLE_CPU_ADDRESS = 0x870E
 
 
 class EntropyRuntimeError(ValueError):
@@ -99,6 +101,24 @@ BASE_RUNTIME_PATCHES = (
         expected=_hex("AC"),
         replacement=_hex("B0"),
         label="extended code 63 dollar-sign tile redirect",
+    ),
+    RuntimePatch(
+        file_offset=0x1F0F,
+        expected=_hex(
+            "A5 2B 29 01 F0 1C A9 00 85 63 85 66 A5 69 C9 08 F0 0D "
+            "C9 11 F0 09 C9 15 F0 05 C9 19 F0 01 60 4C 31 7F"
+        ),
+        replacement=_hex(
+            "A5 2B 29 01 F0 1C 4A 85 63 85 66 A6 69 BD 0E 87 F0 0C "
+            "C9 01 F0 0C A5 2B 29 07 C9 01 F0 04 60 EA EA EA"
+        ),
+        label="25-percent faster dialogue cadence",
+    ),
+    RuntimePatch(
+        file_offset=0x247E,
+        expected=_hex("20 C5 85"),
+        replacement=_hex("20 1B 82"),
+        label="silent common-space typewriter SFX",
     ),
 )
 
@@ -553,8 +573,18 @@ _SCANNER_BLOCK = (
 _FRONTEND_BLOCK = _FRONTEND_CODE + bytes((0xEA,)) * (
     FRONTEND_REGION_SIZE - len(_FRONTEND_CODE)
 )
-_CATEGORY_BLOCK = _CATEGORY_CODE + bytes((0xEA,)) * (
-    CATEGORY_REGION_SIZE - len(_CATEGORY_CODE)
+_TYPEWRITER_SFX_FILTER = _hex("A5 65 C9 C0 F0 03 4C C5 85 60")
+if CATEGORY_CPU_ADDRESS + len(_CATEGORY_CODE) != TYPEWRITER_SFX_FILTER_CPU_ADDRESS:
+    raise EntropyRuntimeError("typewriter SFX filter address drifted")
+_CATEGORY_BLOCK = (
+    _CATEGORY_CODE
+    + _TYPEWRITER_SFX_FILTER
+    + bytes((0xEA,))
+    * (
+        CATEGORY_REGION_SIZE
+        - len(_CATEGORY_CODE)
+        - len(_TYPEWRITER_SFX_FILTER)
+    )
 )
 
 # Production replaces NOV2's complete fixed 51-record text region with this
@@ -575,10 +605,49 @@ _INTERNAL_TABLE_STREAM = bytes.fromhex(
     "00653a79f313d4769e1cb575fb92dfdaa75f66d2caf8a119abb84f5fbdfbf725b"
     "fb9ba564dcd2a069cce827659aec9828466ce0"
 )
-_INTERNAL_TABLE_BLOCK = _INTERNAL_TABLE_STREAM + bytes(
-    338 - len(_INTERNAL_TABLE_STREAM)
+TEXT_CADENCE_ODD_FRAME_TABLE = bytes(
+    (
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+    )
 )
-if len(_INTERNAL_TABLE_STREAM) != 309 or len(_INTERNAL_TABLE_BLOCK) != 338:
+if 0x85D9 + len(_INTERNAL_TABLE_STREAM) != TEXT_CADENCE_ODD_FRAME_TABLE_CPU_ADDRESS:
+    raise EntropyRuntimeError("dialogue cadence table address drifted")
+_INTERNAL_TABLE_BLOCK = (
+    _INTERNAL_TABLE_STREAM
+    + TEXT_CADENCE_ODD_FRAME_TABLE
+    + bytes(338 - len(_INTERNAL_TABLE_STREAM) - len(TEXT_CADENCE_ODD_FRAME_TABLE))
+)
+if (
+    len(_INTERNAL_TABLE_STREAM) != 309
+    or len(TEXT_CADENCE_ODD_FRAME_TABLE) != 27
+    or len(_INTERNAL_TABLE_BLOCK) != 338
+):
     raise EntropyRuntimeError("internal entropy table size changed")
 
 
