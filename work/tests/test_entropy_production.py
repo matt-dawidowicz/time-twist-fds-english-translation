@@ -25,6 +25,7 @@ from time_twist.entropy_runtime import (
     _INTERNAL_TABLE_STREAM,
     BASE_RUNTIME_PATCHES,
     CATEGORY_CODE_BYTES,
+    DIALOGUE_CADENCE_PATCHES,
     DYNAMIC_MENU_LAYOUT_PATCHES,
     ENTROPY_MENU_INIT_CPU_ADDRESS,
     ENTROPY_POINTER_INIT_CPU_ADDRESS,
@@ -232,6 +233,66 @@ class EntropyProductionTests(unittest.TestCase):
                 bytes.fromhex("B0"),
             ),
         )
+
+    def test_dialogue_cadence_patch_is_isolated_and_exact(self) -> None:
+        """Lock the speed-only scheduler rewrite and its state/frame behavior."""
+        self.assertEqual(len(DIALOGUE_CADENCE_PATCHES), 1)
+        patch = DIALOGUE_CADENCE_PATCHES[0]
+        self.assertEqual(patch.cpu_address, 0x7F0F)
+        self.assertEqual(len(patch.expected), 34)
+        self.assertEqual(len(patch.replacement), 34)
+        self.assertEqual(
+            patch.expected,
+            bytes.fromhex(
+                "A5 2B 29 01 F0 1C A9 00 85 63 85 66 A5 69 C9 08 F0 0D "
+                "C9 11 F0 09 C9 15 F0 05 C9 19 F0 01 60"
+            ),
+        )
+        self.assertEqual(
+            patch.replacement,
+            bytes.fromhex(
+                "A5 2B 29 01 F0 1C 4A 85 63 85 66 A5 69 C9 04 D0 06 "
+                "A5 2B 29 06 F0 0B C9 08 F0 07 49 11 29 13 F0 01 60"
+            ),
+        )
+
+        def dispatches(state: int, frame: int) -> bool:
+            if frame & 1 == 0:
+                return True
+            if state == 0x04 and frame & 0x06 == 0:
+                return True
+            if state == 0x08:
+                return True
+            return ((state ^ 0x11) & 0x13) == 0
+
+        # The compact high-state predicate is exact over NOV2's $00-$1A
+        # scheduler range; this specifically guards against the earlier
+        # decimal/hex transcription error.
+        native_odd = {0x08, 0x11, 0x15, 0x19}
+        self.assertEqual(
+            {state for state in range(0x1B) if dispatches(state, 0x03)},
+            native_odd,
+        )
+        self.assertEqual(
+            {state for state in range(0x1B) if dispatches(state, 0x01)},
+            native_odd | {0x04},
+        )
+
+        # Across 16 NTSC frames: ordinary states run 8 times, state $04 runs
+        # 10 times (+25%), and the four native exceptions still run 16 times.
+        self.assertEqual(
+            sum(dispatches(0x03, frame) for frame in range(16)),
+            8,
+        )
+        self.assertEqual(
+            sum(dispatches(0x04, frame) for frame in range(16)),
+            10,
+        )
+        for state in native_odd:
+            self.assertEqual(
+                sum(dispatches(state, frame) for frame in range(16)),
+                16,
+            )
 
     def test_dynamic_menu_layout_patches_are_source_locked(self) -> None:
         """Freeze the variable-width renderer without touching palette RAM."""
