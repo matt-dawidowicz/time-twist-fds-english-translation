@@ -9,8 +9,8 @@ from pathlib import Path
 
 from time_twist.production_translation import (
     CANONICAL_RECORD_COUNTS,
-    STRUCTURAL_LAYOUT_RECORDS,
     CHECKPOINT_QUIZ_LAYOUTS,
+    STRUCTURAL_LAYOUT_RECORDS,
     ProductionTranslationError,
     layout_review_text,
     materialize_production_maps,
