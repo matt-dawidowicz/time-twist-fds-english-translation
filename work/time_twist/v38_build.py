@@ -19,6 +19,7 @@ import tempfile
 from pathlib import Path
 
 from .fds import FdsImage
+from .menu_cancel import patch_menu_cancel
 from .production_translation import CANONICAL_RECORD_COUNTS
 from .release_metadata import (
     SCENARIO_LOCATIONS,
@@ -204,6 +205,15 @@ def build_release_images(
             raise ReleaseBuildError(
                 "v38 text did not reproduce the approved v38 checkpoint"
             )
+
+        # Refine the inherited Back/Cancel guard after the frozen compiler has
+        # installed its NOV2 runtime. Preserve inherited submenu parents and
+        # route rejected Back presses through the normal redraw path.
+        image = FdsImage.from_bytes(built)
+        nov2 = image.sides[0].find_file("NOV2")
+        nov2.data = patch_menu_cancel(nov2.data)
+        built = image.to_bytes()
+
         report = json.loads(
             (output / "reports/v38_build.json").read_text(encoding="utf-8")
         )
