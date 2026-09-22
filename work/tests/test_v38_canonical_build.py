@@ -45,7 +45,9 @@ class V38CanonicalBuildTests(unittest.TestCase):
         self.assertEqual(len(self.actual), 1299)
         validate_checkpoint_record_ids(self.actual, self.approved)
 
-    def test_every_v38_record_is_protected_against_checkpoint_edits(self) -> None:
+    def test_every_v38_record_is_protected_against_checkpoint_edits(
+        self,
+    ) -> None:
         """Prove that the historical v38 oracle rejects any one-record mutation."""
         for record, text in self.approved.items():
             with self.subTest(record=record):
