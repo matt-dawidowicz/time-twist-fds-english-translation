@@ -119,7 +119,7 @@ class RetailVmRegistryTests(unittest.TestCase):
                 "configure_hotspot_boundaries",
                 "hotspot_set:u8, boundary_selector:u8",
             ),
-            0xB9: ("save_exploration_checkpoint", "slot_id:u8"),
+            0xB9: ("save_exploration_checkpoint", "exploration_selector:u8"),
             0xBA: ("restore_exploration_coordinate_slot", "slot_id:u8"),
             0xBB: ("clear_saved_coordinate_slot", "slot_id:u8"),
             0xBC: ("resume_exploration", "exploration_mode:u8"),

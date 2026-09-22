@@ -93,9 +93,14 @@ both fresh-start execution and every valid `$A220` route/label entry.
 - overlapping decoded command ranges: **0**;
 - reachable indexed `$A20E` predicate forms: **0**.
 
-The remaining **327 bytes** are non-reached source islands, not evidence of a second
-bytecode format. Do not inflate coverage by connecting them without a proven incoming
-VM state.
+The historical baseline leaves **327 bytes** as non-reached source islands. The
+address-level follow-up in [Gameplay VM reachability-island audit](GAMEPLAY_VM_REACHABILITY_AUDIT.md)
+recovers an important missing state flow: `B9` selects a hotspot group through `$BA`,
+and the hotspot scanner supplies its count/index through `$91/$A7` to the ordinary
+`30/31` result dispatcher. A structural may-reach model using that native contract
+explains **163** of the historical remainder, leaving **164 bytes** for focused
+classification. The resulting 24,065 / 24,229 (**99.3231%**) figure is deliberately
+labelled *structural may-reach*, not runtime-certified coverage.
 
 Fresh-start execution leaves valid route/resume entries cold at T22 labels 4, 8, 11,
 12, and 13, and TT5 label 6. Those labels become reachable when valid route entry is
@@ -336,8 +341,10 @@ All source-used `Bx` forms now have stable verified low-level names:
 - `B7 configure_hotspot_boundaries` stores operand 1 in `$07AC`, operand 2
   in `$07AA`, and `operand2+1` in `$07AB`;
 - `B9 save_exploration_checkpoint` saves script PC/software-stack continuation
-  in `$9B/$9C/$9F/$A0`, clears a stale matching slot, and snapshots the current
-  actor coordinates into a free three-byte `$07B3` slot record;
+  in `$9B/$9C/$9F/$A0`, copies its operand into `$BA`, clears a stale matching
+  `$07B3` slot, and enters exploration. The scanner at `$768F` then reuses `$BA`
+  as a one-based `$A20C` hotspot-group selector and exports the selected group's
+  count/index through `$91/$A7` for `30/31` result dispatch;
 - `BA restore_exploration_coordinate_slot` finds the requested `$07B3` slot,
   restores its coordinates into the active actor records selected by `$07AC`,
   calls `$75F3` to update world/camera coordinates, and consumes the slot;
@@ -433,8 +440,8 @@ The retail gameplay VM is structurally recovered. The audio-selector and source-
 `Bx` completion passes are now closed; remaining work is narrower value-level
 refinement:
 
-1. identify real runtime conditions, if any, that enter the **327 non-reached source
-   bytes** without connecting them speculatively;
+1. runtime-test the **90 conditional result-fallthrough bytes** and **61
+   bytecode-shaped orphan-helper bytes** isolated by the reachability-island audit;
 2. assign human-facing world directions to verified opposing `$FD/$FE` sentinels;
 3. finish the remaining high-bit palette-animation control semantics;
 4. add story-facing names to individual audio call sites only when clean replay

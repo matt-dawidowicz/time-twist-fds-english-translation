@@ -73,7 +73,7 @@ Evidence labels follow `REVERSE_ENGINEERING_GUIDE.md`. A mnemonic is deliberatel
 | `$B5` | `move_coordinate_to_target` | `coordinate_mode:u8, step:u8, target:u16` | 5 bytes | `$71F5` | **VERIFIED** |
 | `$B6` | `enable_raster_scroll_wave` | `none` | 1 byte | `$71F5` | **VERIFIED** |
 | `$B7` | `configure_hotspot_boundaries` | `hotspot_set:u8, boundary_selector:u8` | 3 bytes | `$71F5` | **VERIFIED** |
-| `$B9` | `save_exploration_checkpoint` | `slot_id:u8` | 2 bytes | `$71F5` | **VERIFIED** |
+| `$B9` | `save_exploration_checkpoint` | `exploration_selector:u8` | 2 bytes | `$71F5` | **VERIFIED** |
 | `$BA` | `restore_exploration_coordinate_slot` | `slot_id:u8` | 2 bytes | `$71F5` | **VERIFIED** |
 | `$BB` | `clear_saved_coordinate_slot` | `slot_id:u8` | 2 bytes | `$71F5` | **VERIFIED** |
 | `$BC` | `resume_exploration` | `exploration_mode:u8` | 2 bytes | `$71F5` | **VERIFIED** |
@@ -128,7 +128,7 @@ The source-used `Bx` forms now all have verified low-level names.
 - `B5 move_coordinate_to_target` selects one of two coordinate pairs and moves it in 1/16 fixed point until it reaches the exact target. Mode 1 increments `$57/$58`; mode 2 decrements it; mode 3 increments `$18/$19`; mode 4+ decrements `$18/$19`.
 - `B6 enable_raster_scroll_wave` sets `$4A=$FF` and enters exploration substate 7, activating the raster-time PPU-scroll waveform path.
 - `B7 configure_hotspot_boundaries` writes actor/hotspot count `$07AC`, lower boundary selector `$07AA`, and upper selector `$07AB=operand+1`.
-- `B9 save_exploration_checkpoint` stores VM PC/stack continuation in `$9B/$9C/$9F/$A0`, clears an older matching slot, and snapshots the current actor coordinates into a free three-byte `$07B3` slot record.
+- `B9 save_exploration_checkpoint` stores VM PC/stack continuation in `$9B/$9C/$9F/$A0`, copies its operand into `$BA`, clears an older matching `$07B3` slot, and enters exploration. The hotspot scanner at `$768F` later reuses `$BA` as a one-based `$A20C` hotspot-group selector and exports that group's count/index through `$91/$A7` for the ordinary `30/31` result dispatcher.
 - `BA restore_exploration_coordinate_slot` finds the requested slot, copies its coordinate pair into the active actor records selected by `$07AC`, recomputes world/camera coordinates through `$75F3`, and consumes the slot.
 - `BB clear_saved_coordinate_slot` deletes a matching `$07B3` slot ID without restoring it.
 
@@ -146,4 +146,4 @@ The registry is **not** a list of everything the interpreter can theoretically d
 
 ## Remaining semantic-completion work
 
-Every source-used `Bx` opcode now has a verified low-level name and operand contract, and `docs/AUDIO_COMMAND_MAP.md` binds every source-used audio selector to its resident or scene-specific driver identity. Remaining work is narrower: determine human-facing direction names for the verified `$FD/$FE` hotspot sentinels, classify the 327 non-reached bytes only if a runtime entry is proven, finish high-bit palette-animation semantics, and correlate FDS transition selectors with exact scene/file outcomes.
+Every source-used `Bx` opcode now has a verified low-level name and operand contract, and `docs/AUDIO_COMMAND_MAP.md` binds every source-used audio selector to its resident or scene-specific driver identity. The follow-up `GAMEPLAY_VM_REACHABILITY_AUDIT.md` explains 163 bytes of the historical 327-byte remainder through the recovered B9/hotspot `$91/$A7` state flow and classifies the residual 164 bytes. Remaining work is narrower: runtime-test the conditional/orphan residuals, determine human-facing direction names for `$FD/$FE`, finish high-bit palette-animation semantics, and correlate FDS transition selectors with exact scene/file outcomes.

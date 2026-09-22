@@ -110,7 +110,16 @@ NOV2_GUARDS = {
         "C6 72 AF 72 78 72 49 72 F6 72 1A 73 63 73 6E 73 "
         "46 72 9F 72 86 73 DD 73 C6 72 46 72 46 72 46 72"
     ),
+    0x729F: bytes.fromhex(
+        "A5 C5 85 9B A5 C6 85 9C A5 9D 85 9F A5 9E 85 A0 " "A0 01 B1 C5 85 BA"
+    ),
     0x7363: bytes.fromhex("A9 FF 85 4A A9 1B A2 07 4C 19 61"),
+    0x76CF: bytes.fromhex(
+        "AD 0C A2 85 3E AD 0D A2 85 3F A0 00 A6 BA CA F0 15 "
+        "B1 3E 0A 0A 18 69 01 18 65 3E 85 3E A5 3F 69 00 "
+        "85 3F 4C DA 76"
+    ),
+    0x76F4: bytes.fromhex("A0 00 B1 3E 85 91 AA A9 00 85 A7 C8 B1 3E"),
     0x78BA: bytes.fromhex(
         "A9 C1 A0 78 4C 2A 61 CB 78 6A 79 6D 79 72 79 98 79"
     ),
@@ -256,6 +265,15 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
             "total_script_bytes": 24229,
             "coverage_percent": 98.6504,
             "non_reached_source_bytes": 327,
+            "status": "historical conservative baseline",
+        },
+        "reachability_refinement": {
+            "hotspot_selector_explained_bytes": 163,
+            "residual_source_bytes": 164,
+            "structural_may_reach_bytes": 24065,
+            "structural_may_reach_percent": 99.3231,
+            "runtime_certified": False,
+            "reference": "docs/GAMEPLAY_VM_REACHABILITY_AUDIT.md",
         },
     }
 

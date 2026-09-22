@@ -42,14 +42,15 @@ Fixed menus and other interface strings are maintained in
 4. [Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md)
 5. [Gameplay script and event VM](GAMEPLAY_SCRIPT_ENGINE.md)
 6. [Retail gameplay VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md)
-7. [Audio command map](AUDIO_COMMAND_MAP.md)
-8. [Gameplay graphics and scene engine](GAMEPLAY_GRAPHICS_ENGINE.md)
-9. [Development guide](DEVELOPMENT.md)
-10. [Module map](MODULE_MAP.md)
-11. [CLI reference](CLI_REFERENCE.md)
-12. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
-13. [Private fixtures](PRIVATE_FIXTURES.md)
-14. [Permanent engineering history](history/README.md)
+7. [Gameplay VM reachability-island audit](GAMEPLAY_VM_REACHABILITY_AUDIT.md)
+8. [Audio command map](AUDIO_COMMAND_MAP.md)
+9. [Gameplay graphics and scene engine](GAMEPLAY_GRAPHICS_ENGINE.md)
+10. [Development guide](DEVELOPMENT.md)
+11. [Module map](MODULE_MAP.md)
+12. [CLI reference](CLI_REFERENCE.md)
+13. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
+14. [Private fixtures](PRIVATE_FIXTURES.md)
+15. [Permanent engineering history](history/README.md)
 
 The release lock covers only non-code inputs that can affect current output:
 the two Japanese baselines, the 13 canonical scenario maps, and approved title
