@@ -129,6 +129,8 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
 
     def test_legacy_layout_exceptions_are_structural_only(self) -> None:
         """Do not grandfather ordinary prose around the modern wrap policy."""
+        self.assertIn("TT1A/g0/r3", STRUCTURAL_LAYOUT_RECORDS)
+        self.assertNotIn("TT1A/g0/r3", V38_LAYOUT_EXCEPTIONS)
         expected = {
             "TT5/g2/r16",
             "TT3A/g4/r7",
