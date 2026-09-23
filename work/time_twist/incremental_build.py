@@ -59,6 +59,8 @@ class IncrementalImageResult:
 
 @dataclass(frozen=True)
 class _Group:
+    """Describe one decoded entropy group and its current physical span."""
+
     index: int
     address: int
     offset: int
@@ -225,6 +227,7 @@ def _reachable_expansions(
     visiting: set[int] = set()
 
     def expand(index: int) -> tuple[PackedSymbol, ...]:
+        """Resolve one dictionary entry recursively with cycle detection."""
         if index in memo:
             return memo[index]
         if index in visiting:
