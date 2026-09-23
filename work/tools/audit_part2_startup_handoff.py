@@ -283,7 +283,7 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
     _guard(
         scene6_data,
         OVERLAY_LOAD,
-        0xA60C,
+        0xA60B,
         SCENE6_END_GUARD,
         "scene 6 ending",
     )
@@ -324,7 +324,7 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
         "ending": {
             "scene": 6,
             "program_chain": list(scene6_programs),
-            "tail_address": "0xA60C",
+            "tail_address": "0xA60B",
             "tail_hex": SCENE6_END_GUARD.hex().upper(),
             "system_sequence": 5,
             "resident_sequence_address": "0x7EB4",
