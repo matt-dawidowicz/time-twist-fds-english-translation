@@ -1,0 +1,45 @@
+name: Apply staged build simplification
+
+on:
+  push:
+    branches:
+      - refactor/simplify-build-pipeline-20260923-v2
+    paths:
+      - ".github/workflows/apply-cleanup.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Reassemble and verify patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat             .cleanup-patch/part-00a             .cleanup-patch/part-00b             .cleanup-patch/part-00c             .cleanup-patch/part-01             .cleanup-patch/part-02             .cleanup-patch/part-03             .cleanup-patch/part-04             .cleanup-patch/part-05             .cleanup-patch/part-06             .cleanup-patch/part-07             .cleanup-patch/part-08             .cleanup-patch/part-09             .cleanup-patch/part-10             > /tmp/cleanup.patch.xz.b64
+          base64 --decode /tmp/cleanup.patch.xz.b64 > /tmp/cleanup.patch.xz
+          echo "6d5a309f1f3d2128e449ae7d17f7797bf544f941199e305fa0c69f3a9457c728  /tmp/cleanup.patch.xz" | sha256sum --check -
+          xz --decompress --stdout /tmp/cleanup.patch.xz > /tmp/cleanup.patch
+          echo "57973a1849284c394b4aaeed015565970ca8458a6539db4d3989082a43954f79  /tmp/cleanup.patch" | sha256sum --check -
+      - name: Apply simplification
+        shell: bash
+        run: |
+          set -euo pipefail
+          patch -p4 --forward --batch < /tmp/cleanup.patch
+          rm -rf .cleanup-patch
+          rm -f .github/workflows/apply-cleanup.yml
+          git diff --check
+      - name: Commit clean refactor tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "starlight_world"
+          git config user.email "43389528+matt-dawidowicz@users.noreply.github.com"
+          git add -A
+          git commit -m "Simplify build and test pipeline"
+          git push origin HEAD:refactor/simplify-build-pipeline-20260923-v2
