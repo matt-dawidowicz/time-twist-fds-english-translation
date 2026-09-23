@@ -19,7 +19,6 @@ from pathlib import Path
 from .english import encode_english
 from .entropy_codec import pack_entropy_stream, split_entropy_stream
 from .entropy_compression import (
-    EntropyCompressionError,
     expand_entropy_record,
     parse_entropy_record_with_expansions,
 )
@@ -139,8 +138,10 @@ def _decode_groups(
         raise IncrementalBuildError("group table is outside entropy bank")
 
     addresses = [_read_word(data, GROUP_ZERO_POINTER_OFFSET)]
-    for index in range(len(record_counts) - 1):
-        addresses.append(_read_word(data, table_offset + 2 * index))
+    addresses.extend(
+        _read_word(data, table_offset + 2 * index)
+        for index in range(len(record_counts) - 1)
+    )
 
     groups: list[_Group] = []
     for index, (address, count) in enumerate(
