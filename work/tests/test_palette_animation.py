@@ -40,9 +40,7 @@ class PaletteAnimationTests(unittest.TestCase):
                 11,
             )
         )
-        records = parse_palette_animation_records(
-            data, LOAD, LOAD + len(data)
-        )
+        records = parse_palette_animation_records(data, LOAD, LOAD + len(data))
         self.assertEqual(len(records), 1)
         self.assertEqual(len(records[0].sequences), 2)
         first, second = records[0].sequences
