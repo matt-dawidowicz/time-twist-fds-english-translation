@@ -52,11 +52,11 @@ TT3A + TT3B + BG3/OB3
 The final TT3B script tail is:
 
 ```text
-$A60C  B2
-$A60D  10 39
-$A60F  A1 78
-$A611  10 3A
-$A613  0F 05
+$A60B  B2
+$A60C  10 39
+$A60E  A1 78
+$A610  10 3A
+$A612  0F 05
 ```
 
 `0F 05` is the verified `invoke_system_sequence 5` VM command. NOV2 state
