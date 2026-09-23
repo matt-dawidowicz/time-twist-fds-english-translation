@@ -434,7 +434,10 @@ physically reside on the disk and side encoded by the operand. The full row/call
 map is in [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md).
 
 There is no gameplay-script `E0` edge from Zenpen's final gameplay row 6 to Kouhen's
-initial gameplay row 7; Part 2 startup crosses that boundary outside the gameplay VM.
+initial gameplay row 7. The complementary title/startup path is now recovered:
+completed Zenpen SAVE state enables NOV4's Part 2 menu target at `$C059`, whose
+explicit `E0 C7` requests Kouhen Side B / scene row 7. See
+[Part 1 to Part 2 startup handoff](PART2_STARTUP_HANDOFF.md).
 
 The interpreter contains other `$Ex` low-nibble handling, but unused forms should not
 be promoted to retail language without source evidence.
