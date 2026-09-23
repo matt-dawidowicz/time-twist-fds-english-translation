@@ -645,9 +645,7 @@ def _source_control_counts(
     return {value: counts[value] for value in range(8)}, dict(surfaces)
 
 
-def _reported_hotspot_marker_count(
-    report: dict[str, object], key: str
-) -> int:
+def _reported_hotspot_marker_count(report: dict[str, object], key: str) -> int:
     """Return one validated hotspot-marker count from a scene report."""
     hotspots = report.get("hotspots")
     if not isinstance(hotspots, dict):
@@ -671,8 +669,7 @@ def audit_engine_surfaces(zenpen: Path, kouhen: Path) -> dict[str, object]:
         nov2,
         0x67F2,
         bytes.fromhex(
-            "A9 08 85 31 B9 16 40 85 21 4A 05 21 4A 36 1D "
-            "C6 31 D0 F1"
+            "A9 08 85 31 B9 16 40 85 21 4A 05 21 4A 36 1D " "C6 31 D0 F1"
         ),
         "controller serial-bit decode",
     )
