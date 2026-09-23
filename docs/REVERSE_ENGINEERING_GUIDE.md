@@ -1003,6 +1003,11 @@ The following should remain explicit so future work does not silently invent rul
   counters, `$7E` is cycle-until-fresh-A-at-boundary, `$7F` loops forever, bit 7 is
   a fresh-A pre-start gate, and frame duration is masked with `#$7F`. Retail does not
   use `$7E`, high-bit controls, or high-bit duration bytes.
+- Retail `E0` FDS/scene transitions are verified: bit 7 of the packed operand
+  selects Zenpen/Kouhen, bit 6 selects Side A/B, and bits 5-0 index the 15-row
+  scene-load table at `$7BA5`. Eleven instruction-aligned retail calls are known.
+  Zenpen gameplay row 6 does not directly `E0` into Kouhen row 7; Part 2 startup
+  crosses that boundary outside the gameplay VM.
 - Hardware-visible title behavior depends on NMI/PPU ordering that static asset tests
   cannot fully prove.
 - FDS BIOS calls can mutate staging state outside the immediate source buffer; title

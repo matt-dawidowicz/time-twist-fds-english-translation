@@ -419,16 +419,25 @@ CHR data.
 ## 14. FDS/scene transition bytecode
 
 The `$Ex` family at `$79A7` is a multi-phase FDS/scene transition state machine.
-Retail uses `E0`. Its path reads a scene index, selects the four-byte NOV2 scene-load
-record at `$7BA5`, copies those file IDs to `$60DF-$60E2`, and enters the FDS BIOS
-loading wrapper.
+Retail uses only `E0 packed_target`. The packed operand is now fully verified:
 
-This statically connects script bytecode to the recovered scene-load table: script
-events request new program/CHR overlay compositions.
+- bit 7: target disk, `0=Zenpen / Part 1`, `1=Kouhen / Part 2`;
+- bit 6: target FDS side, `0=Side A`, `1=Side B`;
+- bits 5-0: row index into the 15-entry four-byte scene-load table at `$7BA5`.
 
-The interpreter contains other `$Ex` low-nibble handling for disk/side transition and
-retry behavior, but unused forms should not be promoted to retail language without
-source evidence.
+NOV2 `$79E5-$7A54` independently tests bits 6 and 7, masks the same byte with
+`#$3F`, multiplies the row index by four, copies the selected file IDs to
+`$60DF-$60E2`, and enters the FDS BIOS loading wrapper.
+
+There are 11 instruction-aligned retail `E0` calls, and every target row's file IDs
+physically reside on the disk and side encoded by the operand. The full row/call-site
+map is in [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md).
+
+There is no gameplay-script `E0` edge from Zenpen's final gameplay row 6 to Kouhen's
+initial gameplay row 7; Part 2 startup crosses that boundary outside the gameplay VM.
+
+The interpreter contains other `$Ex` low-nibble handling, but unused forms should not
+be promoted to retail language without source evidence.
 
 ## 15. Source-used `$0x` VM memory/ALU forms
 

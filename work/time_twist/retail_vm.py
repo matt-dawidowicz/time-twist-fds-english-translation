@@ -408,10 +408,12 @@ RETAIL_VM_OPCODES = (
     _op(
         0xE0,
         "fds_scene_transition",
-        "transition_selector:u8",
+        "packed_target:u8",
         "2 bytes",
-        evidence="DERIVED",
-        notes="Enters the FDS/scene/file transition state machine.",
+        notes=(
+            "Bit $80 selects Zenpen/Kouhen, bit $40 selects side A/B, "
+            "and bits $3F index NOV2's 15-row scene-load table at $7BA5."
+        ),
     ),
 )
 

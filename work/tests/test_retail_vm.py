@@ -132,6 +132,13 @@ class RetailVmRegistryTests(unittest.TestCase):
                 self.assertEqual(entry.operand_grammar, operands)
                 self.assertEqual(entry.evidence, "VERIFIED")
 
+    def test_e0_has_verified_packed_transition_target(self) -> None:
+        """Lock the completed FDS/scene-transition semantic pass."""
+        entry = retail_vm_opcode(0xE0)
+        self.assertEqual(entry.mnemonic, "fds_scene_transition")
+        self.assertEqual(entry.operand_grammar, "packed_target:u8")
+        self.assertEqual(entry.evidence, "VERIFIED")
+
     def test_inline_predicate_span_matches_native_compact_formula(
         self,
     ) -> None:

@@ -60,3 +60,5 @@ The public repository contains no original or patched FDS images, BIOS files,
 extracted retail payloads, emulator states, or private fixtures.
 
 - [Gameplay palette-animation engine](PALETTE_ANIMATION_ENGINE.md) - recovered `$A21C` record grammar, A-button gates, cycle controls, duration masking, and retail inventory.
+
+- [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md) - verified `E0` packed disk/side/scene targets, all 15 load rows, and all 11 retail transition call sites.
