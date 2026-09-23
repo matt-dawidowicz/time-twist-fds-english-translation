@@ -250,9 +250,7 @@ class EntropyProductionTests(unittest.TestCase):
             patches[
                 "width-aware leading menu cursor and typewriter gate"
             ].replacement,
-            bytes.fromhex(
-                "20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C C5 85"
-            ),
+            bytes.fromhex("20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C C5 85"),
         )
         self.assertIn(
             bytes.fromhex("BD 2D 04 4A 4A 4A D0 02 A9 06 85 31"),
