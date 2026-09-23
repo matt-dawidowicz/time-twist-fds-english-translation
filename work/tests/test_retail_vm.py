@@ -132,10 +132,14 @@ class RetailVmRegistryTests(unittest.TestCase):
                 self.assertEqual(entry.operand_grammar, operands)
                 self.assertEqual(entry.evidence, "VERIFIED")
 
-    def test_inline_predicate_span_matches_native_compact_formula(self) -> None:
+    def test_inline_predicate_span_matches_native_compact_formula(
+        self,
+    ) -> None:
         """Lock NOV2's compact inline-predicate pointer advance."""
         self.assertEqual(inline_predicate_span(bytes.fromhex("01 00")), 2)
-        self.assertEqual(inline_predicate_span(bytes.fromhex("04 00 00 00 00 00")), 7)
+        self.assertEqual(
+            inline_predicate_span(bytes.fromhex("04 00 00 00 00 00")), 7
+        )
 
     def test_inline_predicate_span_includes_extended_header_byte(self) -> None:
         """Prevent the historical one-byte short decode of extended predicates."""
@@ -146,7 +150,9 @@ class RetailVmRegistryTests(unittest.TestCase):
         self.assertEqual(len(payload), 27)
         self.assertEqual(inline_predicate_span(payload), 27)
 
-    def test_inline_predicate_span_rejects_truncated_extended_header(self) -> None:
+    def test_inline_predicate_span_rejects_truncated_extended_header(
+        self,
+    ) -> None:
         """Fail closed if an extended predicate lacks its count byte."""
         with self.assertRaises(ValueError):
             inline_predicate_span(bytes.fromhex("0F"))
