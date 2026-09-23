@@ -757,7 +757,7 @@ recovered data architecture:
 - `$A204` packed metasprite definitions rendered into OAM;
 - `$A208` palette definitions;
 - `$A20C` hotspot rectangles, with `$FD` left-boundary and `$FE` right-boundary sentinels;
-- `$A21C` palette-animation sequences;
+- `$A21C` palette-animation sequences and verified A-gated/cycle controls;
 - `$A21E` direct nametable tile-patch descriptors and RLE streams;
 - `$A22C/$A22E/$A230` actor animation/motion selectors and stream tables;
 - source-used `D2` runtime background-CHR clone/flip behavior.
@@ -999,6 +999,10 @@ The following should remain explicit so future work does not silently invent rul
   is the right boundary. The controller decoder maps `$01=Right`, `$02=Left`,
   `$04=Down`, `$08=Up`; the native boundary gate and retail low-X/high-X geometry
   independently agree with those names.
+- `$A21C` palette-animation controls are verified: ordinary values are finite cycle
+  counters, `$7E` is cycle-until-fresh-A-at-boundary, `$7F` loops forever, bit 7 is
+  a fresh-A pre-start gate, and frame duration is masked with `#$7F`. Retail does not
+  use `$7E`, high-bit controls, or high-bit duration bytes.
 - Hardware-visible title behavior depends on NMI/PPU ordering that static asset tests
   cannot fully prove.
 - FDS BIOS calls can mutate staging state outside the immediate source buffer; title
