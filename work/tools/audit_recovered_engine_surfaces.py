@@ -645,6 +645,19 @@ def _source_control_counts(
     return {value: counts[value] for value in range(8)}, dict(surfaces)
 
 
+def _reported_hotspot_marker_count(
+    report: dict[str, object], key: str
+) -> int:
+    """Return one validated hotspot-marker count from a scene report."""
+    hotspots = report.get("hotspots")
+    if not isinstance(hotspots, dict):
+        raise EngineSurfaceAuditError("scene report lacks hotspot metadata")
+    value = hotspots.get(key)
+    if not isinstance(value, int):
+        raise EngineSurfaceAuditError(f"scene hotspot count {key!r} is invalid")
+    return value
+
+
 def audit_engine_surfaces(zenpen: Path, kouhen: Path) -> dict[str, object]:
     """Return a source-backed audit of the recovered gameplay-engine surfaces."""
     images = {
@@ -679,11 +692,11 @@ def audit_engine_surfaces(zenpen: Path, kouhen: Path) -> dict[str, object]:
         if composed is not None:
             scene_reports.append(_scene_report(scene, composed))
     left_boundary_markers = sum(
-        int(report["hotspots"]["left_boundary_markers"])
+        _reported_hotspot_marker_count(report, "left_boundary_markers")
         for report in scene_reports
     )
     right_boundary_markers = sum(
-        int(report["hotspots"]["right_boundary_markers"])
+        _reported_hotspot_marker_count(report, "right_boundary_markers")
         for report in scene_reports
     )
     if (left_boundary_markers, right_boundary_markers) != (9, 8):
