@@ -279,14 +279,14 @@ def _guard_part_handoff(
         raise RetailVmAuditError(
             f"Zenpen final scene owner changed to {programs[-1]}"
         )
-    ending_address = 0xA60C
+    ending_address = 0xA60B
     ending_expected = bytes.fromhex(
         "B2 10 39 A1 78 10 3A 0F 05"
     )
     ending_offset = ending_address - OVERLAY_LOAD
     if ending[ending_offset : ending_offset + len(ending_expected)] != ending_expected:
         raise RetailVmAuditError(
-            "TT3B ending system-sequence tail changed at CPU $A60C"
+            "TT3B ending system-sequence tail changed at CPU $A60B"
         )
 
     invalid = title_gate_from_save(
@@ -314,7 +314,7 @@ def _guard_part_handoff(
         "zenpen_ending_system_sequence": {
             "scene_index": 6,
             "active_program": "TT3B",
-            "cpu_address": "0xA60C",
+            "cpu_address": "0xA60B",
             "tail": "B2 10 39 A1 78 10 3A 0F 05",
         },
         "save_restore": {
