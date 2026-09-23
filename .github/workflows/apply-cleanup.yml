@@ -43,3 +43,5 @@ jobs:
           git add -A
           git commit -m "Simplify build and test pipeline"
           git push origin HEAD:refactor/simplify-build-pipeline-20260923-v2
+
+# Payload complete; retrigger from fully staged branch head.
