@@ -58,3 +58,5 @@ assets. Release-critical Python code has a separate deterministic tree hash.
 
 The public repository contains no original or patched FDS images, BIOS files,
 extracted retail payloads, emulator states, or private fixtures.
+
+- [Gameplay palette-animation engine](PALETTE_ANIMATION_ENGINE.md) - recovered `$A21C` record grammar, A-button gates, cycle controls, duration masking, and retail inventory.
