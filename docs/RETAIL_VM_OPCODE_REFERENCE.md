@@ -144,7 +144,13 @@ The source-used `Bx` forms now all have verified low-level names.
 
 ### `E0`: FDS / scene transition
 
-Retail class E uses only `E0`. Its following byte is a verified packed target: bit `$80` selects Zenpen/Kouhen, bit `$40` selects Side A/B, and bits `$3F` index the 15-row NOV2 scene-load table at `$7BA5`. All 11 instruction-aligned retail calls and their exact file-set outcomes are mapped in [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md).
+Retail class E uses only `E0`. Its following byte is a verified packed target: bit `$80` selects Zenpen/Kouhen, bit `$40` selects Side A/B, and bits `$3F` index the 15-row NOV2 scene-load table at `$7BA5`. The 11 instruction-aligned gameplay-script calls and their exact file-set outcomes are mapped in [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md).
+
+NOV4's title bytecode is a separate native caller of the same transition
+language. Its Part 2 menu target at `$C059` is `E0 C7`, explicitly requesting
+Kouhen Side B / scene row 7. The title's chapter menus also contain direct
+`E0` entries for rows 1-14. See
+[Part 1 to Part 2 startup handoff](PART2_STARTUP_HANDOFF.md).
 
 ## Deliberately excluded native forms
 
@@ -152,4 +158,7 @@ The registry is **not** a list of everything the interpreter can theoretically d
 
 ## Remaining semantic-completion work
 
-Every source-used `Bx` opcode now has a verified low-level name and operand contract, the `$FD/$FE` hotspot directions are resolved, `docs/AUDIO_COMMAND_MAP.md` binds every source-used audio selector to its resident or scene-specific driver identity, palette-animation control semantics are closed in `docs/PALETTE_ANIMATION_ENGINE.md`, and the complete retail `E0` disk/side/scene map is closed in `docs/FDS_SCENE_TRANSITIONS.md`. The completed `GAMEPLAY_VM_REACHABILITY_AUDIT.md` also closes the historical 327-byte question: no unclassified source island remains. Remaining work is contextual rather than a known low-level VM-language gap: runtime certification and story-facing labels only where replay evidence proves them.
+Every source-used `Bx` opcode now has a verified low-level name and operand contract, the `$FD/$FE` hotspot directions are resolved, `docs/AUDIO_COMMAND_MAP.md` binds every source-used audio selector to its resident or scene-specific driver identity, palette-animation control semantics are closed in `docs/PALETTE_ANIMATION_ENGINE.md`, and the complete retail `E0` disk/side/scene map is closed in `docs/FDS_SCENE_TRANSITIONS.md`. The completed `GAMEPLAY_VM_REACHABILITY_AUDIT.md` also closes the historical 327-byte question: no unclassified source island remains. The Zenpen-to-Kouhen title/SAVE handoff is also recovered in
+`docs/PART2_STARTUP_HANDOFF.md`. Remaining work is contextual rather than a
+known low-level VM-language gap: runtime certification and story-facing labels
+only where replay evidence proves them.
