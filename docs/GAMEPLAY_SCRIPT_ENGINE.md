@@ -358,16 +358,21 @@ The remaining directional uncertainty belongs to the `$FD/$FE` hotspot
 sentinels, not to the source-used `Bx` opcode identities themselves.
 
 Hotspot rectangles are selected through `$A20C`. NOV2 `$768F` recognizes `$FD` and
-`$FE` as successful terminal hotspot results instead of Y bounds. The exploration
-state at `$750B` treats them oppositely:
+`$FE` as successful terminal hotspot results instead of Y bounds.
 
-- direction/state `$1D=1` rejects `$FE` but permits `$FD`;
-- direction/state `$1D=2` rejects `$FD` but permits `$FE`;
-- permitted paths use opposite boundary selectors at `$07AA/$07AB`.
+The controller/world-axis correlation is now verified. NOV2 `$67F2-$6804`
+serializes the NES pad into `$1D`, yielding `$01=Right`, `$02=Left`,
+`$04=Down`, and `$08=Up`. At `$7556-$7589`:
 
-The verified binary meaning is **opposite directional/one-way boundary sentinels**.
-Human-facing world-direction names remain unassigned pending controller/world-axis
-correlation.
+- Right (`$1D=1`) rejects `$FE` but permits `$FD`;
+- Left (`$1D=2`) rejects `$FD` but permits `$FE`;
+- `$FD` records occupy the low-X side of the retail hotspot geometry;
+- paired `$FE` records occupy the high-X side.
+
+Therefore `$FD` is the **left-boundary sentinel**: it blocks outward Left and
+permits inward Right. `$FE` is the **right-boundary sentinel**: it blocks
+outward Right and permits inward Left. Permitted paths continue through the
+opposing `$07AA/$07AB` boundary selectors.
 
 ## 13. `D2` runtime background-CHR clone and flip
 
@@ -442,9 +447,8 @@ The retail gameplay VM is structurally recovered. The audio-selector and source-
 `Bx` completion passes are now closed; remaining work is narrower value-level
 refinement:
 
-1. assign human-facing world directions to verified opposing `$FD/$FE` sentinels;
-2. finish the remaining high-bit palette-animation control semantics;
-3. add story-facing names to individual audio call sites only when clean replay
+1. finish the remaining high-bit palette-animation control semantics;
+2. add story-facing names to individual audio call sites only when clean replay
    context proves them, without replacing the verified driver identities in
    `docs/AUDIO_COMMAND_MAP.md`.
 
