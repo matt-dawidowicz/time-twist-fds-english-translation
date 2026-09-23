@@ -153,7 +153,9 @@ def parse_palette_animation_records(
         cursor += 1
         if sequence_count == 0:
             raise PaletteAnimationError(
-                "zero-sequence palette record at 0x{:04X}".format(record_address)
+                "zero-sequence palette record at 0x{:04X}".format(
+                    record_address
+                )
             )
 
         sequences: list[PaletteAnimationSequence] = []
@@ -202,5 +204,7 @@ def parse_palette_animation_records(
         )
 
     if cursor != end:
-        raise PaletteAnimationError("palette-animation table did not end exactly")
+        raise PaletteAnimationError(
+            "palette-animation table did not end exactly"
+        )
     return tuple(records)
