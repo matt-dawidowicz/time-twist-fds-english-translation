@@ -17,16 +17,26 @@ from pathlib import Path
 from time_twist.fds import FdsFile, FdsImage
 from time_twist.part2_startup import (
     CURRENT_SCENE_INDEX_ZP,
-    SAVE_PART2_MARKER_ADDRESS,
-    SAVE_PART2_MARKER_VALUE,
+    SAVE_FILE_ADDRESS,
+    SAVE_FILE_ID,
+    SAVE_FILE_NAME,
+    SAVE_FILE_NUMBER,
+    SAVE_FILE_SIZE,
     SAVE_SCENE_INDEX_ADDRESS,
-    TITLE_MAIN_MENU_INDEX,
-    TITLE_MAIN_MENU_RECORD_IDS,
+    SAVE_TITLE_METADATA_ADDRESS,
+    SAVE_TRANSFER_LOAD_FILE_IDS,
+    TITLE_INVALID_SAVE_FLAG,
+    TITLE_PART2_FILTER,
     TITLE_PART2_SCENE_FILE_IDS,
     TITLE_PART2_SCENE_INDEX,
     TITLE_PART2_TRANSITION_ADDRESS,
     TITLE_PART2_TRANSITION_OPERAND,
+    TITLE_PART_MENU_INDEX,
+    TITLE_PART_MENU_RECORD_IDS,
+    TITLE_START_MENU_INDEX,
+    TITLE_START_MENU_RECORD_IDS,
     part2_is_available,
+    part2_predicate_allows,
     save_address_for_zero_page,
 )
 from time_twist.scene_transitions import decode_fds_scene_transition_operand
@@ -38,14 +48,25 @@ SCENE_TABLE = 0x7BA5
 SCENE_WIDTH = 4
 
 NOV2_GUARDS = {
+    0x606D: bytes.fromhex("20 F8 E1 CB 60 E4 60"),
+    0x609F: bytes.fromhex("A9 09 20 39 E2 CB 60 E7 60"),
+    0x60E4: bytes.fromhex("02 03 FF"),
+    0x60E7: bytes.fromhex(
+        "03 53 41 56 45 44 41 54 41 90 03 50 00 00 90 03 00"
+    ),
     0x6990: bytes.fromhex(
         "A9 01 8D C4 69 20 76 9D 90 0D A9 E3 85 8D 20 CE 9B "
         "A9 00 AA 4C AD 69 AD DD 03 AE DE 03 85 D2 86 D3"
+    ),
+    0x7AFD: bytes.fromhex(
+        "20 FC 9C A9 01 20 E5 95 4C 58 7B 20 4D 9D 4C 08 9D "
+        "20 4D 9D 20 ED 7A 20 E6 6E A9 1E 85 C5 A9 03 85 C6"
     ),
     0x7B25: bytes.fromhex(
         "20 76 9D 90 03 20 5E 9D A5 CE C9 0B D0 05 A9 AA 8D "
         "DE 03 A9 55 8D DD 03 20 6A 9D 20 76 9D 4C 00 7B"
     ),
+    0x7BE1: bytes.fromhex("4C 97 60"),
     0x7E89: bytes.fromhex("A9 B4 A2 7E 4C 6E 7A"),
     0x7EB4: bytes.fromhex(
         "64 EA E4 0C D2 00 A5 05 E1 0F 06 64 EA E4 E1 54 C7 7E 53"
@@ -207,12 +228,16 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
         raise Part2StartupAuditError("scene-index SAVE mapping changed")
     if SAVE_SCENE_INDEX_ADDRESS != 0x03D9:
         raise Part2StartupAuditError("scene index no longer persists at $03D9")
-    if SAVE_PART2_MARKER_ADDRESS != 0x03DD:
-        raise Part2StartupAuditError("Part 2 marker address changed")
-    if not part2_is_available(
-        save_valid=True, persisted_marker=SAVE_PART2_MARKER_VALUE
-    ):
-        raise Part2StartupAuditError("verified Part 2 marker no longer enables Part 2")
+    if SAVE_TITLE_METADATA_ADDRESS != 0x03DD:
+        raise Part2StartupAuditError("title metadata address changed")
+    if not part2_is_available(save_valid=True):
+        raise Part2StartupAuditError("valid SAVE no longer permits Part 2")
+    if part2_is_available(save_valid=False):
+        raise Part2StartupAuditError("invalid SAVE no longer suppresses Part 2")
+    if not part2_predicate_allows(invalid_save_flag_set=False):
+        raise Part2StartupAuditError("clear E3 no longer permits Part 2")
+    if part2_predicate_allows(invalid_save_flag_set=True):
+        raise Part2StartupAuditError("set E3 no longer suppresses Part 2")
 
     # Header words: $A20E predicates, $A210 menus, $A212 secondary filters.
     header_words = {
@@ -237,15 +262,21 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
         )
 
     menus = _parse_length_prefixed_menus(nov4, 0xA25C - NOV4_LOAD, 6)
-    if menus[TITLE_MAIN_MENU_INDEX - 1] != TITLE_MAIN_MENU_RECORD_IDS:
+    if menus[TITLE_START_MENU_INDEX] != TITLE_START_MENU_RECORD_IDS:
         raise Part2StartupAuditError(
-            f"title menu 3 drifted: {menus[TITLE_MAIN_MENU_INDEX - 1]!r}"
+            f"title Start menu drifted: {menus[TITLE_START_MENU_INDEX]!r}"
+        )
+    if menus[TITLE_PART_MENU_INDEX] != TITLE_PART_MENU_RECORD_IDS:
+        raise Part2StartupAuditError(
+            f"title Part menu drifted: {menus[TITLE_PART_MENU_INDEX]!r}"
         )
 
     secondary_filter = nov4[0xA27C - NOV4_LOAD : 0xA285 - NOV4_LOAD]
     expected_filter = bytes.fromhex("09 00 91 E3 92 01 E3 E4 00")
     if secondary_filter != expected_filter:
-        raise Part2StartupAuditError("Start/Load/Part 2 filter drifted")
+        raise Part2StartupAuditError("Part 1/Part 2 filter drifted")
+    if secondary_filter[2:] != TITLE_PART2_FILTER:
+        raise Part2StartupAuditError("Part 2 predicate bytes drifted")
 
     target = decode_fds_scene_transition_operand(TITLE_PART2_TRANSITION_OPERAND)
     if (
@@ -306,18 +337,29 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
             "file_size": 0x50,
             "scene_index_zero_page": "0xCE",
             "scene_index_save_address": "0x03D9",
-            "part2_marker_address": "0x03DD",
-            "part2_marker_written_value": "0x55",
+            "title_metadata_address": "0x03DD",
+            "title_metadata_written_value": "0x55",
+            "write_file_number": SAVE_FILE_NUMBER,
+            "write_file_id": f"0x{SAVE_FILE_ID:02X}",
+            "write_file_name": SAVE_FILE_NAME,
+            "write_source_address": f"0x{SAVE_FILE_ADDRESS:04X}",
+            "write_size": SAVE_FILE_SIZE,
+            "load_file_ids": [
+                f"0x{value:02X}" for value in SAVE_TRANSFER_LOAD_FILE_IDS
+            ],
             "checksum_marker_address": "0x03CF",
             "checksum_marker_value": "0xA5",
         },
         "title": {
             "header": {key: f"0x{value:04X}" for key, value in header_words.items()},
             "menus": [list(menu) for menu in menus],
-            "main_menu_index": TITLE_MAIN_MENU_INDEX,
-            "main_menu_record_ids": list(TITLE_MAIN_MENU_RECORD_IDS),
+            "start_menu_index": TITLE_START_MENU_INDEX,
+            "start_menu_record_ids": list(TITLE_START_MENU_RECORD_IDS),
+            "part_menu_index": TITLE_PART_MENU_INDEX,
+            "part_menu_record_ids": list(TITLE_PART_MENU_RECORD_IDS),
             "secondary_filter_hex": secondary_filter.hex().upper(),
-            "eligibility_rule": "valid SAVE and $03DD != 0",
+            "invalid_save_flag": f"0x{TITLE_INVALID_SAVE_FLAG:02X}",
+            "eligibility_rule": "Part 2 survives iff persistent flag E3 is clear",
             "part2_transition_address": f"0x{TITLE_PART2_TRANSITION_ADDRESS:04X}",
             "part2_transition_operand": f"0x{TITLE_PART2_TRANSITION_OPERAND:02X}",
         },
