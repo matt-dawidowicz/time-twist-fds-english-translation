@@ -100,6 +100,18 @@ BASE_RUNTIME_PATCHES = (
         replacement=_hex("B0"),
         label="extended code 63 dollar-sign tile redirect",
     ),
+    RuntimePatch(
+        file_offset=0x2383,
+        expected=_hex("00"),
+        replacement=_hex("01"),
+        label="retain one-shot leading-control typewriter marker",
+    ),
+    RuntimePatch(
+        file_offset=0x247E,
+        expected=_hex("20 C5 85"),
+        replacement=_hex("20 8D 98"),
+        label="route typewriter SFX through leading-control gate",
+    ),
 )
 
 # The Japanese menu renderer used fixed six-glyph geometry. Earlier English
@@ -158,8 +170,10 @@ DYNAMIC_MENU_LAYOUT_PATCHES = (
     RuntimePatch(
         file_offset=0x3885,
         expected=_hex("A5 32 C9 04 90 05 A9 80 4C 92 98 A9 40 85 14"),
-        replacement=_hex("20 8D 6D 85 14 EA EA EA EA EA EA EA EA EA EA"),
-        label="width-aware leading menu cursor",
+        replacement=_hex(
+            "20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C C5 85"
+        ),
+        label="width-aware leading menu cursor and typewriter gate",
     ),
 )
 
