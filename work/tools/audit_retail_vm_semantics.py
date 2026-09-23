@@ -16,6 +16,7 @@ from pathlib import Path
 
 from time_twist.fds import FdsFile, FdsImage
 from time_twist.retail_vm import RETAIL_VM_OPCODE_VALUES, RETAIL_VM_OPCODES
+from time_twist.scene_transitions import decode_fds_scene_transition_operand
 
 NOV2_LOAD = 0x6000
 OVERLAY_LOAD = 0xA200
@@ -24,6 +25,36 @@ SCENE_TABLE = 0x7BA5
 SCENE_COUNT = 15
 SCENE_WIDTH = 4
 EXPECTED_GAMEPLAY_SCENES = (1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14)
+EXPECTED_SCENE_ROWS = (
+    (0x00, 0x00, 0x00, 0x00),
+    (0x41, 0x42, 0x51, 0x52),
+    (0x41, 0x51, 0xFF, 0xFF),
+    (0x43, 0x53, 0xFF, 0xFF),
+    (0x43, 0x44, 0x53, 0xFF),
+    (0x45, 0x55, 0xFF, 0xFF),
+    (0x45, 0x46, 0x55, 0xFF),
+    (0x47, 0x57, 0xFF, 0xFF),
+    (0xFF, 0xFF, 0xFF, 0xFF),
+    (0x49, 0x59, 0xFF, 0xFF),
+    (0x49, 0x4A, 0x59, 0x5A),
+    (0x4C, 0x4B, 0x5D, 0x5B),
+    (0x4C, 0x5D, 0x5C, 0xFF),
+    (0x4D, 0x5D, 0xFF, 0xFF),
+    (0x4E, 0x5E, 0xFF, 0xFF),
+)
+EXPECTED_SCENE_TRANSITIONS = (
+    (1, "TT1A", 0xA44F, 0x42),
+    (2, "TT1B", 0xAB79, 0x43),
+    (3, "TT2", 0xAD03, 0x44),
+    (4, "T22", 0xA6BD, 0x05),
+    (5, "TT3A", 0xA96F, 0x06),
+    (7, "TT4", 0xADAA, 0xC9),
+    (9, "TT5", 0xA759, 0xCA),
+    (10, "T25", 0xA347, 0x8B),
+    (11, "TT6A", 0xA737, 0x8C),
+    (12, "TT6B", 0xA5A5, 0x8D),
+    (13, "TT6C", 0xAAA6, 0x8E),
+)
 EXPECTED_SOURCE_REACHABLE = (
     0x00,
     0x01,
@@ -128,6 +159,15 @@ NOV2_GUARDS = {
         "C8 B1 C5 8D 8B 07"
     ),
     0x79A7: bytes.fromhex("A9 AE A0 79 4C 2A 61 BA 79 C0 79 5E 7B"),
+    0x79E5: bytes.fromhex(
+        "A0 00 B1 C5 8D E3 79 C8 B1 C5 8D E4 79 A9 E3 85 C5 "
+        "A9 79 85 C6 A0 01 B1 C5 29 40 D0 09 A9 CB A2 60 A0 "
+        "06 4C 11 7A A9 D5 A2 60 A0 07 8D 0B 60 8E 0C 60 8C "
+        "B9 7A A0 01 B1 C5 30 07 A0 04 A9 31 4C 2B 7A A0 05 "
+        "A9 32 8C B7 7A 8D CE 60 8D D8 60 A0 01 B1 C5 29 3F "
+        "0A 0A AA BD A5 7B 8D DF 60 BD A6 7B 8D E0 60 BD A7 "
+        "7B 8D E1 60 BD A8 7B 8D E2 60"
+    ),
     0x977D: bytes.fromhex(
         "A0 00 B1 94 29 0F C9 0F D0 0E C8 B1 94 85 31 A6 31 "
         "E8 E8 E8 E8 4C 99 97 85 31 A6 31 E8 E8 8A 4A 85 31"
@@ -175,6 +215,25 @@ def _scene_ids(nov2: bytes, index: int) -> tuple[int, ...]:
     return tuple(nov2[start : start + SCENE_WIDTH])
 
 
+def _file_id_locations(
+    images: tuple[FdsImage, ...], file_id: int
+) -> set[tuple[int, int]]:
+    """Return every disk/side pair carrying one FDS file ID."""
+    result: set[tuple[int, int]] = set()
+    for disk_index, image in enumerate(images):
+        for side in image.sides:
+            if any(file.file_id == file_id for file in side.files):
+                result.add((disk_index, side.index))
+    return result
+
+
+def _file_id_names(
+    files_by_id: dict[int, tuple[FdsFile, ...]], file_id: int
+) -> tuple[str, ...]:
+    """Return sorted unique names carried by one FDS file ID."""
+    return tuple(sorted({file.name for file in files_by_id.get(file_id, ())}))
+
+
 def _compose_scene(
     ids: tuple[int, ...], files_by_id: dict[int, tuple[FdsFile, ...]]
 ) -> tuple[bytes, tuple[str, ...]] | None:
@@ -214,6 +273,10 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
     gameplay_indexes: list[int] = []
     for index in range(SCENE_COUNT):
         ids = _scene_ids(nov2, index)
+        if ids != EXPECTED_SCENE_ROWS[index]:
+            raise RetailVmAuditError(
+                f"scene {index}: load row drifted: {ids!r}"
+            )
         composed = _compose_scene(ids, files_by_id)
         if composed is None:
             continue
@@ -238,9 +301,26 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
             raise RetailVmAuditError(
                 f"scene {index}: initial script entry changed to ${entry:04X}"
             )
+        locations = {
+            location
+            for file_id in ids
+            if file_id not in (0x00, 0xFF)
+            for location in _file_id_locations(images, file_id)
+        }
         scene_rows.append(
             {
                 "scene_index": index,
+                "file_ids": [f"{file_id:02X}" for file_id in ids],
+                "file_names": [
+                    list(_file_id_names(files_by_id, file_id))
+                    if file_id not in (0x00, 0xFF)
+                    else []
+                    for file_id in ids
+                ],
+                "disk_side_locations": [
+                    {"disk_index": disk, "side_index": side}
+                    for disk, side in sorted(locations)
+                ],
                 "program_chain": list(programs),
                 "script_entry": entry,
                 "label_table": label_table,
@@ -253,6 +333,70 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
             f"gameplay scene set changed: {tuple(gameplay_indexes)!r}"
         )
 
+    transition_calls: list[dict[str, object]] = []
+    for source_scene, source_program, address, operand in EXPECTED_SCENE_TRANSITIONS:
+        source_ids = _scene_ids(nov2, source_scene)
+        composed = _compose_scene(source_ids, files_by_id)
+        if composed is None:
+            raise RetailVmAuditError(
+                f"scene {source_scene}: transition source has no program"
+            )
+        data, programs = composed
+        if programs[-1] != source_program:
+            raise RetailVmAuditError(
+                f"scene {source_scene}: expected active transition owner "
+                f"{source_program}, got {programs[-1]}"
+            )
+        offset = address - OVERLAY_LOAD
+        actual = data[offset - 1 : offset + 2]
+        expected = bytes((0xB2, 0xE0, operand))
+        if actual != expected:
+            raise RetailVmAuditError(
+                f"scene {source_scene}: transition call drifted at "
+                f"${address:04X}: {actual.hex().upper()} != "
+                f"{expected.hex().upper()}"
+            )
+
+        target = decode_fds_scene_transition_operand(operand)
+        if target.scene_index >= SCENE_COUNT:
+            raise RetailVmAuditError(
+                f"scene {source_scene}: transition targets invalid row "
+                f"{target.scene_index}"
+            )
+        target_ids = _scene_ids(nov2, target.scene_index)
+        target_location = (target.disk_index, target.side_index)
+        for file_id in target_ids:
+            if file_id in (0x00, 0xFF):
+                continue
+            locations = _file_id_locations(images, file_id)
+            if locations != {target_location}:
+                raise RetailVmAuditError(
+                    f"transition ${operand:02X}: file ID ${file_id:02X} "
+                    f"locations {sorted(locations)!r} do not match "
+                    f"{target_location!r}"
+                )
+
+        transition_calls.append(
+            {
+                "source_scene": source_scene,
+                "source_program": source_program,
+                "call_address": f"0x{address:04X}",
+                "operand": f"0x{operand:02X}",
+                "target_disk": target.disk_name,
+                "target_side": target.side_name,
+                "target_scene": target.scene_index,
+                "target_file_ids": [
+                    f"{file_id:02X}" for file_id in target_ids
+                ],
+                "target_file_names": [
+                    list(_file_id_names(files_by_id, file_id))
+                    if file_id not in (0x00, 0xFF)
+                    else []
+                    for file_id in target_ids
+                ],
+            }
+        )
+
     evidence_counts: defaultdict[str, int] = defaultdict(int)
     for entry in RETAIL_VM_OPCODES:
         evidence_counts[entry.evidence] += 1
@@ -263,6 +407,22 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
         "native_guard_count": len(NOV2_GUARDS),
         "gameplay_scene_count": len(scene_rows),
         "scenes": scene_rows,
+        "scene_transition_operand": {
+            "disk_bit": "0x80",
+            "disk_zero": "Zenpen",
+            "disk_one": "Kouhen",
+            "side_bit": "0x40",
+            "side_zero": "A",
+            "side_one": "B",
+            "scene_mask": "0x3F",
+        },
+        "scene_transition_calls": transition_calls,
+        "scene_transition_call_count": len(transition_calls),
+        "part_boundary": {
+            "zenpen_final_gameplay_scene": 6,
+            "kouhen_initial_gameplay_scene": 7,
+            "direct_e0_edge": False,
+        },
         "reachability_baseline": {
             "route_seeded_commands": 7283,
             "covered_script_bytes": 23902,
