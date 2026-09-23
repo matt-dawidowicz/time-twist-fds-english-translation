@@ -239,6 +239,30 @@ def _guard_part_handoff(
             "NOV4 Part 2 title-gate route changed at CPU $BFEB"
         )
 
+    primary_menu_address = 0xA25C
+    primary_menu_expected = bytes.fromhex(
+        "03 02 01 03 04 07 08 09 0A 03 04 05 06"
+    )
+    primary_menu_offset = primary_menu_address - nov4.load_address
+    if (
+        nov4.data[
+            primary_menu_offset : primary_menu_offset
+            + len(primary_menu_expected)
+        ]
+        != primary_menu_expected
+    ):
+        raise RetailVmAuditError(
+            "NOV4 Start/Load/Part 2 primary menu descriptors changed"
+        )
+
+    filter_address = 0xA27C
+    filter_expected = bytes.fromhex("09 00 91 E3 92 01 E3 E4 00")
+    filter_offset = filter_address - nov4.load_address
+    if nov4.data[filter_offset : filter_offset + len(filter_expected)] != filter_expected:
+        raise RetailVmAuditError(
+            "NOV4 Start/Load/Part 2 predicate filter changed"
+        )
+
     target_address = 0xC059
     target_expected = bytes((0xE0, KOUHEN_FIRST_SCENE_TARGET))
     target_offset = target_address - nov4.load_address
@@ -301,6 +325,9 @@ def _guard_part_handoff(
         },
         "title_gate": {
             "route_cpu": "0xBFEB",
+            "primary_menu_table_cpu": "0xA25C",
+            "predicate_filter_cpu": "0xA27C",
+            "choices": ["Start", "Load", "Part 2"],
             "e4_rule": "D2 != 0",
             "load_rule": "!E3",
             "part2_rule": "!E3 && E4",
