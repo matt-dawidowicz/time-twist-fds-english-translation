@@ -756,7 +756,7 @@ recovered data architecture:
 - `$A202` actor spawn/layout records;
 - `$A204` packed metasprite definitions rendered into OAM;
 - `$A208` palette definitions;
-- `$A20C` hotspot rectangles and the opposing `$FD/$FE` one-way sentinels;
+- `$A20C` hotspot rectangles, with `$FD` left-boundary and `$FE` right-boundary sentinels;
 - `$A21C` palette-animation sequences;
 - `$A21E` direct nametable tile-patch descriptors and RLE streams;
 - `$A22C/$A22E/$A230` actor animation/motion selectors and stream tables;
@@ -995,8 +995,10 @@ The following should remain explicit so future work does not silently invent rul
 - Gameplay graphics structures are recovered, but arbitrary relocation is not a
   generic safe operation; same-address overlays and partial CHR residency remain
   scene-specific ownership constraints.
-- Human-facing direction names for the opposing `$FD/$FE` hotspot sentinels remain
-  unassigned even though their one-way/opposite binary behavior is verified.
+- `$FD/$FE` hotspot directions are verified: `$FD` is the left boundary and `$FE`
+  is the right boundary. The controller decoder maps `$01=Right`, `$02=Left`,
+  `$04=Down`, `$08=Up`; the native boundary gate and retail low-X/high-X geometry
+  independently agree with those names.
 - Hardware-visible title behavior depends on NMI/PPU ordering that static asset tests
   cannot fully prove.
 - FDS BIOS calls can mutate staging state outside the immediate source buffer; title

@@ -17,7 +17,7 @@ The current model is now substantially recovered:
 - `$A220` is the gameplay-script label/subroutine pointer table;
 - `$A22E/$A230` select actor animation and motion streams.
 
-The main remaining unknowns are now value-level rather than structural: human-facing world-direction names for the verified opposing `$FD/$FE` hotspot sentinels, exact narrative names for a few source-used gameplay commands, and the full meaning of palette tag/control bits beyond their verified structural behavior.
+The main remaining unknowns are now value-level rather than structural: exact narrative names for a few source-used gameplay commands and the full meaning of palette tag/control bits beyond their verified structural behavior. The `$FD/$FE` hotspot directions are now verified.
 
 For a repeatable source audit, run:
 
@@ -339,7 +339,29 @@ repeat count times:
 
 NOV2 converts the player/world position into grid coordinates, checks X and Y against the rectangle bounds, and masks the high bit of the left byte as a contextual flag.
 
-The fourth byte normally behaves as the inclusive bottom bound. Values `$FD` and `$FE` are explicitly recognized as successful terminal results instead of ordinary Y bounds. The exploration state then accepts them in opposite direction/state cases: one path rejects `$FE` but permits `$FD`, while the opposite path rejects `$FD` but permits `$FE`. Their verified binary role is therefore **opposing directional/one-way boundary sentinels**. The human-facing world-direction names remain intentionally unassigned until controller/world-axis correlation is proven.
+The fourth byte normally behaves as the inclusive bottom bound. Values `$FD` and `$FE` are explicitly recognized as successful terminal results instead of ordinary Y bounds.
+
+The direction names are now verified from two independent source facts:
+
+1. NOV2 `$67F2-$6804` shifts the standard NES controller serial stream into
+   `$1D`. The resulting low directional bits are `$01=Right`,
+   `$02=Left`, `$04=Down`, and `$08=Up`.
+2. NOV2 `$7556-$7589` rejects `$FE` while Right is held and rejects
+   `$FD` while Left is held. Across the retail hotspot tables, `$FD`
+   records occupy the low-X side and paired `$FE` records occupy the
+   high-X side.
+
+Therefore:
+
+| Marker | Verified name | Outward motion blocked | Inward motion permitted |
+| --- | --- | --- | --- |
+| `$FD` | **left boundary** | Left | Right |
+| `$FE` | **right boundary** | Right | Left |
+
+These are edge clamps/one-way boundary sentinels rather than generic event IDs.
+The maintainer audit finds **9 left-boundary markers** and **8 right-boundary
+markers** across the composed retail scenes, and source-guards both the
+controller decoder and the native boundary gate.
 
 Recovered nonempty tables include TT1B (23 rectangles), TT2 (11), T22 (23), TT3A (9), TT4 (9), and TT6B (7).
 
@@ -363,7 +385,6 @@ The binary structure and destination-selection mechanism are verified. The proje
 
 The old broad statement “gameplay graphics are unknown” is no longer accurate. The remaining unknowns are narrower:
 
-- human-facing world-direction names for the verified opposing `$FD/$FE` one-way boundary sentinels;
 - higher-level narrative names for a few source-used exploration commands whose low-level state effects are already recovered;
 - more specific naming of palette high-bit selector tags and the remaining `$A21C` high-bit control forms;
 - whether any separate metatile abstraction exists in another path. The recovered `$A21E` background engine itself expands direct tile IDs and does not need one.
@@ -399,4 +420,4 @@ The recovered model is supported by independent static and runtime-facing facts:
 - background map streams expand to exact rectangles and feed real nametable PPU addresses;
 - recovered tile IDs stay within the scene's composed background CHR coverage.
 
-That is sufficient to promote these structural layers from **UNKNOWN** to **VERIFIED**. The remaining semantic questions above should stay explicitly labeled rather than being guessed into the build system.
+That is sufficient to promote these structural layers from **UNKNOWN** to **VERIFIED**. The hotspot boundary directions are also now VERIFIED; the remaining semantic questions above should stay explicitly labeled rather than being guessed into the build system.

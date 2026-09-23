@@ -11,6 +11,8 @@ from pathlib import Path
 
 from time_twist.fds import FdsFile, FdsImage
 from time_twist.gameplay_graphics import (
+    HOTSPOT_LEFT_BOUNDARY,
+    HOTSPOT_RIGHT_BOUNDARY,
     OVERLAY_LOAD_ADDRESS,
     parse_actor_spawn_records,
     parse_background_map_records,
@@ -509,6 +511,22 @@ def _scene_report(
     rectangles = [
         rectangle for record in hotspots for rectangle in record.rectangles
     ]
+    for record in hotspots:
+        left_edges = [
+            item for item in record.rectangles if item.boundary_side == "left"
+        ]
+        right_edges = [
+            item for item in record.rectangles if item.boundary_side == "right"
+        ]
+        if (
+            left_edges
+            and right_edges
+            and max(item.right for item in left_edges)
+            >= min(item.left for item in right_edges)
+        ):
+            raise EngineSurfaceAuditError(
+                f"{programs[-1]}: directional hotspot geometry inverted"
+            )
     streams = [stream for record in map_records for stream in record.streams]
 
     def owned(start: int, end: int) -> dict[str, object]:
@@ -548,11 +566,13 @@ def _scene_report(
             "end": hotspot_end,
             "records": len(hotspots),
             "rectangles": len(rectangles),
-            "fd_markers": sum(
-                item.bottom_or_special == 0xFD for item in rectangles
+            "left_boundary_markers": sum(
+                item.bottom_or_special == HOTSPOT_LEFT_BOUNDARY
+                for item in rectangles
             ),
-            "fe_markers": sum(
-                item.bottom_or_special == 0xFE for item in rectangles
+            "right_boundary_markers": sum(
+                item.bottom_or_special == HOTSPOT_RIGHT_BOUNDARY
+                for item in rectangles
             ),
             **owned(hotspot, hotspot_end),
         },
@@ -625,6 +645,19 @@ def _source_control_counts(
     return {value: counts[value] for value in range(8)}, dict(surfaces)
 
 
+def _reported_hotspot_marker_count(report: dict[str, object], key: str) -> int:
+    """Return one validated hotspot-marker count from a scene report."""
+    hotspots = report.get("hotspots")
+    if not isinstance(hotspots, dict):
+        raise EngineSurfaceAuditError("scene report lacks hotspot metadata")
+    value = hotspots.get(key)
+    if not isinstance(value, int):
+        raise EngineSurfaceAuditError(
+            f"scene hotspot count {key!r} is invalid"
+        )
+    return value
+
+
 def audit_engine_surfaces(zenpen: Path, kouhen: Path) -> dict[str, object]:
     """Return a source-backed audit of the recovered gameplay-engine surfaces."""
     images = {
@@ -634,11 +667,42 @@ def audit_engine_surfaces(zenpen: Path, kouhen: Path) -> dict[str, object]:
     files_by_id = _files_by_id(images)
     nov2 = _nov2(images)
     scenes = _scene_load_sets(nov2, files_by_id)
+    _expect_nov2_bytes(
+        nov2,
+        0x67F2,
+        bytes.fromhex(
+            "A9 08 85 31 B9 16 40 85 21 4A 05 21 4A 36 1D " "C6 31 D0 F1"
+        ),
+        "controller serial-bit decode",
+    )
+    _expect_nov2_bytes(
+        nov2,
+        0x7556,
+        bytes.fromhex(
+            "A5 1D C9 01 F0 0C C9 02 F0 1A A9 00 8D A4 07 4C 45 76 "
+            "A5 34 C9 FE F0 F2 AD AA 07 20 48 77 20 8E 76 4C 8C 75 "
+            "A5 34 C9 FD F0 E0 AD AB 07 20 48 77 20 8E 76 4C C2 75"
+        ),
+        "left/right hotspot boundary gate",
+    )
     scene_reports = []
     for scene in scenes:
         composed = _compose_program_overlay(scene, files_by_id)
         if composed is not None:
             scene_reports.append(_scene_report(scene, composed))
+    left_boundary_markers = sum(
+        _reported_hotspot_marker_count(report, "left_boundary_markers")
+        for report in scene_reports
+    )
+    right_boundary_markers = sum(
+        _reported_hotspot_marker_count(report, "right_boundary_markers")
+        for report in scene_reports
+    )
+    if (left_boundary_markers, right_boundary_markers) != (9, 8):
+        raise EngineSurfaceAuditError(
+            "retail hotspot boundary-marker inventory drifted: "
+            f"{left_boundary_markers} left, {right_boundary_markers} right"
+        )
     counts, surfaces = _source_control_counts(images)
     if counts[7]:
         raise EngineSurfaceAuditError(
@@ -667,6 +731,18 @@ def audit_engine_surfaces(zenpen: Path, kouhen: Path) -> dict[str, object]:
             "palette_pointer_header": "0xA208",
             "palette_staging_ram": "0x0300-0x031F",
             "palette_update_flag": "0x30",
+            "controller_direction_bits": {
+                "right": "0x01",
+                "left": "0x02",
+                "down": "0x04",
+                "up": "0x08",
+            },
+            "hotspot_boundaries": {
+                "left": "0xFD",
+                "right": "0xFE",
+                "left_marker_count": left_boundary_markers,
+                "right_marker_count": right_boundary_markers,
+            },
         },
         "text_controls": _text_control_report(nov2),
         "control_7": {

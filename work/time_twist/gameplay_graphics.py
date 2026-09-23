@@ -15,6 +15,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 OVERLAY_LOAD_ADDRESS = 0xA200
+HOTSPOT_LEFT_BOUNDARY = 0xFD
+HOTSPOT_RIGHT_BOUNDARY = 0xFE
 
 
 class GameplayGraphicsError(ValueError):
@@ -96,6 +98,15 @@ class HotspotRectangle:
     def context_flag(self) -> bool:
         """Return whether the native high-bit context flag is set."""
         return bool(self.left_and_flags & 0x80)
+
+    @property
+    def boundary_side(self) -> str | None:
+        """Return the verified world-side name for a special boundary marker."""
+        if self.bottom_or_special == HOTSPOT_LEFT_BOUNDARY:
+            return "left"
+        if self.bottom_or_special == HOTSPOT_RIGHT_BOUNDARY:
+            return "right"
+        return None
 
 
 @dataclass(frozen=True)
