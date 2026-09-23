@@ -299,10 +299,19 @@ record:
             sprite_palette_record
 ```
 
-Normal frame durations use the low seven bits. The sequence wraps to frame zero after
-its final frame. `$7F` in the sequence repeat/control byte means indefinite cycling.
-`$7E` and high-bit duration forms retain input/state-sensitive behavior that is not yet
-fully named.
+The control language is now fully recovered; see
+[Gameplay palette-animation engine](PALETTE_ANIMATION_ENGINE.md).
+
+- ordinary controls `$01-$7D` are finite cycle counters;
+- `$7E` cycles until a fresh A press occurs on a cycle boundary, then stops;
+- `$7F` cycles indefinitely;
+- `$80-$FF` wait for a fresh A press before clearing bit 7 and continuing;
+- frame duration is always `raw & $7F`; duration bit 7 is ignored by this path;
+- effective duration `$7F` holds the current frame indefinitely.
+
+The 50 records in the seven unique retail tables use only controls
+`$03/$04/$14/$1E/$7F`. Retail contains no `$7E` control, no high-bit control,
+and no high-bit duration byte.
 
 ## 11. Actor selector and animation/motion tables
 
@@ -447,8 +456,7 @@ The retail gameplay VM is structurally recovered. The audio-selector and source-
 `Bx` completion passes are now closed; remaining work is narrower value-level
 refinement:
 
-1. finish the remaining high-bit palette-animation control semantics;
-2. add story-facing names to individual audio call sites only when clean replay
+1. add story-facing names to individual palette/audio call sites only when clean replay
    context proves them, without replacing the verified driver identities in
    `docs/AUDIO_COMMAND_MAP.md`.
 

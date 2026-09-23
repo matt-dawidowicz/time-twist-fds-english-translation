@@ -207,10 +207,10 @@ Future clean replay tracing is still useful for runtime certification and for
 story-facing labels, but it is no longer needed to determine whether the 327
 bytes conceal an unknown interpreter path.
 
-The remaining engine-recovery frontier is therefore:
+The major low-level VM/graphics-control unknowns listed by the original audit are now
+closed: `$FD/$FE` are verified left/right boundaries and the `$A21C`
+palette-animation control language is fully recovered. Remaining work is contextual:
 
-1. assign human-facing world directions to the verified `$FD/$FE` hotspot
-   sentinels;
-2. finish `$7E` / high-bit palette-animation controls;
-3. correlate individual audio call sites with story-facing Foley/music names
-   when runtime context proves them.
+1. correlate individual palette/audio call sites with story-facing visual/Foley/music
+   names when clean replay proves them;
+2. correlate FDS transition selectors with exact scene/file outcomes.
