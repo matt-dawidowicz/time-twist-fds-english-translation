@@ -1,9 +1,9 @@
 repos:
   - repo: local
     hooks:
-      - id: time-twist-premerge-hygiene
-        name: Time Twist pre-merge hygiene
-        entry: python work/tools/premerge_hygiene.py
+      - id: time-twist-quick-check
+        name: Time Twist quick check
+        entry: python work/tools/quick_check.py
         language: system
         pass_filenames: false
         always_run: true

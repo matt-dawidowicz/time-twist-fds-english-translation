@@ -24,13 +24,6 @@ from .project import (
     infer_bank_name,
     source_dictionary_reference_floor,
 )
-from .release import (
-    build_release,
-    discover_project_root,
-    promote_release_target,
-    validate_source_lock,
-    write_source_lock,
-)
 from .scenario import parse_scenario_bank, render_symbols
 from .scenario_validation import encode_validated_english, scenario_record_id
 from .textcodec import PackedSymbol, pack_records
@@ -493,6 +486,12 @@ def command_replace_file(args: argparse.Namespace) -> None:
 
 def command_release_lock(args: argparse.Namespace) -> None:
     """Validate or intentionally refresh the approved release-source lock."""
+    from .release import (
+        discover_project_root,
+        validate_source_lock,
+        write_source_lock,
+    )
+
     project_root = discover_project_root(args.project_root)
     lock_path = args.lock or project_root / "work" / "release_sources.json"
     if args.update:
@@ -507,6 +506,8 @@ def command_release_lock(args: argparse.Namespace) -> None:
 
 def command_release_build(args: argparse.Namespace) -> None:
     """Build all release images and write a hash manifest."""
+    from .release import build_release, discover_project_root
+
     project_root = discover_project_root(args.project_root)
     output_directory = args.output_dir or project_root / "build" / "release"
     manifest = build_release(
@@ -525,6 +526,8 @@ def command_release_build(args: argparse.Namespace) -> None:
 
 def command_release_promote(args: argparse.Namespace) -> None:
     """Promote a reviewed candidate manifest into the strict release target."""
+    from .release import discover_project_root, promote_release_target
+
     project_root = discover_project_root(args.project_root)
     target = promote_release_target(
         args.candidate_manifest,
