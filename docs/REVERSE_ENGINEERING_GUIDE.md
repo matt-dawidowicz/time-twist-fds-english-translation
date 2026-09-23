@@ -1005,9 +1005,11 @@ The following should remain explicit so future work does not silently invent rul
   use `$7E`, high-bit controls, or high-bit duration bytes.
 - Retail `E0` FDS/scene transitions are verified: bit 7 of the packed operand
   selects Zenpen/Kouhen, bit 6 selects Side A/B, and bits 5-0 index the 15-row
-  scene-load table at `$7BA5`. Eleven instruction-aligned retail calls are known.
-  Zenpen gameplay row 6 does not directly `E0` into Kouhen row 7; Part 2 startup
-  crosses that boundary outside the gameplay VM.
+  scene-load table at `$7BA5`. Eleven instruction-aligned gameplay-script calls
+  are known. Zenpen gameplay row 6 does not directly `E0` into Kouhen row 7;
+  the recovered NOV4 title path does so explicitly at `$C059: E0 C7` after a
+  valid completed-SAVE marker enables Part 2. See
+  `docs/PART2_STARTUP_HANDOFF.md`.
 - Hardware-visible title behavior depends on NMI/PPU ordering that static asset tests
   cannot fully prove.
 - FDS BIOS calls can mutate staging state outside the immediate source buffer; title
