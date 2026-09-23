@@ -114,6 +114,14 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             ),
         )
 
+        self.assertEqual(
+            tt1a["TT1A/g0/r5"],
+            (
+                "We'll begin with a{CTRL:0}personality test.{CTRL:0}"
+                "Please answer each{CTRL:0}question."
+            ),
+        )
+
         tt3a = _canonical("TT3A")
         self.assertEqual(
             tt3a["TT3A/g2/r30"],
@@ -130,7 +138,9 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
     def test_reviewed_quiz_layout_exceptions_are_structural_only(self) -> None:
         """Do not grandfather ordinary prose around the modern wrap policy."""
         self.assertIn("TT1A/g0/r3", STRUCTURAL_LAYOUT_RECORDS)
+        self.assertIn("TT1A/g0/r5", STRUCTURAL_LAYOUT_RECORDS)
         self.assertNotIn("TT1A/g0/r3", CHECKPOINT_QUIZ_LAYOUTS)
+        self.assertNotIn("TT1A/g0/r5", CHECKPOINT_QUIZ_LAYOUTS)
         expected = {
             "TT3A/g4/r7",
             "TT4/g5/r7",
