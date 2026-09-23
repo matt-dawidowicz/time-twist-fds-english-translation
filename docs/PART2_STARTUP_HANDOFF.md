@@ -245,9 +245,9 @@ $BFF0  61 E4
 $BFF2  61 EA
 ```
 
-When `$D2` is zero, the relative branch skips those two flag writes and lands
-at `$BFF2`/the subsequent menu path as defined by the native relative-PC
-semantics.
+When `$D2` is zero, the relative branch lands at `$BFF2`: it skips
+`61 E4` but still executes `61 EA` before opening the menu. Thus `E4`,
+not `EA`, is the marker-dependent Part 2 gate.
 
 For the Part 2 choice, the material condition is therefore:
 
