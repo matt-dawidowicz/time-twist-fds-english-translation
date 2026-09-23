@@ -101,12 +101,20 @@ Examples:
 
 There is deliberately **no gameplay-script `E0` edge from row 6 to row 7**.
 
-Row 6 is the final Zenpen gameplay composition. Row 7 is the initial Kouhen
-gameplay composition. The transition between parts is handled by the title/disk
-startup flow rather than by carrying the Zenpen gameplay VM directly into TT4.
+The missing edge is now recovered in the title/startup overlay rather than the
+gameplay scripts. Zenpen ends through resident system sequence 5 and persisted
+SAVE state. After restart, NOV4 menu 3 exposes `Start / Load / Part 2`; its
+Part 2 target at `$C059` is explicitly:
 
-This matches the retail play flow: Part 1 ends, and Part 2 startup performs its
-own disk/side selection before entering the first Kouhen gameplay scene.
+```text
+E0 C7
+```
+
+`$C7` decodes to **Kouhen / Side B / scene row 7**, whose load row is
+`47 57 FF FF` = `TT4 + BG4/OBJ4`.
+
+The complete SAVE eligibility and title-menu path is documented in
+[Part 1 to Part 2 startup handoff](PART2_STARTUP_HANDOFF.md).
 
 ## False raw `E0` bytes
 
@@ -136,6 +144,10 @@ retail disks:
 - all 11 retail `B2 E0 xx` call sites;
 - the active source overlay at each call site;
 - the physical disk/side location of every target file ID;
-- the explicit row-6 to row-7 Part boundary with no direct `E0` edge.
+- the gameplay-source row-6 boundary with no direct `E0` edge.
+
+The complementary title/startup audit in
+`work/tools/audit_part2_startup_handoff.py` guards the recovered
+`$C059: E0 C7` title edge into row 7.
 
 The opcode registry now classifies `E0 fds_scene_transition` as **VERIFIED**.
