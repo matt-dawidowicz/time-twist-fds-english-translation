@@ -652,7 +652,9 @@ def _reported_hotspot_marker_count(report: dict[str, object], key: str) -> int:
         raise EngineSurfaceAuditError("scene report lacks hotspot metadata")
     value = hotspots.get(key)
     if not isinstance(value, int):
-        raise EngineSurfaceAuditError(f"scene hotspot count {key!r} is invalid")
+        raise EngineSurfaceAuditError(
+            f"scene hotspot count {key!r} is invalid"
+        )
     return value
 
 
