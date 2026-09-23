@@ -26,7 +26,14 @@ assets, source locks, and legal game inputs remain checkout data.
 
 ## Public test workflow
 
-Run this for every code change:
+Use the quick gate during normal iteration:
+
+```powershell
+python work/tools/quick_check.py
+```
+
+Before opening or merging a code pull request, run the complete public unit
+suite:
 
 ```powershell
 python work/run_tests.py unit
