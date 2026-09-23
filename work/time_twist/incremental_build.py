@@ -100,9 +100,7 @@ def _translation_topology(
     bank_name: str, translations: dict[str, str]
 ) -> tuple[tuple[int, ...], tuple[tuple[str, ...], ...]]:
     """Return contiguous per-group record counts and IDs."""
-    pattern = re.compile(
-        rf"^{re.escape(bank_name)}/g(\d+)/r(\d+)$"
-    )
+    pattern = re.compile(rf"^{re.escape(bank_name)}/g(\d+)/r(\d+)$")
     grouped: dict[int, dict[int, str]] = {}
     for record_id in translations:
         match = pattern.match(record_id)
@@ -198,9 +196,13 @@ def _reachable_expansions(
     if not required:
         return ()
 
-    dictionary_offset = _read_word(data, DICTIONARY_POINTER_OFFSET) - LOAD_ADDRESS
+    dictionary_offset = (
+        _read_word(data, DICTIONARY_POINTER_OFFSET) - LOAD_ADDRESS
+    )
     if not 0 <= dictionary_offset < len(data):
-        raise IncrementalBuildError("dictionary pointer is outside entropy bank")
+        raise IncrementalBuildError(
+            "dictionary pointer is outside entropy bank"
+        )
 
     definitions: tuple[tuple[PackedSymbol, ...], ...] = ()
     while required:
@@ -280,9 +282,7 @@ def rebuild_entropy_bank(
     translations: dict[str, str],
 ) -> IncrementalBankResult:
     """Rebuild changed records without moving dictionary or fixed bank data."""
-    record_counts, record_ids = _translation_topology(
-        bank_name, translations
-    )
+    record_counts, record_ids = _translation_topology(bank_name, translations)
     groups, table_offset = _decode_groups(data, record_counts)
     expansions = _reachable_expansions(data, groups)
 
@@ -300,9 +300,9 @@ def rebuild_entropy_bank(
             replacement = parse_entropy_record_with_expansions(
                 target, expansions
             )
-            if _semantic(expand_entropy_record(replacement, expansions)) != _semantic(
-                target
-            ):
+            if _semantic(
+                expand_entropy_record(replacement, expansions)
+            ) != _semantic(target):
                 raise IncrementalBuildError(
                     f"{record_id}: fixed dictionary failed semantic round-trip"
                 )
@@ -326,8 +326,8 @@ def rebuild_entropy_bank(
                 f"to {len(blob)} bytes outside the resizable terminal suffix; "
                 "run the full release optimizer"
             )
-        result[group.offset : group.offset + group.byte_length] = (
-            blob + bytes(group.byte_length - len(blob))
+        result[group.offset : group.offset + group.byte_length] = blob + bytes(
+            group.byte_length - len(blob)
         )
 
     if terminal:
