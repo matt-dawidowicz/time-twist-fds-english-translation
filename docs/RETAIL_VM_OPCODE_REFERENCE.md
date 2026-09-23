@@ -84,7 +84,7 @@ invariants against maintainer-supplied original disks.
 | `$BB` | `clear_saved_coordinate_slot` | `slot_id:u8` | 2 bytes | `$71F5` | **VERIFIED** |
 | `$BC` | `resume_exploration` | `exploration_mode:u8` | 2 bytes | `$71F5` | **VERIFIED** |
 | `$D2` | `clone_flip_background_chr` | `count:u8, records[count]:(source_tile:u8, destination_tile:u8, flags:u8)` | 2 + 3*count bytes | `$78BA` | **VERIFIED** |
-| `$E0` | `fds_scene_transition` | `transition_selector:u8` | 2 bytes | `$79A7` | **DERIVED** |
+| `$E0` | `fds_scene_transition` | `packed_target:u8` | 2 bytes | `$79A7` | **VERIFIED** |
 
 ## Semantic notes by family
 
@@ -144,7 +144,7 @@ The source-used `Bx` forms now all have verified low-level names.
 
 ### `E0`: FDS / scene transition
 
-Retail class E uses only `E0`. Its following selector enters the recovered FDS/scene/file transition state machine. The low-level role is stable even where individual selector values have not yet received story-facing names.
+Retail class E uses only `E0`. Its following byte is a verified packed target: bit `$80` selects Zenpen/Kouhen, bit `$40` selects Side A/B, and bits `$3F` index the 15-row NOV2 scene-load table at `$7BA5`. All 11 instruction-aligned retail calls and their exact file-set outcomes are mapped in [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md).
 
 ## Deliberately excluded native forms
 
@@ -152,4 +152,4 @@ The registry is **not** a list of everything the interpreter can theoretically d
 
 ## Remaining semantic-completion work
 
-Every source-used `Bx` opcode now has a verified low-level name and operand contract, the `$FD/$FE` hotspot directions are resolved, and `docs/AUDIO_COMMAND_MAP.md` binds every source-used audio selector to its resident or scene-specific driver identity. The completed `GAMEPLAY_VM_REACHABILITY_AUDIT.md` closes the historical 327-byte question: no unclassified source island remains. Palette-animation control semantics are now closed in `docs/PALETTE_ANIMATION_ENGINE.md`. Remaining work is narrower: correlate FDS transition selectors with exact scene/file outcomes and attach story-facing labels only where runtime context proves them.
+Every source-used `Bx` opcode now has a verified low-level name and operand contract, the `$FD/$FE` hotspot directions are resolved, `docs/AUDIO_COMMAND_MAP.md` binds every source-used audio selector to its resident or scene-specific driver identity, palette-animation control semantics are closed in `docs/PALETTE_ANIMATION_ENGINE.md`, and the complete retail `E0` disk/side/scene map is closed in `docs/FDS_SCENE_TRANSITIONS.md`. The completed `GAMEPLAY_VM_REACHABILITY_AUDIT.md` also closes the historical 327-byte question: no unclassified source island remains. Remaining work is contextual rather than a known low-level VM-language gap: runtime certification and story-facing labels only where replay evidence proves them.
