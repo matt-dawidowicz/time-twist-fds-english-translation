@@ -166,14 +166,8 @@ class IncrementalBuildTests(unittest.TestCase):
     def test_forward_dictionary_reference_is_resolved(self) -> None:
         """Resolve forward references used by recovered v38 dictionaries."""
         d2 = encode_english("AB")
-        d1 = (
-            PackedSymbol(SymbolKind.DICTIONARY, 2, 0, 0),
-        )
-        group_zero = (
-            (
-                PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0),
-            ),
-        )
+        d1 = (PackedSymbol(SymbolKind.DICTIONARY, 2, 0, 0),)
+        group_zero = ((PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0),),)
         data = _bank(
             group_zero,
             (encode_english("C"),),
