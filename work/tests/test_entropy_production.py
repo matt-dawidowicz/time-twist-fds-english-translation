@@ -223,13 +223,15 @@ class EntropyProductionTests(unittest.TestCase):
         """Keep the proven pre-entropy renderer repairs byte-identical."""
         self.assertEqual(
             tuple(patch.cpu_address for patch in BASE_RUNTIME_PATCHES),
-            (0x81D3, 0x8378),
+            (0x81D3, 0x8378, 0x8383, 0x847E),
         )
         self.assertEqual(
             tuple(patch.replacement for patch in BASE_RUNTIME_PATCHES),
             (
                 bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
                 bytes.fromhex("B0"),
+                bytes.fromhex("01"),
+                bytes.fromhex("20 8D 98"),
             ),
         )
 
@@ -243,6 +245,14 @@ class EntropyProductionTests(unittest.TestCase):
         self.assertEqual(
             patches["expanded variable-width menu clear span"].replacement,
             bytes.fromhex("24"),
+        )
+        self.assertEqual(
+            patches[
+                "width-aware leading menu cursor and typewriter gate"
+            ].replacement,
+            bytes.fromhex(
+                "20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C C5 85"
+            ),
         )
         self.assertIn(
             bytes.fromhex("BD 2D 04 4A 4A 4A D0 02 A9 06 85 31"),
@@ -366,7 +376,7 @@ class EntropyProductionTests(unittest.TestCase):
         }
         self.assertTrue(
             menu_patches[
-                "width-aware leading menu cursor"
+                "width-aware leading menu cursor and typewriter gate"
             ].replacement.startswith(bytes.fromhex("20 8D 6D"))
         )
 
