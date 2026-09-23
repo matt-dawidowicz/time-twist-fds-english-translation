@@ -1006,8 +1006,11 @@ The following should remain explicit so future work does not silently invent rul
 - Retail `E0` FDS/scene transitions are verified: bit 7 of the packed operand
   selects Zenpen/Kouhen, bit 6 selects Side A/B, and bits 5-0 index the 15-row
   scene-load table at `$7BA5`. Eleven instruction-aligned retail calls are known.
-  Zenpen gameplay row 6 does not directly `E0` into Kouhen row 7; Part 2 startup
-  crosses that boundary outside the gameplay VM.
+- The Zenpen-to-Kouhen handoff outside the gameplay VM is also verified: system
+  sequence 5 enters the resident save/disk workflow, startup restores the persistent
+  disk-write marker into `$D2`, NOV4 derives `$E4 = ($D2 != 0)`, Part 2 is
+  filtered by `!E3 && E4`, and selection executes `E0 C7` into Kouhen Side B
+  row 7. See `docs/PART1_PART2_HANDOFF.md`.
 - Hardware-visible title behavior depends on NMI/PPU ordering that static asset tests
   cannot fully prove.
 - FDS BIOS calls can mutate staging state outside the immediate source buffer; title

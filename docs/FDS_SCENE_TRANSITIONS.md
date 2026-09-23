@@ -102,11 +102,14 @@ Examples:
 There is deliberately **no gameplay-script `E0` edge from row 6 to row 7**.
 
 Row 6 is the final Zenpen gameplay composition. Row 7 is the initial Kouhen
-gameplay composition. The transition between parts is handled by the title/disk
-startup flow rather than by carrying the Zenpen gameplay VM directly into TT4.
+gameplay composition. The transition between parts is handled by the persistent
+SAVE/title flow rather than by carrying the Zenpen gameplay VM directly into TT4.
 
-This matches the retail play flow: Part 1 ends, and Part 2 startup performs its
-own disk/side selection before entering the first Kouhen gameplay scene.
+The complete mechanism is now recovered in
+[Part 1 to Part 2 handoff](PART1_PART2_HANDOFF.md): TT3B exits through system
+sequence 5; title startup validates the persistent SAVE, derives flag `$E4`
+from the restored nonzero `$D2` disk-write marker, exposes Part 2 under
+`!E3 && E4`, and the Part 2 choice executes `E0 C7` to Kouhen Side B row 7.
 
 ## False raw `E0` bytes
 

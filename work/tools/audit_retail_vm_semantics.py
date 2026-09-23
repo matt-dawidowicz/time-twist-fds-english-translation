@@ -15,6 +15,11 @@ from collections import defaultdict
 from pathlib import Path
 
 from time_twist.fds import FdsFile, FdsImage
+from time_twist.part_handoff import (
+    KOUHEN_FIRST_SCENE_TARGET,
+    SAVE_DISK_WRITE_MARKER,
+    title_gate_from_save,
+)
 from time_twist.retail_vm import RETAIL_VM_OPCODE_VALUES, RETAIL_VM_OPCODES
 from time_twist.scene_transitions import decode_fds_scene_transition_operand
 
@@ -120,6 +125,10 @@ EXPECTED_SOURCE_REACHABLE = (
 )
 
 NOV2_GUARDS = {
+    0x6990: bytes.fromhex(
+        "A9 01 8D C4 69 20 76 9D 90 0D A9 E3 85 8D 20 CE 9B "
+        "A9 00 AA 4C AD 69 AD DD 03 AE DE 03 85 D2 86 D3"
+    ),
     0x69E5: bytes.fromhex(
         "A0 00 B1 C5 4A 4A 4A 4A 18 69 10 C9 10 D0 02 A9 20"
     ),
@@ -172,6 +181,10 @@ NOV2_GUARDS = {
         "A0 00 B1 94 29 0F C9 0F D0 0E C8 B1 94 85 31 A6 31 "
         "E8 E8 E8 E8 4C 99 97 85 31 A6 31 E8 E8 8A 4A 85 31"
     ),
+    0x7B25: bytes.fromhex(
+        "20 76 9D 90 03 20 5E 9D A5 CE C9 0B D0 05 A9 AA 8D "
+        "DE 03 A9 55 8D DD 03 20 6A 9D 20 76 9D 4C 00 7B"
+    ),
     0x7C0E: bytes.fromhex(
         "8A F0 03 4C C0 7D A9 FA 85 8D 20 E0 9B A9 FB 85 8D"
     ),
@@ -207,6 +220,130 @@ def _guard_nov2(nov2: bytes) -> None:
             raise RetailVmAuditError(
                 f"NOV2 semantic guard changed at CPU ${address:04X}"
             )
+
+
+def _guard_part_handoff(
+    images: tuple[FdsImage, ...],
+    files_by_id: dict[int, tuple[FdsFile, ...]],
+) -> dict[str, object]:
+    """Verify the non-E0 Zenpen-to-Kouhen continuation path."""
+    nov4 = images[0].sides[0].find_file("NOV4")
+    route_address = 0xBFEB
+    route_expected = bytes.fromhex(
+        "0C D2 00 00 07 61 E4 61 EA 29 03 01 " "30 FE BF 51 C0 59 C0"
+    )
+    route_offset = route_address - nov4.load_address
+    if (
+        nov4.data[route_offset : route_offset + len(route_expected)]
+        != route_expected
+    ):
+        raise RetailVmAuditError(
+            "NOV4 Part 2 title-gate route changed at CPU $BFEB"
+        )
+
+    primary_menu_address = 0xA25C
+    primary_menu_expected = bytes.fromhex(
+        "03 02 01 03 04 07 08 09 0A 03 04 05 06"
+    )
+    primary_menu_offset = primary_menu_address - nov4.load_address
+    if (
+        nov4.data[
+            primary_menu_offset : primary_menu_offset
+            + len(primary_menu_expected)
+        ]
+        != primary_menu_expected
+    ):
+        raise RetailVmAuditError(
+            "NOV4 Start/Load/Part 2 primary menu descriptors changed"
+        )
+
+    filter_address = 0xA27C
+    filter_expected = bytes.fromhex("09 00 91 E3 92 01 E3 E4 00")
+    filter_offset = filter_address - nov4.load_address
+    if (
+        nov4.data[filter_offset : filter_offset + len(filter_expected)]
+        != filter_expected
+    ):
+        raise RetailVmAuditError(
+            "NOV4 Start/Load/Part 2 predicate filter changed"
+        )
+
+    target_address = 0xC059
+    target_expected = bytes((0xE0, KOUHEN_FIRST_SCENE_TARGET))
+    target_offset = target_address - nov4.load_address
+    if nov4.data[target_offset : target_offset + 2] != target_expected:
+        raise RetailVmAuditError("NOV4 Part 2 target changed at CPU $C059")
+
+    composed = _compose_scene(EXPECTED_SCENE_ROWS[6], files_by_id)
+    if composed is None:
+        raise RetailVmAuditError("Zenpen final scene has no composed program")
+    ending, programs = composed
+    if programs[-1] != "TT3B":
+        raise RetailVmAuditError(
+            f"Zenpen final scene owner changed to {programs[-1]}"
+        )
+    ending_address = 0xA60B
+    ending_expected = bytes.fromhex("B2 10 39 A1 78 10 3A 0F 05")
+    ending_offset = ending_address - OVERLAY_LOAD
+    if (
+        ending[ending_offset : ending_offset + len(ending_expected)]
+        != ending_expected
+    ):
+        raise RetailVmAuditError(
+            "TT3B ending system-sequence tail changed at CPU $A60B"
+        )
+
+    invalid = title_gate_from_save(
+        save_valid=False,
+        disk_write_marker=SAVE_DISK_WRITE_MARKER,
+    )
+    unmarked = title_gate_from_save(
+        save_valid=True,
+        disk_write_marker=0,
+    )
+    marked = title_gate_from_save(
+        save_valid=True,
+        disk_write_marker=SAVE_DISK_WRITE_MARKER,
+    )
+    if (
+        invalid.load_visible
+        or invalid.part2_visible
+        or not unmarked.load_visible
+        or unmarked.part2_visible
+        or not marked.part2_visible
+    ):
+        raise RetailVmAuditError("Part 2 title-gate model drifted")
+
+    return {
+        "zenpen_ending_system_sequence": {
+            "scene_index": 6,
+            "active_program": "TT3B",
+            "cpu_address": "0xA60B",
+            "tail": "B2 10 39 A1 78 10 3A 0F 05",
+        },
+        "save_restore": {
+            "checksum_valid_flag": "not E3",
+            "disk_write_marker_address": "0x03DD",
+            "disk_write_marker_value": f"0x{SAVE_DISK_WRITE_MARKER:02X}",
+            "title_marker_zp": "0xD2",
+        },
+        "title_gate": {
+            "route_cpu": "0xBFEB",
+            "primary_menu_table_cpu": "0xA25C",
+            "predicate_filter_cpu": "0xA27C",
+            "choices": ["Start", "Load", "Part 2"],
+            "e4_rule": "D2 != 0",
+            "load_rule": "!E3",
+            "part2_rule": "!E3 && E4",
+        },
+        "part2_target": {
+            "cpu_address": "0xC059",
+            "operand": f"0x{KOUHEN_FIRST_SCENE_TARGET:02X}",
+            "disk": "Kouhen",
+            "side": "B",
+            "scene_index": 7,
+        },
+    }
 
 
 def _scene_ids(nov2: bytes, index: int) -> tuple[int, ...]:
@@ -269,6 +406,7 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
         raise RetailVmAuditError("retail opcode registry contains duplicates")
 
     files_by_id = _files_by_id(images)
+    part_handoff = _guard_part_handoff(images, files_by_id)
     scene_rows: list[dict[str, object]] = []
     gameplay_indexes: list[int] = []
     for index in range(SCENE_COUNT):
@@ -427,6 +565,7 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
         },
         "scene_transition_calls": transition_calls,
         "scene_transition_call_count": len(transition_calls),
+        "part_handoff": part_handoff,
         "part_boundary": {
             "zenpen_final_gameplay_scene": 6,
             "kouhen_initial_gameplay_scene": 7,
