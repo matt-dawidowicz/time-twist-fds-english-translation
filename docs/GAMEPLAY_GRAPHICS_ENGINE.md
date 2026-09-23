@@ -379,14 +379,14 @@ One selector path updates the half associated with staging flag `$30|=$80`; the 
 
 The binary structure and destination-selection mechanism are verified. The project does not yet assign more specific semantic names to every high-bit tag value because doing so is unnecessary for safe structural editing and has not been separately proven.
 
-`$A21C/$A21D` is a separate palette-animation table base. NOV2 `$90E8` expands the selected sequence and `$91AD` advances it frame by frame, feeding background/sprite palette record selectors back through the `$A208` palette loader. Normal durations use the low seven bits; `$7F` in the sequence repeat/control byte means indefinite cycling. `$7E` and high-bit duration/control forms remain the unrecovered value-level edge cases.
+`$A21C/$A21D` is a separate palette-animation table base. NOV2 `$90E8` expands the selected sequence and `$91AD` advances it frame by frame, feeding background/sprite palette record selectors back through the `$A208` palette loader. The control state machine is now fully recovered in [Gameplay palette-animation engine](PALETTE_ANIMATION_ENGINE.md): ordinary controls are finite cycle counters, `$7E` cycles until a fresh A press on a cycle boundary and then stops, `$7F` cycles indefinitely, control bit 7 is a fresh-A pre-start gate, and frame durations are always masked with `#$7F`. The retail tables themselves use none of the `$7E`, high-bit-control, or high-bit-duration forms.
 
 ## 12. What is still unknown
 
 The old broad statement “gameplay graphics are unknown” is no longer accurate. The remaining unknowns are narrower:
 
 - higher-level narrative names for a few source-used exploration commands whose low-level state effects are already recovered;
-- more specific naming of palette high-bit selector tags and the remaining `$A21C` high-bit control forms;
+- more specific story-facing naming of individual palette effects where replay context proves it;
 - whether any separate metatile abstraction exists in another path. The recovered `$A21E` background engine itself expands direct tile IDs and does not need one.
 
 These are now appropriate targets for later reverse engineering. None blocks ordinary size-neutral CHR corrections, metasprite edits, actor placement audits, direct map-tile fixes, or palette-table analysis.
