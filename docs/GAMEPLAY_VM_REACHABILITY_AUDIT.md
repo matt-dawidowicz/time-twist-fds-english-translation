@@ -208,9 +208,12 @@ story-facing labels, but it is no longer needed to determine whether the 327
 bytes conceal an unknown interpreter path.
 
 The major low-level VM/graphics-control unknowns listed by the original audit are now
-closed: `$FD/$FE` are verified left/right boundaries and the `$A21C`
-palette-animation control language is fully recovered. Remaining work is contextual:
+closed: `$FD/$FE` are verified left/right boundaries, the `$A21C`
+palette-animation control language is fully recovered, and retail `E0` packed
+disk/side/scene targets are completely mapped in
+[FDS scene-transition map](FDS_SCENE_TRANSITIONS.md). Remaining work is contextual:
 
 1. correlate individual palette/audio call sites with story-facing visual/Foley/music
    names when clean replay proves them;
-2. correlate FDS transition selectors with exact scene/file outcomes.
+2. use clean replay for runtime certification of transitions and progression rather
+   than to discover an unknown transition operand language.
