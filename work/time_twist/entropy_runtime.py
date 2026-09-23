@@ -170,9 +170,7 @@ DYNAMIC_MENU_LAYOUT_PATCHES = (
     RuntimePatch(
         file_offset=0x3885,
         expected=_hex("A5 32 C9 04 90 05 A9 80 4C 92 98 A9 40 85 14"),
-        replacement=_hex(
-            "20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C C5 85"
-        ),
+        replacement=_hex("20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C C5 85"),
         label="width-aware leading menu cursor and typewriter gate",
     ),
 )
