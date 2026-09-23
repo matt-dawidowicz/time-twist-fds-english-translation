@@ -92,9 +92,9 @@ class GameplayGraphicsFormatTests(unittest.TestCase):
     def test_ordinary_hotspot_has_no_boundary_side(self) -> None:
         """Keep ordinary bottom bounds distinct from directional sentinels."""
         data = bytes((1, 3, 4, 8, 9))
-        rectangle = parse_hotspot_records(
-            data, LOAD, LOAD + len(data)
-        )[0].rectangles[0]
+        rectangle = parse_hotspot_records(data, LOAD, LOAD + len(data))[
+            0
+        ].rectangles[0]
         self.assertIsNone(rectangle.boundary_side)
 
     def test_background_map_stream_decodes_literals_runs_and_rectangle(
