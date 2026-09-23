@@ -122,6 +122,9 @@ PRESENTATION_LAYOUT_RECORDS = frozenset(
         # following input instruction on a fresh row even though "Enter" would
         # technically fit beside the title under the generic greedy wrapper.
         "TT1A/g0/r3",
+        # Keep the test announcement separate from its instruction. This is
+        # a presentation boundary, not ordinary greedy prose wrapping.
+        "TT1A/g0/r5",
     }
 )
 
