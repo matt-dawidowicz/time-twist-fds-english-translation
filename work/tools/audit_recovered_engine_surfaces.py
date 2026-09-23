@@ -20,6 +20,7 @@ from time_twist.gameplay_graphics import (
     parse_metasprite_definitions,
     parse_static_placement_records,
 )
+from time_twist.palette_animation import parse_palette_animation_records
 from time_twist.project import (
     KNOWN_SCENARIO_BANKS,
     source_dictionary_reference_floor,
@@ -45,6 +46,38 @@ TEXT_SCROLL_NMI_CPU = 0x84AE
 CONTROLLER_POLL_CPU = 0x67F2
 NEW_PRESS_MASK_ADDRESS = 0x001F
 A_BUTTON_NEW_PRESS_MASK = 0x80
+
+PALETTE_ANIMATION_TABLES = {
+    "TT1B": (2, 0xCE0B, 0xCE2C),
+    "TT2": (3, 0xCF67, 0xCFCA),
+    "TT3A": (5, 0xCEDD, 0xCF3A),
+    "TT4": (7, 0xD147, 0xD192),
+    "TT5": (9, 0xCAF2, 0xCB1F),
+    "T25": (10, 0xC056, 0xC08C),
+    "TT6C": (13, 0xCC5C, 0xCD0D),
+}
+EXPECTED_PALETTE_CONTROL_COUNTS = {
+    0x03: 1,
+    0x04: 1,
+    0x14: 1,
+    0x1E: 3,
+    0x7F: 44,
+}
+EXPECTED_PALETTE_DURATION_COUNTS = {
+    0x01: 11,
+    0x02: 54,
+    0x03: 4,
+    0x04: 22,
+    0x08: 26,
+    0x10: 9,
+    0x12: 2,
+    0x1E: 4,
+    0x30: 1,
+    0x3C: 2,
+    0x40: 3,
+    0x5A: 1,
+    0x60: 3,
+}
 
 TEXT_CONTROL_INITIAL_STATES = {
     1: 0x13,
@@ -658,6 +691,123 @@ def _reported_hotspot_marker_count(report: dict[str, object], key: str) -> int:
     return value
 
 
+def _palette_animation_report(
+    scenes: tuple[SceneLoadSet, ...],
+    files_by_id: dict[int, tuple[FdsFile, ...]],
+    nov2: bytes,
+) -> dict[str, object]:
+    """Validate native control flow and the unique retail animation tables."""
+    _expect_nov2_bytes(
+        nov2,
+        0x9209,
+        bytes.fromhex(
+            "AD BA 92 F0 05 AD BB 92 D0 03 4C 9C 92 C9 80 90 0E "
+            "A5 1F 29 80 F0 7C AD BB 92 29 7F 8D BB 92"
+        ),
+        "palette zero/high-bit A gate",
+    )
+    _expect_nov2_bytes(
+        nov2,
+        0x9249,
+        bytes.fromhex(
+            "BD BC 92 29 7F C9 7F D0 03 4C 9C 92 CD 90 07 F0 03 "
+            "4C 9C 92 A9 00 8D 90 07 EE 8F 07 AD BA 92 CD 8F 07 "
+            "F0 03 4C 9C 92 A9 00 8D 8F 07 8D 90 07 AD BB 92 "
+            "C9 7F F0 1D C9 7E D0 09 A5 1F 29 80 F0 13 4C 94 92 "
+            "CE BB 92 F0 08 4C 9C 92 A9 00 8D BB 92 4C 9C 92"
+        ),
+        "palette duration and cycle-control state machine",
+    )
+
+    control_counts: Counter[int] = Counter()
+    duration_counts: Counter[int] = Counter()
+    table_reports = []
+    total_records = 0
+    for owner, (scene_index, start, end) in PALETTE_ANIMATION_TABLES.items():
+        composed = _compose_program_overlay(scenes[scene_index], files_by_id)
+        if composed is None:
+            raise EngineSurfaceAuditError(
+                f"{owner}: palette scene has no program overlay"
+            )
+        data, owners, programs = composed
+        if programs[-1] != owner:
+            raise EngineSurfaceAuditError(
+                f"{owner}: expected active program, got {programs[-1]}"
+            )
+        actual_start = _read_word(data, 0x1C)
+        if actual_start != start:
+            raise EngineSurfaceAuditError(
+                f"{owner}: palette-animation start drifted "
+                f"0x{actual_start:04X} != 0x{start:04X}"
+            )
+        table_owner, nonempty = _range_owner(owners, start, end)
+        if not nonempty or table_owner != owner:
+            raise EngineSurfaceAuditError(
+                f"{owner}: palette-animation ownership drifted to {table_owner!r}"
+            )
+        records = parse_palette_animation_records(data, start, end)
+        total_records += len(records)
+        for record in records:
+            for sequence in record.sequences:
+                control_counts[sequence.control] += 1
+                for frame in sequence.frames:
+                    duration_counts[frame.duration_raw] += 1
+
+        table_reports.append(
+            {
+                "owner": owner,
+                "scene_index": scene_index,
+                "start": f"0x{start:04X}",
+                "end": f"0x{end:04X}",
+                "bytes": end - start,
+                "records": len(records),
+            }
+        )
+
+    if total_records != 50:
+        raise EngineSurfaceAuditError(
+            f"retail palette-animation record count drifted: {total_records}"
+        )
+    if dict(control_counts) != EXPECTED_PALETTE_CONTROL_COUNTS:
+        raise EngineSurfaceAuditError(
+            "retail palette control inventory drifted: "
+            f"{dict(sorted(control_counts.items()))!r}"
+        )
+    if dict(duration_counts) != EXPECTED_PALETTE_DURATION_COUNTS:
+        raise EngineSurfaceAuditError(
+            "retail palette duration inventory drifted: "
+            f"{dict(sorted(duration_counts.items()))!r}"
+        )
+    if control_counts[0x7E] or any(value >= 0x80 for value in control_counts):
+        raise EngineSurfaceAuditError(
+            "retail unexpectedly uses source-unused palette control forms"
+        )
+    if any(value >= 0x80 for value in duration_counts):
+        raise EngineSurfaceAuditError(
+            "retail unexpectedly uses high-bit palette durations"
+        )
+
+    return {
+        "initializer_cpu": "0x90E8",
+        "tick_cpu": "0x91AD",
+        "new_press_mask": "0x001F",
+        "a_button_mask": "0x80",
+        "record_count": total_records,
+        "tables": table_reports,
+        "control_counts": {
+            f"0x{value:02X}": count
+            for value, count in sorted(control_counts.items())
+        },
+        "duration_counts": {
+            f"0x{value:02X}": count
+            for value, count in sorted(duration_counts.items())
+        },
+        "source_uses_0x7e_control": False,
+        "source_uses_high_bit_control": False,
+        "source_uses_high_bit_duration": False,
+    }
+
+
 def audit_engine_surfaces(zenpen: Path, kouhen: Path) -> dict[str, object]:
     """Return a source-backed audit of the recovered gameplay-engine surfaces."""
     images = {
@@ -703,6 +853,7 @@ def audit_engine_surfaces(zenpen: Path, kouhen: Path) -> dict[str, object]:
             "retail hotspot boundary-marker inventory drifted: "
             f"{left_boundary_markers} left, {right_boundary_markers} right"
         )
+    palette_animation = _palette_animation_report(scenes, files_by_id, nov2)
     counts, surfaces = _source_control_counts(images)
     if counts[7]:
         raise EngineSurfaceAuditError(
@@ -722,6 +873,7 @@ def audit_engine_surfaces(zenpen: Path, kouhen: Path) -> dict[str, object]:
             "scene_load_sets": [asdict(scene) for scene in scenes],
         },
         "scene_structures": scene_reports,
+        "palette_animation": palette_animation,
         "runtime": {
             "oam_page": "0x0200",
             "oam_dma_page": 2,
