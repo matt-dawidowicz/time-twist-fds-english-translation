@@ -61,33 +61,35 @@ See [docs/ENGLISH_PAGINATION_POLICY.md](docs/ENGLISH_PAGINATION_POLICY.md).
    pre-commit install
    ```
 
-6. Before every commit or pull-request update, run the canonical hygiene gate:
+6. During ordinary editing, run the fast deterministic check:
 
    ```powershell
-   python work/tools/premerge_hygiene.py
+   python work/tools/quick_check.py
    ```
 
-   A translation or release change is not considered complete until this passes.
-   The gate checks Python syntax, production-map materialization, Black, Ruff,
-   pydocstyle, mypy, canonical translation tests, and the v38 recovery gate.
+   It checks syntax, the public-tree policy, and canonical translation
+   regressions without rebuilding or re-certifying unrelated release machinery.
 
-7. Run the complete unit suite:
+7. Before opening or merging a pull request, run the complete unit suite:
 
    ```powershell
    python work/run_tests.py unit
    ```
 
-8. Build a candidate and playtest the changed scene before promotion.
+   CI owns the full lint, typing, packaging, and unit-test matrix. Release
+   certification is a separate maintainer boundary, not part of every text edit.
+
+8. Build and playtest the changed scene before promotion.
 
 In a pull request, name every changed record ID and explain the source meaning,
 wording choice, control/layout change, and tests performed.
 
 ## Pipeline rule
 
-If CI catches a cheap, deterministic class of failure that the pre-merge hygiene
-script did not catch, fix the immediate defect **and add that check to
-`work/tools/premerge_hygiene.py`** when practical. The same category of failure
-should not have to be rediscovered by a later pull request.
+Keep the edit loop cheap. Add a check to `work/tools/quick_check.py` only when
+it is deterministic, fast, and broadly useful during ordinary iteration.
+Expensive lint/type/package/release checks belong in CI or the release process
+so they are not repeated after every wording or layout edit.
 
 ## Do not do these things
 
