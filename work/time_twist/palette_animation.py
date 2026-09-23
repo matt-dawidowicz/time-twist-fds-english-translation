@@ -140,9 +140,8 @@ def parse_palette_animation_records(
     end = end_address - load_address
     if start < 0 or end < start or end > len(data):
         raise PaletteAnimationError(
-            "invalid palette-animation range 0x{:04X}-0x{:04X}".format(
-                start_address, end_address
-            )
+            f"invalid palette-animation range 0x{start_address:04X}-"
+            f"0x{end_address:04X}"
         )
 
     cursor = start
@@ -153,34 +152,28 @@ def parse_palette_animation_records(
         cursor += 1
         if sequence_count == 0:
             raise PaletteAnimationError(
-                "zero-sequence palette record at 0x{:04X}".format(
-                    record_address
-                )
+                f"zero-sequence palette record at 0x{record_address:04X}"
             )
 
         sequences: list[PaletteAnimationSequence] = []
         for _ in range(sequence_count):
             if cursor + 2 > end:
                 raise PaletteAnimationError(
-                    "truncated palette sequence at 0x{:04X}".format(
-                        load_address + cursor
-                    )
+                    f"truncated palette sequence at 0x{load_address + cursor:04X}"
                 )
             frame_count = data[cursor]
             control = data[cursor + 1]
             cursor += 2
             if frame_count == 0:
                 raise PaletteAnimationError(
-                    "zero-frame palette sequence at 0x{:04X}".format(
-                        load_address + cursor - 2
-                    )
+                    f"zero-frame palette sequence at "
+                    f"0x{load_address + cursor - 2:04X}"
                 )
             payload_end = cursor + frame_count * 3
             if payload_end > end:
                 raise PaletteAnimationError(
-                    "palette frames overrun table at 0x{:04X}".format(
-                        load_address + cursor
-                    )
+                    f"palette frames overrun table at "
+                    f"0x{load_address + cursor:04X}"
                 )
             frames = tuple(
                 PaletteAnimationFrame(*data[offset : offset + 3])
