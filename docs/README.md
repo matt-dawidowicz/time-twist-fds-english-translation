@@ -62,3 +62,5 @@ extracted retail payloads, emulator states, or private fixtures.
 - [Gameplay palette-animation engine](PALETTE_ANIMATION_ENGINE.md) - recovered `$A21C` record grammar, A-button gates, cycle controls, duration masking, and retail inventory.
 
 - [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md) - verified `E0` packed disk/side/scene targets, all 15 load rows, and all 11 retail transition call sites.
+
+- [Part 1 to Part 2 handoff](PART1_PART2_HANDOFF.md) - verified TT3B ending system sequence, persistent SAVE/title gate, Part 2 menu predicate, and `E0 C7` Kouhen Side B entry.
