@@ -56,6 +56,35 @@ def _op(
     )
 
 
+def inline_predicate_span(data: bytes, offset: int = 0) -> int:
+    """Return bytes from an inline predicate start to its target table.
+
+    NOV2 `$977D-$97AF` uses the predicate's low nibble as the compact term
+    count. A low nibble of `$0F` switches to the following full-byte count.
+    The extended form has one additional packed-control byte relative to the
+    compact formula because the native pointer advance includes the marker and
+    extended-count header.
+
+    Args:
+        data: Byte stream containing the inline predicate.
+        offset: Predicate start within `data`.
+
+    Returns:
+        Number of bytes occupied by the predicate encoding, stopping exactly at
+        the first result-target byte.
+
+    Raises:
+        ValueError: If the extended-count header is truncated.
+    """
+    count = data[offset] & 0x0F
+    if count == 0x0F:
+        if offset + 1 >= len(data):
+            raise ValueError("truncated extended inline predicate")
+        count = data[offset + 1]
+        return count + ((count + 6) // 2)
+    return count + ((count + 2) // 2)
+
+
 RETAIL_VM_OPCODES = (
     _op(0x00, "store_immediate", "address:u16, value:u8", "4 bytes"),
     _op(0x01, "add_immediate", "address:u16, value:u8", "4 bytes"),

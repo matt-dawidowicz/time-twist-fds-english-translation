@@ -7,12 +7,18 @@ Evidence labels follow `REVERSE_ENGINEERING_GUIDE.md`. A mnemonic is deliberatel
 ## Coverage contract
 
 - **61** distinct opcodes occur in the source-reachable retail language.
-- Route-seeded static execution reaches **7,283 command starts** covering **23,902 / 24,229 script bytes (98.6504%)**.
-- The remaining **327 bytes** are non-reached source islands; they are not promoted to executable commands without a proven incoming VM state.
+- The historical route-seeded result of **23,902 / 24,229 bytes (98.6504%)** is retained only as a provenance baseline.
+- The completed structural may-reach model covers **24,199 / 24,229 bytes (99.8762%)**.
+- The remaining **30 bytes are fully classified**: 20 bytes of shipped-but-unused audio-helper variants, 2 bytes of unreferenced valid text bytecode, and 8 skipped/padding bytes.
+- No unclassified gameplay-script island remains.
 - No source-reachable class-C or class-F opcode occurs.
 - `$A20E` indexed-predicate forms are native engine capability but have zero source-reachable uses and `$A20E=$0000` in all 13 composed gameplay scenes.
 
-`work/time_twist/retail_vm.py` is the machine-readable registry. `work/tools/audit_retail_vm_semantics.py` source-guards the relevant NOV2 interpreter surfaces and real-scene header invariants against maintainer-supplied original disks.
+`work/time_twist/retail_vm.py` is the machine-readable registry. Its
+`inline_predicate_span()` helper locks the exact compact and extended predicate
+pointer advance implemented by NOV2 `$977D`. `work/tools/audit_retail_vm_semantics.py`
+source-guards the relevant NOV2 interpreter surfaces and real-scene header
+invariants against maintainer-supplied original disks.
 
 ## Canonical opcode table
 
@@ -146,4 +152,4 @@ The registry is **not** a list of everything the interpreter can theoretically d
 
 ## Remaining semantic-completion work
 
-Every source-used `Bx` opcode now has a verified low-level name and operand contract, and `docs/AUDIO_COMMAND_MAP.md` binds every source-used audio selector to its resident or scene-specific driver identity. The follow-up `GAMEPLAY_VM_REACHABILITY_AUDIT.md` explains 163 bytes of the historical 327-byte remainder through the recovered B9/hotspot `$91/$A7` state flow and classifies the residual 164 bytes. Remaining work is narrower: runtime-test the conditional/orphan residuals, determine human-facing direction names for `$FD/$FE`, finish high-bit palette-animation semantics, and correlate FDS transition selectors with exact scene/file outcomes.
+Every source-used `Bx` opcode now has a verified low-level name and operand contract, and `docs/AUDIO_COMMAND_MAP.md` binds every source-used audio selector to its resident or scene-specific driver identity. The completed `GAMEPLAY_VM_REACHABILITY_AUDIT.md` closes the historical 327-byte question: no unclassified source island remains. Remaining work is narrower: determine human-facing direction names for `$FD/$FE`, finish high-bit palette-animation semantics, and correlate FDS transition selectors with exact scene/file outcomes.

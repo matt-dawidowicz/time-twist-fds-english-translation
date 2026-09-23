@@ -128,6 +128,10 @@ NOV2_GUARDS = {
         "C8 B1 C5 8D 8B 07"
     ),
     0x79A7: bytes.fromhex("A9 AE A0 79 4C 2A 61 BA 79 C0 79 5E 7B"),
+    0x977D: bytes.fromhex(
+        "A0 00 B1 94 29 0F C9 0F D0 0E C8 B1 94 85 31 A6 31 "
+        "E8 E8 E8 E8 4C 99 97 85 31 A6 31 E8 E8 8A 4A 85 31"
+    ),
     0x7C0E: bytes.fromhex(
         "8A F0 03 4C C0 7D A9 FA 85 8D 20 E0 9B A9 FB 85 8D"
     ),
@@ -268,10 +272,13 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
             "status": "historical conservative baseline",
         },
         "reachability_refinement": {
-            "hotspot_selector_explained_bytes": 163,
-            "residual_source_bytes": 164,
-            "structural_may_reach_bytes": 24065,
-            "structural_may_reach_percent": 99.3231,
+            "structural_may_reach_bytes": 24199,
+            "total_script_bytes": 24229,
+            "structural_may_reach_percent": 99.8762,
+            "classified_non_live_bytes": 30,
+            "unused_audio_helper_bytes": 20,
+            "unreferenced_bytecode_bytes": 2,
+            "skipped_or_padding_bytes": 8,
             "runtime_certified": False,
             "reference": "docs/GAMEPLAY_VM_REACHABILITY_AUDIT.md",
         },
