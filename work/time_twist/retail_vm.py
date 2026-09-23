@@ -56,7 +56,6 @@ def _op(
     )
 
 
-
 def inline_predicate_span(data: bytes, offset: int = 0) -> int:
     """Return bytes from an inline predicate start to its target table.
 
