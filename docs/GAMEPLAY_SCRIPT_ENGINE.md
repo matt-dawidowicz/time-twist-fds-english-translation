@@ -434,7 +434,10 @@ physically reside on the disk and side encoded by the operand. The full row/call
 map is in [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md).
 
 There is no gameplay-script `E0` edge from Zenpen's final gameplay row 6 to Kouhen's
-initial gameplay row 7; Part 2 startup crosses that boundary outside the gameplay VM.
+initial gameplay row 7. That boundary is now fully recovered in
+[Part 1 to Part 2 handoff](PART1_PART2_HANDOFF.md): TT3B invokes resident system
+sequence 5, persistent SAVE/title state controls Part 2 menu visibility, and the title's
+Part 2 branch finally executes `E0 C7` into Kouhen Side B row 7.
 
 The interpreter contains other `$Ex` low-nibble handling, but unused forms should not
 be promoted to retail language without source evidence.
