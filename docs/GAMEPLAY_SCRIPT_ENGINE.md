@@ -93,14 +93,16 @@ both fresh-start execution and every valid `$A220` route/label entry.
 - overlapping decoded command ranges: **0**;
 - reachable indexed `$A20E` predicate forms: **0**.
 
-The historical baseline leaves **327 bytes** as non-reached source islands. The
-address-level follow-up in [Gameplay VM reachability-island audit](GAMEPLAY_VM_REACHABILITY_AUDIT.md)
-recovers an important missing state flow: `B9` selects a hotspot group through `$BA`,
-and the hotspot scanner supplies its count/index through `$91/$A7` to the ordinary
-`30/31` result dispatcher. A structural may-reach model using that native contract
-explains **163** of the historical remainder, leaving **164 bytes** for focused
-classification. The resulting 24,065 / 24,229 (**99.3231%**) figure is deliberately
-labelled *structural may-reach*, not runtime-certified coverage.
+The historical **23,902 / 24,229 (98.6504%)** baseline is now retained only as
+a provenance marker. The address-level follow-up in
+[Gameplay VM reachability-island audit](GAMEPLAY_VM_REACHABILITY_AUDIT.md) adds
+three missing native behaviors: exploration-fed `$91/$A7` result state, the
+`$A4=$FF` no-result fallthrough of `30/31`, and the exact extended
+inline-predicate span implemented by `$977D`. The current structural may-reach
+result is **24,199 / 24,229 bytes (99.8762%)**. The remaining **30 bytes are fully
+classified** as unused valid bytecode or skipped/padding bytes, so there is no
+remaining unclassified source island. This remains a static may-reach result,
+not runtime execution coverage.
 
 Fresh-start execution leaves valid route/resume entries cold at T22 labels 4, 8, 11,
 12, and 13, and TT5 label 6. Those labels become reachable when valid route entry is
@@ -440,11 +442,9 @@ The retail gameplay VM is structurally recovered. The audio-selector and source-
 `Bx` completion passes are now closed; remaining work is narrower value-level
 refinement:
 
-1. runtime-test the **90 conditional result-fallthrough bytes** and **61
-   bytecode-shaped orphan-helper bytes** isolated by the reachability-island audit;
-2. assign human-facing world directions to verified opposing `$FD/$FE` sentinels;
-3. finish the remaining high-bit palette-animation control semantics;
-4. add story-facing names to individual audio call sites only when clean replay
+1. assign human-facing world directions to verified opposing `$FD/$FE` sentinels;
+2. finish the remaining high-bit palette-animation control semantics;
+3. add story-facing names to individual audio call sites only when clean replay
    context proves them, without replacing the verified driver identities in
    `docs/AUDIO_COMMAND_MAP.md`.
 
