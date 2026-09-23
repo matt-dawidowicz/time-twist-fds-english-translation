@@ -21,11 +21,11 @@ The final composed Zenpen gameplay scene is row 6, `TT3A + TT3B`. The active
 TT3B ending tail is:
 
 ~~~text
-$A60C  B2
-$A60D  10 39
-$A60F  A1 78
-$A611  10 3A
-$A613  0F 05
+$A60B  B2
+$A60C  10 39
+$A60E  A1 78
+$A610  10 3A
+$A612  0F 05
 ~~~
 
 `0F 05` is the only instruction-aligned use of system sequence 5 in the 13
@@ -249,7 +249,7 @@ contract; clean replay remains appropriate for final behavioral certification.
 
 `work/tools/audit_retail_vm_semantics.py` now guards:
 
-- TT3B's unique `0F 05` ending tail at `$A60C`;
+- TT3B's unique `0F 05` ending tail at `$A60B`;
 - NOV2 SAVE validation and `$03DD/$03DE -> $D2/$D3` at `$6990`;
 - the successful FDS-write marker stamping at `$7B25`;
 - NOV4 route-1 `$D2` compare and `61 E4` derivation at `$BFEB`;
