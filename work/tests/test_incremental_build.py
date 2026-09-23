@@ -83,8 +83,8 @@ class IncrementalBuildTests(unittest.TestCase):
 
     def test_no_change_returns_original_bytes(self) -> None:
         data = _bank(
-            ((encode_english("A"),),),
-            ((encode_english("B"),),),
+            (encode_english("A"),),
+            (encode_english("B"),),
         )
         result = rebuild_entropy_bank(
             data,
@@ -99,8 +99,8 @@ class IncrementalBuildTests(unittest.TestCase):
 
     def test_terminal_group_resize_updates_following_pointer(self) -> None:
         data = _bank(
-            ((encode_english("A"),),),
-            ((encode_english("B"),),),
+            (encode_english("A"),),
+            (encode_english("B"),),
         )
         old_pointer = int.from_bytes(data[0x50:0x52], "little")
         result = rebuild_entropy_bank(
@@ -127,8 +127,8 @@ class IncrementalBuildTests(unittest.TestCase):
         self.assertEqual(verified.changed_records, ())
 
     def test_nonterminal_group_cannot_grow(self) -> None:
-        first = ((encode_english("A"),),)
-        second = ((encode_english("B"),),)
+        first = (encode_english("A"),)
+        second = (encode_english("B"),)
         first_blob = pack_entropy_stream(first)
         data = _bank(
             first,
@@ -163,7 +163,7 @@ class IncrementalBuildTests(unittest.TestCase):
         )
         data = _bank(
             group_zero,
-            ((encode_english("C"),),),
+            (encode_english("C"),),
             dictionary=(d1, d2),
         )
         result = rebuild_entropy_bank(
