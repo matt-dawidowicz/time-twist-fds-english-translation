@@ -283,3 +283,32 @@ accurately than “pause/page/reveal”:
 Narrative effects such as a speaker change or dramatic reveal are consequences
 of where the script places these operations. They are not separate opcode
 meanings.
+
+## Typewriter SFX after a leading presentation control
+
+NOV2's row selector at `$837E` consumes `$73` only after it has already
+selected the correct dirty-row origin. Historically it then cleared `$73`
+immediately. That made the staged-cell uploader at `$847E` unable to
+distinguish an ordinary glyph from the first glyph following a leading
+presentation-only row/scroll transition.
+
+The production runtime now retains `$73=1` after that row selection and uses
+it as a one-shot typewriter marker:
+
+```asm
+$988A  JMP $9894       ; normal menu path skips the helper
+$988D  LSR $73         ; 1 -> 0 with carry set; 0 stays 0 with carry clear
+$988F  BCS $98AD       ; suppress exactly the first post-control click
+$9891  JMP $85C5       ; otherwise use the native typewriter SFX
+```
+
+The helper occupies the existing ten-byte `$988A-$9893` NOP island. The
+normal menu cursor path reaches `$988A` by fallthrough and therefore jumps
+over the helper; only the glyph uploader calls `$988D`.
+
+This is intentionally **not** a timing delay. The renderer/NMI cadence,
+semantic control behavior, and native `$85C5` sound remain unchanged.
+The gate only prevents the control-only staging transition from producing an
+audible click before the first visible glyph. The motivating retail case is
+`TT3A/g0/r26`, which begins with `CTRL:4` before the printable text.
+
