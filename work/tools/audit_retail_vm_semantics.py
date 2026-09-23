@@ -230,11 +230,13 @@ def _guard_part_handoff(
     nov4 = images[0].sides[0].find_file("NOV4")
     route_address = 0xBFEB
     route_expected = bytes.fromhex(
-        "0C D2 00 00 07 61 E4 61 EA 29 03 01 "
-        "30 FE BF 51 C0 59 C0"
+        "0C D2 00 00 07 61 E4 61 EA 29 03 01 " "30 FE BF 51 C0 59 C0"
     )
     route_offset = route_address - nov4.load_address
-    if nov4.data[route_offset : route_offset + len(route_expected)] != route_expected:
+    if (
+        nov4.data[route_offset : route_offset + len(route_expected)]
+        != route_expected
+    ):
         raise RetailVmAuditError(
             "NOV4 Part 2 title-gate route changed at CPU $BFEB"
         )
@@ -258,7 +260,10 @@ def _guard_part_handoff(
     filter_address = 0xA27C
     filter_expected = bytes.fromhex("09 00 91 E3 92 01 E3 E4 00")
     filter_offset = filter_address - nov4.load_address
-    if nov4.data[filter_offset : filter_offset + len(filter_expected)] != filter_expected:
+    if (
+        nov4.data[filter_offset : filter_offset + len(filter_expected)]
+        != filter_expected
+    ):
         raise RetailVmAuditError(
             "NOV4 Start/Load/Part 2 predicate filter changed"
         )
@@ -267,9 +272,7 @@ def _guard_part_handoff(
     target_expected = bytes((0xE0, KOUHEN_FIRST_SCENE_TARGET))
     target_offset = target_address - nov4.load_address
     if nov4.data[target_offset : target_offset + 2] != target_expected:
-        raise RetailVmAuditError(
-            "NOV4 Part 2 target changed at CPU $C059"
-        )
+        raise RetailVmAuditError("NOV4 Part 2 target changed at CPU $C059")
 
     composed = _compose_scene(EXPECTED_SCENE_ROWS[6], files_by_id)
     if composed is None:
@@ -280,11 +283,12 @@ def _guard_part_handoff(
             f"Zenpen final scene owner changed to {programs[-1]}"
         )
     ending_address = 0xA60B
-    ending_expected = bytes.fromhex(
-        "B2 10 39 A1 78 10 3A 0F 05"
-    )
+    ending_expected = bytes.fromhex("B2 10 39 A1 78 10 3A 0F 05")
     ending_offset = ending_address - OVERLAY_LOAD
-    if ending[ending_offset : ending_offset + len(ending_expected)] != ending_expected:
+    if (
+        ending[ending_offset : ending_offset + len(ending_expected)]
+        != ending_expected
+    ):
         raise RetailVmAuditError(
             "TT3B ending system-sequence tail changed at CPU $A60B"
         )
