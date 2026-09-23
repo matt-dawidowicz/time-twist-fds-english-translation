@@ -484,6 +484,25 @@ def command_replace_file(args: argparse.Namespace) -> None:
     print(args.output)
 
 
+def command_build(args: argparse.Namespace) -> None:
+    """Incrementally rebuild changed scenario banks in a playtest image."""
+    from .incremental_build import build_incremental_image
+    from .release_metadata import discover_project_root
+
+    project_root = discover_project_root(args.project_root)
+    source = args.image.read_bytes()
+    result = build_incremental_image(
+        source,
+        translations_directory=project_root / "work" / "translations",
+    )
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_bytes(result.data)
+    print(f"changed banks: {', '.join(result.changed_banks) or 'none'}")
+    print(f"changed records: {len(result.changed_records)}")
+    print(f"SHA-256 {hashlib.sha256(result.data).hexdigest().upper()}")
+    print(args.output)
+
+
 def command_release_lock(args: argparse.Namespace) -> None:
     """Validate or intentionally refresh the approved release-source lock."""
     from .release import (

@@ -9,6 +9,7 @@ import argparse
 from pathlib import Path
 
 from .cli_commands import (
+    command_build,
     command_combine,
     command_extract,
     command_font_patch,
@@ -284,6 +285,34 @@ def build_parser() -> argparse.ArgumentParser:
     )
     replace_file.add_argument("output", type=Path, help="rebuilt output .fds")
     replace_file.set_defaults(function=command_replace_file)
+
+    build = subparsers.add_parser(
+        "build",
+        help="incrementally rebuild changed scenario banks",
+        description=(
+            "Start from an existing four-side English playtest image, compare "
+            "its entropy-coded scenario text with the canonical translation "
+            "maps, and rebuild only safely bounded changed banks. This command "
+            "does not run the release optimizer or promote a release."
+        ),
+    )
+    build.add_argument(
+        "image",
+        type=Path,
+        help="existing four-side English playtest .fds image",
+    )
+    build.add_argument(
+        "--output",
+        required=True,
+        type=Path,
+        help="destination candidate .fds image",
+    )
+    build.add_argument(
+        "--project-root",
+        type=Path,
+        help="project checkout (auto-discovered from the current directory)",
+    )
+    build.set_defaults(function=command_build)
 
     release_lock = subparsers.add_parser(
         "release-lock",

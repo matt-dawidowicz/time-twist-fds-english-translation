@@ -79,7 +79,16 @@ See [docs/ENGLISH_PAGINATION_POLICY.md](docs/ENGLISH_PAGINATION_POLICY.md).
    CI owns the full lint, typing, packaging, and unit-test matrix. Release
    certification is a separate maintainer boundary, not part of every text edit.
 
-8. Build and playtest the changed scene before promotion.
+8. Build and playtest the changed scene before promotion. When starting from a
+   current four-side candidate, prefer the bounded development build:
+
+   ```powershell
+   time-twist build path/to/current-candidate.fds --output build/next-candidate.fds
+   ```
+
+   If the edit does not fit the candidate's existing safe bank layout, the
+   command fails closed. That is the signal to use the full release optimizer,
+   not to weaken the incremental safety checks.
 
 In a pull request, name every changed record ID and explain the source meaning,
 wording choice, control/layout change, and tests performed.

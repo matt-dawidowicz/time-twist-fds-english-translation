@@ -58,9 +58,21 @@ Most translation contributors do not need to run low-level FDS commands.
 
 ## Build a local playtest candidate
 
-You can skip this unless you have the exact private v25 safe-encoding baseline and are
-working from a checkout whose source lock is already approved. Place the inputs
-only in the ignored local locations:
+If you already have a current four-side English playtest image, ordinary
+scenario-text edits can use the bounded incremental builder:
+
+```powershell
+time-twist build path/to/current-candidate.fds --output build/next-candidate.fds
+```
+
+This reuses the candidate's existing entropy dictionaries and fixed runtime
+layout. It rebuilds only scenario banks whose decoded text differs from
+`work/translations`. If an edit would require moving fixed-position data, the
+command fails closed; use the full release builder for that case.
+
+For a clean release-grade reconstruction, you need the exact private v25
+safe-encoding baseline and a checkout whose source lock is already approved.
+Place the input only in the ignored local location:
 
 ```text
 work/baseline/time_twist_v25_safe_encoding.fds

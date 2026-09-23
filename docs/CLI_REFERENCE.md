@@ -75,6 +75,26 @@ raster-split behavior. `--slide-target` defaults to `Time Twist approved
 native slide.png` beside `TARGET`.
 
 
+## Development build command
+
+### `build IMAGE --output PATH [--project-root PATH]`
+
+Incrementally rebuilds scenario text in an existing four-side English playtest
+image. The command compares each entropy-coded scenario bank with the canonical
+`work/translations/*.json` maps and leaves semantically current banks untouched.
+
+The development builder deliberately preserves the existing dictionary, group
+table, fixed code/data, UI patches, title, font, and runtime patches. A
+fixed-position group may only fit within its current encoded byte span; only a
+contiguous group-stream suffix that already reaches the end of its bank may
+resize. If those bounds are insufficient, the command fails and the maintainer
+must use `release-build --candidate` so the full optimizer can choose a new
+layout.
+
+This command creates a playtest candidate only. It does not validate or update
+the release lock, promote a release target, or certify release reproducibility.
+
+
 ## Release commands
 
 All release commands accept `--project-root PATH`.

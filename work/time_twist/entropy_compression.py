@@ -231,6 +231,19 @@ def _make_parser(expansions: Sequence[_TRecord]):
     return parse
 
 
+def parse_entropy_record_with_expansions(
+    literal: Sequence[PackedSymbol],
+    expansions: Sequence[Sequence[PackedSymbol]],
+) -> tuple[PackedSymbol, ...]:
+    """Parse one literal record through an existing entropy dictionary.
+
+    This is the cheap development-build path: it reuses already-approved
+    dictionary expansions and performs no dictionary search or reordering.
+    """
+    parser = _make_parser(_to_records(expansions))
+    return _public_records((parser(_to_records((literal,))[0]),))[0]
+
+
 def _rebuild_definitions(
     expansions: Sequence[_TRecord],
 ) -> tuple[_TRecord, ...]:
