@@ -69,7 +69,14 @@ def _bank(
     output = bytearray(prefix)
     if len(output) < group_zero_offset:
         output.extend(bytes(group_zero_offset - len(output)))
-    output[group_zero_offset:group_zero_offset] = group_zero_blob
+    if group_zero_offset < len(output):
+        end = group_zero_offset + len(group_zero_blob)
+        if end > len(output):
+            raise AssertionError("fixed synthetic group exceeds prefix")
+        output[group_zero_offset:end] = group_zero_blob
+    else:
+        output.extend(group_zero_blob)
+
     if len(output) < group_one_offset:
         output.extend(bytes(group_one_offset - len(output)))
     if len(output) != group_one_offset:
