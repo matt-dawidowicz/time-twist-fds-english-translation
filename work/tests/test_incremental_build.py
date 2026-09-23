@@ -20,6 +20,7 @@ from time_twist.textcodec import PackedSymbol, SymbolKind
 
 
 def _write_word(data: bytearray, offset: int, value: int) -> None:
+    """Write one little-endian word into a synthetic test bank."""
     data[offset : offset + 2] = value.to_bytes(2, "little")
 
 
@@ -31,6 +32,7 @@ def _bank(
     group_one_offset: int | None = None,
     dictionary=(),
 ) -> bytes:
+    """Construct a minimal two-group entropy bank for bounded-rebuild tests."""
     prefix = bytearray(max(group_zero_offset, 0x80))
     table_offset = 0x50
     dictionary_offset = 0x60
@@ -89,6 +91,7 @@ class IncrementalBuildTests(unittest.TestCase):
     """Keep the development builder bounded and byte-stable."""
 
     def test_no_change_returns_original_bytes(self) -> None:
+        """Leave a semantically current entropy bank byte-identical."""
         data = _bank(
             (encode_english("A"),),
             (encode_english("B"),),
@@ -105,6 +108,7 @@ class IncrementalBuildTests(unittest.TestCase):
         self.assertEqual(result.changed_records, ())
 
     def test_terminal_group_resize_updates_following_pointer(self) -> None:
+        """Resize a terminal stream and update the next group pointer."""
         data = _bank(
             (encode_english("A"),),
             (encode_english("B"),),
@@ -134,6 +138,7 @@ class IncrementalBuildTests(unittest.TestCase):
         self.assertEqual(verified.changed_records, ())
 
     def test_nonterminal_group_cannot_grow(self) -> None:
+        """Reject growth that would overwrite unknown fixed-position bytes."""
         first = (encode_english("A"),)
         second = (encode_english("B"),)
         first_blob = pack_entropy_stream(first)
@@ -159,6 +164,7 @@ class IncrementalBuildTests(unittest.TestCase):
             )
 
     def test_forward_dictionary_reference_is_resolved(self) -> None:
+        """Resolve forward references used by recovered v38 dictionaries."""
         d2 = encode_english("AB")
         d1 = (
             PackedSymbol(SymbolKind.DICTIONARY, 2, 0, 0),
