@@ -312,9 +312,11 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
                 "scene_index": index,
                 "file_ids": [f"{file_id:02X}" for file_id in ids],
                 "file_names": [
-                    list(_file_id_names(files_by_id, file_id))
-                    if file_id not in (0x00, 0xFF)
-                    else []
+                    (
+                        list(_file_id_names(files_by_id, file_id))
+                        if file_id not in (0x00, 0xFF)
+                        else []
+                    )
                     for file_id in ids
                 ],
                 "disk_side_locations": [
@@ -334,7 +336,12 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
         )
 
     transition_calls: list[dict[str, object]] = []
-    for source_scene, source_program, address, operand in EXPECTED_SCENE_TRANSITIONS:
+    for (
+        source_scene,
+        source_program,
+        address,
+        operand,
+    ) in EXPECTED_SCENE_TRANSITIONS:
         source_ids = _scene_ids(nov2, source_scene)
         composed = _compose_scene(source_ids, files_by_id)
         if composed is None:
@@ -389,9 +396,11 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
                     f"{file_id:02X}" for file_id in target_ids
                 ],
                 "target_file_names": [
-                    list(_file_id_names(files_by_id, file_id))
-                    if file_id not in (0x00, 0xFF)
-                    else []
+                    (
+                        list(_file_id_names(files_by_id, file_id))
+                        if file_id not in (0x00, 0xFF)
+                        else []
+                    )
                     for file_id in target_ids
                 ],
             }
