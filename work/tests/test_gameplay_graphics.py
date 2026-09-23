@@ -5,6 +5,8 @@ from __future__ import annotations
 import unittest
 
 from time_twist.gameplay_graphics import (
+    HOTSPOT_LEFT_BOUNDARY,
+    HOTSPOT_RIGHT_BOUNDARY,
     GameplayGraphicsError,
     decode_background_map_stream,
     parse_actor_spawn_records,
@@ -82,8 +84,18 @@ class GameplayGraphicsFormatTests(unittest.TestCase):
         first, second = records[0].rectangles
         self.assertTrue(first.context_flag)
         self.assertEqual(first.left, 5)
-        self.assertEqual(first.bottom_or_special, 0xFD)
-        self.assertEqual(second.bottom_or_special, 0xFE)
+        self.assertEqual(first.bottom_or_special, HOTSPOT_LEFT_BOUNDARY)
+        self.assertEqual(first.boundary_side, "left")
+        self.assertEqual(second.bottom_or_special, HOTSPOT_RIGHT_BOUNDARY)
+        self.assertEqual(second.boundary_side, "right")
+
+    def test_ordinary_hotspot_has_no_boundary_side(self) -> None:
+        """Keep ordinary bottom bounds distinct from directional sentinels."""
+        data = bytes((1, 3, 4, 8, 9))
+        rectangle = parse_hotspot_records(
+            data, LOAD, LOAD + len(data)
+        )[0].rectangles[0]
+        self.assertIsNone(rectangle.boundary_side)
 
     def test_background_map_stream_decodes_literals_runs_and_rectangle(
         self,
