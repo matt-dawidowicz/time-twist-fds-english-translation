@@ -24,7 +24,7 @@ def run(*args: str) -> None:
 def main() -> None:
     """Run the cheap deterministic checks used during normal iteration."""
     python = sys.executable
-    run(python, "-m", "compileall", "-q", "work/time_twist", "work/tools")
+    run(python, "-m", "compileall", "-q", "work")
     run(python, "work/tools/check_public_tree.py")
     run(
         python,
