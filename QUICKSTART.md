@@ -24,7 +24,19 @@ python -m pip install -r requirements.txt
 This installs the command-line tool and every public development and test tool
 used by the project, including Hypothesis for the public unit suite.
 
+## Fast edit loop
+
+For ordinary translation or tooling iteration:
+
+```powershell
+python work/tools/quick_check.py
+```
+
+This intentionally avoids the full release and quality stack.
+
 ## Public tests
+
+Before a pull request or merge:
 
 ```powershell
 python work/run_tests.py unit
