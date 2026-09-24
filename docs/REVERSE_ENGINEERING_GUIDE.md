@@ -372,14 +372,14 @@ variable-width:
   `$042D+visual_index`;
 - the first-row draw count comes from that metadata with a nonzero fallback;
 - the paired row reuses the first-row count rather than a fixed literal;
-- the second column is positioned from the corresponding first-column label width;
+- the second column is positioned from the corresponding first-column label width, with one blank tile after the left trailing cursor;
 - leading and trailing selection cursors use the same width metadata; and
 - the staging clear spans 36 bytes, supporting up to 18 glyphs at two staging bytes
   per glyph.
 
 For two-column rows, validate actual use-site geometry rather than applying a global
-eight-character rule. The conservative production model allows at most 20 combined
-glyphs and keeps the trailing cursor at or before x=`$F8`. Do not store code or
+eight-character rule. The conservative production model allows at most 19 combined
+glyphs after reserving the readability gap and keeps the trailing cursor at or before x=`$F8`. Do not store code or
 scratch data in `$9390-$93AF`; that region is live palette state.
 
 ---
