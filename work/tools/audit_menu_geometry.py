@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import statistics
 from pathlib import Path
 
 from time_twist import ui
@@ -14,6 +15,47 @@ from time_twist.menu_geometry import (
     validate_descriptor_geometry,
 )
 from time_twist.release_metadata import SCENARIO_LOCATIONS
+
+
+def _contextual_length_outliers(
+    labels: tuple[str, ...],
+    descriptors: tuple[tuple[int, ...], ...],
+) -> list[dict[str, object]]:
+    """Return labels that dominate the length of an actual menu context."""
+    found: dict[tuple[int, str], dict[str, object]] = {}
+    for descriptor_index, descriptor in enumerate(descriptors):
+        texts = tuple(labels[index - 1] for index in descriptor)
+        lengths = tuple(map(len, texts))
+        median = statistics.median(lengths)
+        for record_index, text, length in zip(
+            descriptor, texts, lengths, strict=True
+        ):
+            delta = length - median
+            if length < 12 or delta < 5:
+                continue
+            key = (record_index, text)
+            row = {
+                "record": record_index,
+                "label": text,
+                "glyphs": length,
+                "descriptor": descriptor_index,
+                "descriptor_median_glyphs": median,
+                "excess_over_median": delta,
+                "choices": texts,
+            }
+            current = found.get(key)
+            if current is None or float(row["excess_over_median"]) > float(
+                current["excess_over_median"]
+            ):
+                found[key] = row
+    return sorted(
+        found.values(),
+        key=lambda row: (
+            -float(row["excess_over_median"]),
+            -int(row["glyphs"]),
+            str(row["label"]),
+        ),
+    )
 
 
 def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
@@ -52,6 +94,9 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
                     map(len, descriptors), default=0
                 ),
                 "possible_compacted_pairs": len(named_pairs),
+                "contextual_length_outliers": _contextual_length_outliers(
+                    labels, descriptors
+                ),
             }
         )
     widest = sorted(

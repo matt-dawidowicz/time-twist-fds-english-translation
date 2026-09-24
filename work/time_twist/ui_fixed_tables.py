@@ -100,7 +100,7 @@ TT1B_FIXED_TEXT_RECORDS = (
     "Nameplate",
     "Intercom",
     "Newspaper",
-    "Magnifying glass",
+    "Magnifier",
     "Picture",
     "Old man",
     "Outside",
