@@ -120,7 +120,7 @@
     },
     "work/translations/TT3A.json": {
       "normalization": "lf",
-      "sha256": "0DB26154FA99469BF1EE006438841BA08BA7B39138BB4A33C45BD32DDA834EE0",
+      "sha256": "CB47095C001E7849C15B1275372A38ED54044710E29603AF44146158E62ACC04",
       "bytes": 11802
     },
     "work/translations/TT3B.json": {
@@ -155,8 +155,8 @@
     },
     "work/translations/TT6C.json": {
       "normalization": "lf",
-      "sha256": "53B2C50843DD174084B6C4F6AA7611D04E774A2BC5BC48B3A029F74F5E486155",
-      "bytes": 11499
+      "sha256": "F28F1F1E8175B0626E8EBEFFD28D6456240ED2833F42C034E48CF7C556C735D9",
+      "bytes": 11537
     },
     "work/translations/TT6D.json": {
       "normalization": "lf",
