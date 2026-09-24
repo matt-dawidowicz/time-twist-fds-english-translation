@@ -180,7 +180,7 @@ This guide accompanies the complete translation workbook. Exact Japanese always 
 - **Time Belt** — exact `たいむべると`; reconstructed `タイムベルト`; first `TT1B/g3/r7`. Belt-shaped time machine; capitalization retained as an item name.
 - **time machine** — exact `たいむましん`; reconstructed `タイムマシン`; first `TT1B/g3/r8`. General technology term.
 - **Demon-Sealing Jar** — exact `まふうじのつぼ`; reconstructed `魔封じの壺`; first `TT1B/g0/r15`. Museum artifact and key sealing vessel.
-- **Sabbath Box** — exact `さばとのはこ`; reconstructed `サバトの箱`; first `TT1B/g0/r14`. Museum exhibit said to hold soul contracts.
+- **Witches' Sabbath Box** — exact `さばとのはこ`; reconstructed `サバトの箱`; first `TT1B/g0/r14`. Here `サバト` is the occult witches' sabbath, not the ordinary religious Sabbath; the fuller English title avoids that ambiguity.
 - **Warding Bell** — exact `いましめのすず`; reconstructed `戒めの鈴`; first `TT1B/g0/r16`. Museum exhibit; English favors function.
 - **Devil's Hand** — exact `あくまのて`; reconstructed `悪魔の手`; first `TT1B/g0/r17`. A bronze statue, not merely a symbol.
 - **protective charm** — exact `まもりふだ`; reconstructed `守り札`; first `TT1B/g0/r18`. Recurring warding object.
