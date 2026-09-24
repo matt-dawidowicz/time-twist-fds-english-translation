@@ -10,6 +10,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 from .english import encode_english
 from .entropy_codec import pack_entropy_stream, split_entropy_stream
@@ -551,12 +552,12 @@ def _rebuild_loaded_bank(
     output = bytearray(state.data[:base_end])
     output[region_start:boundary] = b"\x00" * (boundary - region_start)
     addresses = [0] * len(groups)
-    split = plan["split"]
-    assert split is None or isinstance(split, tuple)
+    split = cast(tuple[int, int] | None, plan["split"])
+    resident = cast(tuple[int, ...], plan["resident"])
+    spill = cast(tuple[int, ...], plan["spill"])
     split_group, first = split if split is not None else (None, None)
     cursor = region_start
-    for group_index in plan["resident"]:
-        assert isinstance(group_index, int)
+    for group_index in resident:
         records = (
             groups[group_index][:first]
             if group_index == split_group and first is not None
@@ -566,8 +567,7 @@ def _rebuild_loaded_bank(
         addresses[group_index] = LOAD_ADDRESS + cursor
         output[cursor : cursor + len(blob)] = blob
         cursor += len(blob)
-    for group_index in plan["spill"]:
-        assert isinstance(group_index, int)
+    for group_index in spill:
         addresses[group_index] = LOAD_ADDRESS + len(output)
         output.extend(pack_entropy_stream(groups[group_index]))
 
