@@ -147,6 +147,54 @@ STRUCTURAL_LAYOUT_RECORDS = (
 )
 QUIZ_MAX_SEGMENT_COLUMNS = 23
 
+# One source-backed dramatic quote introduction deliberately pauses after a
+# comma. Hash-lock it so future wording/control edits fall back to the strict
+# semantic-wait grammar validator.
+SEMANTIC_WAIT_GRAMMAR_EXCEPTIONS = {
+    "TT1B/g3/r29": (
+        "ef4f1bf007ec09cea89968393673455ed21f09e84bf3dae685ad268b248fd413"
+    ),
+}
+
+
+def _is_semantic_wait_grammar_exception(record_id: str, text: str) -> bool:
+    """Recognize an exact reviewed dramatic wait that is not sentence-final."""
+    return hashlib.sha256(text.encode("utf-8")).hexdigest() == (
+        SEMANTIC_WAIT_GRAMMAR_EXCEPTIONS.get(record_id)
+    )
+
+
+def _validate_semantic_wait_boundaries(record_id: str, text: str) -> None:
+    """Reject A-button waits that split ordinary English grammatical units."""
+    if _is_semantic_wait_grammar_exception(record_id, text):
+        return
+
+    segments, controls = _core._template_parts(text)
+    for index, control in enumerate(controls):
+        if control not in SEMANTIC_CONTROLS:
+            continue
+        left = segments[index].rstrip()
+        right = segments[index + 1].lstrip()
+        # Consecutive runtime controls can intentionally have no intervening
+        # glyphs; they are staging/state transitions rather than prose.
+        if not left or not right:
+            continue
+        if right[0].isascii() and right[0].islower():
+            raise ProductionTranslationError(
+                f"{record_id}: semantic wait before lowercase continuation "
+                f"{right.split()[0]!r}"
+            )
+        if left.endswith((",", ";")):
+            raise ProductionTranslationError(
+                f"{record_id}: semantic wait follows dangling punctuation "
+                f"{left[-1]!r}"
+            )
+        if re.search(r"[.!?…:\"')\]]$", left) is None:
+            raise ProductionTranslationError(
+                f"{record_id}: semantic wait splits incomplete phrase "
+                f"after {left!r}"
+            )
+
 
 def validate_record_production_control_sequence(
     record_id: str, source: str, production: str
@@ -333,6 +381,7 @@ def _validate_canonical_bank(bank_name: str, data: dict[str, str]) -> None:
         try:
             validate_renderer_buffer_layout(text)
             _validate_greedy_soft_wrap(record_id, text)
+            _validate_semantic_wait_boundaries(record_id, text)
         except ProductionTranslationError as error:
             if str(error).startswith(f"{record_id}:"):
                 raise

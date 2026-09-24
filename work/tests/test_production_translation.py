@@ -10,8 +10,10 @@ from pathlib import Path
 from time_twist.production_translation import (
     CANONICAL_RECORD_COUNTS,
     CHECKPOINT_QUIZ_LAYOUTS,
+    SEMANTIC_WAIT_GRAMMAR_EXCEPTIONS,
     STRUCTURAL_LAYOUT_RECORDS,
     ProductionTranslationError,
+    _validate_semantic_wait_boundaries,
     layout_review_text,
     materialize_production_maps,
     merged_translation_map,
@@ -167,6 +169,42 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             output,
             "Have you ever had sleep{CTRL:0}paralysis?",
         )
+
+    def test_semantic_wait_rejects_lowercase_continuation(self) -> None:
+        """Do not split one English thought across an A-button wait."""
+        with self.assertRaisesRegex(
+            ProductionTranslationError,
+            "lowercase continuation",
+        ):
+            _validate_semantic_wait_boundaries(
+                "TEST/g0/r0",
+                "Some kind of{CTRL:1}magic spell?",
+            )
+
+    def test_semantic_wait_rejects_dangling_fragment(self) -> None:
+        """Require ordinary prose to reach a grammatical boundary before A."""
+        with self.assertRaisesRegex(
+            ProductionTranslationError,
+            "incomplete phrase",
+        ):
+            _validate_semantic_wait_boundaries(
+                "TEST/g0/r0",
+                "His skin flakes away at{CTRL:1}A touch.",
+            )
+
+    def test_semantic_wait_quote_exception_is_exact_and_unique(self) -> None:
+        """Keep the single source-backed comma-to-quotation pause hash-locked."""
+        self.assertEqual(
+            set(SEMANTIC_WAIT_GRAMMAR_EXCEPTIONS),
+            {"TT1B/g3/r29"},
+        )
+        record = _canonical("TT1B")["TT1B/g3/r29"]
+        _validate_semantic_wait_boundaries("TT1B/g3/r29", record)
+        with self.assertRaises(ProductionTranslationError):
+            _validate_semantic_wait_boundaries(
+                "TT1B/g3/r29",
+                record.replace("said,", "whispered,"),
+            )
 
     def test_generic_layout_starts_new_speakers_on_fresh_rows(self) -> None:
         """Keep speaker turns separate while filling within each turn."""

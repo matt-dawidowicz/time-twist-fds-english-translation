@@ -105,13 +105,13 @@
     },
     "work/translations/TT1B.json": {
       "normalization": "lf",
-      "sha256": "FCCCBAAB5BE1EC4EFDACBE6B0D15596FB6E99E85362D3F4FDD29802A97068D46",
-      "bytes": 13144
+      "sha256": "6E8E5FBF39726F8E8AA8E0823713F38E7DF53640EC08C32BB4B8C1AB3FDACE37",
+      "bytes": 13127
     },
     "work/translations/TT2.json": {
       "normalization": "lf",
-      "sha256": "45F5929135762A3E5A99EE93BDAB65A194232A7EF988E67872FA3F205FAA590B",
-      "bytes": 11902
+      "sha256": "4B42C0BD57F785797BFD8A1189D24DEE31800C16B5CE7BB4DCD136F1642C3898",
+      "bytes": 11910
     },
     "work/translations/T22.json": {
       "normalization": "lf",
@@ -120,8 +120,8 @@
     },
     "work/translations/TT3A.json": {
       "normalization": "lf",
-      "sha256": "0DB26154FA99469BF1EE006438841BA08BA7B39138BB4A33C45BD32DDA834EE0",
-      "bytes": 11802
+      "sha256": "CE44A75D08A1B2EA892ECA776A489742BD2B2060FF1765A44C8F7CC8FA9981DD",
+      "bytes": 11820
     },
     "work/translations/TT3B.json": {
       "normalization": "lf",
@@ -130,7 +130,7 @@
     },
     "work/translations/TT4.json": {
       "normalization": "lf",
-      "sha256": "8B2D6B882E82EFE3DF60940DF2673095AB51FBD986DE19E1C3E041BC1572AE5B",
+      "sha256": "588098A656F4A45DD3095BE53F708F1F7EE79DE3D4DFA2B5FDB2C7853100F0DC",
       "bytes": 14143
     },
     "work/translations/TT5.json": {
@@ -140,12 +140,12 @@
     },
     "work/translations/T25.json": {
       "normalization": "lf",
-      "sha256": "7EE0387E0471E1062221C69859DC75A6C3EC4882711018866BB9AAA0256E6039",
-      "bytes": 6990
+      "sha256": "EBCDB617FD0A7008613819E5B35D9734DFD87F5E7490B1C54366C35E4B535217",
+      "bytes": 6994
     },
     "work/translations/TT6A.json": {
       "normalization": "lf",
-      "sha256": "D9C2AAAE5D76E539CF5256DB0156B210149274062CDBE60035CED1C5E89FE6E0",
+      "sha256": "580BBED8A37D96356C1BBA026DB99C8710C0F59A95A518FF741245CACBCE0A93",
       "bytes": 8296
     },
     "work/translations/TT6B.json": {
@@ -155,7 +155,7 @@
     },
     "work/translations/TT6C.json": {
       "normalization": "lf",
-      "sha256": "F28F1F1E8175B0626E8EBEFFD28D6456240ED2833F42C034E48CF7C556C735D9",
+      "sha256": "17F3BC6074A051A81DB3B27133C000C68C49C363CE1CF4F88346735CC009D4E5",
       "bytes": 11537
     },
     "work/translations/TT6D.json": {
