@@ -27,7 +27,7 @@ Status vocabulary follows [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.
 | Palette-animation state machine | **VERIFIED** | [Gameplay palette-animation engine](PALETTE_ANIMATION_ENGINE.md) | Story-facing effect naming |
 | FDS scene transitions | **VERIFIED** | [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md) | No structural unknown |
 | Part 1 -> Part 2 handoff | **VERIFIED** | [Part 1 to Part 2 handoff](PART1_PART2_HANDOFF.md) | End-to-end release playtest |
-| TT1A Fortune Teller | **VERIFIED externally; repo doc pending** | Decision-tree analysis / gameplay VM evidence | Add dedicated maintained repo reference |
+| TT1A Fortune Teller | **VERIFIED** | [TT1A Fortune Teller logic](TT1A_FORTUNE_TELLER_LOGIC.md) | Runtime regression only if future edits touch TT1A menus/scripts |
 
 ## Cross-cutting rules
 
@@ -62,8 +62,7 @@ The project is no longer blocked by broad engine unknowns. Remaining work is
 primarily:
 
 1. complete runtime playtesting of the current candidate;
-2. convert newly recovered one-off analyses (especially TT1A Fortune Teller)
-   into maintained repo documentation/tests;
+2. keep one-off reverse-engineering discoveries in maintained repo documentation/tests rather than chat-only notes;
 3. give higher-level names to the few gameplay commands/palette effects only
    when scene evidence proves those names;
 4. treat any new visual/text defect as a narrow regression until evidence
