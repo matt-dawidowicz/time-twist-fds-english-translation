@@ -1,4 +1,4 @@
-# v38 Protective Amulet checkpoint — 2026-09-20
+# v38 Gypsy Amulet checkpoint — 2026-09-20
 
 This checkpoint records the user-approved Time Twist translation build that is now the baseline for subsequent work.
 
@@ -20,7 +20,7 @@ These decisions supersede stale/legacy English layers and should be preserved un
 - Fill dialogue lines naturally within the expanded text-window capacity instead of preserving obsolete tight-space compromises.
 - American punctuation is the default; punctuation around quotation marks follows the approved context-specific wording from the v38 pass.
 - Preserve `Maradul Barao Garadura` as the approved incantation wording where that source variant is intended.
-- The museum item previously rendered as `Romani Talisman` was re-audited; the v38 checkpoint uses the newer **Protective Amulet** wording rather than `Talisman`.
+- The museum item had previously been modernized to `Romani Talisman`, but the v37 source-fidelity pass deliberately restored the source-explicit ethnonym as **Gypsy Talisman**. The v38 terminology pass changed only `Talisman` to the more accurate **Amulet**, producing the approved **Gypsy Amulet** wording. Frankie's later reference is correspondingly **Gypsy amulet**.
 - The Jeanne/Joan naming pass and the broader dialogue/menu/disc audit from the September 20 review are part of the v38 baseline; source text should be reconciled to the binary rather than regenerated from pre-v38 review tables.
 - Continue to exclude obsolete translation artifacts from production. Historical references may remain only in history/documentation.
 
