@@ -17,7 +17,6 @@ from time_twist.menu_geometry import (
 from time_twist.release_metadata import SCENARIO_LOCATIONS
 
 
-
 def _contextual_length_outliers(
     labels: tuple[str, ...],
     descriptors: tuple[tuple[int, ...], ...],
