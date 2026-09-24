@@ -710,17 +710,19 @@ def _rebuild_loaded_bank(
     return bytes(output)
 
 
-def rebuild_entropy_bank(
-    data: bytes,
+def _desired_translation_state(
+    state: _EntropyBankState,
     bank_name: str,
     translations: dict[str, str],
-) -> IncrementalBankResult:
-    """Rebuild one compiled bank against canonical English using its dictionary."""
+) -> tuple[
+    tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
+    tuple[str, ...],
+]:
+    """Encode canonical source and identify semantic differences read-only."""
     record_counts, record_ids = _translation_topology(
         bank_name,
         translations,
     )
-    state = _load_entropy_bank(data, bank_name)
     if record_counts != tuple(map(len, state.groups)):
         raise IncrementalBuildError(
             "compiled group topology differs from source"
@@ -743,6 +745,36 @@ def rebuild_entropy_bank(
         )
         if _semantic(before) != _semantic(after)
     )
+    return desired, changed
+
+
+def inspect_entropy_bank(
+    data: bytes,
+    bank_name: str,
+    translations: dict[str, str],
+) -> IncrementalBankReport:
+    """Verify one compiled bank and report layout/source state without rebuilding."""
+    state = _load_entropy_bank(data, bank_name)
+    _desired, changed = _desired_translation_state(
+        state,
+        bank_name,
+        translations,
+    )
+    return _bank_layout_report(state, changed)
+
+
+def rebuild_entropy_bank(
+    data: bytes,
+    bank_name: str,
+    translations: dict[str, str],
+) -> IncrementalBankResult:
+    """Rebuild one compiled bank against canonical English using its dictionary."""
+    state = _load_entropy_bank(data, bank_name)
+    desired, changed = _desired_translation_state(
+        state,
+        bank_name,
+        translations,
+    )
     if not changed:
         return IncrementalBankResult(data=data, changed_records=())
 
@@ -755,7 +787,7 @@ def rebuild_entropy_bank(
             zip(actual_group, expected_group, strict=True)
         ):
             if _semantic(actual) != _semantic(expected):
-                record_id = record_ids[group_index][record_index]
+                record_id = f"{bank_name}/g{group_index}/r{record_index}"
                 raise IncrementalBuildError(
                     f"{record_id} failed post-build verification"
                 )
@@ -763,7 +795,6 @@ def rebuild_entropy_bank(
         data=rebuilt,
         changed_records=changed,
     )
-
 
 def build_incremental_image(
     image_data: bytes,
@@ -912,13 +943,15 @@ def inspect_incremental_image(
             bank_name,
             base_directory=translations_directory,
         )
-        rebuilt = rebuild_entropy_bank(entry.data, bank_name, translations)
-        state = _load_entropy_bank(entry.data, bank_name)
-        report = _bank_layout_report(state, rebuilt.changed_records)
+        report = inspect_entropy_bank(
+            entry.data,
+            bank_name,
+            translations,
+        )
         reports.append(report)
-        if rebuilt.changed_records:
+        if report.changed_records:
             changed_banks.append(bank_name)
-            changed_records.extend(rebuilt.changed_records)
+            changed_records.extend(report.changed_records)
 
     return IncrementalInspectionResult(
         banks=tuple(reports),
