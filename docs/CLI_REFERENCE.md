@@ -122,8 +122,8 @@ maps, and every frozen v38 compiler payload against the source lock. The default
 `PROJECT/work/release_sources.json`.
 
 Source-lock schema v3 hashes base translation, reviewed production, and
-production-override JSON after CRLF/bare-CR to LF normalization, while FDS
-baseline and frozen compiler payloads remain byte-exact `raw` inputs. The lock document's identity is also LF-normalized, so the same
+the 13 canonical translation JSON files after CRLF/bare-CR to LF normalization,
+while the FDS baseline and frozen compiler payloads remain byte-exact `raw` inputs. The lock document's identity is also LF-normalized, so the same
 approved checkout has one `source_lock_sha256` on Windows and Unix.
 
 `--update` rewrites the lock from the current project inputs. It approves input
