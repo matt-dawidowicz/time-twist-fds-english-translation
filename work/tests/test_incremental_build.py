@@ -6,6 +6,14 @@ import unittest
 
 from time_twist.english import encode_english
 from time_twist.entropy_codec import pack_entropy_stream
+from time_twist.entropy_fixed_ui import (
+    TT1A_STATIC_POINTERS,
+    TT1A_TABLE_END,
+    TT1A_TABLE_POINTERS,
+    TT1A_TABLE_START,
+    tt1a_entropy_payload,
+    tt1a_renderer_entropy_payload,
+)
 from time_twist.incremental_build import (
     FIXED_TAIL_BOUNDARIES,
     GROUP_RECORD_COUNTS,
@@ -93,13 +101,18 @@ def _tt1a_bank() -> tuple[bytes, dict[str, str]]:
     blob_zero = pack_entropy_stream(group_zero)
     group_one_offset = group_zero_offset + len(blob_zero)
     blob_one = pack_entropy_stream(group_one)
-    renderer = b"TT1A-RENDERER"
+    renderer = tt1a_renderer_entropy_payload()
     renderer_offset = boundary + 16
     data = bytearray(b"\x00" * (renderer_offset + len(renderer)))
     data[group_zero_offset : group_zero_offset + len(blob_zero)] = blob_zero
     data[group_one_offset : group_one_offset + len(blob_one)] = blob_one
     data[boundary:renderer_offset] = bytes(range(16))
     data[renderer_offset:] = renderer
+    data[TT1A_TABLE_START:TT1A_TABLE_END] = tt1a_entropy_payload()
+    for offset, address in TT1A_TABLE_POINTERS.items():
+        _write_word(data, offset, address)
+    for offset, address in TT1A_STATIC_POINTERS.items():
+        _write_word(data, offset, address)
     _write_word(data, 10, 0)
     _write_word(
         data,
