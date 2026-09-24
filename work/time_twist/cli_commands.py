@@ -529,7 +529,9 @@ def command_build(args: argparse.Namespace) -> None:
         return
 
     if args.output is None:
-        raise SystemExit("build requires --output unless --verify-only is used")
+        raise SystemExit(
+            "build requires --output unless --verify-only is used"
+        )
     result = build_incremental_image(
         source,
         translations_directory=translations,
