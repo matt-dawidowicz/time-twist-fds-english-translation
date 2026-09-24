@@ -121,10 +121,11 @@ Without `--update`, verifies the private v25 baseline, all 13 playable scenario
 maps, and every frozen v38 compiler payload against the source lock. The default is
 `PROJECT/work/release_sources.json`.
 
-Source-lock schema v3 hashes base translation, reviewed production, and
-the 13 canonical translation JSON files after CRLF/bare-CR to LF normalization,
-while the FDS baseline and frozen compiler payloads remain byte-exact `raw` inputs. The lock document's identity is also LF-normalized, so the same
-approved checkout has one `source_lock_sha256` on Windows and Unix.
+Source-lock schema v5 hashes the 13 canonical translation JSON files after
+CRLF/bare-CR to LF normalization. The private v25 FDS baseline and frozen v38
+compiler payloads remain byte-exact `raw` inputs. The lock document's identity
+is also LF-normalized, so the same approved checkout has one
+`source_lock_sha256` on Windows and Unix.
 
 `--update` rewrites the lock from the current project inputs. It approves input
 changes only; it does not approve new output hashes. Custom lock destinations
@@ -137,11 +138,12 @@ Python file, project metadata, or the release target. The canonical
 Rebuilds all 13 scenario banks, applies fixed UI/font/title patches, produces
 Zenpen and Kouhen, combines four sides, and writes `release_manifest.json`.
 
-The command first materializes the reviewed production English from the locked
-base maps, editorial review JSON, and explicit overrides. It then uses the
-single frozen entropy codec/runtime for all decoder-reachable scenario and
-fixed-text streams, preserving native byte-addressed entry points, menu page
-boundaries, fixed suffixes, and the `$D7B5` NOV3 ceiling.
+The command validates the 13 canonical `work/translations/*.json` maps as the
+only scenario-English inputs, checks them against the recovered 1,299-record
+topology, and supplies them to the frozen v38 compiler bundle. The compiler and
+private v25 baseline provide the matching packed-text/runtime/fixed-component
+implementation. No review/override English layer is merged during release
+construction.
 
 Release manifest schema v5 is a complete audit record. It includes source-lock
 and release-code provenance, Python/Pillow environment versions, all
