@@ -796,6 +796,7 @@ def rebuild_entropy_bank(
         changed_records=changed,
     )
 
+
 def build_incremental_image(
     image_data: bytes,
     *,
