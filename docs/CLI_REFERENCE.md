@@ -83,13 +83,14 @@ Incrementally rebuilds scenario text in an existing four-side English playtest
 image. The command compares each entropy-coded scenario bank with the canonical
 `work/translations/*.json` maps and leaves semantically current banks untouched.
 
-The development builder deliberately preserves the existing dictionary, group
-table, fixed code/data, UI patches, title, font, and runtime patches. A
-fixed-position group may only fit within its current encoded byte span; only a
-contiguous group-stream suffix that already reaches the end of its bank may
-resize. If those bounds are insufficient, the command fails and the maintainer
-must use `release-build --candidate` so the full optimizer can choose a new
-layout.
+The development builder deliberately preserves the existing entropy dictionary,
+fixed code/data suffix, UI patches, title, font, and runtime patches. Scenario
+groups may be compacted within the known text region or spilled after the fixed
+suffix. When whole-group placement cannot fit, the builder may reuse the
+recovered one-thunk split-stream contract. It never searches for or reorders a
+dictionary. If the edited bank still cannot fit below NOV3, the command fails
+and the maintainer must use `release-build --candidate` so the full optimizer
+can choose a new dictionary/layout.
 
 This command creates a playtest candidate only. It does not validate or update
 the release lock, promote a release target, or certify release reproducibility.

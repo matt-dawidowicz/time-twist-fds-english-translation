@@ -1,4 +1,4 @@
-"""Regression tests for bounded incremental entropy recompilation."""
+"""Fixture-free tests for fast source-first entropy recompilation."""
 
 from __future__ import annotations
 
@@ -7,7 +7,10 @@ import unittest
 from time_twist.english import encode_english
 from time_twist.entropy_codec import pack_entropy_stream
 from time_twist.incremental_build import (
+    FIXED_TAIL_BOUNDARIES,
+    GROUP_RECORD_COUNTS,
     IncrementalBuildError,
+    _allocate_groups,
     rebuild_entropy_bank,
 )
 from time_twist.scenario import (
@@ -20,169 +23,249 @@ from time_twist.textcodec import PackedSymbol, SymbolKind
 
 
 def _write_word(data: bytearray, offset: int, value: int) -> None:
-    """Write one little-endian word into a synthetic test bank."""
+    """Write one little-endian word into a synthetic compiled bank."""
     data[offset : offset + 2] = value.to_bytes(2, "little")
 
 
-def _bank(
-    group_zero,
-    group_one,
+def _tt6d_bank(
     *,
-    group_zero_offset: int = 0x80,
-    group_one_offset: int | None = None,
-    dictionary=(),
-) -> bytes:
-    """Construct a minimal two-group entropy bank for bounded-rebuild tests."""
-    prefix = bytearray(max(group_zero_offset, 0x80))
-    table_offset = 0x50
-    dictionary_offset = 0x60
-    group_zero_blob = pack_entropy_stream(group_zero)
-    if group_one_offset is None:
-        group_one_offset = group_zero_offset + len(group_zero_blob)
-    group_one_blob = pack_entropy_stream(group_one)
+    forward_dictionary: bool = False,
+    dictionary_slack: int = 0,
+) -> tuple[bytes, dict[str, str]]:
+    """Build a valid synthetic TT6D entropy bank and matching English map."""
+    boundary = FIXED_TAIL_BOUNDARIES["TT6D"]
+    data = bytearray(b"\x00" * 800)
+    labels = ("AB", "B", "C", "D", "E", "F", "G", "H")
+    if forward_dictionary:
+        d2 = encode_english("AB")
+        d1 = (PackedSymbol(SymbolKind.DICTIONARY, 2, 0, 0),)
+        dictionary = (d1, d2)
+        first = (PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0),)
+    else:
+        dictionary = (encode_english("AB"),)
+        first = encode_english("AB")
+    group = (
+        first,
+        *(encode_english(label) for label in labels[1:]),
+    )
+    group_blob = pack_entropy_stream(group)
+    group_offset = 100
+    data[group_offset : group_offset + len(group_blob)] = group_blob
 
+    dictionary_blob = pack_entropy_stream(dictionary)
+    dictionary_offset = boundary - dictionary_slack - len(dictionary_blob)
+    data[dictionary_offset : dictionary_offset + len(dictionary_blob)] = (
+        dictionary_blob
+    )
+    _write_word(data, 10, 0)
     _write_word(
-        prefix,
+        data,
         DICTIONARY_POINTER_OFFSET,
         LOAD_ADDRESS + dictionary_offset,
     )
     _write_word(
-        prefix,
+        data,
+        GROUP_TABLE_POINTER_OFFSET,
+        LOAD_ADDRESS + dictionary_offset,
+    )
+    _write_word(
+        data,
+        GROUP_ZERO_POINTER_OFFSET,
+        LOAD_ADDRESS + group_offset,
+    )
+    translations = {
+        f"TT6D/g0/r{index}": label for index, label in enumerate(labels)
+    }
+    return bytes(data), translations
+
+
+def _tt1a_bank() -> tuple[bytes, dict[str, str]]:
+    """Build TT1A with fixed suffix bytes and an appended renderer payload."""
+    boundary = FIXED_TAIL_BOUNDARIES["TT1A"]
+    table_offset = 80
+    group_zero_offset = 100
+    group_zero_labels = tuple("A" for _ in range(32))
+    group_one_labels = ("B", "C", "D")
+    group_zero = tuple(encode_english(label) for label in group_zero_labels)
+    group_one = tuple(encode_english(label) for label in group_one_labels)
+    blob_zero = pack_entropy_stream(group_zero)
+    group_one_offset = group_zero_offset + len(blob_zero)
+    blob_one = pack_entropy_stream(group_one)
+    renderer = b"TT1A-RENDERER"
+    renderer_offset = boundary + 16
+    data = bytearray(b"\x00" * (renderer_offset + len(renderer)))
+    data[group_zero_offset : group_zero_offset + len(blob_zero)] = blob_zero
+    data[group_one_offset : group_one_offset + len(blob_one)] = blob_one
+    data[boundary:renderer_offset] = bytes(range(16))
+    data[renderer_offset:] = renderer
+    _write_word(data, 10, 0)
+    _write_word(
+        data,
+        DICTIONARY_POINTER_OFFSET,
+        LOAD_ADDRESS + 1,
+    )
+    _write_word(
+        data,
         GROUP_TABLE_POINTER_OFFSET,
         LOAD_ADDRESS + table_offset,
     )
     _write_word(
-        prefix,
+        data,
         GROUP_ZERO_POINTER_OFFSET,
         LOAD_ADDRESS + group_zero_offset,
     )
     _write_word(
-        prefix,
+        data,
         table_offset,
         LOAD_ADDRESS + group_one_offset,
     )
-
-    if dictionary:
-        dictionary_blob = pack_entropy_stream(dictionary)
-        prefix[
-            dictionary_offset : dictionary_offset + len(dictionary_blob)
-        ] = dictionary_blob
-
-    output = bytearray(prefix)
-    if len(output) < group_zero_offset:
-        output.extend(bytes(group_zero_offset - len(output)))
-    if group_zero_offset < len(output):
-        end = group_zero_offset + len(group_zero_blob)
-        if end > len(output):
-            raise AssertionError("fixed synthetic group exceeds prefix")
-        output[group_zero_offset:end] = group_zero_blob
-    else:
-        output.extend(group_zero_blob)
-
-    if len(output) < group_one_offset:
-        output.extend(bytes(group_one_offset - len(output)))
-    if len(output) != group_one_offset:
-        raise AssertionError("synthetic group offsets overlap")
-    output.extend(group_one_blob)
-    return bytes(output)
+    _write_word(data, 0x14, LOAD_ADDRESS + renderer_offset)
+    translations = {
+        **{
+            f"TT1A/g0/r{index}": label
+            for index, label in enumerate(group_zero_labels)
+        },
+        **{
+            f"TT1A/g1/r{index}": label
+            for index, label in enumerate(group_one_labels)
+        },
+    }
+    return bytes(data), translations
 
 
 class IncrementalBuildTests(unittest.TestCase):
-    """Keep the development builder bounded and byte-stable."""
+    """Keep incremental recompilation deterministic and bounded."""
 
-    def test_no_change_returns_original_bytes(self) -> None:
-        """Leave a semantically current entropy bank byte-identical."""
-        data = _bank(
-            (encode_english("A"),),
-            (encode_english("B"),),
-        )
-        result = rebuild_entropy_bank(
-            data,
-            "TEST",
-            {
-                "TEST/g0/r0": "A",
-                "TEST/g1/r0": "B",
-            },
-        )
+    def test_dictionary_backed_noop_is_byte_identical(self) -> None:
+        """Return original bytes when canonical English already matches."""
+        data, translations = _tt6d_bank()
+        result = rebuild_entropy_bank(data, "TT6D", translations)
         self.assertEqual(result.data, data)
         self.assertEqual(result.changed_records, ())
 
-    def test_terminal_group_resize_updates_following_pointer(self) -> None:
-        """Resize a terminal stream and update the next group pointer."""
-        data = _bank(
-            (encode_english("A"),),
-            (encode_english("B"),),
+    def test_dictionary_backed_edit_preserves_fixed_suffix(self) -> None:
+        """Rebuild an edit without modifying fixed code/data."""
+        data, translations = _tt6d_bank()
+        translations["TT6D/g0/r0"] = "ABABAB"
+        result = rebuild_entropy_bank(data, "TT6D", translations)
+        self.assertEqual(
+            result.changed_records,
+            ("TT6D/g0/r0",),
         )
-        old_pointer = int.from_bytes(data[0x50:0x52], "little")
-        result = rebuild_entropy_bank(
-            data,
-            "TEST",
-            {
-                "TEST/g0/r0": "AAAAAA",
-                "TEST/g1/r0": "B",
-            },
+        boundary = FIXED_TAIL_BOUNDARIES["TT6D"]
+        self.assertEqual(
+            result.data[boundary:],
+            data[boundary:],
         )
-        new_pointer = int.from_bytes(result.data[0x50:0x52], "little")
-        self.assertNotEqual(new_pointer, old_pointer)
-        self.assertEqual(result.changed_records, ("TEST/g0/r0",))
-
         verified = rebuild_entropy_bank(
             result.data,
-            "TEST",
-            {
-                "TEST/g0/r0": "AAAAAA",
-                "TEST/g1/r0": "B",
-            },
+            "TT6D",
+            translations,
         )
         self.assertEqual(verified.data, result.data)
         self.assertEqual(verified.changed_records, ())
 
-    def test_nonterminal_group_cannot_grow(self) -> None:
-        """Reject growth that would overwrite unknown fixed-position bytes."""
-        first = (encode_english("A"),)
-        second = (encode_english("B"),)
-        first_blob = pack_entropy_stream(first)
-        data = _bank(
-            first,
-            second,
-            group_zero_offset=0x40,
-            group_one_offset=0x80,
-        )
-        self.assertLess(0x40 + len(first_blob), 0x80)
-
-        with self.assertRaisesRegex(
-            IncrementalBuildError,
-            "outside the resizable terminal suffix",
-        ):
-            rebuild_entropy_bank(
-                data,
-                "TEST",
-                {
-                    "TEST/g0/r0": "This text is deliberately much longer.",
-                    "TEST/g1/r0": "B",
-                },
-            )
-
-    def test_forward_dictionary_reference_is_resolved(self) -> None:
-        """Resolve forward references used by recovered v38 dictionaries."""
-        d2 = encode_english("AB")
-        d1 = (PackedSymbol(SymbolKind.DICTIONARY, 2, 0, 0),)
-        group_zero = ((PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0),),)
-        data = _bank(
-            group_zero,
-            (encode_english("C"),),
-            dictionary=(d1, d2),
-        )
+    def test_forward_dictionary_reference_is_supported(self) -> None:
+        """Resolve forward references in recovered dictionaries."""
+        data, translations = _tt6d_bank(forward_dictionary=True)
         result = rebuild_entropy_bank(
             data,
-            "TEST",
-            {
-                "TEST/g0/r0": "AB",
-                "TEST/g1/r0": "C",
-            },
+            "TT6D",
+            translations,
         )
         self.assertEqual(result.data, data)
         self.assertEqual(result.changed_records, ())
+
+    def test_dictionary_zero_slack_is_accepted(self) -> None:
+        """Ignore zero-filled resident slack after the dictionary stream."""
+        data, translations = _tt6d_bank(dictionary_slack=12)
+        result = rebuild_entropy_bank(data, "TT6D", translations)
+        self.assertEqual(result.data, data)
+        self.assertEqual(result.changed_records, ())
+
+    def test_tt1a_special_path_rebuilds_without_dictionary(self) -> None:
+        """Handle TT1A's direct two-stream layout without a dictionary."""
+        data, translations = _tt1a_bank()
+        initial = rebuild_entropy_bank(
+            data,
+            "TT1A",
+            translations,
+        )
+        self.assertEqual(initial.data, data)
+        translations["TT1A/g1/r0"] = "BBBB"
+        result = rebuild_entropy_bank(
+            data,
+            "TT1A",
+            translations,
+        )
+        self.assertEqual(
+            result.changed_records,
+            ("TT1A/g1/r0",),
+        )
+        boundary = FIXED_TAIL_BOUNDARIES["TT1A"]
+        original_renderer = int.from_bytes(data[0x14:0x16], "little")
+        original_renderer -= LOAD_ADDRESS
+        rebuilt_renderer = int.from_bytes(result.data[0x14:0x16], "little")
+        rebuilt_renderer -= LOAD_ADDRESS
+        self.assertEqual(
+            result.data[boundary:rebuilt_renderer],
+            data[boundary:original_renderer],
+        )
+        self.assertEqual(
+            result.data[rebuilt_renderer:],
+            data[original_renderer:],
+        )
+        verified = rebuild_entropy_bank(
+            result.data,
+            "TT1A",
+            translations,
+        )
+        self.assertEqual(verified.data, result.data)
+
+    def test_allocator_can_select_split_group(self) -> None:
+        """Use the native thunk when a whole group fits nowhere."""
+        record = tuple(encode_english("ABCDEFGHIJKLMNOP"))
+        groups = (tuple(record for _ in range(10)),)
+        plan = _allocate_groups(
+            groups,
+            dictionary_bytes=1,
+            resident_capacity=46,
+            tail_capacity=158,
+        )
+        self.assertIsNotNone(plan)
+        assert plan is not None
+        self.assertEqual(plan["split"], (0, 1))
+
+    def test_allocator_rejects_all_spill_layout(self) -> None:
+        """Keep at least one resident group so later rebuilds retain an origin."""
+        groups = ((encode_english("ABCDEFG"),),)
+        plan = _allocate_groups(
+            groups,
+            dictionary_bytes=0,
+            resident_capacity=0,
+            tail_capacity=100,
+        )
+        self.assertIsNone(plan)
+
+    def test_rejects_wrong_canonical_topology(self) -> None:
+        """Fail closed when record IDs do not match the stable ABI."""
+        data, translations = _tt6d_bank()
+        del translations["TT6D/g0/r7"]
+        with self.assertRaisesRegex(
+            IncrementalBuildError,
+            "topology",
+        ):
+            rebuild_entropy_bank(
+                data,
+                "TT6D",
+                translations,
+            )
+
+    def test_all_topologies_remain_explicit(self) -> None:
+        """Lock all 1,299 scenario records in one topology table."""
+        self.assertEqual(len(GROUP_RECORD_COUNTS), 13)
+        total = sum(sum(counts) for counts in GROUP_RECORD_COUNTS.values())
+        self.assertEqual(total, 1299)
 
 
 if __name__ == "__main__":
