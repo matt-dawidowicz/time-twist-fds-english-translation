@@ -534,10 +534,7 @@ def _rebuild_loaded_bank(
         table_size = 2 * (len(groups) - 1)
         resident_capacity = boundary - region_start
         tail_capacity = (
-            NOV3_LOAD_ADDRESS
-            - LOAD_ADDRESS
-            - base_end
-            - len(renderer)
+            NOV3_LOAD_ADDRESS - LOAD_ADDRESS - base_end - len(renderer)
         )
         plan = _allocate_groups(
             groups,
