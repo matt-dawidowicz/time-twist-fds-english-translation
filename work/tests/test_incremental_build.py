@@ -238,7 +238,9 @@ class IncrementalBuildTests(unittest.TestCase):
         )
         self.assertEqual(verified.data, result.data)
 
-    def test_inspection_reports_oversized_edit_without_rebuilding(self) -> None:
+    def test_inspection_reports_oversized_edit_without_rebuilding(
+        self,
+    ) -> None:
         """Report capacity pressure even when the requested edit cannot fit."""
         data, translations = _tt6d_bank()
         translations["TT6D/g0/r0"] = "A" * 1024
