@@ -484,16 +484,55 @@ def command_replace_file(args: argparse.Namespace) -> None:
     print(args.output)
 
 
+def _print_incremental_report(report) -> None:
+    """Print one verified incremental-bank layout report."""
+    split = (
+        "none"
+        if report.split_group is None
+        else f"g{report.split_group[0]} after record {report.split_group[1] - 1}"
+    )
+    print(
+        f"{report.bank_name}: "
+        f"bytes={report.byte_size} "
+        f"dictionary={report.dictionary_entries}/{report.dictionary_bytes}B "
+        f"resident={','.join(map(str, report.resident_groups)) or '-'} "
+        f"spilled={','.join(map(str, report.spilled_groups)) or '-'} "
+        f"split={split} "
+        f"resident_free={report.resident_free_bytes}B "
+        f"tail_free={report.tail_free_bytes}B "
+        f"NOV3_headroom={report.nov3_headroom_bytes}B "
+        f"source_diffs={len(report.changed_records)}"
+    )
+
+
 def command_build(args: argparse.Namespace) -> None:
-    """Incrementally rebuild changed scenario banks in a playtest image."""
-    from .incremental_build import build_incremental_image
+    """Incrementally rebuild or verify scenario banks in a playtest image."""
+    from .incremental_build import (
+        build_incremental_image,
+        inspect_incremental_image,
+    )
     from .release_metadata import discover_project_root
 
     project_root = discover_project_root(args.project_root)
     source = args.image.read_bytes()
+    translations = project_root / "work" / "translations"
+    if args.verify_only:
+        result = inspect_incremental_image(
+            source,
+            translations_directory=translations,
+        )
+        for report in result.banks:
+            _print_incremental_report(report)
+        print(f"verified banks: {len(result.banks)}/{len(result.banks)}")
+        print(f"changed banks: {', '.join(result.changed_banks) or 'none'}")
+        print(f"changed records: {len(result.changed_records)}")
+        return
+
+    if args.output is None:
+        raise SystemExit("build requires --output unless --verify-only is used")
     result = build_incremental_image(
         source,
-        translations_directory=project_root / "work" / "translations",
+        translations_directory=translations,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(result.data)
@@ -501,6 +540,22 @@ def command_build(args: argparse.Namespace) -> None:
     print(f"changed records: {len(result.changed_records)}")
     print(f"SHA-256 {hashlib.sha256(result.data).hexdigest().upper()}")
     print(args.output)
+
+
+def command_inspect_layout(args: argparse.Namespace) -> None:
+    """Print verified entropy placement and capacity for every scenario bank."""
+    from .incremental_build import inspect_incremental_image
+    from .release_metadata import discover_project_root
+
+    project_root = discover_project_root(args.project_root)
+    result = inspect_incremental_image(
+        args.image.read_bytes(),
+        translations_directory=project_root / "work" / "translations",
+    )
+    for report in result.banks:
+        _print_incremental_report(report)
+    print(f"changed banks: {', '.join(result.changed_banks) or 'none'}")
+    print(f"changed records: {len(result.changed_records)}")
 
 
 def command_release_lock(args: argparse.Namespace) -> None:
