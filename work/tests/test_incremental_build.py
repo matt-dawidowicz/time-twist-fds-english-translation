@@ -92,8 +92,8 @@ def _tt6d_bank(
 def _tt1a_bank() -> tuple[bytes, dict[str, str]]:
     """Build TT1A with fixed suffix bytes and an appended renderer payload."""
     boundary = FIXED_TAIL_BOUNDARIES["TT1A"]
-    table_offset = 80
-    group_zero_offset = 100
+    table_offset = 720
+    group_zero_offset = 760
     group_zero_labels = tuple("A" for _ in range(32))
     group_one_labels = ("B", "C", "D")
     group_zero = tuple(encode_english(label) for label in group_zero_labels)
