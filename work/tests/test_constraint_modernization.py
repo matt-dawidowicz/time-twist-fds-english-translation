@@ -52,6 +52,19 @@ class MenuGeometryTests(unittest.TestCase):
                 geometry = menu_pair_geometry(left, right)
                 self.assertLessEqual(geometry.right_trailing_cursor_x, 0xF8)
 
+    def test_short_left_label_keeps_blank_tile_before_right_choice(self) -> None:
+        """Keep Room / Old man from reading as one cramped phrase."""
+        geometry = menu_pair_geometry("Room", "Old man")
+        left_trailing_cursor_x = (
+            geometry.left_text_x + geometry.left_glyphs * 8 + 8
+        )
+        self.assertEqual(geometry.right_text_x, 0x80)
+        self.assertEqual(geometry.right_leading_cursor_x, 0x78)
+        self.assertEqual(
+            geometry.right_text_x - left_trailing_cursor_x,
+            0x10,
+        )
+
     def test_pair_overflow_fails_closed(self) -> None:
         """Reject a pair whose dynamic trailing cursor would wrap the screen."""
         with self.assertRaises(MenuGeometryError):
