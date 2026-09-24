@@ -86,6 +86,32 @@ class IncrementalImageResult:
 
 
 @dataclass(frozen=True)
+class IncrementalBankReport:
+    """Describe the verified compiled layout of one scenario bank."""
+
+    bank_name: str
+    byte_size: int
+    changed_records: tuple[str, ...]
+    dictionary_entries: int
+    dictionary_bytes: int
+    resident_groups: tuple[int, ...]
+    spilled_groups: tuple[int, ...]
+    split_group: tuple[int, int] | None
+    resident_free_bytes: int
+    tail_free_bytes: int
+    nov3_headroom_bytes: int
+
+
+@dataclass(frozen=True)
+class IncrementalInspectionResult:
+    """Describe a read-only verification pass over one playtest image."""
+
+    banks: tuple[IncrementalBankReport, ...]
+    changed_banks: tuple[str, ...]
+    changed_records: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class _SplitGroup:
     """Describe the one optional runtime split-stream thunk."""
 
@@ -340,6 +366,14 @@ def _load_entropy_bank(data: bytes, bank_name: str) -> _EntropyBankState:
             record_count=count - split.first_record_count,
         )
         groups.append(prefix + suffix)
+
+    if bank_name == "TT1A":
+        from .entropy_fixed_ui import patched_tt1a_entropy_ui
+
+        if patched_tt1a_entropy_ui(data) != data:
+            raise IncrementalBuildError(
+                "TT1A fixed selector/renderer audit changed data"
+            )
 
     dictionary = (
         ()
@@ -676,17 +710,19 @@ def _rebuild_loaded_bank(
     return bytes(output)
 
 
-def rebuild_entropy_bank(
-    data: bytes,
+def _desired_translation_state(
+    state: _EntropyBankState,
     bank_name: str,
     translations: dict[str, str],
-) -> IncrementalBankResult:
-    """Rebuild one compiled bank against canonical English using its dictionary."""
+) -> tuple[
+    tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
+    tuple[str, ...],
+]:
+    """Encode canonical source and identify semantic differences read-only."""
     record_counts, record_ids = _translation_topology(
         bank_name,
         translations,
     )
-    state = _load_entropy_bank(data, bank_name)
     if record_counts != tuple(map(len, state.groups)):
         raise IncrementalBuildError(
             "compiled group topology differs from source"
@@ -709,6 +745,36 @@ def rebuild_entropy_bank(
         )
         if _semantic(before) != _semantic(after)
     )
+    return desired, changed
+
+
+def inspect_entropy_bank(
+    data: bytes,
+    bank_name: str,
+    translations: dict[str, str],
+) -> IncrementalBankReport:
+    """Verify one compiled bank and report layout/source state without rebuilding."""
+    state = _load_entropy_bank(data, bank_name)
+    _desired, changed = _desired_translation_state(
+        state,
+        bank_name,
+        translations,
+    )
+    return _bank_layout_report(state, changed)
+
+
+def rebuild_entropy_bank(
+    data: bytes,
+    bank_name: str,
+    translations: dict[str, str],
+) -> IncrementalBankResult:
+    """Rebuild one compiled bank against canonical English using its dictionary."""
+    state = _load_entropy_bank(data, bank_name)
+    desired, changed = _desired_translation_state(
+        state,
+        bank_name,
+        translations,
+    )
     if not changed:
         return IncrementalBankResult(data=data, changed_records=())
 
@@ -721,7 +787,7 @@ def rebuild_entropy_bank(
             zip(actual_group, expected_group, strict=True)
         ):
             if _semantic(actual) != _semantic(expected):
-                record_id = record_ids[group_index][record_index]
+                record_id = f"{bank_name}/g{group_index}/r{record_index}"
                 raise IncrementalBuildError(
                     f"{record_id} failed post-build verification"
                 )
@@ -760,6 +826,136 @@ def build_incremental_image(
 
     return IncrementalImageResult(
         data=image_data if not changed_banks else image.to_bytes(),
+        changed_banks=tuple(changed_banks),
+        changed_records=tuple(changed_records),
+    )
+
+
+def _bank_layout_report(
+    state: _EntropyBankState,
+    changed_records: tuple[str, ...],
+) -> IncrementalBankReport:
+    """Summarize current placement and remaining incremental-build capacity."""
+    boundary = state.fixed_tail_boundary
+    group_sizes = tuple(
+        len(pack_entropy_stream(group)) for group in state.groups
+    )
+    table_bytes = 2 * (len(state.groups) - 1)
+    dictionary_bytes = len(pack_entropy_stream(state.dictionary))
+    resident_groups = tuple(
+        index
+        for index, address in enumerate(state.group_addresses)
+        if address - LOAD_ADDRESS < boundary
+    )
+    spilled_groups = tuple(
+        index
+        for index, address in enumerate(state.group_addresses)
+        if address - LOAD_ADDRESS >= boundary
+    )
+    if not resident_groups:
+        raise IncrementalBuildError(
+            f"{state.bank_name}: compiled bank has no resident scenario group"
+        )
+    region_start = min(
+        state.group_addresses[index] - LOAD_ADDRESS
+        for index in resident_groups
+    )
+
+    split_descriptor = None
+    resident_stream_bytes = sum(
+        group_sizes[index] for index in resident_groups
+    )
+    tail_stream_bytes = sum(group_sizes[index] for index in spilled_groups)
+    thunk_bytes = 0
+    if state.split_group is not None:
+        split = state.split_group
+        split_descriptor = (split.group_index, split.first_record_count)
+        thunk_bytes = 27
+        prefix = len(
+            pack_entropy_stream(
+                state.groups[split.group_index][: split.first_record_count]
+            )
+        )
+        suffix = len(
+            pack_entropy_stream(
+                state.groups[split.group_index][split.first_record_count :]
+            )
+        )
+        if split.group_index in resident_groups:
+            resident_stream_bytes -= group_sizes[split.group_index]
+            resident_stream_bytes += prefix
+            tail_stream_bytes += suffix
+
+    if state.bank_name == "TT1A":
+        renderer_offset = _offset(_read_word(state.data, 0x14), state.data)
+        renderer_bytes = len(state.data) - renderer_offset
+        spill_offsets = [
+            address - LOAD_ADDRESS
+            for address in state.group_addresses
+            if boundary <= address - LOAD_ADDRESS < renderer_offset
+        ]
+        base_end = min(spill_offsets) if spill_offsets else renderer_offset
+        resident_capacity = boundary - region_start
+        resident_used = resident_stream_bytes + table_bytes
+        tail_capacity = (
+            NOV3_LOAD_ADDRESS - LOAD_ADDRESS - base_end - renderer_bytes
+        )
+    else:
+        base_end = _compiled_base_end(state)
+        resident_capacity = boundary - region_start
+        resident_used = (
+            resident_stream_bytes
+            + table_bytes
+            + dictionary_bytes
+            + thunk_bytes
+        )
+        tail_capacity = NOV3_LOAD_ADDRESS - LOAD_ADDRESS - base_end
+
+    return IncrementalBankReport(
+        bank_name=state.bank_name,
+        byte_size=len(state.data),
+        changed_records=changed_records,
+        dictionary_entries=len(state.dictionary),
+        dictionary_bytes=dictionary_bytes,
+        resident_groups=resident_groups,
+        spilled_groups=spilled_groups,
+        split_group=split_descriptor,
+        resident_free_bytes=max(0, resident_capacity - resident_used),
+        tail_free_bytes=max(0, tail_capacity - tail_stream_bytes),
+        nov3_headroom_bytes=NOV3_LOAD_ADDRESS - LOAD_ADDRESS - len(state.data),
+    )
+
+
+def inspect_incremental_image(
+    image_data: bytes,
+    *,
+    translations_directory: Path,
+) -> IncrementalInspectionResult:
+    """Verify every scenario bank and report source/layout differences read-only."""
+    image = FdsImage.from_bytes(image_data)
+    reports: list[IncrementalBankReport] = []
+    changed_banks: list[str] = []
+    changed_records: list[str] = []
+
+    for bank_name, (part, local_side) in SCENARIO_LOCATIONS.items():
+        side = local_side + (2 if part == "kouhen" else 0)
+        entry = image.sides[side].find_file(bank_name)
+        translations = merged_translation_map(
+            bank_name,
+            base_directory=translations_directory,
+        )
+        report = inspect_entropy_bank(
+            entry.data,
+            bank_name,
+            translations,
+        )
+        reports.append(report)
+        if report.changed_records:
+            changed_banks.append(bank_name)
+            changed_records.extend(report.changed_records)
+
+    return IncrementalInspectionResult(
+        banks=tuple(reports),
         changed_banks=tuple(changed_banks),
         changed_records=tuple(changed_records),
     )

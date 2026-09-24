@@ -77,11 +77,17 @@ native slide.png` beside `TARGET`.
 
 ## Development build command
 
-### `build IMAGE --output PATH [--project-root PATH]`
+### `build IMAGE [--output PATH] [--verify-only] [--project-root PATH]`
 
 Incrementally rebuilds scenario text in an existing four-side English playtest
 image. The command compares each entropy-coded scenario bank with the canonical
 `work/translations/*.json` maps and leaves semantically current banks untouched.
+
+With `--verify-only`, the command performs a read-only verification pass and
+writes no candidate image. It reports every bank's dictionary size,
+resident/spilled groups, split-stream placement, remaining resident/tail/NOV3
+capacity, and any canonical source differences. `--output` is required for a
+normal build and is intentionally unnecessary in verify-only mode.
 
 The development builder deliberately preserves the existing entropy dictionary,
 fixed code/data suffix, UI patches, title, font, and runtime patches. Scenario
@@ -94,6 +100,15 @@ can choose a new dictionary/layout.
 
 This command creates a playtest candidate only. It does not validate or update
 the release lock, promote a release target, or certify release reproducibility.
+
+### `inspect-layout IMAGE [--project-root PATH]`
+
+Runs the same production entropy verifier used by the incremental builder but
+does not write an image. For all 13 scenario banks it prints byte size,
+dictionary entry/byte count, resident and spilled groups, split location,
+resident free bytes, tail free bytes, absolute NOV3 headroom, and canonical
+source-difference count. Use this command when diagnosing capacity pressure or
+checking whether a candidate still matches the source tree.
 
 
 ## Release commands

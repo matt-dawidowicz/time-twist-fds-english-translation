@@ -13,6 +13,7 @@ from .cli_commands import (
     command_combine,
     command_extract,
     command_font_patch,
+    command_inspect_layout,
     command_manifest,
     command_release_build,
     command_release_lock,
@@ -303,9 +304,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     build.add_argument(
         "--output",
-        required=True,
         type=Path,
         help="destination candidate .fds image",
+    )
+    build.add_argument(
+        "--verify-only",
+        action="store_true",
+        help="verify all scenario banks and report differences without writing output",
     )
     build.add_argument(
         "--project-root",
@@ -313,6 +318,27 @@ def build_parser() -> argparse.ArgumentParser:
         help="project checkout (auto-discovered from the current directory)",
     )
     build.set_defaults(function=command_build)
+
+    inspect_layout = subparsers.add_parser(
+        "inspect-layout",
+        help="verify scenario-bank placement and report remaining capacity",
+        description=(
+            "Decode and verify every entropy-coded scenario bank, then report "
+            "dictionary size, resident/spilled groups, split placement, source "
+            "differences, and remaining resident/tail/NOV3 capacity."
+        ),
+    )
+    inspect_layout.add_argument(
+        "image",
+        type=Path,
+        help="existing four-side English playtest .fds image",
+    )
+    inspect_layout.add_argument(
+        "--project-root",
+        type=Path,
+        help="project checkout (auto-discovered from the current directory)",
+    )
+    inspect_layout.set_defaults(function=command_inspect_layout)
 
     release_lock = subparsers.add_parser(
         "release-lock",
