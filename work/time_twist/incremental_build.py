@@ -185,9 +185,12 @@ def _translation_topology(
 def _group_addresses(data: bytes, group_count: int) -> tuple[int, ...]:
     """Read group zero and all remaining group pointers."""
     table_offset = _offset(_read_word(data, GROUP_TABLE_POINTER_OFFSET), data)
-    addresses = (_read_word(data, GROUP_ZERO_POINTER_OFFSET),) + tuple(
-        _read_word(data, table_offset + 2 * index)
-        for index in range(group_count - 1)
+    addresses = (
+        _read_word(data, GROUP_ZERO_POINTER_OFFSET),
+        *(
+            _read_word(data, table_offset + 2 * index)
+            for index in range(group_count - 1)
+        ),
     )
     for address in addresses:
         _offset(address, data)
@@ -242,7 +245,9 @@ def _decode_dictionary(
     """Infer dictionary count by exact coverage of its packed byte region."""
     start = _offset(_read_word(data, DICTIONARY_POINTER_OFFSET), data)
     if not start <= boundary <= len(data):
-        raise IncrementalBuildError("dictionary/fixed-tail boundary is malformed")
+        raise IncrementalBuildError(
+            "dictionary/fixed-tail boundary is malformed"
+        )
     raw = data[start:boundary]
     if not raw:
         return ()
@@ -398,12 +403,8 @@ def _allocate_groups(
             for mask in range(1 << count):
                 if not mask & (1 << split_group):
                     continue
-                resident = tuple(
-                    i for i in range(count) if mask & (1 << i)
-                )
-                spill = tuple(
-                    i for i in range(count) if not mask & (1 << i)
-                )
+                resident = tuple(i for i in range(count) if mask & (1 << i))
+                spill = tuple(i for i in range(count) if not mask & (1 << i))
                 used = (
                     sum(
                         prefix if i == split_group else sizes[i]
@@ -633,11 +634,7 @@ def rebuild_entropy_bank(
 
     desired = tuple(
         tuple(
-            encode_english(
-                translations[
-                    record_ids[group_index][record_index]
-                ]
-            )
+            encode_english(translations[record_ids[group_index][record_index]])
             for record_index in range(record_count)
         )
         for group_index, record_count in enumerate(record_counts)
