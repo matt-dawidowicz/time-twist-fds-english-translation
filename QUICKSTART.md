@@ -72,6 +72,21 @@ recovered safe boundaries when necessary. If the edited bank cannot fit below
 NOV3 without changing its dictionary or fixed suffix, the command fails closed;
 use the full release builder for that case.
 
+For a fast read-only health check:
+
+```powershell
+time-twist build path/to/current-candidate.fds --verify-only
+```
+
+For a detailed per-bank capacity report:
+
+```powershell
+time-twist inspect-layout path/to/current-candidate.fds
+```
+
+Both commands validate the production entropy layout and compare compiled text
+against the canonical translation maps without writing a new image.
+
 For a clean release-grade reconstruction, you need the exact private v25
 safe-encoding baseline and a checkout whose source lock is already approved.
 Place the input only in the ignored local location:
