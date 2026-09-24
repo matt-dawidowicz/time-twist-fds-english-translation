@@ -13,7 +13,9 @@ class IncrementalCliTests(unittest.TestCase):
 
     def test_build_verify_only_does_not_require_output(self) -> None:
         """Allow read-only verification without an output path."""
-        args = build_parser().parse_args(["build", "candidate.fds", "--verify-only"])
+        args = build_parser().parse_args(
+            ["build", "candidate.fds", "--verify-only"]
+        )
         self.assertEqual(args.image, Path("candidate.fds"))
         self.assertTrue(args.verify_only)
         self.assertIsNone(args.output)
