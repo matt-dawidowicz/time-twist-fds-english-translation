@@ -378,6 +378,16 @@ class EntropyProductionTests(unittest.TestCase):
             ].replacement.startswith(bytes.fromhex("20 8D 6D"))
         )
 
+        column_base = menu_patches["width-aware menu column base"].replacement
+        self.assertIn(bytes.fromhex("B9 2D 04 69 57"), column_base)
+        renderer = menu_patches[
+            "metadata-driven menu renderer geometry"
+        ].replacement
+        self.assertIn(
+            bytes.fromhex("B9 2D 04 4A 4A 4A 69 4C"),
+            renderer,
+        )
+
         # Pixel metadata stores glyph_count * 8. The trailing helper adds one
         # tile after the text, so 3/7/18 glyph labels consume 32/64/152 pixels.
         for glyphs, expected_span in ((3, 0x20), (7, 0x40), (18, 0x98)):
