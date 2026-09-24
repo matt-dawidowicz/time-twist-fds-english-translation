@@ -54,6 +54,21 @@ CANONICAL_RECORD_COUNTS = {
 # Exact reviewed quiz layouts that intentionally exceed the generic
 # 23-column segment policy. Hashes bind the exception to runtime-validated
 # geometry; edits fall back to the strict policy.
+FINAL_EDITORIAL_LAYOUTS = {
+    "T22/g0/r10": "ebcc1424a034210ccd4f8b68f9b138239137712ca633a6e60c3e7f3998f58bc9",
+    "TT6C/g0/r8": "d1b45a97141c6c56fdf2c7d948238791d5adf23992198a843b7e92703b5cc10a",
+    "TT6C/g2/r6": "4a89b0d78742035e75a2ac73eddfa0c299577ff8e6c7099ff4c7150759f352ce",
+}
+
+
+def _is_final_editorial_layout(record_id: str, text: str) -> bool:
+    """Recognize exact reviewed non-greedy presentation layouts."""
+    return (
+        hashlib.sha256(text.encode("utf-8")).hexdigest()
+        == FINAL_EDITORIAL_LAYOUTS.get(record_id)
+    )
+
+
 CHECKPOINT_QUIZ_LAYOUTS = {
     "TT3A/g4/r7": "9ffab733c0aed46e95e2d614df47a580fcac494715e059f74c94188be5dcad29",
     "TT4/g5/r7": "9111ed5fa33029a04156a87bed0f3d2f4f6d1885f9692246bf13ff54e02e5f79",
@@ -267,8 +282,10 @@ def _speaker_geometry(text: str) -> tuple[set[int], list[str]]:
 
 def _validate_greedy_soft_wrap(record_id: str, text: str) -> None:
     """Require maximal 24-column fill except at structural or speaker rows."""
-    if record_id in STRUCTURAL_LAYOUT_RECORDS or _is_checkpoint_layout(
-        record_id, text
+    if (
+        record_id in STRUCTURAL_LAYOUT_RECORDS
+        or _is_checkpoint_layout(record_id, text)
+        or _is_final_editorial_layout(record_id, text)
     ):
         return
     segments, controls = _core._template_parts(text)
