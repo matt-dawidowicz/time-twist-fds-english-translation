@@ -60,6 +60,7 @@ as current release instructions.
 9. [Audio command map](AUDIO_COMMAND_MAP.md)
 10. [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md)
 11. [Part 1 to Part 2 handoff](PART1_PART2_HANDOFF.md)
+12. [TT1A Fortune Teller logic](TT1A_FORTUNE_TELLER_LOGIC.md)
 
 ## Build, code, and maintenance
 
