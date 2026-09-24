@@ -371,7 +371,9 @@ def _load_entropy_bank(data: bytes, bank_name: str) -> _EntropyBankState:
         from .entropy_fixed_ui import patched_tt1a_entropy_ui
 
         if patched_tt1a_entropy_ui(data) != data:
-            raise IncrementalBuildError("TT1A fixed selector/renderer audit changed data")
+            raise IncrementalBuildError(
+                "TT1A fixed selector/renderer audit changed data"
+            )
 
     dictionary = (
         ()
@@ -859,12 +861,7 @@ def _bank_layout_report(
         base_end = min(spill_offsets) if spill_offsets else renderer_offset
         resident_capacity = boundary - region_start
         resident_used = resident_stream_bytes + table_bytes
-        tail_capacity = (
-            NOV3_LOAD_ADDRESS
-            - LOAD_ADDRESS
-            - base_end
-            - renderer_bytes
-        )
+        tail_capacity = NOV3_LOAD_ADDRESS - LOAD_ADDRESS - base_end - renderer_bytes
     else:
         base_end = _compiled_base_end(state)
         resident_capacity = boundary - region_start
