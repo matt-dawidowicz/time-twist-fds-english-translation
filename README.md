@@ -207,6 +207,7 @@ the repository remains in a documented pre-promotion state.
 - [docs/REVERSE_ENGINEERING_GUIDE.md](docs/REVERSE_ENGINEERING_GUIDE.md)
 - [docs/REVERSE_ENGINEERING_STATUS.md](docs/REVERSE_ENGINEERING_STATUS.md)
 - [docs/TEXT_LAYOUT_ENGINE_REFERENCE.md](docs/TEXT_LAYOUT_ENGINE_REFERENCE.md)
+- [docs/TT1A_FORTUNE_TELLER_LOGIC.md](docs/TT1A_FORTUNE_TELLER_LOGIC.md)
 - [docs/MAINTAINER_RELEASE_PROCESS.md](docs/MAINTAINER_RELEASE_PROCESS.md)
 - [docs/history/README.md](docs/history/README.md)
 
