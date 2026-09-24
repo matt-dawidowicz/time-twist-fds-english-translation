@@ -367,6 +367,12 @@ def _load_entropy_bank(data: bytes, bank_name: str) -> _EntropyBankState:
         )
         groups.append(prefix + suffix)
 
+    if bank_name == "TT1A":
+        from .entropy_fixed_ui import patched_tt1a_entropy_ui
+
+        if patched_tt1a_entropy_ui(data) != data:
+            raise IncrementalBuildError("TT1A fixed selector/renderer audit changed data")
+
     dictionary = (
         ()
         if bank_name == "TT1A"
