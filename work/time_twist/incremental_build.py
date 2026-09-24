@@ -805,7 +805,9 @@ def _bank_layout_report(
 ) -> IncrementalBankReport:
     """Summarize current placement and remaining incremental-build capacity."""
     boundary = state.fixed_tail_boundary
-    group_sizes = tuple(len(pack_entropy_stream(group)) for group in state.groups)
+    group_sizes = tuple(
+        len(pack_entropy_stream(group)) for group in state.groups
+    )
     table_bytes = 2 * (len(state.groups) - 1)
     dictionary_bytes = len(pack_entropy_stream(state.dictionary))
     resident_groups = tuple(
@@ -828,7 +830,9 @@ def _bank_layout_report(
     )
 
     split_descriptor = None
-    resident_stream_bytes = sum(group_sizes[index] for index in resident_groups)
+    resident_stream_bytes = sum(
+        group_sizes[index] for index in resident_groups
+    )
     tail_stream_bytes = sum(group_sizes[index] for index in spilled_groups)
     thunk_bytes = 0
     if state.split_group is not None:
@@ -861,7 +865,9 @@ def _bank_layout_report(
         base_end = min(spill_offsets) if spill_offsets else renderer_offset
         resident_capacity = boundary - region_start
         resident_used = resident_stream_bytes + table_bytes
-        tail_capacity = NOV3_LOAD_ADDRESS - LOAD_ADDRESS - base_end - renderer_bytes
+        tail_capacity = (
+            NOV3_LOAD_ADDRESS - LOAD_ADDRESS - base_end - renderer_bytes
+        )
     else:
         base_end = _compiled_base_end(state)
         resident_capacity = boundary - region_start
