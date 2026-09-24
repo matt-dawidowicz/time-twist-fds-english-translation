@@ -123,8 +123,8 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         self.assertEqual(
             tt1a["TT1A/g0/r5"],
             (
-                "We'll begin with a{CTRL:0}personality test.{CTRL:0}"
-                "Please respond to each{CTRL:0}statement."
+                "We'll begin with a{CTRL:0}personality test. Please{CTRL:0}"
+                "respond to each{CTRL:0}statement."
             ),
         )
         personality_items = [
