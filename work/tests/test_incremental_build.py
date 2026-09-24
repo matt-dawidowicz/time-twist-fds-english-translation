@@ -30,6 +30,7 @@ def _write_word(data: bytearray, offset: int, value: int) -> None:
 def _tt6d_bank(
     *,
     forward_dictionary: bool = False,
+    dictionary_slack: int = 0,
 ) -> tuple[bytes, dict[str, str]]:
     """Build a valid synthetic TT6D entropy bank and matching English map."""
     boundary = FIXED_TAIL_BOUNDARIES["TT6D"]
@@ -52,8 +53,10 @@ def _tt6d_bank(
     data[group_offset : group_offset + len(group_blob)] = group_blob
 
     dictionary_blob = pack_entropy_stream(dictionary)
-    dictionary_offset = boundary - len(dictionary_blob)
-    data[dictionary_offset:boundary] = dictionary_blob
+    dictionary_offset = boundary - dictionary_slack - len(dictionary_blob)
+    data[dictionary_offset : dictionary_offset + len(dictionary_blob)] = (
+        dictionary_blob
+    )
     _write_word(data, 10, 0)
     _write_word(
         data,
@@ -77,7 +80,8 @@ def _tt6d_bank(
 
 
 def _tt1a_bank() -> tuple[bytes, dict[str, str]]:
-    """Build a valid synthetic TT1A two-group entropy bank."""
+    """Build TT1A with fixed suffix bytes and an appended renderer payload."""
+    boundary = FIXED_TAIL_BOUNDARIES["TT1A"]
     table_offset = 80
     group_zero_offset = 100
     group_zero_labels = tuple("A" for _ in range(32))
@@ -87,10 +91,13 @@ def _tt1a_bank() -> tuple[bytes, dict[str, str]]:
     blob_zero = pack_entropy_stream(group_zero)
     group_one_offset = group_zero_offset + len(blob_zero)
     blob_one = pack_entropy_stream(group_one)
-    end = group_one_offset + len(blob_one)
-    data = bytearray(b"\x00" * end)
+    renderer = b"TT1A-RENDERER"
+    renderer_offset = boundary + 16
+    data = bytearray(b"\x00" * (renderer_offset + len(renderer)))
     data[group_zero_offset : group_zero_offset + len(blob_zero)] = blob_zero
-    data[group_one_offset:end] = blob_one
+    data[group_one_offset : group_one_offset + len(blob_one)] = blob_one
+    data[boundary:renderer_offset] = bytes(range(16))
+    data[renderer_offset:] = renderer
     _write_word(data, 10, 0)
     _write_word(
         data,
@@ -112,6 +119,7 @@ def _tt1a_bank() -> tuple[bytes, dict[str, str]]:
         table_offset,
         LOAD_ADDRESS + group_one_offset,
     )
+    _write_word(data, 0x14, LOAD_ADDRESS + renderer_offset)
     translations = {
         **{
             f"TT1A/g0/r{index}": label
@@ -168,6 +176,13 @@ class IncrementalBuildTests(unittest.TestCase):
         self.assertEqual(result.data, data)
         self.assertEqual(result.changed_records, ())
 
+    def test_dictionary_zero_slack_is_accepted(self) -> None:
+        """Ignore zero-filled resident slack after the dictionary stream."""
+        data, translations = _tt6d_bank(dictionary_slack=12)
+        result = rebuild_entropy_bank(data, "TT6D", translations)
+        self.assertEqual(result.data, data)
+        self.assertEqual(result.changed_records, ())
+
     def test_tt1a_special_path_rebuilds_without_dictionary(self) -> None:
         """Handle TT1A's direct two-stream layout without a dictionary."""
         data, translations = _tt1a_bank()
@@ -186,6 +201,19 @@ class IncrementalBuildTests(unittest.TestCase):
         self.assertEqual(
             result.changed_records,
             ("TT1A/g1/r0",),
+        )
+        boundary = FIXED_TAIL_BOUNDARIES["TT1A"]
+        original_renderer = int.from_bytes(data[0x14:0x16], "little")
+        original_renderer -= LOAD_ADDRESS
+        rebuilt_renderer = int.from_bytes(result.data[0x14:0x16], "little")
+        rebuilt_renderer -= LOAD_ADDRESS
+        self.assertEqual(
+            result.data[boundary:rebuilt_renderer],
+            data[boundary:original_renderer],
+        )
+        self.assertEqual(
+            result.data[rebuilt_renderer:],
+            data[original_renderer:],
         )
         verified = rebuild_entropy_bank(
             result.data,
@@ -207,6 +235,17 @@ class IncrementalBuildTests(unittest.TestCase):
         self.assertIsNotNone(plan)
         assert plan is not None
         self.assertEqual(plan["split"], (0, 1))
+
+    def test_allocator_rejects_all_spill_layout(self) -> None:
+        """Keep at least one resident group so later rebuilds retain an origin."""
+        groups = ((encode_english("ABCDEFG"),),)
+        plan = _allocate_groups(
+            groups,
+            dictionary_bytes=0,
+            resident_capacity=0,
+            tail_capacity=100,
+        )
+        self.assertIsNone(plan)
 
     def test_rejects_wrong_canonical_topology(self) -> None:
         """Fail closed when record IDs do not match the stable ABI."""
