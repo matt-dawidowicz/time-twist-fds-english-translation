@@ -42,10 +42,12 @@ def _tt6d_bank(
     *,
     forward_dictionary: bool = False,
     dictionary_slack: int = 0,
+    all_spill: bool = False,
 ) -> tuple[bytes, dict[str, str]]:
     """Build a valid synthetic TT6D entropy bank and matching English map."""
     boundary = FIXED_TAIL_BOUNDARIES["TT6D"]
-    data = bytearray(b"\x00" * 800)
+    group_offset = boundary + 64 if all_spill else 100
+    data = bytearray(b"\x00" * max(800, group_offset + 128))
     labels = ("AB", "B", "C", "D", "E", "F", "G", "H")
     if forward_dictionary:
         d2 = encode_english("AB")
@@ -60,7 +62,6 @@ def _tt6d_bank(
         *(encode_english(label) for label in labels[1:]),
     )
     group_blob = pack_entropy_stream(group)
-    group_offset = 100
     data[group_offset : group_offset + len(group_blob)] = group_blob
 
     dictionary_blob = pack_entropy_stream(dictionary)
@@ -135,6 +136,60 @@ def _tt1a_bank() -> tuple[bytes, dict[str, str]]:
         table_offset,
         LOAD_ADDRESS + group_one_offset,
     )
+    _write_word(data, 0x14, LOAD_ADDRESS + renderer_offset)
+    translations = {
+        **{
+            f"TT1A/g0/r{index}": label
+            for index, label in enumerate(group_zero_labels)
+        },
+        **{
+            f"TT1A/g1/r{index}": label
+            for index, label in enumerate(group_one_labels)
+        },
+    }
+    return bytes(data), translations
+
+
+def _tt1a_post_renderer_bank() -> tuple[bytes, dict[str, str]]:
+    """Build TT1A with both scenario groups after its renderer payload."""
+    boundary = FIXED_TAIL_BOUNDARIES["TT1A"]
+    table_offset = boundary - 1
+    renderer_offset = boundary + 32
+    renderer = tt1a_renderer_entropy_payload()
+    group_zero_labels = tuple("A" for _ in range(32))
+    group_one_labels = ("B", "C", "D")
+    group_zero = tuple(encode_english(label) for label in group_zero_labels)
+    group_one = tuple(encode_english(label) for label in group_one_labels)
+    blob_zero = pack_entropy_stream(group_zero)
+    blob_one = pack_entropy_stream(group_one)
+    group_zero_offset = renderer_offset + len(renderer)
+    group_one_offset = group_zero_offset + len(blob_zero)
+    data = bytearray(b"\x00" * (group_one_offset + len(blob_one)))
+    data[TT1A_TABLE_START:TT1A_TABLE_END] = tt1a_entropy_payload()
+    for offset, address in TT1A_TABLE_POINTERS.items():
+        _write_word(data, offset, address)
+    for offset, address in TT1A_STATIC_POINTERS.items():
+        _write_word(data, offset, address)
+    data[renderer_offset:group_zero_offset] = renderer
+    data[group_zero_offset:group_one_offset] = blob_zero
+    data[group_one_offset:] = blob_one
+    _write_word(data, 10, 0)
+    _write_word(
+        data,
+        DICTIONARY_POINTER_OFFSET,
+        LOAD_ADDRESS + boundary + 1,
+    )
+    _write_word(
+        data,
+        GROUP_TABLE_POINTER_OFFSET,
+        LOAD_ADDRESS + table_offset,
+    )
+    _write_word(
+        data,
+        GROUP_ZERO_POINTER_OFFSET,
+        LOAD_ADDRESS + group_zero_offset,
+    )
+    _write_word(data, table_offset, LOAD_ADDRESS + group_one_offset)
     _write_word(data, 0x14, LOAD_ADDRESS + renderer_offset)
     translations = {
         **{
@@ -319,6 +374,43 @@ class IncrementalBuildTests(unittest.TestCase):
         )
         self.assertEqual(repeated.data, result.data)
         self.assertEqual(repeated.changed_records, ())
+
+    def test_all_spill_single_group_rebuilds_and_reports(self) -> None:
+        """Support production banks whose only scenario group lives in tail."""
+        data, translations = _tt6d_bank(all_spill=True)
+        state = _load_entropy_bank(data, "TT6D")
+        report = _bank_layout_report(state, ())
+        self.assertEqual(report.resident_groups, ())
+        self.assertEqual(report.spilled_groups, (0,))
+        translations["TT6D/g0/r0"] = "ABABAB"
+        result = rebuild_entropy_bank(data, "TT6D", translations)
+        verified = rebuild_entropy_bank(result.data, "TT6D", translations)
+        self.assertEqual(verified.data, result.data)
+        self.assertEqual(verified.changed_records, ())
+
+    def test_tt1a_post_renderer_all_spill_rebuilds(self) -> None:
+        """Preserve TT1A's production post-renderer scenario topology."""
+        data, translations = _tt1a_post_renderer_bank()
+        state = _load_entropy_bank(data, "TT1A")
+        report = _bank_layout_report(state, ())
+        self.assertEqual(report.resident_groups, ())
+        self.assertEqual(report.spilled_groups, (0, 1))
+        renderer_offset = (
+            int.from_bytes(data[0x14:0x16], "little") - LOAD_ADDRESS
+        )
+        scenario_start = min(
+            address - LOAD_ADDRESS for address in state.group_addresses
+        )
+        renderer = data[renderer_offset:scenario_start]
+        translations["TT1A/g1/r0"] = "BBBB"
+        result = rebuild_entropy_bank(data, "TT1A", translations)
+        rebuilt = _load_entropy_bank(result.data, "TT1A")
+        rebuilt_start = min(
+            address - LOAD_ADDRESS for address in rebuilt.group_addresses
+        )
+        self.assertEqual(result.data[renderer_offset:rebuilt_start], renderer)
+        verified = rebuild_entropy_bank(result.data, "TT1A", translations)
+        self.assertEqual(verified.data, result.data)
 
     def test_allocator_can_select_split_group(self) -> None:
         """Use the native thunk when a whole group fits nowhere."""
