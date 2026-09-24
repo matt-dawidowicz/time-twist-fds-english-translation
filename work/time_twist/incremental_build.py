@@ -909,9 +909,7 @@ def _bank_layout_report(
                 f"{state.bank_name}: invalid all-spill scenario pointers"
             )
         if state.bank_name == "TT1A":
-            renderer_offset = _offset(
-                _read_word(state.data, 0x14), state.data
-            )
+            renderer_offset = _offset(_read_word(state.data, 0x14), state.data)
             if min(group_offsets) < renderer_offset:
                 raise IncrementalBuildError(
                     "TT1A post-renderer layout has invalid scenario pointers"
