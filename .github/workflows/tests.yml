@@ -27,13 +27,6 @@ jobs:
       - run: python -m pip install -r requirements.txt
       - name: Run quick deterministic checks
         run: python work/tools/quick_check.py
-      - name: Upload temporary source snapshot
-        uses: actions/upload-artifact@v4
-        with:
-          name: final-translation-source-snapshot
-          path: .
-          include-hidden-files: false
-          retention-days: 1
 
   unit-tests:
     needs: quick-check
