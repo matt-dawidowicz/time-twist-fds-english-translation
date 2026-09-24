@@ -205,9 +205,13 @@ A source-faithful translation does not require mechanically preserving every
 period Japanese exonym when doing so would change the English referent or import
 an unrelated slur.
 
-- Japanese `ジプシー` is rendered **Romani** in the relevant charm description.
-  The source uses it as an ethnonym, not as an insult; `Romani` preserves the
-  intended people/referent without adding a pejorative English register.
+- Japanese `ジプシー` is deliberately rendered **Gypsy** in the recurring
+  charm/amulet terminology. The source explicitly uses that period ethnonym in
+  both `TT1B/g0/r18` and `TT3A/g1/r9`; the v37 source-fidelity pass restored
+  `Gypsy` after an earlier `Romani` modernization, and v38 subsequently
+  refined only `Talisman` -> `Amulet`. Current production therefore uses
+  **Gypsy Amulet** / **Gypsy amulet** consistently. This is an intentional
+  source/historical-fidelity choice, not translator-added language.
 - Historical quiz wording referring to `インディアン` is rendered with
   **Native Americans** while preserving the source's explicit contrast with white
   settlers. This updates the ethnonym without erasing the racial/historical
