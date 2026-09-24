@@ -20,6 +20,7 @@ FDS BIOS files, emulator bundles, save states, or extracted retail payloads.
 - **Improve English text:** [CONTRIBUTING_TRANSLATION.md](CONTRIBUTING_TRANSLATION.md)
 - **Improve tools or tests:** [CONTRIBUTING_CODE.md](CONTRIBUTING_CODE.md)
 - **Read the architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- **See what is reverse-engineered:** [docs/REVERSE_ENGINEERING_STATUS.md](docs/REVERSE_ENGINEERING_STATUS.md)
 - **Tour the implementation:** [docs/CODE_TOUR.md](docs/CODE_TOUR.md)
 
 ## Playing Part 2 (Kouhen)
@@ -123,8 +124,9 @@ buffer. The current canonical maps must obey these rules:
    was easier to pack; if a current line cannot fit safely, document the exact
    engine constraint and solve it deliberately.
 
-See [docs/TRANSLATION_WORKFLOW.md](docs/TRANSLATION_WORKFLOW.md) and
-[docs/ENGLISH_PAGINATION_POLICY.md](docs/ENGLISH_PAGINATION_POLICY.md).
+See [docs/TRANSLATION_WORKFLOW.md](docs/TRANSLATION_WORKFLOW.md),
+[docs/ENGLISH_PAGINATION_POLICY.md](docs/ENGLISH_PAGINATION_POLICY.md), and the
+maintainer-facing [docs/TEXT_LAYOUT_ENGINE_REFERENCE.md](docs/TEXT_LAYOUT_ENGINE_REFERENCE.md).
 
 ## Install and test
 
@@ -203,6 +205,8 @@ the repository remains in a documented pre-promotion state.
 - [docs/TRANSLATION_WORKFLOW.md](docs/TRANSLATION_WORKFLOW.md)
 - [docs/ENGLISH_PAGINATION_POLICY.md](docs/ENGLISH_PAGINATION_POLICY.md)
 - [docs/REVERSE_ENGINEERING_GUIDE.md](docs/REVERSE_ENGINEERING_GUIDE.md)
+- [docs/REVERSE_ENGINEERING_STATUS.md](docs/REVERSE_ENGINEERING_STATUS.md)
+- [docs/TEXT_LAYOUT_ENGINE_REFERENCE.md](docs/TEXT_LAYOUT_ENGINE_REFERENCE.md)
 - [docs/MAINTAINER_RELEASE_PROCESS.md](docs/MAINTAINER_RELEASE_PROCESS.md)
 - [docs/history/README.md](docs/history/README.md)
 
