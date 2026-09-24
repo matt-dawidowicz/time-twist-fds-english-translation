@@ -16,15 +16,15 @@ PLAYTESTED_FIXED_TABLES = {
     ),
     "TT2": (
         70,
-        "BA8D8F471FF33DDD8450C6CF5FF9E089B4BDE665803270341259F488BE6377E3",
+        "77155CCE0FAF29C347B4B57A854023C8972C656A00EFBC37484A52EB442849E1",
     ),
     "T22": (
         33,
-        "63BFD903D1C0E80FD9313B676FD325CAC88AAAAC5285E954629EAB0EC06A9032",
+        "2798D991054590F189C58C61A3BF6C568FCFE5FFA91AD898D66BD77EB6A5E907",
     ),
     "TT3A": (
         95,
-        "A1DA019EBB9FE636D44FB28191E204C9681696E20A4D52A68EF3093E5DBD6868",
+        "27BFD7DA79BABF4169A84651CBF7145A1E3D83B9806C47E8D703B6FDA1F24FD1",
     ),
     "TT3B": (
         21,
@@ -36,7 +36,7 @@ PLAYTESTED_FIXED_TABLES = {
     ),
     "TT5": (
         113,
-        "B80DA89B385C0638EA24A9D28EC486DA1D4059F6C355F0A384B7BB517E1C0ED1",
+        "A4399663BEA81C0CE2A8CB63557E43ED8C5FD4DEA6EC93A4547AB543CD23B88A",
     ),
     "T25": (
         42,
@@ -48,11 +48,11 @@ PLAYTESTED_FIXED_TABLES = {
     ),
     "TT6B": (
         62,
-        "E9C82C14C714D8BD1A074E62FCB8FD90E7DF8E51D29AD5F50BC3AA2C7F95653C",
+        "6F00CDF2ACBBE586D5EF3474DAA839A7AC1F98303F038C6C3322CEC8DF5E6A25",
     ),
     "TT6C": (
         94,
-        "1F53AADDFD78DC9E4997A3012088EEFC1FD35B6E87DDA5AAE3BDC14C55DB3564",
+        "FEE855A3CD5E626EB96A042A3021FFAF575882274CE7009AC1A5D6214DEBBBB3",
     ),
 }
 
@@ -100,9 +100,16 @@ class FixedMenuCopyTests(unittest.TestCase):
                 22: "Bottles",
                 24: "Take off",
                 58: "Onlookers",
+                44: "Deneuve",
                 64: "Basement",
+                66: "Joan",
             },
-            "T22": {11: "Take off", 24: "Scrap paper", 30: "Onlookers"},
+            "T22": {
+                11: "Take off",
+                24: "Scrap paper",
+                27: "Joan",
+                30: "Onlookers",
+            },
             "TT3A": {
                 9: "Outside fence",
                 12: "Room",
@@ -117,6 +124,8 @@ class FixedMenuCopyTests(unittest.TestCase):
                 68: "Trash can",
                 76: "Nazi boat",
                 78: "Banana boat",
+                84: "Montgomery",
+                89: "MacArthur",
                 93: "Streetlamp",
             },
             "TT3B": {6: "Watermill", 12: "Outside car", 15: "Run away"},
@@ -138,13 +147,20 @@ class FixedMenuCopyTests(unittest.TestCase):
             },
             "TT5": {
                 28: "Call Meyer",
+                29: "Get water",
                 30: "Pick cotton",
                 31: "Repair roof",
                 32: "Split wood",
                 33: "Pull weeds",
+                34: "4 buckets",
+                35: "6 buckets",
+                36: "8 buckets",
+                37: "10 buckets",
                 56: "Marine Corps",
                 58: "Red ship",
+                63: "Mrs. Aquino",
                 71: "Cotton gin",
+                72: "Cultivator",
                 90: "Tens digit",
                 91: "Ones digit",
                 98: "Six or more",
@@ -182,6 +198,7 @@ class FixedMenuCopyTests(unittest.TestCase):
                 33: "Fruit of wisdom",
                 34: "Fruit of knowledge",
                 54: "Wag tail",
+                55: "Remove fleas",
                 57: "Smile at",
                 58: "Compliment",
             },
@@ -190,12 +207,15 @@ class FixedMenuCopyTests(unittest.TestCase):
                 14: "My body",
                 17: "Time Belt",
                 18: "Move aside",
+                25: "Ash",
                 32: "Human bones",
+                46: "Wine merchant",
                 60: "Plantain herb",
                 76: "Gold bracelet",
                 77: "Silver bracelet",
                 78: "Copper bracelet",
                 79: "Tin bracelet",
+                88: "Joan",
             },
         }
         for bank_name, expected_by_index in expected.items():

@@ -550,6 +550,36 @@ def _rebuild_loaded_bank(
     if state.bank_name == "TT1A":
         boundary = state.fixed_tail_boundary
         renderer_offset = _offset(_read_word(state.data, 0x14), state.data)
+        group_offsets = [
+            address - LOAD_ADDRESS for address in state.group_addresses
+        ]
+        if group_offsets and min(group_offsets) >= renderer_offset:
+            scenario_start = min(group_offsets)
+            table_offset = (
+                _read_word(state.data, GROUP_TABLE_POINTER_OFFSET)
+                - LOAD_ADDRESS
+            )
+            if not 0 <= table_offset < scenario_start:
+                raise IncrementalBuildError(
+                    "TT1A group table lies outside the preserved prefix"
+                )
+            renderer = state.data[renderer_offset:scenario_start]
+            output = bytearray(state.data[:scenario_start])
+            addresses: list[int] = []
+            for group in groups:
+                addresses.append(LOAD_ADDRESS + len(output))
+                output.extend(pack_entropy_stream(group))
+            for index, address in enumerate(addresses[1:]):
+                _write_word(output, table_offset + 2 * index, address)
+            _write_word(output, GROUP_ZERO_POINTER_OFFSET, addresses[0])
+            if output[renderer_offset:scenario_start] != renderer:
+                raise IncrementalBuildError("TT1A renderer payload changed")
+            if LOAD_ADDRESS + len(output) > NOV3_LOAD_ADDRESS:
+                raise IncrementalBuildError(
+                    "TT1A incremental rebuild overlaps NOV3"
+                )
+            return bytes(output)
+
         renderer = state.data[renderer_offset:]
         resident_offsets = [
             address - LOAD_ADDRESS
@@ -623,13 +653,31 @@ def _rebuild_loaded_bank(
 
     boundary = state.fixed_tail_boundary
     base_end = _compiled_base_end(state)
+    group_offsets = [
+        address - LOAD_ADDRESS for address in state.group_addresses
+    ]
     resident_offsets = [
-        address - LOAD_ADDRESS
-        for address in state.group_addresses
-        if address - LOAD_ADDRESS < boundary
+        offset for offset in group_offsets if offset < boundary
     ]
     if not resident_offsets:
-        raise IncrementalBuildError("compiled bank has no resident group")
+        if state.split_group is not None:
+            raise IncrementalBuildError(
+                "all-spill bank unexpectedly uses a split group"
+            )
+        scenario_start = min(group_offsets)
+        if len(groups) != 1:
+            raise IncrementalBuildError(
+                "all-spill incremental rebuild currently requires one group"
+            )
+        output = bytearray(state.data[:scenario_start])
+        address = LOAD_ADDRESS + len(output)
+        output.extend(pack_entropy_stream(groups[0]))
+        _write_word(output, GROUP_ZERO_POINTER_OFFSET, address)
+        if LOAD_ADDRESS + len(output) > NOV3_LOAD_ADDRESS:
+            raise IncrementalBuildError(
+                "all-spill incremental rebuild overlaps NOV3"
+            )
+        return bytes(output)
     region_start = min(resident_offsets)
     dictionary_blob = pack_entropy_stream(state.dictionary)
     plan = _allocate_groups(
@@ -853,9 +901,34 @@ def _bank_layout_report(
         if address - LOAD_ADDRESS >= boundary
     )
     if not resident_groups:
-        raise IncrementalBuildError(
-            f"{state.bank_name}: compiled bank has no resident scenario group"
+        group_offsets = [
+            address - LOAD_ADDRESS for address in state.group_addresses
+        ]
+        if not group_offsets or min(group_offsets) < boundary:
+            raise IncrementalBuildError(
+                f"{state.bank_name}: invalid all-spill scenario pointers"
+            )
+        if state.bank_name == "TT1A":
+            renderer_offset = _offset(_read_word(state.data, 0x14), state.data)
+            if min(group_offsets) < renderer_offset:
+                raise IncrementalBuildError(
+                    "TT1A post-renderer layout has invalid scenario pointers"
+                )
+        headroom = NOV3_LOAD_ADDRESS - LOAD_ADDRESS - len(state.data)
+        return IncrementalBankReport(
+            bank_name=state.bank_name,
+            byte_size=len(state.data),
+            changed_records=changed_records,
+            dictionary_entries=len(state.dictionary),
+            dictionary_bytes=dictionary_bytes,
+            resident_groups=(),
+            spilled_groups=spilled_groups,
+            split_group=None,
+            resident_free_bytes=0,
+            tail_free_bytes=max(0, headroom),
+            nov3_headroom_bytes=headroom,
         )
+
     region_start = min(
         state.group_addresses[index] - LOAD_ADDRESS
         for index in resident_groups

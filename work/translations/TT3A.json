@@ -104,7 +104,7 @@
   "TT3A/g3/r6": "Are you really sure?!",
   "TT3A/g3/r7": "Me: Drop dead, Hitler!",
   "TT3A/g3/r8": "Man: Thank goodness… I{CTRL:0}thought you'd abandoned{CTRL:0}me.",
-  "TT3A/g3/r9": "I give him a quick wink,{CTRL:0}then rub my nose twice{CTRL:2}with a fingertip.{CTRL:0}Man: What was that?!",
+  "TT3A/g3/r9": "I wink, then rub my nose{CTRL:0}twice with a fingertip.{CTRL:2}Man: What was that?!",
   "TT3A/g3/r10": "Aw, man… these clothes{CTRL:0}are all wrinkled.",
   "TT3A/g3/r11": "I have no matches.",
   "TT3A/g3/r12": "Hmm… better not.",
@@ -124,7 +124,7 @@
   "TT3A/g3/r26": "Me: Drop dead, Hitler!{CTRL:0}Man: …!",
   "TT3A/g3/r27": "Man: Don't move!{CTRL:0}Me: …!{CTRL:0}Man: You idiot! I'm with{CTRL:0}the Gestapo!",
   "TT3A/g3/r28": "Damn… after I came all{CTRL:0}this way…",
-  "TT3A/g3/r29": "I wink, then rub my nose{CTRL:0}twice with my fingers.{CTRL:2}Man: …",
+  "TT3A/g3/r29": "I wink, then rub my nose{CTRL:0}twice with a fingertip.{CTRL:2}Man: …",
   "TT3A/g3/r30": "Man: New here, huh?",
   "TT3A/g3/r31": "Nothing useful.",
   "TT3A/g4/r0": "His eyes dart around{CTRL:0}nervously.",
@@ -149,6 +149,6 @@
   "TT3A/g4/r19": "Woman: Really?! Where?!",
   "TT3A/g4/r20": "Me: Drop dead, Hitler!{CTRL:0}Woman: …!",
   "TT3A/g4/r21": "Woman: Hands up!{CTRL:0}Me: …!{CTRL:2}Woman: Too bad. I'm with{CTRL:0}the Gestapo!",
-  "TT3A/g4/r22": "I wink, then rub my nose{CTRL:0}twice with my fingers.{CTRL:0}Woman: …",
+  "TT3A/g4/r22": "I wink, then rub my nose{CTRL:0}twice with a fingertip.{CTRL:0}Woman: …",
   "TT3A/g4/r23": "Woman: You're new here."
 }
