@@ -41,8 +41,9 @@ def _statement_paths(node: str = "S1") -> list[tuple[str, ...]]:
         return [(node,)]
     paths: list[tuple[str, ...]] = []
     for successor in QUESTION_NEXT[node]:
-        for suffix in _statement_paths(successor):
-            paths.append((node, *suffix))
+        paths.extend(
+            (node, *suffix) for suffix in _statement_paths(successor)
+        )
     return paths
 
 
