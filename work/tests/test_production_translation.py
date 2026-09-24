@@ -117,10 +117,25 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         )
 
         self.assertEqual(
+            tt1a["TT1A/g0/r4"],
+            "Enter your birth month.",
+        )
+        self.assertEqual(
             tt1a["TT1A/g0/r5"],
             (
                 "We'll begin with a{CTRL:0}personality test.{CTRL:0}"
-                "Please answer each{CTRL:0}question."
+                "Please respond to each{CTRL:0}statement."
+            ),
+        )
+        personality_items = [
+            tt1a[f"TT1A/g0/r{index}"] for index in range(6, 21)
+        ]
+        self.assertTrue(all("?" not in text for text in personality_items))
+        self.assertEqual(
+            tt1a["TT1A/g0/r9"],
+            (
+                "When it comes to{CTRL:0}baseball, it has to be{CTRL:0}"
+                "the Giants."
             ),
         )
 
