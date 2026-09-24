@@ -71,8 +71,7 @@ def _tt6d_bank(
         LOAD_ADDRESS + group_offset,
     )
     translations = {
-        f"TT6D/g0/r{index}": label
-        for index, label in enumerate(labels)
+        f"TT6D/g0/r{index}": label for index, label in enumerate(labels)
     }
     return bytes(data), translations
 
@@ -83,20 +82,14 @@ def _tt1a_bank() -> tuple[bytes, dict[str, str]]:
     group_zero_offset = 100
     group_zero_labels = tuple("A" for _ in range(32))
     group_one_labels = ("B", "C", "D")
-    group_zero = tuple(
-        encode_english(label) for label in group_zero_labels
-    )
-    group_one = tuple(
-        encode_english(label) for label in group_one_labels
-    )
+    group_zero = tuple(encode_english(label) for label in group_zero_labels)
+    group_one = tuple(encode_english(label) for label in group_one_labels)
     blob_zero = pack_entropy_stream(group_zero)
     group_one_offset = group_zero_offset + len(blob_zero)
     blob_one = pack_entropy_stream(group_one)
     end = group_one_offset + len(blob_one)
     data = bytearray(b"\x00" * end)
-    data[
-        group_zero_offset : group_zero_offset + len(blob_zero)
-    ] = blob_zero
+    data[group_zero_offset : group_zero_offset + len(blob_zero)] = blob_zero
     data[group_one_offset:end] = blob_one
     _write_word(data, 10, 0)
     _write_word(
@@ -166,9 +159,7 @@ class IncrementalBuildTests(unittest.TestCase):
 
     def test_forward_dictionary_reference_is_supported(self) -> None:
         """Resolve forward references in recovered dictionaries."""
-        data, translations = _tt6d_bank(
-            forward_dictionary=True
-        )
+        data, translations = _tt6d_bank(forward_dictionary=True)
         result = rebuild_entropy_bank(
             data,
             "TT6D",
@@ -205,9 +196,7 @@ class IncrementalBuildTests(unittest.TestCase):
 
     def test_allocator_can_select_split_group(self) -> None:
         """Use the native thunk when a whole group fits nowhere."""
-        record = tuple(
-            encode_english("ABCDEFGHIJKLMNOP")
-        )
+        record = tuple(encode_english("ABCDEFGHIJKLMNOP"))
         groups = (tuple(record for _ in range(10)),)
         plan = _allocate_groups(
             groups,
@@ -236,10 +225,7 @@ class IncrementalBuildTests(unittest.TestCase):
     def test_all_topologies_remain_explicit(self) -> None:
         """Lock all 1,299 scenario records in one topology table."""
         self.assertEqual(len(GROUP_RECORD_COUNTS), 13)
-        total = sum(
-            sum(counts)
-            for counts in GROUP_RECORD_COUNTS.values()
-        )
+        total = sum(sum(counts) for counts in GROUP_RECORD_COUNTS.values())
         self.assertEqual(total, 1299)
 
 
