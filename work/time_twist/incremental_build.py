@@ -259,10 +259,11 @@ def _decode_dictionary(
             limit=count,
         )
         records = tuple(tuple(record) for record in decoded)
-        if pack_entropy_stream(records) == raw:
+        packed = pack_entropy_stream(records)
+        if raw[: len(packed)] == packed and not any(raw[len(packed) :]):
             return records
     raise IncrementalBuildError(
-        "dictionary stream does not terminate at the fixed-tail boundary"
+        "dictionary stream does not terminate before zero-filled resident slack"
     )
 
 
@@ -376,6 +377,8 @@ def _allocate_groups(
     options: list[tuple[tuple[object, ...], dict[str, object]]] = []
     for mask in range(1 << count):
         resident = tuple(i for i in range(count) if mask & (1 << i))
+        if not resident:
+            continue
         spill = tuple(i for i in range(count) if not mask & (1 << i))
         used = (
             sum(sizes[i] for i in resident)
@@ -511,19 +514,79 @@ def _rebuild_loaded_bank(
     )
 
     if state.bank_name == "TT1A":
-        start = min(state.group_addresses) - LOAD_ADDRESS
-        output = bytearray(state.data[:start])
-        addresses: list[int] = []
-        for group in groups:
-            addresses.append(LOAD_ADDRESS + len(output))
-            output.extend(pack_entropy_stream(group))
-        _write_word(output, GROUP_ZERO_POINTER_OFFSET, addresses[0])
-        table = _read_word(output, GROUP_TABLE_POINTER_OFFSET) - LOAD_ADDRESS
-        for index, address in enumerate(addresses[1:]):
-            _write_word(output, table + 2 * index, address)
-        if LOAD_ADDRESS + len(output) > NOV3_LOAD_ADDRESS - 16:
+        boundary = state.fixed_tail_boundary
+        renderer_offset = _offset(_read_word(state.data, 0x14), state.data)
+        renderer = state.data[renderer_offset:]
+        resident_offsets = [
+            address - LOAD_ADDRESS
+            for address in state.group_addresses
+            if address - LOAD_ADDRESS < boundary
+        ]
+        if not resident_offsets:
+            raise IncrementalBuildError("TT1A has no resident scenario group")
+        region_start = min(resident_offsets)
+        spill_offsets = [
+            address - LOAD_ADDRESS
+            for address in state.group_addresses
+            if boundary <= address - LOAD_ADDRESS < renderer_offset
+        ]
+        base_end = min(spill_offsets) if spill_offsets else renderer_offset
+        table_size = 2 * (len(groups) - 1)
+        resident_capacity = boundary - region_start
+        tail_capacity = (
+            NOV3_LOAD_ADDRESS
+            - LOAD_ADDRESS
+            - base_end
+            - len(renderer)
+        )
+        plan = _allocate_groups(
+            groups,
+            dictionary_bytes=0,
+            resident_capacity=resident_capacity,
+            tail_capacity=tail_capacity,
+        )
+        if plan is None or plan["split"] is not None:
             raise IncrementalBuildError(
-                "TT1A incremental rebuild overlaps NOV3 reserve"
+                "TT1A edited scenario does not fit without a split thunk"
+            )
+
+        resident = cast(tuple[int, ...], plan["resident"])
+        spill = cast(tuple[int, ...], plan["spill"])
+        output = bytearray(state.data[:base_end])
+        output[region_start:boundary] = b"\x00" * (boundary - region_start)
+        table_offset = boundary - table_size
+        cursor = region_start
+        addresses = [0] * len(groups)
+        for group_index in resident:
+            blob = pack_entropy_stream(groups[group_index])
+            if cursor + len(blob) > table_offset:
+                raise IncrementalBuildError(
+                    "TT1A resident streams overlap the group table"
+                )
+            addresses[group_index] = LOAD_ADDRESS + cursor
+            output[cursor : cursor + len(blob)] = blob
+            cursor += len(blob)
+        for group_index in spill:
+            addresses[group_index] = LOAD_ADDRESS + len(output)
+            output.extend(pack_entropy_stream(groups[group_index]))
+
+        for index, address in enumerate(addresses[1:]):
+            _write_word(output, table_offset + 2 * index, address)
+        _write_word(
+            output,
+            GROUP_TABLE_POINTER_OFFSET,
+            LOAD_ADDRESS + table_offset,
+        )
+        _write_word(output, GROUP_ZERO_POINTER_OFFSET, addresses[0])
+        if state.data[boundary:base_end] != bytes(output[boundary:base_end]):
+            raise IncrementalBuildError("TT1A fixed suffix changed")
+
+        renderer_address = LOAD_ADDRESS + len(output)
+        _write_word(output, 0x14, renderer_address)
+        output.extend(renderer)
+        if LOAD_ADDRESS + len(output) > NOV3_LOAD_ADDRESS:
+            raise IncrementalBuildError(
+                "TT1A incremental rebuild overlaps NOV3"
             )
         return bytes(output)
 
