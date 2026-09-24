@@ -44,7 +44,8 @@ patched `.fds` files are intentionally excluded from Git.
 | `entropy_compression.py` | Optimize the production entropy dictionary | Modify FDS containers |
 | `entropy_scenario.py` | Place entropy scenario/menu streams under NOV3 | Change native entry-point contracts |
 | `entropy_runtime.py` | Install the one NOV2 production decoder/runtime | Expose alternate decoder modes |
-| `release_build.py` | Construct every playable entropy image component | Lock, publish, or promote releases |
+| `v38_build.py` | Construct playable images from active maps, the frozen v38 compiler bundle, and private v25 baseline | Define translation policy or promotion state |
+| `release_build.py` | Historical Japanese-baseline compiler and packing helpers | Serve as the active release-build implementation |
 | `release_metadata.py` | Lock non-code inputs and validate provenance/manifests | Construct ROM bytes |
 | `release.py` | Materialize, build, publish, and promote through one path | Maintain alternate build implementations |
 | `font.py` | Generate/install the 8x8 translated dialogue font | Change text records |
@@ -92,21 +93,20 @@ followed by data or code that must remain at its original CPU address.
 
 ### Rebuild
 
-1. `production_translation.py` merges the locked base, review JSON, and explicit
-   overrides, then regenerates English row/scroll geometry without changing the
-   approved words. Native semantic controls are retained under the explicit
-   production policy, including the small source-locked set of audited
-   presentation-only waits.
-2. `encode_english()` converts the materialized text to semantic symbols.
-3. `entropy_compression.py` chooses a deterministic nested dictionary under the
-   frozen entropy cost model; source-analysis flat compression is not consulted.
-4. `entropy_scenario.py` repacks dialogue and page-indexed menus while keeping
-   every recovered byte-addressed entry point valid and every loaded bank below
-   `$D7B5`, the resident NOV3 address.
-5. `release_build.py` converts the remaining decoder-visible fixed streams,
-   installs the matching NOV2 entropy runtime, and applies font/title/boot fixes.
-6. `release.py` validates the source lock and code provenance before publishing
-   the rebuilt images transactionally.
+1. `production_translation.py` loads each canonical `work/translations/BANK.json`
+   map directly and validates its renderer/control contracts. Legacy review and
+   override layers are rejected rather than merged.
+2. `v38_build.py` validates the active maps against the recovered 1,299-record
+   topology and supplies them as the only scenario-text inputs to the frozen v38
+   compiler bundle.
+3. The frozen compiler rebuilds its entropy-packed scenario/menu streams and
+   matching runtime changes against the private v25 safe-encoding baseline.
+4. `release.py` validates the source lock and executing-code provenance, delegates
+   image construction to `v38_build.py`, and publishes candidate output
+   transactionally.
+5. Candidate promotion binds reviewed output hashes to the exact source lock and
+   code tree; the immutable v38 ROM hash remains the historical checkpoint only
+   when active text exactly matches v38.
 
 ## Patch layers
 

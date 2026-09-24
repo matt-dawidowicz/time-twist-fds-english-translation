@@ -113,7 +113,7 @@ can actually be fixed.
 | `release_metadata.py` | Defines source locks, code provenance, manifests, and strict validation. | Metadata records current facts only; unsupported schemas fail rather than being silently upgraded. |
 | `v38_build.py` | Reproduces v38 from active maps, frozen compiler inputs and the private v25 baseline. | Checks all 1,299 records and the exact output hash. |
 | `release_build.py` | Historical Japanese-baseline compiler and packing helpers. | Not used by release-build. |
-| `release.py` | Materializes reviewed production English, delegates image construction, publishes candidates, and promotes reviewed output. | A promotion rebuilds independently and compares hashes before it writes a target. |
+| `release.py` | Validates the active source lock/code tree, delegates image construction to `v38_build.py`, publishes candidates, and promotes reviewed output. | It does not merge alternate English layers; promotion rebuilds independently before writing a target. |
 | `cli_parser.py` | Defines commands and human-facing command help. | Parsing has no FDS-writing side effects. |
 | `cli_commands.py` | Connects parsed arguments to the narrow project transforms. | Command handlers report known validation failures without misleading tracebacks. |
 | `cli.py` | Provides the stable command-line public API. | Tools should import the facade, not depend on internal module placement. |

@@ -121,9 +121,9 @@ explicit supported revision with evidence instead.
 Use the highest-level playable source:
 
 - story dialogue: `work/translations/BANK.json`;
-- fixed UI labels: the named record definition in `work/time_twist/ui.py`;
-- font glyphs: `PIXEL_FONT_5X7` and mapping tables;
-- title art: the title reference image and conversion code.
+- scenario English: `work/translations/BANK.json` is the only active editable English source;
+- fixed UI/font/title behavior used by the current release comes from the hash-locked v38 compiler bundle and private v25 baseline;
+- `work/time_twist/ui.py`, font/title modules, and related tables remain engineering and reverse-engineering tools unless the release source lock explicitly names their output.
 
 The complete workbook is regenerated review output. Its patch-safe field mirrors
 the playable text; the natural-translation field may preserve a less constrained
@@ -180,12 +180,13 @@ shutdown, or the next game state.
 
 ## Release lifecycle
 
-`work/release_sources.json` locks all approved non-code inputs. Schema v3
-declares `lf` normalization for base translation JSON, reviewed production JSON,
-and explicit production overrides, while Japanese FDS baselines and indexed
-title PNGs remain `raw`. This makes equivalent LF/CRLF
-translation checkouts portable while retaining byte-exact binary guards. The
-lock document's own SHA-256 is likewise calculated after LF normalization.
+`work/release_sources.json` schema v5 locks the current non-code release inputs:
+the private v25 safe-encoding baseline, all 13 canonical translation maps, and
+the frozen v38 compiler bundle. Only the translation JSON maps use `lf`
+normalization; the FDS baseline and compiler payloads remain byte-exact `raw`
+inputs. This makes equivalent LF/CRLF translation checkouts portable while
+retaining exact binary guards. The lock document's own SHA-256 is likewise
+calculated after LF normalization.
 `.gitattributes` reinforces this representation, but validation does not
 depend on Git.
 
