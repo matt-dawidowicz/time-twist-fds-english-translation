@@ -28,7 +28,7 @@ explicit renderer operation.
 
 | Control | Canonical name | A wait | Scroll | Resume cursor |
 | ---: | --- | :---: | :---: | ---: |
-| 0 | `ROW_NEXT` | no | no | next row start |
+| 0 | `ROW_NEXT` | no | no | next row start for rows 1-3; no fifth-row advance from row 4 |
 | 1 | `WAIT_ROW2` | yes | no | `$30` |
 | 2 | `WAIT_ROW3` | yes | no | `$60` |
 | 3 | `WAIT_SCROLL_ROW4` | yes | yes, one row | `$90` |
@@ -75,8 +75,12 @@ first staged row that needs uploading:
 | `$FF` | row 3 | `$22C4` |
 | `$40` | row 4 | `$2304` |
 
-`$73` separately tracks a leading presentation transition before the first
-visible glyph.
+`$73` is a second row-selection path for records positioned by leading controls
+before their first visible glyph. Its accumulated leading-row state selects the
+initial row-2, row-3, or row-4 flush origin; this is separate from the `$6E`
+semantic-continuation path above. After `$837E` has consumed that multi-valued
+row-selection state, the production SFX patch deliberately retains a normalized
+`$73=1` one-shot marker until the first visible glyph is uploaded.
 
 ## English layout policy
 
