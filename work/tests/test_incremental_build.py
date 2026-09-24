@@ -11,6 +11,8 @@ from time_twist.incremental_build import (
     GROUP_RECORD_COUNTS,
     IncrementalBuildError,
     _allocate_groups,
+    _bank_layout_report,
+    _load_entropy_bank,
     rebuild_entropy_bank,
 )
 from time_twist.scenario import (
@@ -221,6 +223,77 @@ class IncrementalBuildTests(unittest.TestCase):
             translations,
         )
         self.assertEqual(verified.data, result.data)
+
+    def test_layout_report_exposes_capacity_and_source_state(self) -> None:
+        """Report dictionary, placement, and remaining capacity."""
+        data, translations = _tt6d_bank(dictionary_slack=12)
+        state = _load_entropy_bank(data, "TT6D")
+        report = _bank_layout_report(state, ())
+        self.assertEqual(report.bank_name, "TT6D")
+        self.assertEqual(report.dictionary_entries, 1)
+        self.assertGreater(report.dictionary_bytes, 0)
+        self.assertEqual(report.resident_groups, (0,))
+        self.assertEqual(report.spilled_groups, ())
+        self.assertIsNone(report.split_group)
+        self.assertGreaterEqual(report.resident_free_bytes, 12)
+        self.assertGreater(report.nov3_headroom_bytes, 0)
+        self.assertEqual(report.changed_records, ())
+        verified = rebuild_entropy_bank(data, "TT6D", translations)
+        self.assertEqual(verified.changed_records, ())
+
+    def test_tt1a_complete_incremental_contract_is_preserved(self) -> None:
+        """Lock TT1A fixed suffix, renderer, pointers, and repeatability."""
+        data, translations = _tt1a_bank()
+        translations["TT1A/g1/r0"] = "BBBB"
+        result = rebuild_entropy_bank(data, "TT1A", translations)
+        boundary = FIXED_TAIL_BOUNDARIES["TT1A"]
+        original_renderer = int.from_bytes(data[0x14:0x16], "little")
+        original_renderer -= LOAD_ADDRESS
+        rebuilt_renderer = int.from_bytes(result.data[0x14:0x16], "little")
+        rebuilt_renderer -= LOAD_ADDRESS
+
+        self.assertGreaterEqual(rebuilt_renderer, boundary)
+        self.assertLess(rebuilt_renderer, len(result.data))
+        self.assertEqual(
+            result.data[rebuilt_renderer:],
+            data[original_renderer:],
+        )
+        self.assertEqual(
+            result.data[boundary:rebuilt_renderer],
+            data[boundary:original_renderer],
+        )
+
+        table = int.from_bytes(
+            result.data[
+                GROUP_TABLE_POINTER_OFFSET : GROUP_TABLE_POINTER_OFFSET + 2
+            ],
+            "little",
+        )
+        group_zero = int.from_bytes(
+            result.data[
+                GROUP_ZERO_POINTER_OFFSET : GROUP_ZERO_POINTER_OFFSET + 2
+            ],
+            "little",
+        )
+        self.assertGreaterEqual(table, LOAD_ADDRESS)
+        self.assertLess(table - LOAD_ADDRESS, boundary)
+        self.assertGreaterEqual(group_zero, LOAD_ADDRESS)
+        self.assertLess(group_zero - LOAD_ADDRESS, boundary)
+
+        state = _load_entropy_bank(result.data, "TT1A")
+        report = _bank_layout_report(state, result.changed_records)
+        self.assertEqual(report.dictionary_entries, 0)
+        self.assertEqual(report.dictionary_bytes, 0)
+        self.assertIsNone(report.split_group)
+        self.assertGreater(report.nov3_headroom_bytes, 0)
+
+        repeated = rebuild_entropy_bank(
+            result.data,
+            "TT1A",
+            translations,
+        )
+        self.assertEqual(repeated.data, result.data)
+        self.assertEqual(repeated.changed_records, ())
 
     def test_allocator_can_select_split_group(self) -> None:
         """Use the native thunk when a whole group fits nowhere."""
