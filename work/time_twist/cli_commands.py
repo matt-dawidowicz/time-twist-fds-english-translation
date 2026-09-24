@@ -523,8 +523,12 @@ def command_build(args: argparse.Namespace) -> None:
         )
         for report in inspection.banks:
             _print_incremental_report(report)
-        print(f"verified banks: {len(inspection.banks)}/{len(inspection.banks)}")
-        print(f"changed banks: {', '.join(inspection.changed_banks) or 'none'}")
+        print(
+            f"verified banks: {len(inspection.banks)}/{len(inspection.banks)}"
+        )
+        print(
+            f"changed banks: {', '.join(inspection.changed_banks) or 'none'}"
+        )
         print(f"changed records: {len(inspection.changed_records)}")
         return
 
