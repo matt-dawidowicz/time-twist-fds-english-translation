@@ -203,7 +203,7 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         with self.assertRaises(ProductionTranslationError):
             _validate_semantic_wait_boundaries(
                 "TT1B/g3/r29",
-                record.replace("he said,", "he whispered,"),
+                record.replace("said,", "whispered,"),
             )
 
     def test_generic_layout_starts_new_speakers_on_fresh_rows(self) -> None:
