@@ -119,7 +119,9 @@ BASE_RUNTIME_PATCHES = (
 # MesenCE testing later proved that limit was an implementation artifact. The
 # production renderer records each decoded label's pixel width in Work RAM and
 # derives draw counts, two-column placement, and cursor geometry from that one
-# value. Every replacement remains size-neutral inside NOV2.
+# value. The second column leaves one blank tile after the left trailing cursor
+# so short labels do not visually run into the following choice. Every
+# replacement remains size-neutral inside NOV2.
 DYNAMIC_MENU_LAYOUT_PATCHES = (
     RuntimePatch(
         file_offset=0x0D8A,
@@ -127,7 +129,7 @@ DYNAMIC_MENU_LAYOUT_PATCHES = (
             "0A A8 B1 C5 85 3C C8 B1 C5 85 3D A5 3C 85 C5 A5 3D 85 C6 4C FF 69"
         ),
         replacement=_hex(
-            "4C 3A 6C A4 32 C0 04 90 0A 98 29 03 A8 B9 2D 04 69 4F 60 A9 40 60"
+            "4C 3A 6C A4 32 C0 04 90 0A 98 29 03 A8 B9 2D 04 69 57 60 A9 40 60"
         ),
         label="width-aware menu column base",
     ),
@@ -156,7 +158,7 @@ DYNAMIC_MENU_LAYOUT_PATCHES = (
         ),
         replacement=_hex(
             "AA 29 03 0A 0A 0A 0A 0A 0A 85 3C A9 00 85 3D 8A C9 04 90 0D 29 03 A8 "
-            "B9 2D 04 4A 4A 4A 69 4B D0 02 A9 49 65 3C 85 3C A9 22 65 3D 85 3D BD "
+            "B9 2D 04 4A 4A 4A 69 4C D0 02 A9 49 65 3C 85 3C A9 22 65 3D 85 3D BD "
             "2D 04 4A 4A 4A D0 02 A9 06 85 31 A2 00 EA EA EA EA EA EA"
         ),
         label="metadata-driven menu renderer geometry",
