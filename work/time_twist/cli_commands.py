@@ -484,7 +484,7 @@ def command_replace_file(args: argparse.Namespace) -> None:
     print(args.output)
 
 
-def _print_incremental_report(report) -> None:
+def _print_incremental_report(report: Any) -> None:
     """Print one verified incremental-bank layout report."""
     split = (
         "none"
