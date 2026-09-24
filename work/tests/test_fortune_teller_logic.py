@@ -3,8 +3,17 @@
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 
-from test_production_translation import _canonical
+from time_twist.production_translation import merged_translation_map
+
+ROOT = Path(__file__).resolve().parents[2]
+TRANSLATIONS = ROOT / "work" / "translations"
+
+
+def _canonical(bank_name: str) -> dict[str, str]:
+    """Load one validated canonical translation bank."""
+    return merged_translation_map(bank_name, base_directory=TRANSLATIONS)
 
 
 QUESTION_NEXT = {
