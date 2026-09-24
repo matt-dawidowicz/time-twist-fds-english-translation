@@ -517,30 +517,30 @@ def command_build(args: argparse.Namespace) -> None:
     source = args.image.read_bytes()
     translations = project_root / "work" / "translations"
     if args.verify_only:
-        result = inspect_incremental_image(
+        inspection = inspect_incremental_image(
             source,
             translations_directory=translations,
         )
-        for report in result.banks:
+        for report in inspection.banks:
             _print_incremental_report(report)
-        print(f"verified banks: {len(result.banks)}/{len(result.banks)}")
-        print(f"changed banks: {', '.join(result.changed_banks) or 'none'}")
-        print(f"changed records: {len(result.changed_records)}")
+        print(f"verified banks: {len(inspection.banks)}/{len(inspection.banks)}")
+        print(f"changed banks: {', '.join(inspection.changed_banks) or 'none'}")
+        print(f"changed records: {len(inspection.changed_records)}")
         return
 
     if args.output is None:
         raise SystemExit(
             "build requires --output unless --verify-only is used"
         )
-    result = build_incremental_image(
+    build_result = build_incremental_image(
         source,
         translations_directory=translations,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_bytes(result.data)
-    print(f"changed banks: {', '.join(result.changed_banks) or 'none'}")
-    print(f"changed records: {len(result.changed_records)}")
-    print(f"SHA-256 {hashlib.sha256(result.data).hexdigest().upper()}")
+    args.output.write_bytes(build_result.data)
+    print(f"changed banks: {', '.join(build_result.changed_banks) or 'none'}")
+    print(f"changed records: {len(build_result.changed_records)}")
+    print(f"SHA-256 {hashlib.sha256(build_result.data).hexdigest().upper()}")
     print(args.output)
 
 
