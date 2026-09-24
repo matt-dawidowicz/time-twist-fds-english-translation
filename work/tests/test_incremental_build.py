@@ -21,6 +21,7 @@ from time_twist.incremental_build import (
     _allocate_groups,
     _bank_layout_report,
     _load_entropy_bank,
+    inspect_entropy_bank,
     rebuild_entropy_bank,
 )
 from time_twist.scenario import (
@@ -236,6 +237,15 @@ class IncrementalBuildTests(unittest.TestCase):
             translations,
         )
         self.assertEqual(verified.data, result.data)
+
+    def test_inspection_reports_oversized_edit_without_rebuilding(self) -> None:
+        """Report capacity pressure even when the requested edit cannot fit."""
+        data, translations = _tt6d_bank()
+        translations["TT6D/g0/r0"] = "A" * 1024
+        report = inspect_entropy_bank(data, "TT6D", translations)
+        self.assertEqual(report.changed_records, ("TT6D/g0/r0",))
+        with self.assertRaises(IncrementalBuildError):
+            rebuild_entropy_bank(data, "TT6D", translations)
 
     def test_layout_report_exposes_capacity_and_source_state(self) -> None:
         """Report dictionary, placement, and remaining capacity."""
