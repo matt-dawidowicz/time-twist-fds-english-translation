@@ -10,6 +10,7 @@ from pathlib import Path
 from time_twist import ui
 from time_twist.fds import FdsImage
 from time_twist.menu_geometry import (
+    menu_pair_geometry,
     primary_menu_descriptors,
     validate_descriptor_geometry,
 )
@@ -54,15 +55,21 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
                 "possible_compacted_pairs": len(named_pairs),
             }
         )
+    pair_geometry = [
+        {
+            "combined_glyphs": len(left) + len(right),
+            "left": left,
+            "right": right,
+            "right_text_x": geometry.right_text_x,
+            "right_trailing_cursor_x": geometry.right_trailing_cursor_x,
+            "blank_pixels_after_left_cursor": geometry.right_text_x
+            - (geometry.left_text_x + geometry.left_glyphs * 8 + 8),
+        }
+        for left, right in all_named_pairs
+        for geometry in (menu_pair_geometry(left, right),)
+    ]
     widest = sorted(
-        (
-            {
-                "combined_glyphs": len(left) + len(right),
-                "left": left,
-                "right": right,
-            }
-            for left, right in all_named_pairs
-        ),
+        pair_geometry,
         key=lambda row: (
             -int(row["combined_glyphs"]),
             str(row["left"]),
@@ -77,6 +84,22 @@ def audit(zenpen: Path, kouhen: Path) -> dict[str, object]:
         "possible_compacted_pairs": len(all_named_pairs),
         "banks": rows,
         "widest_pairs": widest[:20],
+        "minimum_blank_pixels_after_left_cursor": min(
+            (
+                int(row["blank_pixels_after_left_cursor"])
+                for row in pair_geometry
+            ),
+            default=0,
+        ),
+        "tightest_pairs": sorted(
+            pair_geometry,
+            key=lambda row: (
+                int(row["blank_pixels_after_left_cursor"]),
+                -int(row["combined_glyphs"]),
+                str(row["left"]),
+                str(row["right"]),
+            ),
+        )[:20],
     }
 
 
