@@ -63,10 +63,9 @@ FINAL_EDITORIAL_LAYOUTS = {
 
 def _is_final_editorial_layout(record_id: str, text: str) -> bool:
     """Recognize exact reviewed non-greedy presentation layouts."""
-    return (
-        hashlib.sha256(text.encode("utf-8")).hexdigest()
-        == FINAL_EDITORIAL_LAYOUTS.get(record_id)
-    )
+    return hashlib.sha256(
+        text.encode("utf-8")
+    ).hexdigest() == FINAL_EDITORIAL_LAYOUTS.get(record_id)
 
 
 CHECKPOINT_QUIZ_LAYOUTS = {
