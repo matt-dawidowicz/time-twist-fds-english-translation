@@ -3,7 +3,8 @@
 This module deliberately does not reuse the dialogue ``DISPLAY_COLUMNS`` rule.
 Menus have their own staging and two-column geometry.  The production renderer
 stages up to 18 glyphs for one label and places the second column from the
-corresponding first-column width.  Call-site pairing remains authoritative.
+corresponding first-column width, with one blank tile after the left trailing
+cursor. Call-site pairing remains authoritative.
 """
 
 from __future__ import annotations
@@ -11,10 +12,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 MENU_MAX_STAGED_GLYPHS = 18
-MENU_MAX_PAIRED_GLYPHS = 20
+MENU_MAX_PAIRED_GLYPHS = 19
 LEFT_LEADING_CURSOR_X = 0x40
 LEFT_TEXT_X = 0x48
-RIGHT_TEXT_BASE_AFTER_LEFT_X = 0x58
+RIGHT_TEXT_BASE_AFTER_LEFT_X = 0x60
 RIGHTMOST_SAFE_CURSOR_X = 0xF8
 GLYPH_PIXELS = 8
 
@@ -65,9 +66,10 @@ def validate_menu_label(text: str) -> int:
 def menu_pair_geometry(left: str, right: str) -> MenuPairGeometry:
     """Return and validate dynamic two-column coordinates for one paired row.
 
-    Historical live-tested code placed the right text two tiles after the end
-    of the left text.  Under that recovered layout the right trailing cursor is
-    ``0x58 + 8 * (left_glyphs + right_glyphs)``.  ``0xF8`` is the conservative
+    The width-aware renderer now leaves one blank tile after the left trailing
+    cursor before starting the right text. Under that recovered layout plus the
+    readability gap, the right trailing cursor is
+    ``0x60 + 8 * (left_glyphs + right_glyphs)``. ``0xF8`` is the conservative
     last safe cursor coordinate before the 256-pixel wrap.
     """
     left_glyphs = validate_menu_label(left)
