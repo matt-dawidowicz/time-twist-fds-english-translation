@@ -33,7 +33,7 @@ class DialogueFlowRegressionTests(unittest.TestCase):
         )
         self.assertEqual(
             payload["TT6C/g0/r29"],
-            "They gaze solemnly{CTRL:0}at the baby.",
+            "They gaze solemnly at{CTRL:0}the baby.",
         )
         trace_dialogue("TT6C/g0/r29", payload["TT6C/g0/r29"])
 
