@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import random
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from time_twist.english import encode_english
@@ -39,9 +40,13 @@ from time_twist.entropy_runtime import (
     PARENT_BACK_GUARD_PATCHES,
     SCANNER_CODE_BYTES,
 )
-from time_twist.entropy_scenario import build_entropy_scenario_bank
+from time_twist.entropy_scenario import (
+    build_entropy_scenario_bank,
+    relocate_entropy_fixed_record_table,
+)
 from time_twist.scenario import ScenarioBank, ScenarioRecord
-from time_twist.textcodec import PackedSymbol, SymbolKind
+from time_twist.textcodec import PackedSymbol, SymbolKind, pack_records
+from time_twist.ui import FixedRecordTableSpec
 
 
 def _s(kind: SymbolKind, value: int) -> PackedSymbol:
@@ -217,6 +222,85 @@ class EntropyProductionTests(unittest.TestCase):
         self.assertEqual(
             layout.data[bank.dictionary_end_offset : len(bank.data)],
             bank.data[bank.dictionary_end_offset :],
+        )
+
+    def test_fixed_menu_relocation_preserves_complete_secondary_prefix(
+        self,
+    ) -> None:
+        """Keep the full A210/A212 block ahead of relocated scenario text."""
+        import time_twist.entropy_scenario as entropy_scenario
+        import time_twist.ui as ui
+
+        load = 0xA200
+        source_records = (
+            encode_english("Look"),
+            encode_english("Take"),
+        )
+        source_menu = pack_records(source_records)
+        start = 0x40
+        end = start + len(source_menu)
+        first_following = end
+        second_following = first_following + 11
+        secondary_prefix = bytes(range(1, 33)) + bytes.fromhex("F1 F2 F3 F4")
+        group_zero = first_following + len(secondary_prefix)
+        data = bytearray(b"\x00" * 0x200)
+        data[start:end] = source_menu
+        data[first_following:group_zero] = secondary_prefix
+        for pointer_offset, offset in (
+            (0x10, first_following),
+            (0x12, second_following),
+            (0x14, start),
+            (0x1A, end),
+            (0x26, group_zero),
+        ):
+            data[pointer_offset : pointer_offset + 2] = (
+                load + offset
+            ).to_bytes(2, "little")
+
+        spec = FixedRecordTableSpec(
+            start=start,
+            end=end,
+            source_sha256=_sha256(source_menu),
+            records=("Look", "Take"),
+        )
+        replacement = (
+            encode_english("Look around the room"),
+            encode_english("Take the long rope"),
+        )
+        synthetic_specs = {"TTTEST": spec}
+        with (
+            mock.patch.object(
+                entropy_scenario,
+                "FIXED_RECORD_TABLE_SPECS",
+                synthetic_specs,
+            ),
+            mock.patch.object(ui, "FIXED_RECORD_TABLE_SPECS", synthetic_specs),
+        ):
+            relocated, new_group_zero = relocate_entropy_fixed_record_table(
+                bytes(data),
+                bank_name="TTTEST",
+                load_address=load,
+                group_zero_offset=group_zero,
+                records=replacement,
+            )
+
+        new_following = (
+            int.from_bytes(relocated[0x10:0x12], "little") - load
+        )
+        delta = new_following - first_following
+        self.assertGreater(delta, 0)
+        self.assertEqual(new_group_zero, group_zero + delta)
+        self.assertEqual(
+            relocated[new_following:new_group_zero],
+            secondary_prefix,
+        )
+        self.assertEqual(
+            int.from_bytes(relocated[0x12:0x14], "little") - load,
+            second_following + delta,
+        )
+        self.assertEqual(
+            relocated[new_group_zero - 4 : new_group_zero],
+            bytes.fromhex("F1 F2 F3 F4"),
         )
 
     def test_base_renderer_patches_are_frozen(self) -> None:
