@@ -22,6 +22,7 @@ from time_twist.entropy_compression import (
     optimize_entropy_dictionary,
 )
 from time_twist.entropy_runtime import (
+    _INTERNAL_TABLE_BLOCK,
     _INTERNAL_TABLE_STREAM,
     BASE_RUNTIME_PATCHES,
     CATEGORY_CODE_BYTES,
@@ -38,6 +39,7 @@ from time_twist.entropy_runtime import (
     PALETTE_CPU_RANGE,
     PARENT_BACK_GUARD_PATCHES,
     SCANNER_CODE_BYTES,
+    TYPEWRITER_SPACE_FILTER_CPU_ADDRESS,
 )
 from time_twist.entropy_scenario import build_entropy_scenario_bank
 from time_twist.scenario import ScenarioBank, ScenarioRecord
@@ -250,7 +252,7 @@ class EntropyProductionTests(unittest.TestCase):
             patches[
                 "width-aware leading menu cursor and typewriter gate"
             ].replacement,
-            bytes.fromhex("20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C C5 85"),
+            bytes.fromhex("20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C 22 87"),
         )
         self.assertIn(
             bytes.fromhex("BD 2D 04 4A 4A 4A D0 02 A9 06 85 31"),
@@ -258,6 +260,24 @@ class EntropyProductionTests(unittest.TestCase):
         )
         self.assertEqual(MENU_WIDTH_WORK_RAM_ADDRESS, 0x042D)
         self.assertEqual(MENU_MAX_STAGED_GLYPHS, 18)
+
+    def test_typewriter_gate_composes_leading_control_and_space_filters(self) -> None:
+        """Keep Issue #74 suppression local to typewriter SFX dispatch."""
+        self.assertEqual(TYPEWRITER_SPACE_FILTER_CPU_ADDRESS, 0x8722)
+        filter_offset = TYPEWRITER_SPACE_FILTER_CPU_ADDRESS - 0x85D9
+        self.assertGreaterEqual(filter_offset, len(_INTERNAL_TABLE_STREAM))
+        self.assertEqual(
+            _INTERNAL_TABLE_BLOCK[filter_offset : filter_offset + 8],
+            bytes.fromhex("C9 C0 F0 03 4C C5 85 60"),
+        )
+        self.assertEqual(_INTERNAL_TABLE_BLOCK[filter_offset + 8 :], b"\x00")
+
+        menu = {patch.label: patch for patch in DYNAMIC_MENU_LAYOUT_PATCHES}
+        gate = menu["width-aware leading menu cursor and typewriter gate"]
+        self.assertEqual(
+            gate.replacement[8:],
+            bytes.fromhex("46 73 B0 1C 4C 22 87"),
+        )
 
     def test_entropy_prerequisites_are_only_native_nested_depth(self) -> None:
         """Verify entropy prerequisites are only native nested depth."""
