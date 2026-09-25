@@ -34,6 +34,7 @@ CATEGORY_CPU_ADDRESS = 0x81E0
 CATEGORY_REGION_SIZE = 70
 MENU_WIDTH_WORK_RAM_ADDRESS = 0x042D
 MENU_MAX_STAGED_GLYPHS = 18
+LEADING_CONTROL_RESUME_CPU_ADDRESS = 0x819E
 
 
 class EntropyRuntimeError(ValueError):
@@ -83,6 +84,36 @@ def _hex(value: str) -> bytes:
     """Parse a compact hexadecimal patch literal."""
     return bytes.fromhex(value)
 
+
+# A leading semantic/presentation control can flush stale staged cells before
+# decoding any glyph from the new record. Keep its marker through that flush,
+# then clear it at the control-specific resume-to-decoder call site.
+LEADING_CONTROL_RESUME_PATCHES = (
+    RuntimePatch(
+        file_offset=0x1FFD,
+        expected=_hex("20 5E 81"),
+        replacement=_hex("20 9E 81"),
+        label="route scroll-row4 resume through leading-marker clear",
+    ),
+    RuntimePatch(
+        file_offset=0x2016,
+        expected=_hex("20 5E 81"),
+        replacement=_hex("20 9E 81"),
+        label="route row3 resume through leading-marker clear",
+    ),
+    RuntimePatch(
+        file_offset=0x202F,
+        expected=_hex("20 5E 81"),
+        replacement=_hex("20 9E 81"),
+        label="route row2 resume through leading-marker clear",
+    ),
+    RuntimePatch(
+        file_offset=0x2048,
+        expected=_hex("20 5E 81"),
+        replacement=_hex("20 9E 81"),
+        label="route row4 resume through leading-marker clear",
+    ),
+)
 
 # Proven English-renderer fixes that entropy builds still require. These are
 # not a second codec: they repair native renderer behavior before the entropy
@@ -170,7 +201,7 @@ DYNAMIC_MENU_LAYOUT_PATCHES = (
     RuntimePatch(
         file_offset=0x3885,
         expected=_hex("A5 32 C9 04 90 05 A9 80 4C 92 98 A9 40 85 14"),
-        replacement=_hex("20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C C5 85"),
+        replacement=_hex("20 8D 6D 85 14 4C 94 98 A5 73 D0 1A 4C C5 85"),
         label="width-aware leading menu cursor and typewriter gate",
     ),
 )
@@ -562,9 +593,12 @@ _SCANNER_BLOCK = (
     + PARENT_BACK_GUARD_STUB
     + _SCANNER_BLOCK[_stub_end:]
 )
-_FRONTEND_BLOCK = _FRONTEND_CODE + bytes((0xEA,)) * (
-    FRONTEND_REGION_SIZE - len(_FRONTEND_CODE)
-)
+_LEADING_CONTROL_RESUME_WRAPPER = _hex("46 73 4C 5E 81")
+if FRONTEND_CPU_ADDRESS + len(_FRONTEND_CODE) != LEADING_CONTROL_RESUME_CPU_ADDRESS:
+    raise EntropyRuntimeError("leading-control resume wrapper address drifted")
+if len(_FRONTEND_CODE) + len(_LEADING_CONTROL_RESUME_WRAPPER) != FRONTEND_REGION_SIZE:
+    raise EntropyRuntimeError("leading-control resume wrapper no longer fits frontend")
+_FRONTEND_BLOCK = _FRONTEND_CODE + _LEADING_CONTROL_RESUME_WRAPPER
 _CATEGORY_BLOCK = _CATEGORY_CODE + bytes((0xEA,)) * (
     CATEGORY_REGION_SIZE - len(_CATEGORY_CODE)
 )
@@ -753,6 +787,8 @@ def patch_entropy_nov2(data: bytes) -> bytes:
             f"NOV2 must be {NOV2_SIZE} bytes, got {len(data)}"
         )
     result = bytearray(data)
+    for resume_patch in LEADING_CONTROL_RESUME_PATCHES:
+        resume_patch.apply(result)
     for base_patch in BASE_RUNTIME_PATCHES:
         base_patch.apply(result)
     for menu_patch in DYNAMIC_MENU_LAYOUT_PATCHES:
