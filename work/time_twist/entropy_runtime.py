@@ -594,10 +594,18 @@ _SCANNER_BLOCK = (
     + _SCANNER_BLOCK[_stub_end:]
 )
 _LEADING_CONTROL_RESUME_WRAPPER = _hex("46 73 4C 5E 81")
-if FRONTEND_CPU_ADDRESS + len(_FRONTEND_CODE) != LEADING_CONTROL_RESUME_CPU_ADDRESS:
+if (
+    FRONTEND_CPU_ADDRESS + len(_FRONTEND_CODE)
+    != LEADING_CONTROL_RESUME_CPU_ADDRESS
+):
     raise EntropyRuntimeError("leading-control resume wrapper address drifted")
-if len(_FRONTEND_CODE) + len(_LEADING_CONTROL_RESUME_WRAPPER) != FRONTEND_REGION_SIZE:
-    raise EntropyRuntimeError("leading-control resume wrapper no longer fits frontend")
+if (
+    len(_FRONTEND_CODE) + len(_LEADING_CONTROL_RESUME_WRAPPER)
+    != FRONTEND_REGION_SIZE
+):
+    raise EntropyRuntimeError(
+        "leading-control resume wrapper no longer fits frontend"
+    )
 _FRONTEND_BLOCK = _FRONTEND_CODE + _LEADING_CONTROL_RESUME_WRAPPER
 _CATEGORY_BLOCK = _CATEGORY_CODE + bytes((0xEA,)) * (
     CATEGORY_REGION_SIZE - len(_CATEGORY_CODE)
