@@ -78,7 +78,7 @@ This guide accompanies the complete translation workbook. Exact Japanese always 
 - Politeness: public authority masking cruelty
 - Dialect/register: role-language rather than a regional diagnosis
 - Verbal habits: decrees, threats, hypocritical religious language
-- Relationships: antagonist in the Jeanne d'Arc chapter
+- Relationships: antagonist in the Joan of Arc chapter
 - Recommended English voice: self-important ecclesiastical authority with theatrical menace
 
 ### Schmidt
@@ -143,7 +143,7 @@ This guide accompanies the complete translation workbook. Exact Japanese always 
 - **Dr. Simon** — exact `しもんはかせ`; reconstructed `シモン博士`; first `TT1A/g0/r1`. Physicist and creator of the Time Belt.
 - **Devil** — exact `あくま`; reconstructed `悪魔`; first `TT1B/g0/r0`. Recurring antagonist; translated as a title/role.
 - **Pierre** — exact `ぴえーる`; reconstructed `ピエール`; first `TT2/g0/r0`. Body/identity used in the 1428 France chapter.
-- **Jeanne d'Arc** — exact `じゃんぬ・だるく`; reconstructed `ジャンヌ・ダルク`; first `TT2/g0/r22`. Use Jeanne in direct address; full historical name in narration.
+- **Joan of Arc** — exact `じゃんぬ・だるく`; reconstructed `ジャンヌ・ダルク`; first `TT2/g0/r22`. Use Joan in direct address; full historical name in narration.
 - **Lugot** — exact `るごー`; reconstructed `ルゴー`; first `TT2/g0/r22`. Medieval French ally; romanization retained consistently.
 - **Chino** — exact `ちの`; reconstructed `チノ`; first `TT1B/g1/r11`. Medieval French ally.
 - **Gordo** — exact `ごるどー`; reconstructed `ゴルドー`; first `TT2/g2/r2`. Medieval French ally.
@@ -187,7 +187,7 @@ This guide accompanies the complete translation workbook. Exact Japanese always 
 - **Maradul Barao Garadura** — exact `まらどぅる ばらお がらどぅーら`; reconstructed `マラドゥル・バラオ・ガラドゥーラ`; first `TT1A/g0/r29`. Incantation; variants in the source are preserved and noted.
 - **time travel** — exact `たいむとらべる`; reconstructed `タイムトラベル`; first `TT1A/g0/r1`. General concept.
 - **time warp** — exact `たいむわーぷ`; reconstructed `タイムワープ`; first `TT1B/g2/r12`. The game's term for historical transit.
-- **1428** — exact `1428ねん`; reconstructed `1428年`; first `TT2/g0/r25`. France/Jeanne chapter.
+- **1428** — exact `1428ねん`; reconstructed `1428年`; first `TT2/g0/r25`. France/Joan of Arc chapter.
 - **July 1944** — exact `1944ねん 7がつ`; reconstructed `1944年7月`; first `TT3A/g0/r14`. German POW chapter.
 - **September 1864** — exact `1864ねん 9がつ`; reconstructed `1864年9月`; first `TT5/g1/r6`. Atlanta/Civil War chapter.
 - **circa 4 BC** — exact `きげんぜん 4ねんごろ`; reconstructed `紀元前4年頃`; first `TT6A/g0/r8`. The game uses BC-era framing.
