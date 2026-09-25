@@ -22,6 +22,7 @@ from time_twist.entropy_compression import (
     optimize_entropy_dictionary,
 )
 from time_twist.entropy_runtime import (
+    _INTERNAL_TABLE_BLOCK,
     _INTERNAL_TABLE_STREAM,
     BASE_RUNTIME_PATCHES,
     CATEGORY_CODE_BYTES,
@@ -32,6 +33,7 @@ from time_twist.entropy_runtime import (
     ENTROPY_RUNTIME_PATCHES,
     ENTROPY_SELECTION_SPAN_CPU_ADDRESS,
     FRONTEND_CODE_BYTES,
+    LEADING_CONTROL_STATE4_WRAPPER_CPU_ADDRESS,
     MENU_MAX_STAGED_GLYPHS,
     MENU_WIDTH_WORK_RAM_ADDRESS,
     NOV3_LOAD_ADDRESS,
@@ -223,11 +225,12 @@ class EntropyProductionTests(unittest.TestCase):
         """Keep the proven pre-entropy renderer repairs byte-identical."""
         self.assertEqual(
             tuple(patch.cpu_address for patch in BASE_RUNTIME_PATCHES),
-            (0x81D3, 0x8378, 0x8383, 0x847E),
+            (0x7F4A, 0x81D3, 0x8378, 0x8383, 0x847E),
         )
         self.assertEqual(
             tuple(patch.replacement for patch in BASE_RUNTIME_PATCHES),
             (
+                bytes.fromhex("22 87"),
                 bytes.fromhex("A5 3A C9 25 B0 4D 69 20 85 3A 4C C5 82"),
                 bytes.fromhex("B0"),
                 bytes.fromhex("01"),
@@ -250,7 +253,7 @@ class EntropyProductionTests(unittest.TestCase):
             patches[
                 "width-aware leading menu cursor and typewriter gate"
             ].replacement,
-            bytes.fromhex("20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C C5 85"),
+            bytes.fromhex("20 8D 6D 85 14 4C 94 98 A5 73 D0 1A 4C C5 85"),
         )
         self.assertIn(
             bytes.fromhex("BD 2D 04 4A 4A 4A D0 02 A9 06 85 31"),
@@ -258,6 +261,31 @@ class EntropyProductionTests(unittest.TestCase):
         )
         self.assertEqual(MENU_WIDTH_WORK_RAM_ADDRESS, 0x042D)
         self.assertEqual(MENU_MAX_STAGED_GLYPHS, 18)
+
+    def test_leading_control_flush_gate_is_state_scoped(self) -> None:
+        """Keep the leading marker through control flushes, then consume it."""
+        base = {patch.label: patch for patch in BASE_RUNTIME_PATCHES}
+        route = base[
+            "route visible upload state through leading-marker wrapper"
+        ]
+        self.assertEqual(route.cpu_address, 0x7F4A)
+        self.assertEqual(route.expected, bytes.fromhex("C4 7F"))
+        self.assertEqual(route.replacement, bytes.fromhex("22 87"))
+
+        self.assertEqual(LEADING_CONTROL_STATE4_WRAPPER_CPU_ADDRESS, 0x8722)
+        wrapper_offset = LEADING_CONTROL_STATE4_WRAPPER_CPU_ADDRESS - 0x85D9
+        self.assertGreaterEqual(wrapper_offset, len(_INTERNAL_TABLE_STREAM))
+        self.assertEqual(
+            _INTERNAL_TABLE_BLOCK[wrapper_offset : wrapper_offset + 6],
+            bytes.fromhex("20 D9 83 46 73 60"),
+        )
+
+        menu = {patch.label: patch for patch in DYNAMIC_MENU_LAYOUT_PATCHES}
+        gate = menu["width-aware leading menu cursor and typewriter gate"]
+        self.assertEqual(
+            gate.replacement[8:],
+            bytes.fromhex("A5 73 D0 1A 4C C5 85"),
+        )
 
     def test_entropy_prerequisites_are_only_native_nested_depth(self) -> None:
         """Verify entropy prerequisites are only native nested depth."""
