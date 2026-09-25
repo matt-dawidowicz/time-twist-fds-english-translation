@@ -22,6 +22,7 @@ from time_twist.entropy_compression import (
     optimize_entropy_dictionary,
 )
 from time_twist.entropy_runtime import (
+    _FRONTEND_BLOCK,
     _INTERNAL_TABLE_STREAM,
     BASE_RUNTIME_PATCHES,
     CATEGORY_CODE_BYTES,
@@ -32,6 +33,8 @@ from time_twist.entropy_runtime import (
     ENTROPY_RUNTIME_PATCHES,
     ENTROPY_SELECTION_SPAN_CPU_ADDRESS,
     FRONTEND_CODE_BYTES,
+    LEADING_CONTROL_RESUME_CPU_ADDRESS,
+    LEADING_CONTROL_RESUME_PATCHES,
     MENU_MAX_STAGED_GLYPHS,
     MENU_WIDTH_WORK_RAM_ADDRESS,
     NOV3_LOAD_ADDRESS,
@@ -250,7 +253,7 @@ class EntropyProductionTests(unittest.TestCase):
             patches[
                 "width-aware leading menu cursor and typewriter gate"
             ].replacement,
-            bytes.fromhex("20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C C5 85"),
+            bytes.fromhex("20 8D 6D 85 14 4C 94 98 A5 73 D0 1A 4C C5 85"),
         )
         self.assertIn(
             bytes.fromhex("BD 2D 04 4A 4A 4A D0 02 A9 06 85 31"),
@@ -258,6 +261,37 @@ class EntropyProductionTests(unittest.TestCase):
         )
         self.assertEqual(MENU_WIDTH_WORK_RAM_ADDRESS, 0x042D)
         self.assertEqual(MENU_MAX_STAGED_GLYPHS, 18)
+
+    def test_leading_control_marker_clears_at_decoder_resume(self) -> None:
+        """Keep stale control flushes silent, then restore real typing."""
+        self.assertEqual(
+            tuple(patch.cpu_address for patch in LEADING_CONTROL_RESUME_PATCHES),
+            (0x7FFD, 0x8016, 0x802F, 0x8048),
+        )
+        for patch in LEADING_CONTROL_RESUME_PATCHES:
+            self.assertEqual(patch.expected, bytes.fromhex("20 5E 81"))
+            self.assertEqual(patch.replacement, bytes.fromhex("20 9E 81"))
+
+        self.assertEqual(LEADING_CONTROL_RESUME_CPU_ADDRESS, 0x819E)
+        wrapper_offset = LEADING_CONTROL_RESUME_CPU_ADDRESS - 0x815E
+        self.assertEqual(
+            _FRONTEND_BLOCK[wrapper_offset : wrapper_offset + 5],
+            bytes.fromhex("46 73 4C 5E 81"),
+        )
+        self.assertEqual(len(_FRONTEND_BLOCK), 69)
+
+        gate = {
+            patch.label: patch for patch in DYNAMIC_MENU_LAYOUT_PATCHES
+        }["width-aware leading menu cursor and typewriter gate"]
+        self.assertEqual(
+            gate.replacement[8:],
+            bytes.fromhex("A5 73 D0 1A 4C C5 85"),
+        )
+
+        # Do not redirect renderer state $04 or reintroduce the failed $C0
+        # filter. Marker lifetime ends at semantic resume, not upload timing.
+        self.assertNotIn(0x7F4A, tuple(p.cpu_address for p in BASE_RUNTIME_PATCHES))
+        self.assertNotIn(bytes.fromhex("C9 C0"), _FRONTEND_BLOCK)
 
     def test_entropy_prerequisites_are_only_native_nested_depth(self) -> None:
         """Verify entropy prerequisites are only native nested depth."""
