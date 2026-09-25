@@ -34,6 +34,7 @@ CATEGORY_CPU_ADDRESS = 0x81E0
 CATEGORY_REGION_SIZE = 70
 MENU_WIDTH_WORK_RAM_ADDRESS = 0x042D
 MENU_MAX_STAGED_GLYPHS = 18
+TYPEWRITER_SPACE_FILTER_CPU_ADDRESS = 0x8722
 
 
 class EntropyRuntimeError(ValueError):
@@ -82,6 +83,9 @@ class RuntimePatch:
 def _hex(value: str) -> bytes:
     """Parse a compact hexadecimal patch literal."""
     return bytes.fromhex(value)
+
+
+_TYPEWRITER_SPACE_FILTER = _hex("C9 C0 F0 03 4C C5 85 60")
 
 
 # Proven English-renderer fixes that entropy builds still require. These are
@@ -170,7 +174,7 @@ DYNAMIC_MENU_LAYOUT_PATCHES = (
     RuntimePatch(
         file_offset=0x3885,
         expected=_hex("A5 32 C9 04 90 05 A9 80 4C 92 98 A9 40 85 14"),
-        replacement=_hex("20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C C5 85"),
+        replacement=_hex("20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C 22 87"),
         label="width-aware leading menu cursor and typewriter gate",
     ),
 )
@@ -587,8 +591,20 @@ _INTERNAL_TABLE_STREAM = bytes.fromhex(
     "00653a79f313d4769e1cb575fb92dfdaa75f66d2caf8a119abb84f5fbdfbf725b"
     "fb9ba564dcd2a069cce827659aec9828466ce0"
 )
-_INTERNAL_TABLE_BLOCK = _INTERNAL_TABLE_STREAM + bytes(
-    338 - len(_INTERNAL_TABLE_STREAM)
+_typewriter_space_filter_offset = TYPEWRITER_SPACE_FILTER_CPU_ADDRESS - 0x85D9
+if not len(_INTERNAL_TABLE_STREAM) <= _typewriter_space_filter_offset:
+    raise EntropyRuntimeError("typewriter space filter overlaps internal text stream")
+if _typewriter_space_filter_offset + len(_TYPEWRITER_SPACE_FILTER) > 338:
+    raise EntropyRuntimeError("typewriter space filter escapes internal table region")
+_INTERNAL_TABLE_BLOCK = (
+    _INTERNAL_TABLE_STREAM
+    + bytes(_typewriter_space_filter_offset - len(_INTERNAL_TABLE_STREAM))
+    + _TYPEWRITER_SPACE_FILTER
+    + bytes(
+        338
+        - _typewriter_space_filter_offset
+        - len(_TYPEWRITER_SPACE_FILTER)
+    )
 )
 if len(_INTERNAL_TABLE_STREAM) != 309 or len(_INTERNAL_TABLE_BLOCK) != 338:
     raise EntropyRuntimeError("internal entropy table size changed")
