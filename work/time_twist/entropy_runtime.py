@@ -34,6 +34,7 @@ CATEGORY_CPU_ADDRESS = 0x81E0
 CATEGORY_REGION_SIZE = 70
 MENU_WIDTH_WORK_RAM_ADDRESS = 0x042D
 MENU_MAX_STAGED_GLYPHS = 18
+LEADING_CONTROL_STATE4_WRAPPER_CPU_ADDRESS = 0x8722
 
 
 class EntropyRuntimeError(ValueError):
@@ -88,6 +89,12 @@ def _hex(value: str) -> bytes:
 # not a second codec: they repair native renderer behavior before the entropy
 # decoder itself is installed.
 BASE_RUNTIME_PATCHES = (
+    RuntimePatch(
+        file_offset=0x1F4A,
+        expected=_hex("C4 7F"),
+        replacement=_hex("22 87"),
+        label="route visible upload state through leading-marker wrapper",
+    ),
     RuntimePatch(
         file_offset=0x21D3,
         expected=_hex("A5 3A C9 25 B0 4D 69 20 85 3A 4C BE 82"),
@@ -170,7 +177,7 @@ DYNAMIC_MENU_LAYOUT_PATCHES = (
     RuntimePatch(
         file_offset=0x3885,
         expected=_hex("A5 32 C9 04 90 05 A9 80 4C 92 98 A9 40 85 14"),
-        replacement=_hex("20 8D 6D 85 14 4C 94 98 46 73 B0 1C 4C C5 85"),
+        replacement=_hex("20 8D 6D 85 14 4C 94 98 A5 73 D0 1A 4C C5 85"),
         label="width-aware leading menu cursor and typewriter gate",
     ),
 )
@@ -587,8 +594,29 @@ _INTERNAL_TABLE_STREAM = bytes.fromhex(
     "00653a79f313d4769e1cb575fb92dfdaa75f66d2caf8a119abb84f5fbdfbf725b"
     "fb9ba564dcd2a069cce827659aec9828466ce0"
 )
-_INTERNAL_TABLE_BLOCK = _INTERNAL_TABLE_STREAM + bytes(
-    338 - len(_INTERNAL_TABLE_STREAM)
+_LEADING_CONTROL_STATE4_WRAPPER = _hex("20 D9 83 46 73 60")
+_leading_control_state4_wrapper_offset = (
+    LEADING_CONTROL_STATE4_WRAPPER_CPU_ADDRESS - 0x85D9
+)
+if not len(_INTERNAL_TABLE_STREAM) <= _leading_control_state4_wrapper_offset:
+    raise EntropyRuntimeError("leading-control state-4 wrapper overlaps internal text")
+if (
+    _leading_control_state4_wrapper_offset
+    + len(_LEADING_CONTROL_STATE4_WRAPPER)
+    > 338
+):
+    raise EntropyRuntimeError("leading-control state-4 wrapper escapes internal table")
+_INTERNAL_TABLE_BLOCK = (
+    _INTERNAL_TABLE_STREAM
+    + bytes(
+        _leading_control_state4_wrapper_offset - len(_INTERNAL_TABLE_STREAM)
+    )
+    + _LEADING_CONTROL_STATE4_WRAPPER
+    + bytes(
+        338
+        - _leading_control_state4_wrapper_offset
+        - len(_LEADING_CONTROL_STATE4_WRAPPER)
+    )
 )
 if len(_INTERNAL_TABLE_STREAM) != 309 or len(_INTERNAL_TABLE_BLOCK) != 338:
     raise EntropyRuntimeError("internal entropy table size changed")
