@@ -286,29 +286,74 @@ meanings.
 
 ## Typewriter SFX after a leading presentation control
 
-NOV2's row selector at `$837E` consumes `$73` only after it has already
-selected the correct dirty-row origin. Historically it then cleared `$73`
-immediately. That made the staged-cell uploader at `$847E` unable to
-distinguish an ordinary glyph from the first glyph following a leading
-presentation-only row/scroll transition.
+Issue #74 exposed two independent ways for the native typewriter command to
+become audible before a newly visible English glyph.
 
-The production runtime now retains `$73=1` after that row selection and uses
-it as a one-shot typewriter marker:
+The NMI uploader is:
 
 ```asm
-$988A  JMP $9894       ; normal menu path skips the helper
-$988D  LSR $73         ; 1 -> 0 with carry set; 0 stays 0 with carry clear
-$988F  BCS $98AD       ; suppress exactly the first post-control click
-$9891  JMP $85C5       ; otherwise use the native typewriter SFX
+$8479  LDA $65
+$847B  STA $2007
+$847E  JSR $988D
 ```
 
-The helper occupies the existing ten-byte `$988A-$9893` NOP island. The
-normal menu cursor path reaches `$988A` by fallthrough and therefore jumps
-over the helper; only the glyph uploader calls `$988D`.
+Thus `A` still contains the primary staged tile when the typewriter gate is
+entered. The native typewriter routine at `$85C5` writes command `$04` to
+`$07E0`; TT3A scene-overlay effects use the separate `$07E1` latch.
 
-This is intentionally **not** a timing delay. The renderer/NMI cadence,
-semantic control behavior, and native `$85C5` sound remain unchanged.
-The gate only prevents the control-only staging transition from producing an
-audible click before the first visible glyph. The motivating retail case is
-`TT3A/g0/r26`, which begins with `CTRL:4` before the printable text.
+### Root cause
+
+The long pre-text sequence in `TT3A/g0/r26` is produced by staged common-space
+tiles (`$C0`) reaching the same native `$85C5` typewriter path as printable
+glyphs. The staged-cell walker already skips clear tile `$AC`, but it does not
+skip common-space `$C0`.
+
+The current v17 capture shows an eight-pulse pre-text train at frames
+503, 507, 511, 515, 519, 523, 527, and 531, while the first visible `I`
+appears at frame 562. Those pulses have the same four-frame cadence and audio
+signature as the later visible-glyph typewriter train. This is not the timing
+signature of TT3A's `91 10` or `91 20` scene effects, whose noise-period
+programs are separate.
+
+Historical live Mesen testing of PR #89 independently isolated the same
+mechanism: filtering `$C0` removed the long blank-space typing lead without
+graphics corruption, leaving only the approximately two-frame run-start defect.
+PR #104 fixed that remaining defect with the one-shot `$73` marker, but its
+production helper did not retain the `$C0` filter. The complete correction is
+therefore the composition of both proven mechanisms, not a delay or a scene-SFX
+deletion.
+
+### Composed gate
+
+The production path is:
+
+```asm
+$988A  JMP $9894       ; normal menu path skips the typewriter helper
+$988D  LSR $73         ; consume one-shot leading-control marker
+$988F  BCS $98AD       ; marker set: suppress this first call
+$9891  JMP $8722       ; otherwise classify the staged tile
+
+$8722  CMP #$C0        ; A is still the tile loaded from $65
+$8724  BEQ $8729       ; common-space tile: no typewriter SFX
+$8726  JMP $85C5       ; printable tile: native typewriter command
+$8729  RTS
+```
+
+`$8722-$8729` is eight bytes of owned zero padding inside the frozen NOV2
+internal-table replacement region, after the packed internal text stream. The
+patch does not alter the dialogue scheduler, renderer cadence, scroll state,
+scripted delays, `$07E0/$07E1` ownership, or TT3A's `91 10` / `91 20`
+commands.
+
+The one-shot marker and the common-space predicate solve different failure
+modes:
+
+- `$73` suppresses the first control-only/run-start typewriter call;
+- `$C0` filtering prevents non-visible English word-spacing cells from
+  producing native glyph clicks.
+
+A repository-wide audit of all 1,299 current scenario records finds 63 records
+that begin with a presentation control, including seven records beginning with
+`CTRL:4`. The fix remains centralized at the native typewriter dispatch, so
+equivalent cases are covered without record-specific exceptions.
 
