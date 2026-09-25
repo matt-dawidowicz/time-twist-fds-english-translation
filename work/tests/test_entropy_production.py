@@ -265,7 +265,10 @@ class EntropyProductionTests(unittest.TestCase):
     def test_leading_control_marker_clears_at_decoder_resume(self) -> None:
         """Keep stale control flushes silent, then restore real typing."""
         self.assertEqual(
-            tuple(patch.cpu_address for patch in LEADING_CONTROL_RESUME_PATCHES),
+            tuple(
+                patch.cpu_address
+                for patch in LEADING_CONTROL_RESUME_PATCHES
+            ),
             (0x7FFD, 0x8016, 0x802F, 0x8048),
         )
         for patch in LEADING_CONTROL_RESUME_PATCHES:
@@ -290,7 +293,10 @@ class EntropyProductionTests(unittest.TestCase):
 
         # Do not redirect renderer state $04 or reintroduce the failed $C0
         # filter. Marker lifetime ends at semantic resume, not upload timing.
-        self.assertNotIn(0x7F4A, tuple(p.cpu_address for p in BASE_RUNTIME_PATCHES))
+        self.assertNotIn(
+            0x7F4A,
+            tuple(p.cpu_address for p in BASE_RUNTIME_PATCHES),
+        )
         self.assertNotIn(bytes.fromhex("C9 C0"), _FRONTEND_BLOCK)
 
     def test_entropy_prerequisites_are_only_native_nested_depth(self) -> None:
