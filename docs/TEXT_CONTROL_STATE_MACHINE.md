@@ -286,29 +286,115 @@ meanings.
 
 ## Typewriter SFX after a leading presentation control
 
-NOV2's row selector at `$837E` consumes `$73` only after it has already
-selected the correct dirty-row origin. Historically it then cleared `$73`
-immediately. That made the staged-cell uploader at `$847E` unable to
-distinguish an ordinary glyph from the first glyph following a leading
-presentation-only row/scroll transition.
+A record that begins with a presentation control has a special edge case:
+the control can ask NOV2 to flush the currently selected staging row before
+any glyph from the new record has been decoded. In that situation the staging
+row still contains the preceding presentation. Rewriting those same tiles does
+not change the screen, but the staged-cell uploader can still call the native
+typewriter SFX.
 
-The production runtime now retains `$73=1` after that row selection and uses
-it as a one-shot typewriter marker:
+### Recovered state path
 
-```asm
-$988A  JMP $9894       ; normal menu path skips the helper
-$988D  LSR $73         ; 1 -> 0 with carry set; 0 stays 0 with carry clear
-$988F  BCS $98AD       ; suppress exactly the first post-control click
-$9891  JMP $85C5       ; otherwise use the native typewriter SFX
+For the motivating record:
+
+```text
+TT3A/g0/r26 = {CTRL:4}In fact, he's an{CTRL:4}intelligence agent.
 ```
 
-The helper occupies the existing ten-byte `$988A-$9893` NOP island. The
-normal menu cursor path reaches `$988A` by fallthrough and therefore jumps
-over the helper; only the glyph uploader calls `$988D`.
+the leading control enters:
 
-This is intentionally **not** a timing delay. The renderer/NMI cadence,
-semantic control behavior, and native `$85C5` sound remain unchanged.
-The gate only prevents the control-only staging transition from producing an
-audible click before the first visible glyph. The motivating retail case is
-`TT3A/g0/r26`, which begins with `CTRL:4` before the printable text.
+```text
+state $09 -> $7FC0 -> $837E row selector
+state $0A -> $7FC4 -> $83D9 staged-cell uploader
+state $0B -> state $0C/$0D/$0E scroll chain
+```
+
+The scroll therefore begins **after** the state-`$0A` flush.
+
+At `$831D`, a semantic/presentation control encountered with X=`$00`
+marks the leading-row case in `$73`. The row selector uses that marker to
+choose the correct source/PPU row. PR #104 retained `$73=1` after selection
+instead of clearing it immediately.
+
+The NMI upload path is:
+
+```asm
+$8479  LDA $65
+$847B  STA $2007
+$847E  JSR $988D
+```
+
+and `$85C5` writes command `$04` to resident latch `$07E0`.
+
+### Why the previous one-shot gate was incomplete
+
+PR #104 consumed `$73` at the **first** typewriter call:
+
+```asm
+LSR $73
+BCS silent
+JMP $85C5
+```
+
+That suppresses one cell, but state `$0A` can walk many non-`$AC` cells
+from the stale row. After the first call clears `$73`, the remaining
+unchanged cells become audible even though no glyph is appearing.
+
+The failed v18 runtime experiment demonstrated this directly. Relative to the
+start of the visible scroll:
+
+- v17 produced eight burst onsets at frames -36, -32, -28, -24, -20, -16,
+  -12, and -8;
+- v18's common-space filter produced seven at -36, -32, -26, -22, -18, -14,
+  and -10.
+
+The space filter therefore changed one contribution but left the stale-row
+flush audible. The screen remains unchanged throughout those bursts. This
+also rules out treating the long lead as the later first-visible-glyph timing
+defect.
+
+TT3A's `91 10` / `91 20` commands remain separate scene-overlay effects
+through `$07E1`; this renderer defect is on the native `$07E0=$04`
+typewriter path.
+
+### State-scoped marker fix
+
+The safe distinction already exists in the renderer state table:
+
+- state `$04` is the ordinary visible staged-cell upload;
+- states `$07/$0A/$10/$14/$18` are presentation-control flush uploads;
+- all originally share handler `$7FC4 -> JSR $83D9`.
+
+Production redirects **only state `$04`** to a six-byte wrapper:
+
+```asm
+$8722  JSR $83D9
+$8725  LSR $73
+$8727  RTS
+```
+
+The typewriter helper becomes:
+
+```asm
+$988D  LDA $73
+$988F  BNE $98AD       ; marker set: control-flush cell stays silent
+$9891  JMP $85C5       ; marker clear: native typewriter SFX
+```
+
+Consequences:
+
+1. a leading presentation control leaves `$73=1` for the **entire** stale
+   control flush, so every re-uploaded cell is silent;
+2. internal controls have `$73=0`, so their legitimate flush typing remains
+   unchanged;
+3. when ordinary visible upload state `$04` finally runs, its first
+   `$83D9` dispatch is still silent and the wrapper then clears `$73`;
+4. subsequent visible glyphs use the unchanged native `$85C5` sound.
+
+This preserves PR #104's first-real-upload suppression while extending the
+marker lifetime over the actual pre-scroll failure window. No scheduler,
+scroll countdown, text data, or audio latch semantics are changed.
+
+The v19 checkpoint candidate implements this state-table separation and remains
+runtime-pending until the supplied TT3A checkpoint is replayed in MesenCE.
 
