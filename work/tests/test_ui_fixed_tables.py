@@ -12,7 +12,7 @@ from time_twist.textcodec import SymbolKind, pack_records, split_records
 PLAYTESTED_FIXED_TABLES = {
     "TT1B": (
         53,
-        "7F40767B8E4C110CA84F25B6EB3C186B4E37ACFF66E5104A1D947679E9AEE5BB",
+        "4BAA169C4E413D03E7E843BF79721008F948409878532741D0FE92B8B16BC0E8",
     ),
     "TT2": (
         70,
@@ -82,7 +82,7 @@ class FixedMenuCopyTests(unittest.TestCase):
         """Keep representative runtime-verified full labels human-readable."""
         expected = {
             "TT1B": {
-                11: "Attack",
+                11: "Hit On",
                 15: "Exhibit",
                 18: "Monster",
                 20: "Hold hands",
@@ -235,6 +235,7 @@ class FixedMenuCopyTests(unittest.TestCase):
 
     def test_contextual_menu_localization_audit_is_locked(self) -> None:
         """Protect source-reviewed contextual menu corrections."""
+        self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[11], "Hit On")
         self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[14], "Jar")
         self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[36], "Magnifier")
         self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[38], "Old man")

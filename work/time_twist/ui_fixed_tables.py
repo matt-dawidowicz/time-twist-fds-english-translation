@@ -75,7 +75,7 @@ TT1B_FIXED_TEXT_RECORDS = (
     "East",
     "West",
     "Use",
-    "Attack",
+    "Hit On",
     "Poke",
     "Walk",
     "Jar",
