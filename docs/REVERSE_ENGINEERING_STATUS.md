@@ -12,7 +12,7 @@ Status vocabulary follows [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.
 | NOV2 dialogue row geometry | **VERIFIED** | [Text layout engine reference](TEXT_LAYOUT_ENGINE_REFERENCE.md) | Runtime playtest of changed records |
 | Text controls 0-7 | **VERIFIED** | [Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md) | No structural unknown |
 | English pagination/control policy | **VERIFIED policy** | [English pagination policy](ENGLISH_PAGINATION_POLICY.md) | Editorial review remains scene-specific |
-| Typewriter SFX after leading controls | **VERIFIED** | [Text-control state machine](TEXT_CONTROL_STATE_MACHINE.md#typewriter-sfx-after-a-leading-presentation-control) | Runtime regression coverage |
+| Typewriter SFX after leading controls | **VERIFIED root cause / v20 candidate** | [Text-control state machine](TEXT_CONTROL_STATE_MACHINE.md#typewriter-sfx-after-a-leading-presentation-control) | Live v20 checkpoint confirmation |
 | Fixed/full-word menu addressing | **VERIFIED** | [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md) | Manual coverage of all runtime menu call sites |
 | Dynamic menu width/cursor geometry | **VERIFIED implementation** | [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md#dynamic-selection-brackets) | Manual page/cursor/Back testing |
 | Root-menu Back/Cancel guard | **VERIFIED implementation** | `work/time_twist/entropy_runtime.py` | Manual nested/root menu regression testing |

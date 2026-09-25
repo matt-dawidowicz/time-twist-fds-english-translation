@@ -286,29 +286,130 @@ meanings.
 
 ## Typewriter SFX after a leading presentation control
 
-NOV2's row selector at `$837E` consumes `$73` only after it has already
-selected the correct dirty-row origin. Historically it then cleared `$73`
-immediately. That made the staged-cell uploader at `$847E` unable to
-distinguish an ordinary glyph from the first glyph following a leading
-presentation-only row/scroll transition.
+Issue #74 is a renderer-state edge case, not a TT3A scene-SFX timing defect.
 
-The production runtime now retains `$73=1` after that row selection and uses
-it as a one-shot typewriter marker:
+A record can begin with a semantic/presentation control before it has decoded a
+single new glyph. In that case the control's initial flush walks staging cells
+that still contain the preceding presentation. Rewriting those cells leaves the
+screen visually unchanged, but the shared uploader can still request the native
+typewriter sound.
 
-```asm
-$988A  JMP $9894       ; normal menu path skips the helper
-$988D  LSR $73         ; 1 -> 0 with carry set; 0 stays 0 with carry clear
-$988F  BCS $98AD       ; suppress exactly the first post-control click
-$9891  JMP $85C5       ; otherwise use the native typewriter SFX
+### Recovered path
+
+For the motivating record:
+
+```text
+TT3A/g0/r26 = {CTRL:4}In fact, he's an{CTRL:4}intelligence agent.
 ```
 
-The helper occupies the existing ten-byte `$988A-$9893` NOP island. The
-normal menu cursor path reaches `$988A` by fallthrough and therefore jumps
-over the helper; only the glyph uploader calls `$988D`.
+the first control follows:
 
-This is intentionally **not** a timing delay. The renderer/NMI cadence,
-semantic control behavior, and native `$85C5` sound remain unchanged.
-The gate only prevents the control-only staging transition from producing an
-audible click before the first visible glyph. The motivating retail case is
-`TT3A/g0/r26`, which begins with `CTRL:4` before the printable text.
+```text
+state $09 -> $7FC0 -> $837E row selector
+state $0A -> $7FC4 -> $83D9 staged-cell uploader
+state $0B -> $0C/$0D/$0E scroll chain
+resume -> JSR $815E text decoder
+```
+
+The state-`$0A` upload therefore happens **before** the visible scroll and
+before `In fact...` has been decoded. Its cells are stale row-4 content from
+the previous presentation.
+
+The NMI cell-write path remains:
+
+```asm
+$8479  LDA $65
+$847B  STA $2007
+$847E  JSR $988D
+```
+
+and native `$85C5` writes command `$04` to resident SFX latch `$07E0`.
+TT3A's `91 10` and `91 20` use the separate scene-overlay latch
+`$07E1`; neither command is removed or retimed by this fix.
+
+### Runtime evidence from v17-v19
+
+The successive checkpoint tests localized the defect:
+
+- **v17:** eight pre-scroll typewriter-like bursts while the old text remains
+  visually static;
+- **v18:** filtering common-space `$C0` reduced that train from eight bursts
+  to seven, but the stale-flush symptom remained;
+- **v19:** keeping the marker active across the complete control flush removed
+  the early train, proving that the native typewriter path was the producer,
+  but marker clearing at renderer state `$04` was too late.
+
+The v19 AVI makes the latter failure measurable: the first visible `I`
+appears at frame 661, while the strong typewriter train does not resume until
+about frame 718, roughly 57 frames / 0.95 seconds later.
+
+The reason is structural. State `$04` is an end-of-record flush, not the
+generic boundary for newly decoded text. The first clause
+`In fact, he's an` is later flushed by the record's second `CTRL:4`
+through state `$0A`. Leaving the marker set until state `$04` therefore
+silences that entire clause.
+
+### Correct marker lifetime
+
+The marker must cover exactly this interval:
+
+```text
+leading control detected
+        |
+        v
+initial stale control flush  <-- typewriter suppressed for every cell
+        |
+        v
+control-specific scroll/wait/re-entry
+        |
+        v
+resume text decoding         <-- clear marker here
+        |
+        v
+new translated text          <-- native typewriter behavior restored
+```
+
+The recovered semantic-control resume sites all tail back into the same text
+decoder:
+
+| Continuation | Resume call |
+| --- | ---: |
+| `CTRL:3` / `CTRL:4` scroll-row4 | `$7FFD: JSR $815E` |
+| `CTRL:2` row3 | `$8016: JSR $815E` |
+| `CTRL:1` row2 | `$802F: JSR $815E` |
+| `CTRL:6` row4 | `$8048: JSR $815E` |
+
+Production redirects only those four calls to the five-byte NOP-owned frontend
+tail at `$819E`:
+
+```asm
+$819E  LSR $73
+$81A0  JMP $815E
+```
+
+Because the original sites use `JSR`, the wrapper may tail-jump to the native
+decoder; the decoder's eventual `RTS` returns to the original continuation
+caller.
+
+The typewriter helper itself no longer consumes the marker on the first stale
+cell:
+
+```asm
+$988D  LDA $73
+$988F  BNE $98AD       ; marker active: stale control-flush cell stays silent
+$9891  JMP $85C5       ; marker clear: native typewriter SFX
+```
+
+The existing leading-row selector still reduces the leading-control marker to
+one after using its row geometry. The marker consequently remains nonzero for
+the whole initial stale flush, then is cleared immediately before decoding the
+first real text after the control.
+
+This design requires no delay, no scheduler change, no NMI cadence change, no
+scratch RAM, no `$C0` special case, and no changes to `$91 10` /
+`$91 20`. It generalizes across the recovered `CTRL:1/2/3/4/6`
+continuation architecture instead of special-casing TT3A.
+
+The v20 checkpoint candidate implements this resume-boundary design and remains
+runtime-pending.
 
