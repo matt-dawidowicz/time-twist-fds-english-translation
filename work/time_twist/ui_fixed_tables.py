@@ -262,7 +262,7 @@ TT3A_FIXED_TEXT_RECORDS = (
     "Area",
     "Body",
     "Pocket",
-    "Pliers",
+    "Wire cutters",
     "Outside fence",
     "Hit",
     "Info",
