@@ -88,7 +88,7 @@ Do not regress established source corrections, including:
 
 - Athena's `ano ko` referring to the child Alexander;
 - `Rebecca` as an escape/resistance organization code;
-- Jeanne's relationships, age, and France-specific concerns;
+- Joan's relationships, age, and France-specific concerns;
 - the Hitler pact/expiration logic and April 30, 1945 date;
 - the Civil War / slavery and Meyer details;
 - Mary/Joseph pregnancy and trust characterization;

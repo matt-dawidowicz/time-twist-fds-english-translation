@@ -4,7 +4,7 @@ Character,おんなのこ,女の子,onnanoko,Girl,young woman,TT1B/g0/r26,Recurr
 Character,しもんはかせ,シモン博士,shimonhakase,Dr. Simon,Dr. Shimon,TT1A/g0/r1,Physicist and creator of the Time Belt.
 Character,あくま,悪魔,akuma,Devil,demon,TT1B/g0/r0,Recurring antagonist; translated as a title/role.
 Character,ぴえーる,ピエール,pieeru,Pierre,,TT2/g0/r0,Body/identity used in the 1428 France chapter.
-Character,じゃんぬ・だるく,ジャンヌ・ダルク,jannu・daruku,Jeanne d'Arc,Joan of Arc,TT2/g0/r22,Use Jeanne in direct address; full historical name in narration.
+Character,じゃんぬ・だるく,ジャンヌ・ダルク,jannu・daruku,Joan of Arc,,TT2/g0/r22,Use Joan in direct address; full historical name in narration.
 Character,るごー,ルゴー,rugoo,Lugot,Rugot,TT2/g0/r22,Medieval French ally; romanization retained consistently.
 Character,ちの,チノ,chino,Chino,,TT1B/g1/r11,Medieval French ally.
 Character,ごるどー,ゴルドー,gorudoo,Gordo,Gordeaux,TT2/g2/r2,Medieval French ally.
@@ -48,7 +48,7 @@ Artifact,まもりふだ,守り札,mamorifuda,protective charm,amulet,TT1B/g0/r1
 Supernatural,まらどぅる ばらお がらどぅーら,マラドゥル・バラオ・ガラドゥーラ,maraduru barao garaduura,Maradul Barao Garadura,Galdura variant,TT1A/g0/r29,Incantation; variants in the source are preserved and noted.
 Time travel,たいむとらべる,タイムトラベル,taimutoraberu,time travel,,TT1A/g0/r1,General concept.
 Time travel,たいむわーぷ,タイムワープ,taimuwaapu,time warp,time jump,TT1B/g2/r12,The game's term for historical transit.
-Historical period,1428ねん,1428年,1428nen,1428,,TT2/g0/r25,France/Jeanne chapter.
+Historical period,1428ねん,1428年,1428nen,1428,,TT2/g0/r25,France/Joan of Arc chapter.
 Historical period,1944ねん 7がつ,1944年7月,1944nen 7gatsu,July 1944,,TT3A/g0/r14,German POW chapter.
 Historical period,1864ねん 9がつ,1864年9月,1864nen 9gatsu,September 1864,,TT5/g1/r6,Atlanta/Civil War chapter.
 Historical period,きげんぜん 4ねんごろ,紀元前4年頃,kigenzen 4nengoro,circa 4 BC,around 4 BCE,TT6A/g0/r8,The game uses BC-era framing.
