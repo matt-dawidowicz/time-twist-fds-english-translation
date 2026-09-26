@@ -53,7 +53,7 @@ def test_parse_mesen_state_and_ram_mapping(compressed: bool) -> None:
     parsed = parse_mesen_state(
         _state(
             {
-                "cpu.state.pc": b"\x02\x94",
+                "cpu.pc": b"\x02\x94",
                 "memoryManager.internalRam": bytes(internal_ram),
                 "mapper.workRam": bytes(work_ram),
             },
@@ -63,7 +63,7 @@ def test_parse_mesen_state_and_ram_mapping(compressed: bool) -> None:
 
     assert parsed.format_version == 4
     assert parsed.rom_name == "Time-Twist-test.fds"
-    assert parsed.scalar("cpu.state.pc") == 0x9402
+    assert parsed.scalar("cpu.pc") == 0x9402
     assert parsed.cpu_word(0x006A) == 0xA620
     assert parsed.cpu_byte(0x006C) == 0x80
     assert parsed.cpu_word(0xA214) == 0xA620
@@ -75,6 +75,6 @@ def test_rejects_bad_signature() -> None:
 
 
 def test_rejects_truncated_serializer() -> None:
-    blob = _state({"cpu.state.pc": b"\x02\x94"})
+    blob = _state({"cpu.pc": b"\x02\x94"})
     with pytest.raises(MesenStateError):
         parse_mesen_state(blob[:-3])
