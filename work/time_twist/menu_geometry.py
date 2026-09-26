@@ -12,9 +12,9 @@ from dataclasses import dataclass
 
 MENU_MAX_STAGED_GLYPHS = 18
 MENU_MAX_PAIRED_GLYPHS = 20
-LEFT_LEADING_CURSOR_X = 0x40
-LEFT_TEXT_X = 0x48
-RIGHT_TEXT_BASE_AFTER_LEFT_X = 0x58
+LEFT_LEADING_CURSOR_X = 0x20
+LEFT_TEXT_X = 0x28
+RIGHT_TEXT_BASE_AFTER_LEFT_X = 0x38
 RIGHTMOST_SAFE_CURSOR_X = 0xF8
 GLYPH_PIXELS = 8
 
@@ -67,7 +67,7 @@ def menu_pair_geometry(left: str, right: str) -> MenuPairGeometry:
 
     Historical live-tested code placed the right text two tiles after the end
     of the left text.  Under that recovered layout the right trailing cursor is
-    ``0x58 + 8 * (left_glyphs + right_glyphs)``.  ``0xF8`` is the conservative
+    ``0x38 + 8 * (left_glyphs + right_glyphs)``.  ``0xF8`` is the conservative
     last safe cursor coordinate before the 256-pixel wrap.
     """
     left_glyphs = validate_menu_label(left)
