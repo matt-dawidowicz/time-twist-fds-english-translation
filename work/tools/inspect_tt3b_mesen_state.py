@@ -16,6 +16,14 @@ from time_twist.entropy_compression import (
     expand_entropy_dictionary,
     expand_entropy_record,
 )
+from time_twist.entropy_runtime import (
+    BASE_RUNTIME_PATCHES,
+    DYNAMIC_MENU_LAYOUT_PATCHES,
+    ENTROPY_PREREQUISITE_PATCHES,
+    ENTROPY_RUNTIME_PATCHES,
+    LEADING_CONTROL_RESUME_PATCHES,
+    PARENT_BACK_GUARD_PATCHES,
+)
 from time_twist.fds import FdsImage
 from time_twist.mesen_state import MesenState, MesenStateError, read_mesen_state
 from time_twist.scenario import DICTIONARY_POINTER_OFFSET
@@ -89,6 +97,31 @@ def _decode_resident_tt3b_menu(state: MesenState) -> list[str]:
         render_english(expand_entropy_record(record, expansions)).rstrip()
         for record in records
     ]
+
+
+def _resident_nov2_patch_mismatches(
+    state: MesenState,
+) -> list[tuple[int, str]]:
+    """Return final runtime patch sites that do not match resident NOV2 code."""
+    work_ram = state.values.get("mapper.workRam")
+    if work_ram is None:
+        raise MesenStateError("save state has no mapper.workRam value")
+
+    patches = (
+        *LEADING_CONTROL_RESUME_PATCHES,
+        *BASE_RUNTIME_PATCHES,
+        *DYNAMIC_MENU_LAYOUT_PATCHES,
+        *ENTROPY_PREREQUISITE_PATCHES,
+        *ENTROPY_RUNTIME_PATCHES,
+        *PARENT_BACK_GUARD_PATCHES,
+    )
+    mismatches: list[tuple[int, str]] = []
+    for patch in patches:
+        start = patch.file_offset
+        end = start + len(patch.replacement)
+        if end > len(work_ram) or work_ram[start:end] != patch.replacement:
+            mismatches.append((patch.cpu_address, patch.label))
+    return mismatches
 
 
 def _find_tt3b_pointer(path: Path) -> int:
@@ -167,6 +200,7 @@ def main() -> int:
             f"stream=${stream_pointer:04X}, bit-mask=${bit_mask:02X}"
         )
 
+        disk_pointer = None
         if args.fds is not None:
             disk_pointer = _find_tt3b_pointer(args.fds)
             disk_status = (
@@ -178,6 +212,17 @@ def main() -> int:
                 "Candidate TT3B disk pointer: "
                 f"${disk_pointer:04X} [{disk_status}]"
             )
+
+        runtime_mismatches = _resident_nov2_patch_mismatches(state)
+        if runtime_mismatches:
+            print(
+                "Resident NOV2 runtime: "
+                f"{len(runtime_mismatches)} patched code sites mismatch"
+            )
+            for address, label in runtime_mismatches:
+                print(f"  ${address:04X}: {label}")
+        else:
+            print("Resident NOV2 runtime: all canonical patch sites match")
 
         resident_pointer = state.cpu_word(0xA214)
         print(
@@ -209,9 +254,16 @@ def main() -> int:
             print(f"Menu decode mismatches: {mismatch_count}/{len(expected)}")
 
         print("Triage:")
-        if args.fds is not None and _find_tt3b_pointer(args.fds) != TT3B_RECORD_ZERO:
+        if disk_pointer is not None and disk_pointer != TT3B_RECORD_ZERO:
             print(
                 "  FAIL: the candidate itself lacks the v29 TT3B pointer repair."
+            )
+        elif runtime_mismatches:
+            print(
+                "  FAIL: this snapshot has stale or noncanonical NOV2 runtime "
+                "code resident in Work RAM. Do not migrate it across this ABI "
+                "change; cold-boot the exact candidate and capture a new native "
+                "Mesen state."
             )
         elif resident_pointer == STALE_TT3B_RECORD_ZERO:
             print(
