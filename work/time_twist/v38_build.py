@@ -35,6 +35,10 @@ OUTPUT_SHA256 = (
 )
 IMAGE_BYTES = 262000
 
+TT3B_MENU_POINTER_OFFSET = 0x14
+TT3B_MENU_POINTER_GOOD = 0xA620
+TT3B_MENU_POINTER_BAD = 0xB14B
+
 
 def restore_checkpoint(bundle: Path, destination: Path) -> dict[str, str]:
     """Validate and restore compiler inputs, returning approved literal text."""
@@ -102,6 +106,23 @@ def validate_checkpoint_record_ids(
             "active text record topology differs from recovered v38; "
             f"missing={missing[:10]}, extra={extra[:10]}"
         )
+
+
+def patch_tt3b_menu_pointer(data: bytes) -> bytes:
+    """Repair the stale TT3B fixed-menu record-zero pointer."""
+    if len(data) <= TT3B_MENU_POINTER_OFFSET + 1:
+        raise ReleaseBuildError("TT3B is too short for its menu pointer")
+    result = bytearray(data)
+    offset = TT3B_MENU_POINTER_OFFSET
+    current = int.from_bytes(result[offset : offset + 2], "little")
+    if current == TT3B_MENU_POINTER_GOOD:
+        return data
+    if current != TT3B_MENU_POINTER_BAD:
+        raise ReleaseBuildError(
+            f"unexpected TT3B menu pointer: {current:04X}"
+        )
+    result[offset : offset + 2] = TT3B_MENU_POINTER_GOOD.to_bytes(2, "little")
+    return bytes(result)
 
 
 def build_release_images(
@@ -210,6 +231,8 @@ def build_release_images(
         # installed its NOV2 runtime. Preserve inherited submenu parents and
         # route rejected Back presses through the normal redraw path.
         image = FdsImage.from_bytes(built)
+        tt3b = image.sides[0].find_file("TT3B")
+        tt3b.data = patch_tt3b_menu_pointer(tt3b.data)
         nov2 = image.sides[0].find_file("NOV2")
         nov2.data = patch_menu_cancel(nov2.data)
         built = image.to_bytes()

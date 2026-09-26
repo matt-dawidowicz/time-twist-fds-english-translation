@@ -289,7 +289,7 @@ TT3A_FIXED_TEXT_RECORDS = (
     "Wear",
     "Tunnel",
     "Soil",
-    "Front",
+    "Forward",
     "Back",
     "Soldier",
     "Yes",

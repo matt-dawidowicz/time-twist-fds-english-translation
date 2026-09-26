@@ -139,6 +139,11 @@ PRESENTATION_LAYOUT_RECORDS = frozenset(
         # Keep the test announcement separate from its instruction. This is
         # a presentation boundary, not ordinary greedy prose wrapping.
         "TT1A/g0/r5",
+        # These are sparse complementary writing fragments on two physical
+        # sheets. Their row breaks preserve the puzzle presentation rather
+        # than ordinary prose wrapping; overlaying them reconstructs g3/r13.
+        "TT3A/g2/r30",
+        "TT3A/g2/r31",
     }
 )
 

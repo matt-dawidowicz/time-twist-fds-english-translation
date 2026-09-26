@@ -6,7 +6,10 @@ import unittest
 from pathlib import Path
 
 from time_twist.menu_geometry import (
+    LEFT_LEADING_CURSOR_X,
+    LEFT_TEXT_X,
     MENU_MAX_STAGED_GLYPHS,
+    RIGHT_TEXT_BASE_AFTER_LEFT_X,
     MenuGeometryError,
     menu_pair_geometry,
     possible_compacted_pairs,
@@ -25,6 +28,12 @@ from time_twist.release_metadata import ReleaseBuildError
 
 class MenuGeometryTests(unittest.TestCase):
     """Lock recovered variable-width menu geometry instead of dialogue width."""
+
+    def test_native_horizontal_anchor_is_preserved(self) -> None:
+        """Do not shift the fixed-menu grid four tiles to the right."""
+        self.assertEqual(LEFT_LEADING_CURSOR_X, 0x20)
+        self.assertEqual(LEFT_TEXT_X, 0x28)
+        self.assertEqual(RIGHT_TEXT_BASE_AFTER_LEFT_X, 0x38)
 
     def test_individual_staging_limit_is_eighteen_glyphs(self) -> None:
         """Accept the recovered span and reject a nineteenth staged glyph."""

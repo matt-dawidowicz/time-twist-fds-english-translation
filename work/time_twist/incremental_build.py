@@ -18,6 +18,15 @@ from .entropy_compression import (
     expand_entropy_record,
     parse_entropy_record_with_expansions,
 )
+from .entropy_runtime import (
+    BASE_RUNTIME_PATCHES,
+    DYNAMIC_MENU_LAYOUT_PATCHES,
+    ENTROPY_PREREQUISITE_PATCHES,
+    ENTROPY_RUNTIME_PATCHES,
+    LEADING_CONTROL_RESUME_PATCHES,
+    NOV2_SIZE,
+    PARENT_BACK_GUARD_PATCHES,
+)
 from .fds import FdsImage
 from .production_translation import merged_translation_map
 from .release_metadata import SCENARIO_LOCATIONS
@@ -66,6 +75,40 @@ FIXED_TAIL_BOUNDARIES: dict[str, int] = {
 
 class IncrementalBuildError(ValueError):
     """Report a compiled bank that cannot be safely rebuilt incrementally."""
+
+
+_CANONICAL_NOV2_RUNTIME_PATCH_GROUPS = (
+    LEADING_CONTROL_RESUME_PATCHES,
+    BASE_RUNTIME_PATCHES,
+    DYNAMIC_MENU_LAYOUT_PATCHES,
+    ENTROPY_PREREQUISITE_PATCHES,
+    ENTROPY_RUNTIME_PATCHES,
+    PARENT_BACK_GUARD_PATCHES,
+)
+
+
+def validate_incremental_nov2_runtime(data: bytes) -> None:
+    """Reject an incremental baseline whose resident NOV2 runtime is stale."""
+    if len(data) != NOV2_SIZE:
+        raise IncrementalBuildError(
+            f"NOV2 must be {NOV2_SIZE} bytes, got {len(data)}"
+        )
+    mismatches: list[str] = []
+    for patches in _CANONICAL_NOV2_RUNTIME_PATCH_GROUPS:
+        for patch in patches:
+            end = patch.file_offset + len(patch.replacement)
+            if data[patch.file_offset:end] != patch.replacement:
+                mismatches.append(
+                    f"${patch.cpu_address:04X} {patch.label}"
+                )
+    if mismatches:
+        preview = "; ".join(mismatches[:4])
+        if len(mismatches) > 4:
+            preview += f"; +{len(mismatches) - 4} more"
+        raise IncrementalBuildError(
+            "NOV2 runtime drift detected; rebuild or migrate the playtest "
+            f"baseline from current source before incremental editing: {preview}"
+        )
 
 
 @dataclass(frozen=True)
@@ -852,6 +895,7 @@ def build_incremental_image(
 ) -> IncrementalImageResult:
     """Rebuild only scenario banks whose decoded text differs from source."""
     image = FdsImage.from_bytes(image_data)
+    validate_incremental_nov2_runtime(image.sides[0].find_file("NOV2").data)
     changed_banks: list[str] = []
     changed_records: list[str] = []
 
@@ -1006,6 +1050,7 @@ def inspect_incremental_image(
 ) -> IncrementalInspectionResult:
     """Verify every scenario bank and report source/layout differences read-only."""
     image = FdsImage.from_bytes(image_data)
+    validate_incremental_nov2_runtime(image.sides[0].find_file("NOV2").data)
     reports: list[IncrementalBankReport] = []
     changed_banks: list[str] = []
     changed_records: list[str] = []

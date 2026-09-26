@@ -142,9 +142,29 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         tt3a = _canonical("TT3A")
         self.assertEqual(
             tt3a["TT3A/g2/r30"],
+            '"Four{CTRL:0}southwest{CTRL:0}in front{CTRL:0}watermill.',
+        )
+        self.assertEqual(
+            tt3a["TT3A/g2/r31"],
+            '      kilometers{CTRL:0}          of here. Wait{CTRL:0}'
+            '         of the old{CTRL:0}           Rebecca"',
+        )
+        self.assertEqual(
+            tt3a["TT3A/g3/r0"],
+            "Both sheets are quite{CTRL:0}thin.",
+        )
+        self.assertEqual(
+            tt3a["TT3A/g3/r13"],
             (
-                "A torn piece of a note,{CTRL:0}written in blue ink: "
-                '"…4{CTRL:0}km southwest…"{CTRL:0}"…Rebecca"'
+                '"Four kilometers{CTRL:0}southwest of here. Wait{CTRL:0}'
+                'in front of the old{CTRL:0}watermill. Rebecca"'
+            ),
+        )
+        self.assertEqual(
+            tt3a["TT3A/g3/r25"],
+            (
+                "I smash the bottle. I{CTRL:0}take out the paper. It's{CTRL:0}"
+                "written in red ink."
             ),
         )
         self.assertIn(
@@ -152,10 +172,48 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             _canonical("TT6A")["TT6A/g1/r28"],
         )
 
+    def test_tt3a_sheet_overlay_reconstructs_completed_message(self) -> None:
+        """Keep both colored sheets cell-compatible with the overlay reveal."""
+        tt3a = _canonical("TT3A")
+        red = tt3a["TT3A/g2/r30"].split("{CTRL:0}")
+        blue = tt3a["TT3A/g2/r31"].split("{CTRL:0}")
+        target = tt3a["TT3A/g3/r13"].split("{CTRL:0}")
+
+        self.assertEqual(len(red), len(blue))
+        self.assertEqual(len(red), len(target))
+
+        merged: list[str] = []
+        for red_row, blue_row, target_row in zip(red, blue, target):
+            width = max(len(red_row), len(blue_row), len(target_row))
+            row: list[str] = []
+            for column in range(width):
+                red_char = red_row[column] if column < len(red_row) else " "
+                blue_char = (
+                    blue_row[column] if column < len(blue_row) else " "
+                )
+                target_char = (
+                    target_row[column] if column < len(target_row) else " "
+                )
+                if red_char != " ":
+                    self.assertEqual(red_char, target_char)
+                if blue_char != " ":
+                    self.assertEqual(blue_char, target_char)
+                self.assertFalse(
+                    red_char != " "
+                    and blue_char != " "
+                    and red_char != blue_char
+                )
+                row.append(red_char if red_char != " " else blue_char)
+            merged.append("".join(row).rstrip())
+
+        self.assertEqual(merged, target)
+
     def test_reviewed_quiz_layout_exceptions_are_structural_only(self) -> None:
         """Do not grandfather ordinary prose around the modern wrap policy."""
         self.assertIn("TT1A/g0/r3", STRUCTURAL_LAYOUT_RECORDS)
         self.assertIn("TT1A/g0/r5", STRUCTURAL_LAYOUT_RECORDS)
+        self.assertIn("TT3A/g2/r30", STRUCTURAL_LAYOUT_RECORDS)
+        self.assertIn("TT3A/g2/r31", STRUCTURAL_LAYOUT_RECORDS)
         self.assertNotIn("TT1A/g0/r3", CHECKPOINT_QUIZ_LAYOUTS)
         self.assertNotIn("TT1A/g0/r5", CHECKPOINT_QUIZ_LAYOUTS)
         expected = {
