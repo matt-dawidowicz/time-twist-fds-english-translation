@@ -355,10 +355,24 @@ expects the same active-menu metadata at `$042D-$0430`. Replacing NOV2 code
 without migrating those transient bytes therefore loaded the new renderer into
 an already-decoded menu with an empty width table and produced menu glitches.
 
-For a save state crossing a renderer-state ABI change, either recreate the
-checkpoint under the new runtime or explicitly migrate every live transient
-field whose ownership/location changed. Merely replacing resident code and
-scenario overlays is insufficient.
+For a save state crossing a renderer-state ABI change, the preferred rule is
+stronger: **recreate the checkpoint natively under the new runtime**. A Mesen
+state serializes the CPU, PPU, memory manager, mapper, controls, resident RAM,
+and other machine state; the CPU snapshot includes PC, SP, A, X, Y, flags, and
+cycle state. Therefore an old checkpoint can resume halfway through an old
+renderer transaction even if resident NOV2 bytes have been replaced.
+
+The attempted v23 -> v27 migration demonstrated this directly. That v23 state
+was saved with the `North / East / West / South` fixed menu already active.
+Although its old width bytes were copied from `$0433-$0436` to the canonical
+`$042D-$0430` table, subsequent menus still appeared shifted right. The state
+also preserved old CPU/PPU/staging/renderer transaction state, so width-table
+migration alone was not sufficient.
+
+Do not designate a pre-v27 Mesen state as a clean v27 playtest baseline merely
+because it is earlier in the story. For runtime-sensitive testing, use a state
+created by v27 (or later) itself after a cold boot/replay. Old states remain
+useful as historical evidence and for reproducing the old build only.
 
 Static menu geometry remains a separate invariant: the recovered audit covers all
 721 configured labels, 367 primary menu descriptors, and every order-preserving
