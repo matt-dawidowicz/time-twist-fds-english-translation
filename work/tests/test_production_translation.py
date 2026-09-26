@@ -142,11 +142,11 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         tt3a = _canonical("TT3A")
         self.assertEqual(
             tt3a["TT3A/g2/r30"],
-            'Red writing:{CTRL:0}"…4 km southwest…"{CTRL:0}"…Rebecca"',
+            'Red writing: "…4 km{CTRL:0}southwest…" "…Rebecca"',
         )
         self.assertEqual(
             tt3a["TT3A/g2/r31"],
-            'Blue writing:{CTRL:0}"…old watermill…"{CTRL:0}"…wait there…"',
+            'Blue writing: "…old{CTRL:0}watermill…" "…wait{CTRL:0}there…"',
         )
         self.assertEqual(
             tt3a["TT3A/g3/r0"],
