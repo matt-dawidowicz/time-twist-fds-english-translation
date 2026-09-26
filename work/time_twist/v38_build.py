@@ -231,6 +231,8 @@ def build_release_images(
         # installed its NOV2 runtime. Preserve inherited submenu parents and
         # route rejected Back presses through the normal redraw path.
         image = FdsImage.from_bytes(built)
+        tt3b = image.sides[0].find_file("TT3B")
+        tt3b.data = patch_tt3b_menu_pointer(tt3b.data)
         nov2 = image.sides[0].find_file("NOV2")
         nov2.data = patch_menu_cancel(nov2.data)
         built = image.to_bytes()
