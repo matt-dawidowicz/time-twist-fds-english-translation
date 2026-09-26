@@ -142,11 +142,11 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         tt3a = _canonical("TT3A")
         self.assertEqual(
             tt3a["TT3A/g2/r30"],
-            'Red writing: "…4 km{CTRL:0}southwest…" "…Rebecca"',
+            'Red writing:{CTRL:0}"…4 km southwest…"{CTRL:0}"…Rebecca"',
         )
         self.assertEqual(
             tt3a["TT3A/g2/r31"],
-            'Blue writing: "…old{CTRL:0}watermill…" "…wait{CTRL:0}there…"',
+            'Blue writing:{CTRL:0}"…old watermill…"{CTRL:0}"…wait there…"',
         )
         self.assertEqual(
             tt3a["TT3A/g3/r0"],
@@ -175,6 +175,8 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         """Do not grandfather ordinary prose around the modern wrap policy."""
         self.assertIn("TT1A/g0/r3", STRUCTURAL_LAYOUT_RECORDS)
         self.assertIn("TT1A/g0/r5", STRUCTURAL_LAYOUT_RECORDS)
+        self.assertIn("TT3A/g2/r30", STRUCTURAL_LAYOUT_RECORDS)
+        self.assertIn("TT3A/g2/r31", STRUCTURAL_LAYOUT_RECORDS)
         self.assertNotIn("TT1A/g0/r3", CHECKPOINT_QUIZ_LAYOUTS)
         self.assertNotIn("TT1A/g0/r5", CHECKPOINT_QUIZ_LAYOUTS)
         expected = {
