@@ -362,17 +362,32 @@ and other machine state; the CPU snapshot includes PC, SP, A, X, Y, flags, and
 cycle state. Therefore an old checkpoint can resume halfway through an old
 renderer transaction even if resident NOV2 bytes have been replaced.
 
-The attempted v23 -> v27 migration demonstrated this directly. That v23 state
-was saved with the `North / East / West / South` fixed menu already active.
-Although its old width bytes were copied from `$0433-$0436` to the canonical
-`$042D-$0430` table, subsequent menus still appeared shifted right. The state
-also preserved old CPU/PPU/staging/renderer transaction state, so width-table
-migration alone was not sufficient.
+The later right-shifted-menu investigation separated two issues that had been
+conflated. Save-state ABI migration is real, but the persistent 32-pixel menu
+shift was also a **runtime geometry regression** in the modernized NOV2 code.
 
-Do not designate a pre-v27 Mesen state as a clean v27 playtest baseline merely
-because it is earlier in the story. For runtime-sensitive testing, use a state
-created by v27 (or later) itself after a cold boot/replay. Old states remain
-useful as historical evidence and for reproducing the old build only.
+The v26 breakpoint provides direct runtime evidence: the active
+`Crumple / Burn / Tear / Combine` menu begins at the historical/native
+positions (left cursor x=`$20`, left text x=`$28`). The modernized renderer
+had moved those anchors four tiles right (left cursor x=`$40`, left text
+x=`$48`) while changing the width-metadata ABI. That shift was not required by
+variable-width rendering.
+
+The corrected runtime therefore keeps the safer per-entry width table at
+`$042D+visual_index`, but restores the historical anchors:
+
+- left leading cursor: x=`$20`;
+- left text: x=`$28`;
+- right text: x=`$38 + left_width`;
+- right leading cursor: x=`$30 + left_width`.
+
+This requires only four NOV2 immediate-byte changes relative to the otherwise
+modern runtime. A breakpoint state saved in the main loop can be migrated by
+installing the corrected NOV2 image and copying the already-decoded active menu
+widths from the old `$0433...` table to `$042D...`.
+
+Save-state ABI caution still applies: do not blindly migrate a checkpoint that
+is executing inside renderer code or whose live transient ownership is unknown.
 
 Static menu geometry remains a separate invariant: the recovered audit covers all
 721 configured labels, 367 primary menu descriptors, and every order-preserving
