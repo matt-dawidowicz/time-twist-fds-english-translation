@@ -389,6 +389,34 @@ widths from the old `$0433...` table to `$042D...`.
 Save-state ABI caution still applies: do not blindly migrate a checkpoint that
 is executing inside renderer code or whose live transient ownership is unknown.
 
+### TT3B fixed-menu record-zero pointer must address the menu stream
+
+The later catastrophic TT3B screen containing fragments such as
+`TINUED…`, `Hitler`, `Cougar`, `Schmidt`, and ordinary dialogue was a
+separate defect from both width metadata and horizontal geometry.
+
+The frozen compiler output left TT3B header word `$A214` at `$B14B`.
+Decoding from that address begins inside the late TT3B dialogue stream; its first
+decoded menu record is already corrupted text related to the chapter-ending
+`TO BE CONTINUED…` record. The actual 21-record TT3B fixed-menu stream begins
+at `$A620` (file offset `$0420`) and decodes exactly to
+`Look / Talk / Take / Use / ... / Hitler / Cougar`.
+
+The canonical post-build step now source-guards this one pointer:
+
+- accepted stale value: `$B14B`;
+- required runtime value: `$A620`;
+- any third value fails closed.
+
+The fixed-menu candidate audit was also changed to begin page zero from the
+actual runtime `$A214` pointer instead of silently decoding from the source
+specification offset. That omission is why earlier offline menu audits reported
+TT3B as clean even though the game itself decoded dialogue as menu labels.
+
+A whole-candidate runtime-pointer audit found no second broken bank. TT6A uses
+an alternate record-zero copy, but its runtime copy decodes semantically
+identically to the canonical source table, so it is deliberately left intact.
+
 Static menu geometry remains a separate invariant: the recovered audit covers all
 721 configured labels, 367 primary menu descriptors, and every order-preserving
 predicate-compacted subset through eight visible choices. Runtime parity must be
@@ -438,6 +466,7 @@ valid.
 | Typing noise before visible `In fact...` | Stale cells re-uploaded during leading-control flush | Suppress through control flush; clear at decoder resume |
 | Typing begins ~1 second late | Suppression cleared at state `$04`, after first new clause | Clear at semantic decoder-resume boundary |
 | Long/full menu labels misalign cursors | Fixed-width menu geometry | Runtime-recorded per-label pixel widths |
+| TT3B menu shows `TINUED…` and dialogue fragments | `$A214` points into TT3B dialogue instead of the fixed-menu stream | Guard and repair TT3B record-zero pointer to `$A620`; audit actual runtime pointers |
 | Experimental menu graphics corruption | Scratch helper overlapped live palette RAM | Keep `$9390-$93AF` untouched |
 | TT2 menu selection path lost | Relocated secondary-prefix block truncated | Byte-for-byte relocation integrity guard |
 | Back from root/invalid parent behaves incorrectly | Native parent state accepted invalid value | Guarded Back/Cancel parent validation |
