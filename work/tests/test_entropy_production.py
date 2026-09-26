@@ -345,6 +345,14 @@ class EntropyProductionTests(unittest.TestCase):
         )
         self.assertEqual(MENU_WIDTH_WORK_RAM_ADDRESS, 0x042D)
         self.assertEqual(MENU_MAX_STAGED_GLYPHS, 18)
+        self.assertIn(
+            bytes.fromhex("B9 2D 04 69 2F 60 A9 20 60"),
+            patches["width-aware menu column base"].replacement,
+        )
+        self.assertIn(
+            bytes.fromhex("B9 2D 04 4A 4A 4A 69 47 D0 02 A9 45"),
+            patches["metadata-driven menu renderer geometry"].replacement,
+        )
 
     def test_leading_control_marker_clears_at_decoder_resume(self) -> None:
         """Keep stale control flushes silent, then restore real typing."""
