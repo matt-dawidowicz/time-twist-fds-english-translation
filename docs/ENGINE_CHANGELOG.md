@@ -317,6 +317,40 @@ See [Audio command map](AUDIO_COMMAND_MAP.md).
 
 ---
 
+## Candidate-runtime parity
+
+### Incremental playtest ROMs must carry the current NOV2 runtime
+
+A late TT3B playtest exposed catastrophic fixed-menu geometry: the
+`Hitler / Simon / Schmidt / Cougar` menu drew labels and selection markers far
+outside the normal frame.
+
+The menu descriptors and source-level geometry audit were valid. The candidate
+ROM was not running the maintained renderer. Byte comparison against canonical
+`entropy_runtime.py` found stale NOV2 code in eleven runtime-owned regions,
+including:
+
+- menu width metadata stored at an obsolete `$0433` location instead of
+  `$042D+visual_index`;
+- obsolete column and draw-count helpers;
+- the obsolete trailing-cursor helper;
+- an older entropy scanner/category layout;
+- an older fixed 51-record NOV2 entropy block;
+- missing current no-parent Back/Cancel guard code.
+
+This drift came from repeatedly modifying an older runtime-confirmed candidate
+instead of first proving that its engine/runtime bytes still matched current
+repository source.
+
+The maintained incremental build now fails closed if the baseline NOV2 payload
+does not match every canonical runtime-owned replacement region. Translation-only
+incremental rebuilds are therefore permitted only after runtime parity is proven.
+
+Static menu geometry remains a separate invariant: the recovered audit covers all
+721 configured labels, 367 primary menu descriptors, and every order-preserving
+predicate-compacted subset through eight visible choices. Runtime parity must be
+true before those static guarantees are meaningful in a playtest ROM.
+
 ## Build-system and regression hardening
 
 ### Translation source became singular
