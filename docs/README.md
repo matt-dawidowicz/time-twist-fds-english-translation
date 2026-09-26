@@ -53,15 +53,15 @@ as current release instructions.
 2. [Engine change and bug-fix history](ENGINE_CHANGELOG.md) — durable record of major runtime fixes and retired assumptions
 3. [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) — evidence model and investigation workflow
 4. [Architecture](ARCHITECTURE.md) — runtime/build architecture
-4. [Gameplay script and event VM](GAMEPLAY_SCRIPT_ENGINE.md)
-5. [Retail gameplay VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md)
-6. [Gameplay VM reachability-island audit](GAMEPLAY_VM_REACHABILITY_AUDIT.md)
-7. [Gameplay graphics and scene engine](GAMEPLAY_GRAPHICS_ENGINE.md)
-8. [Gameplay palette-animation engine](PALETTE_ANIMATION_ENGINE.md)
-9. [Audio command map](AUDIO_COMMAND_MAP.md)
-10. [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md)
-11. [Part 1 to Part 2 handoff](PART1_PART2_HANDOFF.md)
-12. [TT1A Fortune Teller logic](TT1A_FORTUNE_TELLER_LOGIC.md)
+5. [Gameplay script and event VM](GAMEPLAY_SCRIPT_ENGINE.md)
+6. [Retail gameplay VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md)
+7. [Gameplay VM reachability-island audit](GAMEPLAY_VM_REACHABILITY_AUDIT.md)
+8. [Gameplay graphics and scene engine](GAMEPLAY_GRAPHICS_ENGINE.md)
+9. [Gameplay palette-animation engine](PALETTE_ANIMATION_ENGINE.md)
+10. [Audio command map](AUDIO_COMMAND_MAP.md)
+11. [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md)
+12. [Part 1 to Part 2 handoff](PART1_PART2_HANDOFF.md)
+13. [TT1A Fortune Teller logic](TT1A_FORTUNE_TELLER_LOGIC.md)
 
 ## Build, code, and maintenance
 
