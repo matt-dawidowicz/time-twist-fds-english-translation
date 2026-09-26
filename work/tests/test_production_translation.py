@@ -142,9 +142,28 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         tt3a = _canonical("TT3A")
         self.assertEqual(
             tt3a["TT3A/g2/r30"],
+            'Red writing:{CTRL:0}"…4 km southwest…"{CTRL:0}"…Rebecca"',
+        )
+        self.assertEqual(
+            tt3a["TT3A/g2/r31"],
+            'Blue writing:{CTRL:0}"…old watermill…"{CTRL:0}"…wait there…"',
+        )
+        self.assertEqual(
+            tt3a["TT3A/g3/r0"],
+            "Both sheets are quite{CTRL:0}thin.",
+        )
+        self.assertEqual(
+            tt3a["TT3A/g3/r13"],
             (
-                "A torn piece of a note,{CTRL:0}written in blue ink: "
-                '"…4{CTRL:0}km southwest…"{CTRL:0}"…Rebecca"'
+                '"Four kilometers{CTRL:0}southwest of here. Wait{CTRL:0}'
+                'in front of the old{CTRL:0}watermill. Rebecca"'
+            ),
+        )
+        self.assertEqual(
+            tt3a["TT3A/g3/r25"],
+            (
+                "I smash the bottle.{CTRL:0}I take out the paper.{CTRL:0}"
+                "It's written in red ink."
             ),
         )
         self.assertIn(
