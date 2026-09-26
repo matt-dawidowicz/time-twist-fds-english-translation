@@ -35,6 +35,10 @@ OUTPUT_SHA256 = (
 )
 IMAGE_BYTES = 262000
 
+TT3B_MENU_POINTER_OFFSET = 0x14
+TT3B_MENU_POINTER_GOOD = 0xA620
+TT3B_MENU_POINTER_BAD = 0xB14B
+
 
 def restore_checkpoint(bundle: Path, destination: Path) -> dict[str, str]:
     """Validate and restore compiler inputs, returning approved literal text."""
