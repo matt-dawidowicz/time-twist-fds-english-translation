@@ -125,6 +125,37 @@ This made pagination an explicit runtime contract instead of an editorial guess.
 
 See [Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md).
 
+### TT3A two-sheet overlay must preserve cell identity
+
+The Rebecca paper puzzle uses a renderer behavior that is distinct from ordinary
+dialogue replacement. The red and blue sheets are sparse spatial records, and
+the completed message is drawn over the currently visible sheet without first
+clearing the dialogue cells.
+
+The Japanese data encodes the two sheet records as disjoint character-cell
+subsets whose overlay reconstructs the completed message exactly. An English
+revision briefly replaced those sparse layouts with prose headings such as
+`Red writing:` and `Blue writing:`. The text was semantically correct but
+violated the renderer contract: stale heading glyphs remained visible while the
+completed message typed over them.
+
+The maintained invariant is now:
+
+- every non-space cell in either sheet must already equal the character in the
+  completed message at that exact row/column;
+- the two sheets must not contain conflicting non-space cells;
+- cell-wise overlay of the two sheets must reproduce `TT3A/g3/r13` exactly;
+- no descriptive heading may be embedded in the sheet payload itself; the menu
+  label supplies the color context.
+
+A whole-source scan of all 1,299 Japanese scenario records found exactly one
+native composite-presentation triple of this kind:
+`TT3A/g2/r30 + TT3A/g2/r31 -> TT3A/g3/r13`. No later chapter uses the same
+overlay mechanism.
+
+A regression test now reconstructs the completed English message from the two
+sheet layouts cell by cell.
+
 ### Joan bottom-row overwrite became a whole-ROM geometry regression
 
 A runtime playtest exposed a continuation that overwrote the bottom row instead
