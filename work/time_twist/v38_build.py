@@ -108,6 +108,23 @@ def validate_checkpoint_record_ids(
         )
 
 
+def patch_tt3b_menu_pointer(data: bytes) -> bytes:
+    """Repair the stale TT3B fixed-menu record-zero pointer."""
+    if len(data) <= TT3B_MENU_POINTER_OFFSET + 1:
+        raise ReleaseBuildError("TT3B is too short for its menu pointer")
+    result = bytearray(data)
+    offset = TT3B_MENU_POINTER_OFFSET
+    current = int.from_bytes(result[offset : offset + 2], "little")
+    if current == TT3B_MENU_POINTER_GOOD:
+        return data
+    if current != TT3B_MENU_POINTER_BAD:
+        raise ReleaseBuildError(
+            f"unexpected TT3B menu pointer: {current:04X}"
+        )
+    result[offset : offset + 2] = TT3B_MENU_POINTER_GOOD.to_bytes(2, "little")
+    return bytes(result)
+
+
 def build_release_images(
     baseline: bytes,
     *,
