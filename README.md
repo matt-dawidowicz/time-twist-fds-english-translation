@@ -21,6 +21,7 @@ FDS BIOS files, emulator bundles, save states, or extracted retail payloads.
 - **Improve tools or tests:** [CONTRIBUTING_CODE.md](CONTRIBUTING_CODE.md)
 - **Read the architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - **See what is reverse-engineered:** [docs/REVERSE_ENGINEERING_STATUS.md](docs/REVERSE_ENGINEERING_STATUS.md)
+- **Review major engine changes and bug fixes:** [docs/ENGINE_CHANGELOG.md](docs/ENGINE_CHANGELOG.md)
 - **Tour the implementation:** [docs/CODE_TOUR.md](docs/CODE_TOUR.md)
 
 ## Playing Part 2 (Kouhen)
@@ -206,6 +207,7 @@ the repository remains in a documented pre-promotion state.
 - [docs/ENGLISH_PAGINATION_POLICY.md](docs/ENGLISH_PAGINATION_POLICY.md)
 - [docs/REVERSE_ENGINEERING_GUIDE.md](docs/REVERSE_ENGINEERING_GUIDE.md)
 - [docs/REVERSE_ENGINEERING_STATUS.md](docs/REVERSE_ENGINEERING_STATUS.md)
+- [docs/ENGINE_CHANGELOG.md](docs/ENGINE_CHANGELOG.md)
 - [docs/TEXT_LAYOUT_ENGINE_REFERENCE.md](docs/TEXT_LAYOUT_ENGINE_REFERENCE.md)
 - [docs/TT1A_FORTUNE_TELLER_LOGIC.md](docs/TT1A_FORTUNE_TELLER_LOGIC.md)
 - [docs/MAINTAINER_RELEASE_PROCESS.md](docs/MAINTAINER_RELEASE_PROCESS.md)
