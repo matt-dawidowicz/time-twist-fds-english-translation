@@ -13,7 +13,7 @@ are evidence, not release input.
 | Set up or build | [Quickstart](../QUICKSTART.md) | [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md) |
 | Edit scenario English | [Translation contributor guide](../CONTRIBUTING_TRANSLATION.md) | [Translation workflow](TRANSLATION_WORKFLOW.md), [English pagination policy](ENGLISH_PAGINATION_POLICY.md) |
 | Change Python/tooling | [Code contributor guide](../CONTRIBUTING_CODE.md) | [Code tour](CODE_TOUR.md), [Module map](MODULE_MAP.md) |
-| Investigate runtime behavior | [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) | [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md) |
+| Investigate runtime behavior | [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) | [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md), [engine change history](ENGINE_CHANGELOG.md) |
 | Diagnose dialogue layout | [Text layout engine reference](TEXT_LAYOUT_ENGINE_REFERENCE.md) | [Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md) |
 | Diagnose gameplay script logic | [Gameplay script engine](GAMEPLAY_SCRIPT_ENGINE.md) | [Retail VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md) |
 | Diagnose graphics/scene composition | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | [Architecture](ARCHITECTURE.md) |
@@ -50,8 +50,9 @@ as current release instructions.
 ## Runtime and reverse engineering
 
 1. [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md) — current solved/unsolved ledger
-2. [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) — evidence model and investigation workflow
-3. [Architecture](ARCHITECTURE.md) — runtime/build architecture
+2. [Engine change and bug-fix history](ENGINE_CHANGELOG.md) — durable record of major runtime fixes and retired assumptions
+3. [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) — evidence model and investigation workflow
+4. [Architecture](ARCHITECTURE.md) — runtime/build architecture
 4. [Gameplay script and event VM](GAMEPLAY_SCRIPT_ENGINE.md)
 5. [Retail gameplay VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md)
 6. [Gameplay VM reachability-island audit](GAMEPLAY_VM_REACHABILITY_AUDIT.md)
