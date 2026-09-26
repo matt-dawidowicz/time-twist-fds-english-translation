@@ -60,6 +60,10 @@ class FixedMenuAuditToolTests(unittest.TestCase):
         data = bytearray(dictionary_offset + len(packed_dictionary))
         data[spec.start : page_index_offset] = packed_menu
         data[
+            ui.FIXED_RECORD_TABLE_POINTER_OFFSET
+            : ui.FIXED_RECORD_TABLE_POINTER_OFFSET + 2
+        ] = (load_address + spec.start).to_bytes(2, "little")
+        data[
             ui.FIXED_RECORD_PAGE_POINTER_OFFSET : ui.FIXED_RECORD_PAGE_POINTER_OFFSET
             + 2
         ] = (load_address + page_index_offset).to_bytes(2, "little")
@@ -96,6 +100,18 @@ class FixedMenuAuditToolTests(unittest.TestCase):
             ),
             "Look",
         )
+
+        data[
+            ui.FIXED_RECORD_TABLE_POINTER_OFFSET
+            : ui.FIXED_RECORD_TABLE_POINTER_OFFSET + 2
+        ] = (load_address + len(data) + 1).to_bytes(2, "little")
+        with self.assertRaisesRegex(ValueError, "record-zero"):
+            audit_fixed_menu_labels._candidate_menu_records(
+                bytes(data),
+                bank_name=bank_name,
+                load_address=load_address,
+                record_count=len(menu),
+            )
 
     def test_target_audit_emits_the_current_target_schema(self) -> None:
         """Prevent a silent producer/consumer schema drift."""
