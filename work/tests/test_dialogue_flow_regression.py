@@ -26,6 +26,17 @@ class DialogueFlowRegressionTests(unittest.TestCase):
                 checked += 1
         self.assertEqual(checked, 1299)
 
+
+    def test_shared_tt3a_departure_narration_is_gender_neutral(self) -> None:
+        """Keep the shared male/female park branch narration context-safe."""
+        payload = json.loads(
+            (TRANSLATION_ROOT / "TT3A.json").read_text(encoding="utf-8")
+        )
+        text = payload["TT3A/g3/r23"]
+        self.assertEqual(text, "They dash off at once.")
+        self.assertNotRegex(text, r"\\b(?:he|she|his|her)\\b")
+        trace_dialogue("TT3A/g3/r23", text)
+
     def test_plural_men_line_wraps_within_24_columns(self) -> None:
         """Lock the TT6C plural pronoun fix to a safe physical-row break."""
         payload = json.loads(
