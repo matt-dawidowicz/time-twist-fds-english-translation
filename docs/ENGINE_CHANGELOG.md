@@ -346,6 +346,20 @@ The maintained incremental build now fails closed if the baseline NOV2 payload
 does not match every canonical runtime-owned replacement region. Translation-only
 incremental rebuilds are therefore permitted only after runtime parity is proven.
 
+A ROM-runtime migration does **not** by itself make an old emulator checkpoint
+safe. A Mesen save state can capture transient renderer state created by the old
+runtime. The v25 checkpoint used during this investigation was saved with the
+four-choice `Crumple / Burn / Tear / Combine` menu already active. Its old
+renderer had written live label widths to `$0433-$0436`; the canonical renderer
+expects the same active-menu metadata at `$042D-$0430`. Replacing NOV2 code
+without migrating those transient bytes therefore loaded the new renderer into
+an already-decoded menu with an empty width table and produced menu glitches.
+
+For a save state crossing a renderer-state ABI change, either recreate the
+checkpoint under the new runtime or explicitly migrate every live transient
+field whose ownership/location changed. Merely replacing resident code and
+scenario overlays is insufficient.
+
 Static menu geometry remains a separate invariant: the recovered audit covers all
 721 configured labels, 367 primary menu descriptors, and every order-preserving
 predicate-compacted subset through eight visible choices. Runtime parity must be
