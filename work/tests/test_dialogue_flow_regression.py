@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -40,13 +41,13 @@ class DialogueFlowRegressionTests(unittest.TestCase):
                 visible_on_current_row = False
                 parts = [
                     part
-                    for part in __import__("re").split(
+                    for part in re.split(
                         r"(\{CTRL:[0-7]\})", text
                     )
                     if part
                 ]
                 for part in parts:
-                    match = __import__("re").fullmatch(
+                    match = re.fullmatch(
                         r"\{CTRL:([0-7])\}", part
                     )
                     if match is None:
@@ -106,11 +107,11 @@ class DialogueFlowRegressionTests(unittest.TestCase):
                 ),
                 "TT3B/g1/r23": (
                     "Hitler: Please, take me{CTRL:0}with you!{CTRL:2}"
-                    "Devil: No. You have more{CTRL:0}evil to do here."
-                    "{CTRL:3}Our pact ends next year.{CTRL:3}"
+                    "Devil: No. You have more{CTRL:0}evil to do here. Our"
+                    "{CTRL:4}pact ends next year.{CTRL:3}"
                     "Hitler: Next year?!{CTRL:3}Devil: April 30, 1945."
                     "{CTRL:3}That is the day you die.{CTRL:4}"
-                    "Remember it well.{CTRL:3}Hitler: …{CTRL:4}"
+                    "Remember it well.{CTRL:3}Hitler: …{CTRL:3}"
                     "Devil: I'll see you in{CTRL:4}Hell."
                 ),
             },
