@@ -162,8 +162,8 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         self.assertEqual(
             tt3a["TT3A/g3/r25"],
             (
-                "I smash the bottle.{CTRL:0}I take out the paper.{CTRL:0}"
-                "It's written in red ink."
+                "I smash the bottle. I{CTRL:0}take out the paper. It's{CTRL:0}"
+                "written in red ink."
             ),
         )
         self.assertIn(
