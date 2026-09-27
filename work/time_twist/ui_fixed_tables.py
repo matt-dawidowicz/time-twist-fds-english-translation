@@ -478,7 +478,7 @@ TT4_FIXED_TEXT_RECORDS = (
     "Agamemnon",
     "Kannon",
     "Partisan",
-    "Ice-Non",
+    "Ice Non",
     "Parthenon",
     "Strawberry",
     "Melon",
