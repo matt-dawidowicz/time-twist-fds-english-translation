@@ -159,6 +159,19 @@ def build_release_images(
         source = root / "source"
         approved = restore_checkpoint(compiler_bundle, source)
         validate_checkpoint_record_ids(actual, approved)
+
+        # Source-verified fixed-menu corrections made after the recovered v38
+        # compiler checkpoint must be fed into that compiler explicitly.
+        # The override indices are zero-based fixed-record indices.
+        menu_overrides_path = source / "data/menu_overrides_v32.json"
+        menu_overrides = json.loads(
+            menu_overrides_path.read_text(encoding="utf-8")
+        )
+        menu_overrides.setdefault("TT4", {})["89"] = "Ice-Non"
+        menu_overrides_path.write_text(
+            json.dumps(menu_overrides, indent=2) + "\n",
+            encoding="utf-8",
+        )
         # Active maps are source-locked release inputs. The recovered v38 text
         # remains the immutable historical oracle, but later reviewed candidates
         # may intentionally differ in wording or presentation controls.
