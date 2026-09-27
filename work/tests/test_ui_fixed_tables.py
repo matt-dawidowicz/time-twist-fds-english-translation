@@ -244,6 +244,7 @@ class FixedMenuCopyTests(unittest.TestCase):
         self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[51], "Time Belt")
         self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[47], "Offer")
         self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[56], "Plantain herb")
+        self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[89], "Ice-Non")
 
     def test_disk_copy_is_title_case_and_exactly_size_neutral(self) -> None:
         """Preserve every NOV2 prompt slot while avoiding all-caps copy."""
