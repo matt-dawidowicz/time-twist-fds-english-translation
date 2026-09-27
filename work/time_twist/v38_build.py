@@ -247,7 +247,9 @@ def build_release_images(
         image = FdsImage.from_bytes(built)
         tt3b = image.sides[0].find_file("TT3B")
         tt3b.data = patch_tt3b_menu_pointer(tt3b.data)
-        tt4 = image.sides[2].find_file("TT4")
+        # TT4 is on Kouhen side B, which is side index 3 in the combined
+        # four-side image.
+        tt4 = image.sides[3].find_file("TT4")
         tt4.data = patch_tt4_athena_quiz(tt4.data)
         nov2 = image.sides[0].find_file("NOV2")
         nov2.data = patch_menu_cancel(nov2.data)
