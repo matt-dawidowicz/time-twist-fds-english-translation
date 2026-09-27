@@ -28,6 +28,7 @@ from .entropy_runtime import (
     PARENT_BACK_GUARD_PATCHES,
 )
 from .fds import FdsImage
+from .menu_cancel import FINAL_MENU_CANCEL_SURFACES
 from .production_translation import merged_translation_map
 from .release_metadata import SCENARIO_LOCATIONS
 from .scenario import (
@@ -101,6 +102,10 @@ def validate_incremental_nov2_runtime(data: bytes) -> None:
                 mismatches.append(
                     f"${patch.cpu_address:04X} {patch.label}"
                 )
+    for offset, expected, label in FINAL_MENU_CANCEL_SURFACES:
+        end = offset + len(expected)
+        if data[offset:end] != expected:
+            mismatches.append(f"${offset + 0x6000:04X} {label}")
     if mismatches:
         preview = "; ".join(mismatches[:4])
         if len(mismatches) > 4:
