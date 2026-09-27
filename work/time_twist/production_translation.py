@@ -55,6 +55,11 @@ CANONICAL_RECORD_COUNTS = {
 # 23-column segment policy. Hashes bind the exception to runtime-validated
 # geometry; edits fall back to the strict policy.
 FINAL_EDITORIAL_LAYOUTS = {
+    # These two TT3B battle captions intentionally use balanced rows rather
+    # than the generic greedy 24-column fill. Preserve the source wording;
+    # only the visual line breaks are exceptional.
+    "TT3B/g0/r29": "6678c79488577ffd05ddce9fb62dbb50bf04938f5be99261e99e2e0f20e12aff",
+    "TT3B/g1/r0": "2ec0dbb8ba44f11e726bc71e54c83bf073e81c3601711811f0d7b404831ab172",
     "T22/g0/r10": "ebcc1424a034210ccd4f8b68f9b138239137712ca633a6e60c3e7f3998f58bc9",
     "TT6C/g0/r8": "d1b45a97141c6c56fdf2c7d948238791d5adf23992198a843b7e92703b5cc10a",
     "TT6C/g2/r6": "4a89b0d78742035e75a2ac73eddfa0c299577ff8e6c7099ff4c7150759f352ce",
