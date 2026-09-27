@@ -167,7 +167,7 @@ def build_release_images(
         menu_overrides = json.loads(
             menu_overrides_path.read_text(encoding="utf-8")
         )
-        menu_overrides.setdefault("TT4", {})["89"] = "Ice-Non"
+        menu_overrides.setdefault("TT4", {})["89"] = "Ice Non"
         menu_overrides_path.write_text(
             json.dumps(menu_overrides, indent=2) + "\n",
             encoding="utf-8",
