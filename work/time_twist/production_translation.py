@@ -59,7 +59,7 @@ FINAL_EDITORIAL_LAYOUTS = {
     # than the generic greedy 24-column fill. Preserve the source wording;
     # only the visual line breaks are exceptional.
     "TT3B/g0/r29": "ca10497ccb9820fe6def2edb18d94cca3812d5dd296bfa077104d167250e1e8d",
-    "TT3B/g1/r0": "2ec0dbb8ba44f11e726bc71e54c83bf073e81c3601711811f0d7b404831ab172",
+    "TT3B/g1/r0": "e5d52ef68d1a9e6afe192e09f1cd2d95e857882a25a9d91473787c26aa93d443",
     "T22/g0/r10": "ebcc1424a034210ccd4f8b68f9b138239137712ca633a6e60c3e7f3998f58bc9",
     "TT6C/g0/r8": "d1b45a97141c6c56fdf2c7d948238791d5adf23992198a843b7e92703b5cc10a",
     "TT6C/g2/r6": "4a89b0d78742035e75a2ac73eddfa0c299577ff8e6c7099ff4c7150759f352ce",
