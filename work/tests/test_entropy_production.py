@@ -347,7 +347,9 @@ class EntropyProductionTests(unittest.TestCase):
     def test_leading_control_marker_clears_at_decoder_resume(self) -> None:
         """Keep stale control flushes silent, then restore real typing."""
         self.assertEqual(
-            tuple(patch.cpu_address for patch in LEADING_CONTROL_RESUME_PATCHES),
+            tuple(
+                patch.cpu_address for patch in LEADING_CONTROL_RESUME_PATCHES
+            ),
             (0x7FFD, 0x8016, 0x802F, 0x8048),
         )
         for patch in LEADING_CONTROL_RESUME_PATCHES:
@@ -362,9 +364,9 @@ class EntropyProductionTests(unittest.TestCase):
         )
         self.assertEqual(len(_FRONTEND_BLOCK), 69)
 
-        gate = {
-            patch.label: patch for patch in DYNAMIC_MENU_LAYOUT_PATCHES
-        }["width-aware leading menu cursor and typewriter gate"]
+        gate = {patch.label: patch for patch in DYNAMIC_MENU_LAYOUT_PATCHES}[
+            "width-aware leading menu cursor and typewriter gate"
+        ]
         self.assertEqual(
             gate.replacement[8:],
             bytes.fromhex("A5 73 D0 1A 4C C5 85"),
