@@ -1265,7 +1265,9 @@ def relocated_fixed_record_table_bank(
     if new_group_zero_offset <= new_following_offset:
         raise UiPatchError(f"{bank_name} relocated prefix is malformed")
     if new_group_zero_offset - new_following_offset != secondary_prefix_bytes:
-        raise UiPatchError(f"{bank_name} relocated secondary prefix changed size")
+        raise UiPatchError(
+            f"{bank_name} relocated secondary prefix changed size"
+        )
 
     prefix = bytearray(data[: spec.start])
     prefix.extend(packed_records)
@@ -1292,15 +1294,20 @@ def relocated_fixed_record_table_bank(
     relocated = bytes(prefix) + data[len(prefix) :]
     if len(relocated) != len(data):
         raise UiPatchError(f"{bank_name} relocation changed the bank size")
-    if relocated[new_following_offset:new_group_zero_offset] != secondary_prefix:
+    if (
+        relocated[new_following_offset:new_group_zero_offset]
+        != secondary_prefix
+    ):
         raise UiPatchError(
             f"{bank_name} relocated secondary prefix changed or was truncated"
         )
     relocated_second = (
         int.from_bytes(
             relocated[
-                FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[1]
-                : FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[1] + 2
+                FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[
+                    1
+                ] : FIXED_RECORD_FOLLOWING_POINTER_OFFSETS[1]
+                + 2
             ],
             "little",
         )
