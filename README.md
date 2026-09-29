@@ -58,14 +58,18 @@ validates and consumes those maps directly.
 `work/source_records/*.json` is the Japanese/source-structure evidence. It is
 not an alternate English source.
 
-The current release pipeline uses the frozen v38 compiler inputs in
-`recovery/v38/repro_bundle` for dictionaries, menus and runtime patches. The
-private v25 baseline supplies its existing title, font and unchanged engine.
-The recovered v38 text/ROM remain an immutable historical checkpoint, while
-source-locked active maps may contain reviewed post-v38 text/layout changes.
-The older UI/title modules remain engineering tools, not release inputs.
+The completed **v50** ROM is the project's behavioral release baseline. Its
+verified SHA-256 is
+`820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`.
+Maintained source and build tooling are expected to reproduce that behavior.
 
-No generated ROM or rebuilt bank is authoritative source material.
+The pipeline still uses recovered v38 compiler material and the private v25
+safe-encoding image as implementation inputs while source parity is completed.
+Those older artifacts are historical recovery/regression evidence, **not** the
+behavioral baseline. When an old input disagrees with verified v50 behavior,
+v50 wins and the maintained source must be advanced accordingly.
+
+Generated ROMs remain build products rather than editable source material.
 
 ## Current status
 
@@ -79,8 +83,8 @@ No generated ROM or rebuilt bank is authoritative source material.
   records may retain intentional non-greedy geometry.
 - Fixed UI, title, font, scenario text, and FDS-container changes are built by
   one source-locked release pipeline.
-- The generated images remain **playtest builds** until a complete emulator
-  playthrough is finished.
+- The complete gameplay route and final ending/credit presentation have been
+  playtested; **v50 is the canonical behavioral baseline** for release parity.
 
 ## Source of truth
 
@@ -88,8 +92,9 @@ No generated ROM or rebuilt bank is authoritative source material.
 | --- | --- |
 | `work/translations/*.json` | Sole current scenario-English wording and approved control layout |
 | `work/source_records/*.json` | Decoded Japanese/source evidence and stable record IDs |
-| `recovery/v38/repro_bundle/` | Frozen v38 compiler, dictionaries, menus, runtime patches and immutable regression oracle |
-| Private v25 safe-encoding baseline | Existing title, font and unchanged engine payloads |
+| Final v50 ROM behavior | Canonical release baseline and source-parity target |
+| `recovery/v38/repro_bundle/` | Historical compiler/recovery material and immutable regression oracle |
+| Private v25 safe-encoding seed image | Historical build seed for unchanged retail payloads while source parity is completed |
 | `work/release_sources.json` | Approved non-code release inputs and hashes |
 | `work/release_target.json` | Promoted output/provenance authority when present |
 | `docs/history/` and `audit/` | Historical engineering evidence only; never release input |
@@ -153,9 +158,10 @@ are not committed.
 
 ## Build and promote a release
 
-The normal command builds the current source-locked candidate with the recovered
-v38 compiler and exact private v25 safe-encoding baseline. Put your supplied
-baseline at:
+The normal command currently rebuilds from recovered v38 compiler material and the
+exact private v25 safe-encoding **seed image** while the maintained pipeline is
+being brought to parity with the final v50 baseline. Put that locally supplied
+seed image at:
 
 ```text
 work/baseline/time_twist_v25_safe_encoding.fds
@@ -170,7 +176,7 @@ time-twist release-lock
 time-twist release-build --candidate --output-dir build/candidate
 ```
 
-The lock covers the baseline, all 1,299 active maps, and every frozen compiler
+The lock covers the seed image, all 1,299 active maps, and every frozen compiler
 payload. Active records must retain the recovered v38 record topology, but
 reviewed wording/layout may advance beyond v38. If the active maps are exactly
 the v38 text, the historical four-side SHA-256
@@ -192,8 +198,9 @@ runtime validation, and a newly promoted candidate output. The historical v38
 checkpoint itself remains immutable; see
 [the v38 integration notes](docs/V38_CANONICAL_BUILD.md).
 
-No release target is checked in. Until a candidate is explicitly promoted,
-the repository remains in a documented pre-promotion state.
+The final v50 behavior is already the project baseline. Remaining
+candidate/promotion machinery describes build provenance, not authority over game
+behavior; source work is complete only when it reproduces the final baseline.
 
 ## Documentation
 
