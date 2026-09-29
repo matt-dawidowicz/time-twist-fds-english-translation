@@ -9,11 +9,11 @@ from pathlib import Path
 PATCHES = {
     "zenpen": (
         "Time-Twist-English-v1.0-Zenpen.bps",
-        "89ecec172ddd935dfa4aab42a87054bffd958399f41d4c476df7c7322523a0a4",
+        "a42ec859f7b28fa61356d6ea2fe650a29c1172129738f1136572ef427df9e255",
     ),
     "kouhen": (
         "Time-Twist-English-v1.0-Kouhen.bps",
-        "8b5602b35efd0e1f06665b59d741fd0609628f8c6f1e25c50c3280b58efeb4f8",
+        "9af9ad6e479c8024427766a1f4c1396ed76d8b33baf919bfa430507ef6f21879",
     ),
 }
 
