@@ -198,7 +198,8 @@ runtime validation, and a newly promoted candidate output. The historical v38
 checkpoint itself remains immutable; see
 [the v38 integration notes](docs/V38_CANONICAL_BUILD.md).
 
-The final v50 behavior is already the project baseline. Remaining
+No release target is checked in yet. That promotion metadata is distinct from the
+behavioral authority: final v50 is already the project baseline. Remaining
 candidate/promotion machinery describes build provenance, not authority over game
 behavior; source work is complete only when it reproduces the final baseline.
 
