@@ -287,9 +287,7 @@ class EntropyProductionTests(unittest.TestCase):
                 records=replacement,
             )
 
-        new_following = (
-            int.from_bytes(relocated[0x10:0x12], "little") - load
-        )
+        new_following = int.from_bytes(relocated[0x10:0x12], "little") - load
         delta = new_following - first_following
         self.assertGreater(delta, 0)
         self.assertEqual(new_group_zero, group_zero + delta)
