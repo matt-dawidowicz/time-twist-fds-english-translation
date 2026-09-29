@@ -271,7 +271,10 @@ def relocate_entropy_fixed_record_table(
     relocated = bytes(prefix) + data[len(prefix) :]
     if len(relocated) != len(data):
         raise UiPatchError(f"{bank_name} relocation changed bank size")
-    if relocated[new_following_offset:new_group_zero_offset] != secondary_prefix:
+    if (
+        relocated[new_following_offset:new_group_zero_offset]
+        != secondary_prefix
+    ):
         raise UiPatchError(
             f"{bank_name} relocated secondary prefix changed or was truncated"
         )

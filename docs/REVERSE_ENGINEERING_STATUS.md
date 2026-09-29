@@ -12,7 +12,7 @@ Status vocabulary follows [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.
 | NOV2 dialogue row geometry | **VERIFIED** | [Text layout engine reference](TEXT_LAYOUT_ENGINE_REFERENCE.md) | Runtime playtest of changed records |
 | Text controls 0-7 | **VERIFIED** | [Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md) | No structural unknown |
 | English pagination/control policy | **VERIFIED policy** | [English pagination policy](ENGLISH_PAGINATION_POLICY.md) | Editorial review remains scene-specific |
-| Typewriter SFX after leading controls | **VERIFIED root cause / v20 candidate** | [Text-control state machine](TEXT_CONTROL_STATE_MACHINE.md#typewriter-sfx-after-a-leading-presentation-control) | Live v20 checkpoint confirmation |
+| Typewriter SFX after leading controls | **VERIFIED** | [Text-control state machine](TEXT_CONTROL_STATE_MACHINE.md#typewriter-sfx-after-a-leading-presentation-control) | Covered by final playtest lineage |
 | Fixed/full-word menu addressing | **VERIFIED** | [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md) | Manual coverage of all runtime menu call sites |
 | Dynamic menu width/cursor geometry | **VERIFIED implementation** | [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md#dynamic-selection-brackets) | Manual page/cursor/Back testing |
 | Root-menu Back/Cancel guard | **VERIFIED implementation** | `work/time_twist/entropy_runtime.py` | Manual nested/root menu regression testing |
@@ -21,6 +21,7 @@ Status vocabulary follows [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.
 | Gameplay CHR ownership/load composition | **VERIFIED** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | Story-facing naming only |
 | Same-address `$A200` overlay inheritance | **VERIFIED** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md#4-same-address-a200-overlays-deliberately-inherit-data) | No structural unknown |
 | Metasprites/static placements/actor tables | **VERIFIED** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | Scene-specific edits only |
+| Ending/staff-roll TT6D metasprites + OBJ6D CHR | **VERIFIED / v50 baseline** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md#15-endingstaff-roll-localization-tt6d--obj6d) | Keep source/build generation in parity with v50 |
 | Gameplay background map descriptors/RLE | **VERIFIED** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | No structural unknown |
 | Hotspot rectangle structure and FD/FE directions | **VERIFIED** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | Higher-level event naming where useful |
 | Palette definitions | **VERIFIED structural** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md#11-palette-engine-at-a208) | Exact narrative meaning of some tag values |
@@ -61,10 +62,12 @@ maintained playtest route.
 The project is no longer blocked by broad engine unknowns. Remaining work is
 primarily:
 
-1. complete runtime playtesting of the current candidate;
-2. keep one-off reverse-engineering discoveries in maintained repo documentation/tests rather than chat-only notes;
-3. give higher-level names to the few gameplay commands/palette effects only
-   when scene evidence proves those names;
+1. bring maintained source/build steps into complete parity with the final v50
+   behavioral baseline;
+2. keep one-off reverse-engineering discoveries in maintained repo documentation/tests
+   rather than chat-only notes;
+3. give higher-level names to the few gameplay commands/palette effects only when
+   scene evidence proves those names;
 4. treat any new visual/text defect as a narrow regression until evidence
    demonstrates a missing engine rule.
 
