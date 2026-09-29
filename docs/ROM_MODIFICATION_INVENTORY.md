@@ -8,18 +8,17 @@ do not: **what does the English patch actually change in the game, and why?**
 The native-engine documents remain authoritative for how the original retail game
 works. This file describes the localization layer built on top of that model.
 
-> **Important source-status note**
+> **Canonical release baseline**
 >
-> Repository `main` currently reproduces the source-locked v38 lineage plus later
-> reviewed scenario-map edits. The final playtest lineage continued beyond that
-> source state through numbered binary candidates, reaching **v50** during final
-> ending/credits polish. Some v41-v50 changes described below are therefore
-> **playtested candidate deltas that still need to be folded back into the normal
-> source/release pipeline** before a source-reproducible 1.0 can be declared.
+> The completed, end-to-end playtested English ROM is now the project's behavioral
+> baseline. The final verified image is **v50**, SHA-256
+> `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`,
+> a 262,000-byte four-side FDS image.
 >
-> The latest candidate discussed here is **v50**, SHA-256
-> `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`.
-> It is a 262,000-byte four-side FDS image.
+> Older v25/v38 images and recovery bundles are retained as historical build inputs
+> and regression evidence. They do **not** define target behavior. Where maintained
+> source still differs from v50, source and build steps must be advanced to reproduce
+> v50; the final baseline must not be regressed to match an older recovery state.
 
 ## 1. Scope
 
@@ -426,9 +425,10 @@ than repeated whole-ROM redesigns. Important late milestones were:
 | v49 | Credit-role typography/tracking polish |
 | v50 | Wider, unsqueezed `PRODUCTION` role card using a size-neutral TT6D/OBJ6D reallocation |
 
-The candidate numbers are development provenance. The public release should ultimately
-be built from maintained source and versioned independently as the English patch
-release (for example, v1.0).
+The candidate numbers are development provenance only. **v50 is the canonical final
+behavioral baseline.** The public release should be built from maintained source that
+reproduces v50 and versioned independently as the English patch release (for example,
+v1.0).
 
 ## 14. Runtime verification performed
 
@@ -446,12 +446,10 @@ The final playtesting process covered much more than static text decode:
 - targeted credit-card captures for Script, Design, Programming, Music, Production,
   Director, staff names, and the final Nintendo card.
 
-The user completed the game on the v47 lineage before the translated-credit work.
-v48-v50 then changed only the ending-credit presentation layer and related CHR/table
-geometry described above.
-
-The v50 candidate still requires the final human “looks correct in my emulator”
-confirmation before it should be treated as release-certified.
+The complete gameplay route was finished on the v47 lineage. v48-v50 then changed
+only the ending-credit presentation layer and related CHR/table geometry described
+above. The final credit presentation was subsequently accepted, so v50 is now the
+release behavior to preserve.
 
 ## 15. What still needs to be source-integrated before a reproducible 1.0
 
@@ -470,8 +468,9 @@ candidate deltas should be represented by maintained source/build steps and test
    the same overall boundary and that unaffected OBJ6D tiles remain byte-identical.
 9. Release-manifest/provenance integration for the final promoted candidate.
 
-Once those changes are source-backed, the normal release pipeline—not a hand-edited
-candidate ROM—should be the authority for the public v1.0 artifact.
+Once those changes are source-backed, the normal release pipeline should reproduce
+the canonical v50 behavior directly. The v50 baseline remains the authority for
+behavior while the source pipeline is brought into parity.
 
 ## Related references
 
