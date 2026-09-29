@@ -1,0 +1,41 @@
+name: Build public Time Twist patcher
+
+on:
+  push:
+    branches:
+      - release/v1.0-public-patcher
+    paths:
+      - 'release_patcher/**'
+      - '.github/workflows/build-public-patcher.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify embedded patch resources
+        run: python release_patcher/test_public_patcher.py
+
+  windows:
+    runs-on: windows-latest
+    needs: verify
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Build Windows executable and release package
+        shell: powershell
+        run: ./release_patcher/build_windows.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Time-Twist-English-v1.0-Windows
+          path: dist/Time-Twist-English-v1.0-Windows.zip
+          if-no-files-found: error
