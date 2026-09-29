@@ -16,7 +16,8 @@ are evidence, not release input.
 | Investigate runtime behavior | [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) | [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md) |
 | Diagnose dialogue layout | [Text layout engine reference](TEXT_LAYOUT_ENGINE_REFERENCE.md) | [Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md) |
 | Diagnose gameplay script logic | [Gameplay script engine](GAMEPLAY_SCRIPT_ENGINE.md) | [Retail VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md) |
-| Diagnose graphics/scene composition | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | [Architecture](ARCHITECTURE.md) |
+| Diagnose graphics/scene composition | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | [ROM modification inventory](ROM_MODIFICATION_INVENTORY.md) |
+| Review English ROM-level changes | [ROM modification inventory](ROM_MODIFICATION_INVENTORY.md) | [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md) |
 
 ## Source-of-truth boundaries
 
@@ -46,6 +47,7 @@ as current release instructions.
 6. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
 7. [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md)
 8. [Cross-bank terminology decisions](../work/audits/final_cross_bank_consistency.md)
+9. [ROM modification inventory](ROM_MODIFICATION_INVENTORY.md) — text, UI, graphics, functions, credits, and late candidate lineage
 
 ## Runtime and reverse engineering
 
