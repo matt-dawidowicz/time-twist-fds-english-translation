@@ -421,3 +421,103 @@ The recovered model is supported by independent static and runtime-facing facts:
 - recovered tile IDs stay within the scene's composed background CHR coverage.
 
 That is sufficient to promote these structural layers from **UNKNOWN** to **VERIFIED**. The hotspot boundary directions are also now VERIFIED; the remaining semantic questions above should stay explicitly labeled rather than being guessed into the build system.
+
+## 15. Ending/staff-roll localization: TT6D + OBJ6D
+
+The English ending-credit work proved that the staff roll is not ordinary scenario
+text. It is a graphics-driven presentation built from TT6D packed metasprite
+definitions and sprite CHR supplied by `OBJ6D`.
+
+This matters for both reverse engineering and localization: changing a staff name or
+role heading is fundamentally a metasprite/CHR edit, not a text-codec edit.
+
+### 15.1 Native structure
+
+The final scene-load row loads:
+
+- `TT6D` as the active program/scene overlay;
+- `OBJ6D` into sprite pattern table 0;
+- `BG6D` as the partial background overlay.
+
+The credit cards use the same packed-metasprite format documented in section 6.
+The original renderer, OAM emission, vertical motion, and timing are retained by the
+English patch.
+
+### 15.2 English credit conversion
+
+The localized staff roll translates the native credit cards to:
+
+- **SCRIPT** — Keiji Terui
+- **DESIGN** — Eiko Takahashi, Katsutomo Maeiwa, Takahiro Umehara
+- **PROGRAMMING** — Tomoshige Hashishita, Taisuke Araki, Motoo Yasuma
+- **MUSIC** — Hajime Hirasawa
+- **PRODUCTION** — Tatsuya Hishida
+- **DIRECTOR** — Keiji Terui
+- **PRODUCED AND / COPYRIGHT BY / NINTENDO**
+
+The implementation deliberately does **not** replace the credit renderer. It changes
+only the packed credit metasprites and the corresponding `OBJ6D` CHR tiles.
+
+### 15.3 Transparent-cell spacing
+
+Japanese names and headings frequently use transparent 8-pixel cells between visible
+kanji cells. A naive English substitution therefore produced conspicuous gaps inside
+Latin words.
+
+The English layout keeps the existing metasprite model but moves transparent cells to
+the outer margins when possible so the visible English tile pairs form continuous
+centered words. That preserves the native movement/timing contract while changing the
+visual composition.
+
+### 15.4 Role-heading typography
+
+The first English credit prototype was readable but too compressed. The later
+typography pass redraws the role-heading CHR with more intentional tracking and a
+narrower `I` where appropriate, while leaving metasprite timing and motion unchanged.
+
+The v49 pass affected the headings:
+
+- `SCRIPT`
+- `DESIGN`
+- `PROGRAMMING`
+- `MUSIC`
+- `PRODUCTION`
+- `DIRECTOR`
+
+### 15.5 v50 Production-card reallocation
+
+`PRODUCTION` remained visually squeezed because its native allocation exposed only a
+32-pixel text span. The v50 candidate solves that without enlarging the overall TT6D
+metasprite table:
+
+1. the Production card is widened from **32 to 48 pixels**;
+2. the English heading uses the same normal-width style/tracking as the other role
+   cards rather than a specially condensed alphabet;
+3. the adjacent **KEIJI / TERUI** credit is reduced from four 16-pixel text cells to
+   three, which still fits and remains centered;
+4. the released bytes/CHR capacity are reused by the wider Production card;
+5. the total TT6D credit-table size is unchanged;
+6. later credit records resynchronize to their prior addresses.
+
+This is a useful pattern for future graphics work: capacity can sometimes be moved
+between neighboring variable-length metasprite records while keeping the enclosing
+table boundary invariant.
+
+### 15.6 Safe-editing requirements for credits
+
+When changing ending credits:
+
+1. parse all TT6D metasprite definitions before and after the edit;
+2. verify the table ends at the same declared `$A200` boundary;
+3. preserve credit indices expected by the native ending script;
+4. source-guard every replaced TT6D/OBJ6D byte;
+5. verify that unrelated `OBJ6D` tiles remain byte-identical;
+6. load the ending checkpoint and run through the affected cards in an emulator;
+7. verify the final Nintendo card and post-credit behavior.
+
+Do not treat the credits as text records merely because they display words.
+
+For the complete list of English ROM-level changes, including title, menu, text,
+system-message, quiz, and save-state compatibility work, see
+[ROM modification inventory](ROM_MODIFICATION_INVENTORY.md).
+
