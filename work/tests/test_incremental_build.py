@@ -18,12 +18,15 @@ from time_twist.incremental_build import (
     FIXED_TAIL_BOUNDARIES,
     GROUP_RECORD_COUNTS,
     IncrementalBuildError,
+    _CANONICAL_NOV2_RUNTIME_PATCH_GROUPS,
     _allocate_groups,
     _bank_layout_report,
     _load_entropy_bank,
     inspect_entropy_bank,
     rebuild_entropy_bank,
+    validate_incremental_nov2_runtime,
 )
+from time_twist.entropy_runtime import NOV2_SIZE
 from time_twist.scenario import (
     DICTIONARY_POINTER_OFFSET,
     GROUP_TABLE_POINTER_OFFSET,
@@ -206,6 +209,24 @@ def _tt1a_post_renderer_bank() -> tuple[bytes, dict[str, str]]:
 
 class IncrementalBuildTests(unittest.TestCase):
     """Keep incremental recompilation deterministic and bounded."""
+
+    def test_incremental_baseline_requires_current_nov2_runtime(self) -> None:
+        """Do not carry stale engine code into a new playtest candidate."""
+        nov2 = bytearray(NOV2_SIZE)
+        for patches in _CANONICAL_NOV2_RUNTIME_PATCH_GROUPS:
+            for patch in patches:
+                end = patch.file_offset + len(patch.replacement)
+                nov2[patch.file_offset:end] = patch.replacement
+
+        validate_incremental_nov2_runtime(bytes(nov2))
+
+        menu_patch = _CANONICAL_NOV2_RUNTIME_PATCH_GROUPS[2][0]
+        nov2[menu_patch.file_offset] ^= 0xFF
+        with self.assertRaisesRegex(
+            IncrementalBuildError,
+            "NOV2 runtime drift detected",
+        ):
+            validate_incremental_nov2_runtime(bytes(nov2))
 
     def test_dictionary_backed_noop_is_byte_identical(self) -> None:
         """Return original bytes when canonical English already matches."""

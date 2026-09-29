@@ -5,8 +5,8 @@ from __future__ import annotations
 import hashlib
 import random
 import unittest
-from pathlib import Path
 from unittest import mock
+from pathlib import Path
 
 from time_twist.english import encode_english
 from time_twist.entropy_codec import (
@@ -287,7 +287,9 @@ class EntropyProductionTests(unittest.TestCase):
                 records=replacement,
             )
 
-        new_following = int.from_bytes(relocated[0x10:0x12], "little") - load
+        new_following = (
+            int.from_bytes(relocated[0x10:0x12], "little") - load
+        )
         delta = new_following - first_following
         self.assertGreater(delta, 0)
         self.assertEqual(new_group_zero, group_zero + delta)
@@ -343,13 +345,19 @@ class EntropyProductionTests(unittest.TestCase):
         )
         self.assertEqual(MENU_WIDTH_WORK_RAM_ADDRESS, 0x042D)
         self.assertEqual(MENU_MAX_STAGED_GLYPHS, 18)
+        self.assertIn(
+            bytes.fromhex("B9 2D 04 69 2F 60 A9 20 60"),
+            patches["width-aware menu column base"].replacement,
+        )
+        self.assertIn(
+            bytes.fromhex("B9 2D 04 4A 4A 4A 69 47 D0 02 A9 45"),
+            patches["metadata-driven menu renderer geometry"].replacement,
+        )
 
     def test_leading_control_marker_clears_at_decoder_resume(self) -> None:
         """Keep stale control flushes silent, then restore real typing."""
         self.assertEqual(
-            tuple(
-                patch.cpu_address for patch in LEADING_CONTROL_RESUME_PATCHES
-            ),
+            tuple(patch.cpu_address for patch in LEADING_CONTROL_RESUME_PATCHES),
             (0x7FFD, 0x8016, 0x802F, 0x8048),
         )
         for patch in LEADING_CONTROL_RESUME_PATCHES:
@@ -364,9 +372,9 @@ class EntropyProductionTests(unittest.TestCase):
         )
         self.assertEqual(len(_FRONTEND_BLOCK), 69)
 
-        gate = {patch.label: patch for patch in DYNAMIC_MENU_LAYOUT_PATCHES}[
-            "width-aware leading menu cursor and typewriter gate"
-        ]
+        gate = {
+            patch.label: patch for patch in DYNAMIC_MENU_LAYOUT_PATCHES
+        }["width-aware leading menu cursor and typewriter gate"]
         self.assertEqual(
             gate.replacement[8:],
             bytes.fromhex("A5 73 D0 1A 4C C5 85"),
