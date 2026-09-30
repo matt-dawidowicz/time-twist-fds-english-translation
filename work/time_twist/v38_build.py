@@ -22,6 +22,7 @@ from .fds import FdsImage
 from .menu_cancel import patch_menu_cancel
 from .production_translation import CANONICAL_RECORD_COUNTS
 from .tt4_quiz import patch_tt4_athena_quiz
+from .v50_finalizer import compiler_prefinal_records, finalize_v50_image
 from .release_metadata import (
     SCENARIO_LOCATIONS,
     ReleaseBuildError,
@@ -159,6 +160,7 @@ def build_release_images(
         source = root / "source"
         approved = restore_checkpoint(compiler_bundle, source)
         validate_checkpoint_record_ids(actual, approved)
+        compiler_actual = compiler_prefinal_records(actual)
 
         # Source-verified fixed-menu corrections made after the recovered v38
         # compiler checkpoint must be fed into that compiler explicitly.
@@ -178,7 +180,7 @@ def build_release_images(
         # These are the only scenario text inputs read by the frozen compiler.
         (source / "data/layouts.json").write_text(
             json.dumps(
-                {key: {"literal": value} for key, value in actual.items()}
+                {key: {"literal": value} for key, value in compiler_actual.items()}
             ),
             encoding="utf-8",
         )
@@ -192,7 +194,7 @@ def build_release_images(
                                 re.sub(r"\{CTRL:[0-7]\}", " ", value).split()
                             ),
                         }
-                        for key, value in actual.items()
+                        for key, value in compiler_actual.items()
                     ]
                 }
             ),
@@ -228,7 +230,7 @@ def build_release_images(
                 encoding="utf-8"
             )
         )
-        validate_checkpoint_records(emitted, actual)
+        validate_checkpoint_records(emitted, compiler_actual)
         if len(built) != IMAGE_BYTES:
             raise ReleaseBuildError(
                 f"release output has {len(built)} bytes; expected {IMAGE_BYTES}"
@@ -254,6 +256,7 @@ def build_release_images(
         nov2 = image.sides[0].find_file("NOV2")
         nov2.data = patch_menu_cancel(nov2.data)
         built = image.to_bytes()
+        built = finalize_v50_image(built)
 
         report = json.loads(
             (output / "reports/v38_build.json").read_text(encoding="utf-8")
