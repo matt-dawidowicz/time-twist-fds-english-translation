@@ -8,10 +8,12 @@ import gzip
 import hashlib
 from pathlib import Path
 
+import TimeTwistPatcher as patcher
+
 PATCHES = {
     "zenpen": (
         "Time-Twist-English-v1.0-Zenpen.bps",
-        "a42ec859f7b28fa61356d6ea2fe650a29c1172129738f1136572ef427df9e255",
+        "f6d9982eeb2a5a087bb2f21d95f5e60f1aca7b9a31897bebdb9f1d7b31626580",
     ),
     "kouhen": (
         "Time-Twist-English-v1.0-Kouhen.bps",
@@ -27,14 +29,18 @@ def digest(data: bytes) -> str:
 
 def load_patch(patch_dir: Path, kind: str) -> bytes:
     """Decode and verify one chunked BPS resource."""
-    parts = sorted(patch_dir.glob(f"{kind}.bps.gz.b64.part*"))
-    if not parts:
-        raise RuntimeError(f"missing {kind} patch chunks")
+    if kind == "zenpen":
+        data = patcher._patch_bytes("zenpen")
+    else:
+        parts = sorted(patch_dir.glob(f"{kind}.bps.gz.b64.part*"))
+        if not parts:
+            raise RuntimeError(f"missing {kind} patch chunks")
 
-    encoded = "".join(
-        part.read_text(encoding="ascii").strip() for part in parts
-    )
-    data = gzip.decompress(base64.b64decode(encoded, validate=True))
+        encoded = "".join(
+            part.read_text(encoding="ascii").strip() for part in parts
+        )
+        data = gzip.decompress(base64.b64decode(encoded, validate=True))
+
     expected = PATCHES[kind][1]
     if digest(data) != expected:
         raise RuntimeError(f"{kind} patch hash mismatch")

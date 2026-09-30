@@ -18,7 +18,7 @@ from time_twist.release import (
     sha256_bytes,
     validate_source_lock,
 )
-from time_twist.v50_finalizer import FINAL_V50_SHA256
+from time_twist.v50_finalizer import FINAL_RELEASE_SHA256
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -89,7 +89,7 @@ class ReleaseBuildTests(unittest.TestCase):
             )
             self.assertEqual(
                 sha256_bytes(four_side),
-                FINAL_V50_SHA256,
+                FINAL_RELEASE_SHA256,
             )
 
             candidate_images = {

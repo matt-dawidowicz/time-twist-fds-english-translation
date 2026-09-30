@@ -17,6 +17,7 @@ from time_twist.production_translation import (
     layout_review_text,
     materialize_production_maps,
     merged_translation_map,
+    validate_record_production_control_sequence,
 )
 from time_twist.project import KNOWN_SCENARIO_BANKS
 
@@ -112,7 +113,7 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             tt1a["TT1A/g0/r3"],
             (
                 "The Fortune-Telling{CTRL:0}Service Center presents:{CTRL:0}"
-                '"Today\'s Fortune"{CTRL:0}Enter your blood type.'
+                '"Today\'s Fortune"{CTRL:6}Enter your blood type.'
             ),
         )
 
@@ -263,6 +264,32 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             _validate_semantic_wait_boundaries(
                 "TEST/g0/r0",
                 "His skin flakes away at{CTRL:1}A touch.",
+            )
+
+    def test_tt1a_fortune_control_substitution_is_exact(self) -> None:
+        """Allow only the recovered CTRL:2-to-CTRL:6 fortune prompt handoff."""
+        source = (
+            "うらないさーびすせんたーが おおくりする{CTRL:0}"
+            "「きょうのうんせい」です{CTRL:2}"
+            "あなたのけつえきがたを とうろくしてください"
+        )
+        production = _canonical("TT1A")["TT1A/g0/r3"]
+
+        validate_record_production_control_sequence(
+            "TT1A/g0/r3", source, production
+        )
+
+        with self.assertRaises(ProductionTranslationError):
+            validate_record_production_control_sequence(
+                "TT1A/g0/r3",
+                source,
+                production.replace("{CTRL:6}", "{CTRL:1}"),
+            )
+        with self.assertRaises(ProductionTranslationError):
+            validate_record_production_control_sequence(
+                "TT1A/g0/r3",
+                source.replace("{CTRL:2}", "{CTRL:1}"),
+                production,
             )
 
     def test_semantic_wait_quote_exception_is_exact_and_unique(self) -> None:

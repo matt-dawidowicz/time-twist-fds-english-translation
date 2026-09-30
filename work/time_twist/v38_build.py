@@ -27,7 +27,7 @@ from .release_metadata import (
     sha256_bytes,
 )
 from .v41_checkpoint import V38_SHA256, promote_v38_to_v41
-from .v50_finalizer import finalize_v50_image
+from .v50_finalizer import finalize_release_image
 
 BASELINE_SHA256 = (
     "813cdceb190e9714f7489c1bd5500f8e2ead3b3942f789ccf68bc6f3696bfc19"
@@ -131,7 +131,7 @@ def build_release_images(
     translations_directory: Path,
     compiler_bundle: Path,
 ) -> tuple[dict[str, bytes], dict[str, object]]:
-    """Rebuild exact v38, promote to late v41, then finalize exact v50."""
+    """Rebuild exact v38, promote through v50, then finalize the corrected release."""
     if (
         len(baseline) != IMAGE_BYTES
         or hashlib.sha256(baseline).hexdigest() != BASELINE_SHA256
@@ -201,7 +201,7 @@ def build_release_images(
             )
 
         built = promote_v38_to_v41(built)
-        built = finalize_v50_image(built)
+        built = finalize_release_image(built)
 
         report = json.loads(
             (output / "reports/v38_build.json").read_text(encoding="utf-8")
