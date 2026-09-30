@@ -17,7 +17,6 @@ from time_twist import ui
 from time_twist.english import render_english
 from time_twist.entropy_codec import (
     split_entropy_stream,
-    unpack_entropy_stream,
 )
 from time_twist.entropy_compression import (
     expand_entropy_dictionary,
@@ -116,7 +115,8 @@ def _candidate_menu_records(
         count = min(ui.FIXED_RECORDS_PER_PAGE, remaining)
         if count <= 0 or not 0 <= start < len(data):
             raise ValueError(f"{bank_name} candidate menu page is malformed")
-        decoded.extend(unpack_entropy_stream(data[start:], record_count=count))
+        records, _, _ = split_entropy_stream(data, offset=start, limit=count)
+        decoded.extend(tuple(record) for record in records)
     if len(decoded) != record_count:
         raise ValueError(
             f"{bank_name} candidate menu decoded {len(decoded)} records, "
