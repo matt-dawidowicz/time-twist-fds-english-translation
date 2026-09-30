@@ -42,6 +42,12 @@ REQUIRED_PUBLIC_MARKERS = (
     Path("work/integration_fixtures.json"),
 )
 CHECKER_RELATIVE_PATH = Path("work/tools/check_public_tree.py")
+ALLOWED_RELEASE_ARTIFACTS = {
+    Path("release/TimeTwistEnglishPatcher.exe"),
+    Path("release/Time-Twist-English-v1.0-Windows.zip"),
+    Path("release/Time-Twist-English-v1.0-Zenpen.bps"),
+    Path("release/Time-Twist-English-v1.0-Kouhen.bps"),
+}
 
 
 def _git_visible_files(root: Path) -> list[Path] | None:
@@ -103,6 +109,8 @@ def check_public_tree(root: Path) -> list[str]:
         except ValueError:
             continue
         if ".git" in relative.parts:
+            continue
+        if relative in ALLOWED_RELEASE_ARTIFACTS:
             continue
 
         forbidden_parent = _forbidden_parent(relative)
