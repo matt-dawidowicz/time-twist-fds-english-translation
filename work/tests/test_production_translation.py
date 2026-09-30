@@ -14,10 +14,10 @@ from time_twist.production_translation import (
     STRUCTURAL_LAYOUT_RECORDS,
     ProductionTranslationError,
     _validate_semantic_wait_boundaries,
-    validate_record_production_control_sequence,
     layout_review_text,
     materialize_production_maps,
     merged_translation_map,
+    validate_record_production_control_sequence,
 )
 from time_twist.project import KNOWN_SCENARIO_BANKS
 
