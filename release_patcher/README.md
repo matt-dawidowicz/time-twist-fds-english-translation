@@ -70,7 +70,7 @@ If either source image differs, the executable stops before creating output.
 
 - Size: 131,000 bytes
 - SHA-256:
-  `426AADCE09FDC55EF0B4E3A41EA276B7B3C24EEC4CCBA979E52388F1A456B85F`
+  `A88A53E65B3594D8F9745F4945303967948E83453D8356D04B0BE75D49E38C09`
 
 ### Kouhen
 
@@ -82,10 +82,14 @@ If either source image differs, the executable stops before creating output.
 
 - Size: 262,000 bytes
 - SHA-256:
-  `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`
+  `BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B`
 
 The combined image is exactly translated Zenpen followed by translated Kouhen
 in the original four-side order.
+
+This corrected release preserves the completed v50 playtest baseline and changes one
+TT1A encoded control byte so the fortune-teller blood-type menu no longer overwrites
+the final prompt row. Kouhen is byte-identical to the v1.0 baseline.
 
 ## Command-line use
 
@@ -142,7 +146,7 @@ The release uses several independent checks:
 2. each embedded BPS payload must match its own SHA-256;
 3. BPS patch CRC, source CRC, and target CRC are validated;
 4. translated Zenpen and Kouhen must match their exact final SHA-256 values;
-5. the optional combined four-side image must match the final v50 SHA-256;
+5. the optional combined four-side image must match the corrected final SHA-256;
 6. writes occur only after the requested outputs have already been patched and
    verified in memory;
 7. source/output path collisions are rejected.
