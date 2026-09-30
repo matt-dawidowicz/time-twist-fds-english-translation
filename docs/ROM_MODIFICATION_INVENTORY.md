@@ -15,10 +15,11 @@ works. This file describes the localization layer built on top of that model.
 > `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`,
 > a 262,000-byte four-side FDS image.
 >
-> Older v25/v38 images and recovery bundles are retained as historical build inputs
-> and regression evidence. They do **not** define target behavior. Where maintained
-> source still differs from v50, source and build steps must be advanced to reproduce
-> v50; the final baseline must not be regressed to match an older recovery state.
+> Older v25/v38 artifacts are retained as historical build inputs and regression
+> evidence. They do **not** define target behavior. Exact release reproduction now
+> rebuilds frozen v38 from the v25 seed and then follows the validated, hash-guarded
+> v38 -> late-v41 -> v50 checkpoint lineage. The final baseline is never regressed
+> to match an older recovery state.
 
 ## 1. Scope
 
@@ -451,26 +452,30 @@ only the ending-credit presentation layer and related CHR/table geometry describ
 above. The final credit presentation was subsequently accepted, so v50 is now the
 release behavior to preserve.
 
-## 15. What still needs to be source-integrated before a reproducible 1.0
+## 15. Reproducible v1.0 checkpoint lineage
 
-The public repository should not rely indefinitely on chat-era binary patches. Before
-the release branch is considered fully source-reproducible, the following late
-candidate deltas should be represented by maintained source/build steps and tests:
+The late playtest sequence included exact-footprint edits and binary-layout changes
+that the frozen recovered v38 packer cannot honestly regenerate from the final maps.
+The maintained release path therefore reproduces the validated binary lineage
+explicitly rather than claiming capabilities the recovered compiler does not have:
 
-1. TT4 final crop-answer routing correction.
-2. Final Edison prompt wording using a layout-preserving encoding.
-3. Final system-message punctuation.
-4. T25 `The sky darkens.` contextual correction.
-5. TT6D/OBJ6D English-credit metasprite and CHR generation.
-6. v49 credit-heading typography.
-7. v50 48-pixel Production-card reallocation.
-8. Regression tests asserting that the relevant TT6D metasprite table still parses to
-   the same overall boundary and that unaffected OBJ6D tiles remain byte-identical.
-9. Release-manifest/provenance integration for the final promoted candidate.
+1. the private v25 safe-encoding seed and frozen recovered compiler reproduce exact
+   v38, SHA-256
+   `62C5DBC2DE33C484DE9F8C1318FC903642EB08E2B4D5FA8E28384DC699C4C400`;
+2. a compact source-copy checkpoint delta promotes exact v38 to the validated
+   late-v41 image, SHA-256
+   `13D4E21D1D4393E5B24A1FAEEBE3FF99CE28E5887B2CC7B54BA1AD664EBC91D1`;
+3. a second guarded checkpoint delta reproduces the reviewed v42-v50 changes and
+   requires the final four-side SHA-256
+   `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`.
 
-Once those changes are source-backed, the normal release pipeline should reproduce
-the canonical v50 behavior directly. The v50 baseline remains the authority for
-behavior while the source pipeline is brought into parity.
+The checkpoint payloads contain only copy/literal deltas, not a complete original or
+translated FDS image. Their SHA-256 values, source identities, target identities,
+and byte counts are locked in `work/release_sources.json`.
+
+The 13 canonical translation maps remain the editorial source of truth for all 1,299
+scenario records. Future edits must establish a new reviewed lineage and final hash
+rather than silently changing these immutable checkpoints.
 
 ## Related references
 
