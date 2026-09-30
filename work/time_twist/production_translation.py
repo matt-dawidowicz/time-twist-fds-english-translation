@@ -223,7 +223,9 @@ def validate_record_production_control_sequence(
     substitution = SEMANTIC_CONTROL_SUBSTITUTIONS.get(record_id)
     if substitution is not None:
         source_hash = hashlib.sha256(source.encode("utf-8")).hexdigest()
-        production_hash = hashlib.sha256(production.encode("utf-8")).hexdigest()
+        production_hash = hashlib.sha256(
+            production.encode("utf-8")
+        ).hexdigest()
         if (source_hash, production_hash) == substitution:
             return
 
