@@ -29,6 +29,8 @@ def main() -> None:
     assert len(kouhen) == 79_852
     assert hashlib.sha256(zenpen).hexdigest() == patcher.ZENPEN_PATCH_SHA256
     assert hashlib.sha256(kouhen).hexdigest() == patcher.KOUHEN_PATCH_SHA256
+    assert zenpen[patcher.ZENPEN_RESOURCE_PATCH_OFFSET] == patcher.ZENPEN_RESOURCE_NEW_BYTE
+    assert int.from_bytes(zenpen[-8:-4], "little") == patcher.ZENPEN_TARGET_CRC32
 
     for payload in (zenpen, kouhen):
         assert payload.startswith(b"BPS1")
