@@ -26,6 +26,7 @@ from time_twist.entropy_fixed_ui import (
     TT1A_CHOICE_PATCHES,
     TT1A_ENTRY_ADDRESSES,
     TT1A_LOAD_ADDRESS,
+    TT1A_RENDERER_PAGE_RECORDS,
     TT1A_RENDERER_POINTER_OFFSET,
     TT1A_SOURCE_RENDERER_ADDRESS,
     TT1A_STATIC_POINTERS,
@@ -94,10 +95,10 @@ class EntropyFixedUiTests(unittest.TestCase):
         )
         self.assertEqual(sum(map(len, tt1a_entropy_payloads())), 62)
         renderer = tt1a_renderer_entropy_payload()
-        self.assertEqual(len(renderer), 56)
+        self.assertEqual(len(renderer), 62)
         self.assertEqual(
             _sha256(renderer),
-            "F6AD97625AEF65DDC48932AA5440939660935B6E2AE929AB30AA7BB0366672D1",
+            "D497AD5ECCB9D50F6F82BB627D8A66FF6EA26B234EB2FE76D583765570D8BE0E",
         )
 
         self.assertLessEqual(len(menu), NOV4_MENU_END - NOV4_MENU_START)
@@ -206,15 +207,20 @@ class EntropyFixedUiTests(unittest.TestCase):
         """Verify the renderer copy supports sequential blood/month choice scans."""
         renderer = tt1a_renderer_entropy_payload()
         decoded = unpack_entropy_stream(
-            renderer, record_count=len(TT1A_CHOICE_PATCHES)
+            renderer, record_count=TT1A_RENDERER_PAGE_RECORDS
         )
-        self.assertEqual(len(decoded), len(TT1A_CHOICE_PATCHES))
+        self.assertEqual(len(decoded), TT1A_RENDERER_PAGE_RECORDS)
         for record, (_offset, _source, text) in zip(
-            decoded, TT1A_CHOICE_PATCHES, strict=True
+            decoded[: len(TT1A_CHOICE_PATCHES)],
+            TT1A_CHOICE_PATCHES,
+            strict=True,
         ):
             self.assertEqual(
                 _semantic(record), _semantic(encode_english(text))
             )
+        self.assertTrue(
+            all(not record for record in decoded[len(TT1A_CHOICE_PATCHES) :])
+        )
 
     def test_tt1a_patcher_accepts_relocated_scenario_group_zero(self) -> None:
         """Verify selector installation leaves a relocated group-zero pointer intact."""
@@ -262,7 +268,7 @@ class EntropyFixedUiTests(unittest.TestCase):
         source[TT1A_TABLE_START:TT1A_TABLE_END] = tt1a_entropy_payload()
 
         patched = patched_tt1a_entropy_ui(bytes(source))
-        self.assertEqual(len(patched), len(source) + 56)
+        self.assertEqual(len(patched), len(source) + 62)
         self.assertEqual(patched_tt1a_entropy_ui(patched), patched)
         for offset, address in TT1A_STATIC_POINTERS.items():
             self.assertEqual(
@@ -330,10 +336,10 @@ class EntropyFixedUiTests(unittest.TestCase):
                     "capacity_bytes": 80,
                 },
                 "TT1A_renderer": {
-                    "records": 19,
+                    "records": 32,
                     "streams": 1,
-                    "packed_bytes": 56,
-                    "capacity_bytes": 56,
+                    "packed_bytes": 62,
+                    "capacity_bytes": 62,
                 },
             },
         )
