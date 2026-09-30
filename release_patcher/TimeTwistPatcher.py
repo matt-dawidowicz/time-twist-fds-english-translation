@@ -30,16 +30,19 @@ KOUHEN_SOURCE_SHA256 = (
     "F62A7424FE489CBE479C3EBAABE4CE62D85127601FFD3D08ABD4E5A0DC39442A"
 )
 ZENPEN_TARGET_SHA256 = (
-    "426AADCE09FDC55EF0B4E3A41EA276B7B3C24EEC4CCBA979E52388F1A456B85F"
+    "A88A53E65B3594D8F9745F4945303967948E83453D8356D04B0BE75D49E38C09"
 )
 KOUHEN_TARGET_SHA256 = (
     "81483F8A76A88BCD069EA87E3D31E8D598F202112E1B39E464FFE0B2B925E3D3"
 )
 FOUR_SIDE_TARGET_SHA256 = (
-    "820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43"
+    "BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B"
+)
+ZENPEN_RESOURCE_SHA256 = (
+    "a42ec859f7b28fa61356d6ea2fe650a29c1172129738f1136572ef427df9e255"
 )
 ZENPEN_PATCH_SHA256 = (
-    "a42ec859f7b28fa61356d6ea2fe650a29c1172129738f1136572ef427df9e255"
+    "f6d9982eeb2a5a087bb2f21d95f5e60f1aca7b9a31897bebdb9f1d7b31626580"
 )
 KOUHEN_PATCH_SHA256 = (
     "9af9ad6e479c8024427766a1f4c1396ed76d8b33baf919bfa430507ef6f21879"
@@ -77,6 +80,30 @@ def _resource_dir() -> Path:
     return base / "patches"
 
 
+ZENPEN_RESOURCE_PATCH_OFFSET = 52_541
+ZENPEN_RESOURCE_OLD_BYTE = 0x80
+ZENPEN_RESOURCE_NEW_BYTE = 0x8C
+ZENPEN_TARGET_CRC32 = 0x1C13ED5A
+
+
+def _finalize_zenpen_patch(payload: bytes) -> bytes:
+    """Promote the embedded v50 Zenpen BPS resource to the final menu-fix patch."""
+    if hashlib.sha256(payload).hexdigest() != ZENPEN_RESOURCE_SHA256:
+        raise PatcherError("Embedded Zenpen base patch failed SHA-256 verification.")
+
+    patch = bytearray(payload)
+    if (
+        ZENPEN_RESOURCE_PATCH_OFFSET >= len(patch) - 12
+        or patch[ZENPEN_RESOURCE_PATCH_OFFSET] != ZENPEN_RESOURCE_OLD_BYTE
+    ):
+        raise PatcherError("Embedded Zenpen base patch has an unexpected layout.")
+
+    patch[ZENPEN_RESOURCE_PATCH_OFFSET] = ZENPEN_RESOURCE_NEW_BYTE
+    patch[-8:-4] = ZENPEN_TARGET_CRC32.to_bytes(4, "little")
+    patch[-4:] = (binascii.crc32(patch[:-4]) & 0xFFFFFFFF).to_bytes(4, "little")
+    return bytes(patch)
+
+
 def _patch_bytes(kind: str) -> bytes:
     """Decode and verify one embedded BPS patch."""
     expected = {
@@ -99,6 +126,9 @@ def _patch_bytes(kind: str) -> bytes:
         raise PatcherError(
             f"Could not decode embedded {kind} patch: {exc}"
         ) from exc
+
+    if kind == "zenpen":
+        payload = _finalize_zenpen_patch(payload)
 
     if hashlib.sha256(payload).hexdigest() != expected:
         raise PatcherError(
