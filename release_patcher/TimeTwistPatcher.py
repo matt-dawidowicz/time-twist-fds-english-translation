@@ -5,6 +5,7 @@ import base64
 import binascii
 import gzip
 import hashlib
+import os
 from pathlib import Path
 import sys
 
@@ -137,6 +138,34 @@ def _identify(path: Path) -> tuple[str, bytes]:
         "Use clean Japanese retail Zenpen/Kouhen dumps."
     )
 
+def _same_file_or_path(left: Path, right: Path) -> bool:
+    """Return True when two paths identify the same file or normalized location."""
+    try:
+        if left.exists() and right.exists() and os.path.samefile(left, right):
+            return True
+    except OSError:
+        pass
+    try:
+        left = left.resolve(strict=False)
+        right = right.resolve(strict=False)
+    except OSError:
+        pass
+    return os.path.normcase(os.path.abspath(os.fspath(left))) == os.path.normcase(
+        os.path.abspath(os.fspath(right))
+    )
+
+
+def _assert_destinations_safe(sources: tuple[Path, ...], destinations: tuple[Path, ...]) -> None:
+    """Refuse any output path that aliases one of the selected source images."""
+    for destination in destinations:
+        for source in sources:
+            if _same_file_or_path(destination, source):
+                raise PatcherError(
+                    f"Refusing to overwrite source image {source}. "
+                    f"Choose a different output folder."
+                )
+
+
 def build_outputs(first: Path, second: Path, output_dir: Path, *, two_disk: bool, four_side: bool) -> list[Path]:
     if not two_disk and not four_side:
         raise PatcherError("Select at least one output layout.")
@@ -148,6 +177,13 @@ def build_outputs(first: Path, second: Path, output_dir: Path, *, two_disk: bool
         identified[kind] = data
     if {"zenpen", "kouhen"} - identified.keys():
         raise PatcherError("Both Zenpen and Kouhen retail images are required.")
+
+    z = output_dir / f"Time Twist - English Translation v{VERSION} - Zenpen.fds"
+    k = output_dir / f"Time Twist - English Translation v{VERSION} - Kouhen.fds"
+    f = output_dir / f"Time Twist - English Translation v{VERSION}.fds"
+    destinations = tuple(([z, k] if two_disk else []) + ([f] if four_side else []))
+    _assert_destinations_safe((first, second), destinations)
+
     zenpen = apply_bps(identified["zenpen"], _patch_bytes("zenpen"))
     kouhen = apply_bps(identified["kouhen"], _patch_bytes("kouhen"))
     if _sha256(zenpen) != ZENPEN_TARGET_SHA256:
@@ -157,8 +193,6 @@ def build_outputs(first: Path, second: Path, output_dir: Path, *, two_disk: bool
     output_dir.mkdir(parents=True, exist_ok=True)
     written: list[Path] = []
     if two_disk:
-        z = output_dir / f"Time Twist - English Translation v{VERSION} - Zenpen.fds"
-        k = output_dir / f"Time Twist - English Translation v{VERSION} - Kouhen.fds"
         z.write_bytes(zenpen)
         k.write_bytes(kouhen)
         written.extend([z, k])
@@ -166,7 +200,6 @@ def build_outputs(first: Path, second: Path, output_dir: Path, *, two_disk: bool
         combined = zenpen + kouhen
         if len(combined) != FOUR_SIDE_BYTES or _sha256(combined) != FOUR_SIDE_TARGET_SHA256:
             raise PatcherError("Combined four-side output failed final verification.")
-        f = output_dir / f"Time Twist - English Translation v{VERSION}.fds"
         f.write_bytes(combined)
         written.append(f)
     return written
