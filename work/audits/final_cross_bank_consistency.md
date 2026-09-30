@@ -132,10 +132,9 @@ No prose consistency edit was allowed to override puzzle semantics.
 
 ## Remaining evidence-dependent records
 
-Four items remain deliberately unresolved because text-only editorial work cannot settle them reliably:
+Three items remain deliberately unresolved because text-only editorial work cannot settle them reliably:
 
 - `TT3A/g2/r7` — off-screen speaker identity needs gameplay staging;
-- `TT3A/g2/r30` — torn-note spatial ordering needs a gameplay screenshot/nametable capture;
 - `TT3B/g0/r24` — Hitler versus Devil-through-Hitler speaker identity depends on staging;
 - `TT4/g4/r14` — unlabeled `Wait` warning needs gameplay context.
 
@@ -149,3 +148,23 @@ contains fresh public fit measurements. A built candidate still needs the
 [runtime playtest matrix](../../docs/PLAYTEST_MATRIX.md), including the four
 records above. Editorial review and public compression checks do not certify
 gameplay, disk recovery, or save/load behavior.
+
+
+## Runtime resolution: TT3A two-sheet overlay puzzle
+
+The former `TT3A/g2/r30` spatial/color uncertainty is resolved.
+
+- `TT3A/g2/r29` explicitly says Simon's paper uses blue ink
+  (`あおのいんく`).
+- `TT3A/g3/r25` explicitly says the paper recovered from the bottle uses red
+  ink (`あかのいんく`).
+- Fixed-menu source distinguishes `あかいもじ` (red writing),
+  `あおいもじ` (blue writing), `2まいのかみ` (two sheets of paper), and
+  `かさねる` (overlay/put one on top of the other).
+- The sparse character positions in `TT3A/g2/r30` and `TT3A/g2/r31`
+  superimpose without conflict and reconstruct `TT3A/g3/r13` exactly:
+  wait in front of the old watermill four kilometers southwest; Rebecca.
+- Runtime playtest evidence identifies `g2/r30` as the red-writing sheet.
+
+The active English therefore must not describe the two sheets as torn halves or
+label both fragments blue.

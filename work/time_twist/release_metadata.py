@@ -415,11 +415,17 @@ def authoritative_source_paths(paths: ReleasePaths) -> tuple[Path, ...]:
     translations = tuple(
         paths.translations / f"{bank}.json" for bank in KNOWN_SCENARIO_BANKS
     )
+    checkpoint_root = paths.project_root / "recovery" / "v41"
+    checkpoint_sources = (
+        checkpoint_root / "README.md",
+        *sorted((checkpoint_root / "patches").glob("*.part*")),
+    )
     return (
         paths.checkpoint_baseline,
         paths.compiler_bundle / "manifest.json",
         *sorted((paths.compiler_bundle / "payload").glob("*.b64")),
         *translations,
+        *checkpoint_sources,
     )
 
 
@@ -499,12 +505,12 @@ def build_source_lock_payload(
         "schema": SOURCE_LOCK_SCHEMA,
         "authority": (
             "The exact private v25 safe-encoding baseline, frozen v38 compiler "
-            "bundle and 13 active translation maps are the non-code-lock inputs. "
-            "Compiler payloads are independently hash-checked before execution. "
-            "The recovered v38 bundle remains an immutable historical checkpoint; "
-            "source-locked active maps may contain reviewed post-v38 text/layout "
-            "changes, whose final ROM identity is established by candidate "
-            "promotion rather than the historical v38 ROM hash."
+            "bundle, validated v38-to-v41 and v41-to-v50 checkpoint deltas, and "
+            "13 active translation maps are the non-code-lock inputs. Compiler "
+            "payloads and checkpoint deltas are independently hash-checked before "
+            "execution. The recovered v38 bundle remains an immutable historical "
+            "checkpoint and the guarded checkpoint lineage must reproduce exact "
+            "final v50."
         ),
         "subtitle": DEFAULT_SUBTITLE,
         "files": files,
@@ -648,6 +654,7 @@ def validate_source_lock_metadata(payload: object) -> dict[str, object]:
                 logical_path.parts[0] not in {"work", "review"}
                 and logical_path.parts[:3]
                 != ("recovery", "v38", "repro_bundle")
+                and logical_path.parts[:2] != ("recovery", "v41")
             )
             or ".." in logical_path.parts
         ):

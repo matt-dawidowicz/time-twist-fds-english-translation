@@ -71,6 +71,10 @@ def make_synthetic_project(root: Path) -> Path:
         PROJECT_ROOT / "recovery/v38/repro_bundle",
         root / "recovery/v38/repro_bundle",
     )
+    shutil.copytree(
+        PROJECT_ROOT / "recovery/v41",
+        root / "recovery/v41",
+    )
     return root
 
 
@@ -188,7 +192,7 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
             self.assertEqual(validate_source_lock(project_root=root), payload)
 
     def test_source_lock_contains_only_current_release_inputs(self) -> None:
-        """Lock active maps, private v25 baseline, and every frozen compiler input."""
+        """Lock active maps, historical compiler inputs, and checkpoint deltas."""
         with tempfile.TemporaryDirectory() as directory:
             root = make_synthetic_project(Path(directory) / "project")
             payload = write_source_lock(project_root=root)
@@ -205,6 +209,11 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
                 *{
                     f"work/translations/{bank}.json"
                     for bank in KNOWN_SCENARIO_BANKS
+                },
+                "recovery/v41/README.md",
+                *{
+                    path.relative_to(root).as_posix()
+                    for path in (root / "recovery/v41/patches").glob("*.part*")
                 },
             }
             self.assertEqual(files, expected)

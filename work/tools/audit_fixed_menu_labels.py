@@ -17,7 +17,6 @@ from time_twist import ui
 from time_twist.english import render_english
 from time_twist.entropy_codec import (
     split_entropy_stream,
-    unpack_entropy_stream,
 )
 from time_twist.entropy_compression import (
     expand_entropy_dictionary,
@@ -72,8 +71,17 @@ def _candidate_menu_records(
     load_address: int,
     record_count: int,
 ) -> tuple[tuple[PackedSymbol, ...], ...]:
-    """Decode the byte-addressed entropy pages from one release bank."""
-    spec = ui.FIXED_RECORD_TABLE_SPECS[bank_name]
+    """Decode menu pages from the exact runtime record-zero/page pointers."""
+    runtime_start = (
+        int.from_bytes(
+            data[
+                ui.FIXED_RECORD_TABLE_POINTER_OFFSET : ui.FIXED_RECORD_TABLE_POINTER_OFFSET
+                + 2
+            ],
+            "little",
+        )
+        - load_address
+    )
     page_index_address = int.from_bytes(
         data[
             ui.FIXED_RECORD_PAGE_POINTER_OFFSET : ui.FIXED_RECORD_PAGE_POINTER_OFFSET
@@ -83,12 +91,16 @@ def _candidate_menu_records(
     )
     page_index_offset = page_index_address - load_address
     pointer_bytes = ui.fixed_record_table_page_pointer_bytes(bank_name)
-    if not spec.start <= page_index_offset <= len(data):
+    if not 0 <= runtime_start < len(data):
+        raise ValueError(
+            f"{bank_name} runtime menu record-zero pointer is invalid"
+        )
+    if not 0 <= page_index_offset <= len(data):
         raise ValueError(f"{bank_name} candidate menu page index is invalid")
     if page_index_offset + pointer_bytes > len(data):
         raise ValueError(f"{bank_name} candidate menu page index is truncated")
 
-    page_starts = [spec.start]
+    page_starts = [runtime_start]
     page_starts.extend(
         int.from_bytes(data[offset : offset + 2], "little") - load_address
         for offset in range(
@@ -97,18 +109,14 @@ def _candidate_menu_records(
             2,
         )
     )
-    page_ends = (*page_starts[1:], page_index_offset)
     decoded: list[tuple[PackedSymbol, ...]] = []
-    for page_index, (start, end) in enumerate(
-        zip(page_starts, page_ends, strict=True)
-    ):
+    for page_index, start in enumerate(page_starts):
         remaining = record_count - page_index * ui.FIXED_RECORDS_PER_PAGE
         count = min(ui.FIXED_RECORDS_PER_PAGE, remaining)
-        if count <= 0 or not 0 <= start <= end <= len(data):
+        if count <= 0 or not 0 <= start < len(data):
             raise ValueError(f"{bank_name} candidate menu page is malformed")
-        decoded.extend(
-            unpack_entropy_stream(data[start:end], record_count=count)
-        )
+        records, _, _ = split_entropy_stream(data, offset=start, limit=count)
+        decoded.extend(tuple(record) for record in records)
     if len(decoded) != record_count:
         raise ValueError(
             f"{bank_name} candidate menu decoded {len(decoded)} records, "

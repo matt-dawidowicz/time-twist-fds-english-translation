@@ -70,7 +70,9 @@ engine but through the frozen prefix grammar. There is no second Adaptive255 or
 Menu labels can now have different visible widths. The production runtime records
 each decoded label's pixel width at Work RAM `$042D+visual_index` and derives the
 draw count, dynamic second-column placement, and leading/trailing selector positions
-from that metadata. This replaces the old fixed six/eight-glyph span without placing
+from that metadata. Variable-width rendering preserves the live-tested native
+horizontal anchor: left selector x=`$20`, left text x=`$28`, and the right
+column begins at x=`$38 + left_width`. This replaces the old fixed six/eight-glyph span without placing
 code or scratch state in the live `$9390-$93AF` palette region.
 
 The reconstructed renderer clears 36 staging bytes, corresponding to **18 glyphs** at

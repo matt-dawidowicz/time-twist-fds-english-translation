@@ -39,7 +39,7 @@ remove useful gameplay meaning or produce worse English.
 
 | Bank | Label | Context | Decision |
 | --- | --- | --- | --- |
-| TT3A | Blue writing | Bench / Man / Simon / Red writing / Blue writing / Notes | Keep. The color distinguishes the torn-note clue and parallels `Red writing`. |
+| TT3A | Blue writing | Bench / Man / Simon / Red writing / Blue writing / Notes | Keep. The game uses two separate thin sheets: Simon's writing is blue, the bottle sheet is red, and overlaying their complementary text reveals the Rebecca message. |
 | TT6B | Stick out tongue | Glare / Shout / Stick out tongue / Wink | Keep. Shorter forms such as `Tongue out` are less natural as an action command. |
 | TT4 | Medicinal herb | Medicinal herb / Olive / Oil / Bell | Keep. `Herb` would blur a generic medical item with the chapter's named herbs. |
 | TT4 | Wrap with cloth | Apply oil / Wrap with cloth / Leave it | Keep. The object of the treatment action is meaningful; `Wrap` is underspecified. |

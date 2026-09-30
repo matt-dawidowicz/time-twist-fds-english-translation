@@ -4,12 +4,21 @@ from __future__ import annotations
 
 import unittest
 
-from time_twist.menu_cancel import patch_menu_cancel
+from time_twist.menu_cancel import (
+    BACK_DISPATCH_FINAL,
+    BACK_DISPATCH_OFFSET,
+    FINAL_MENU_CANCEL_SURFACES,
+    MENU_SETUP_FINAL,
+    MENU_SETUP_OFFSET,
+    SELF_PARENT_GUARD,
+    SELF_PARENT_GUARD_OFFSET,
+    patch_menu_cancel,
+)
 from time_twist.release_metadata import ReleaseBuildError
 
 
 class MenuCancelTests(unittest.TestCase):
-    """Check source drift and branch destinations without private ROM data."""
+    """Check source drift and final post-build Back/Cancel bytes."""
 
     def setUp(self) -> None:
         """Build only the three audited instruction regions."""
@@ -21,14 +30,12 @@ class MenuCancelTests(unittest.TestCase):
         self.engine[0x39DC:0x39EA] = bytes.fromhex(
             "A5 9C F0 FB 20 2E 6A F0 F6 A9 04 4C B6 7D"
         )
-        self.engine[0xA2E:0xA3A] = bytes.fromhex(
-            "A5 9C C5 C6 D0 04 A5 9B C5 C5 60 EA"
-        )
+        self.engine[0xA2E:0xA3A] = SELF_PARENT_GUARD
 
     def test_child_setup_preserves_parent_and_rejected_back_redraws(
         self,
     ) -> None:
-        """Resolve each branch to the correct live engine path."""
+        """Resolve each finalizer branch to the intended live engine path."""
         result = patch_menu_cancel(bytes(self.engine))
         for operand, target in (
             (0xBAA, 0xBBB),
@@ -39,7 +46,28 @@ class MenuCancelTests(unittest.TestCase):
                 result[operand : operand + 1], signed=True
             )
             self.assertEqual(operand + 1 + displacement, target)
-        self.assertEqual(result[0xA2E:0xA3A], self.engine[0xA2E:0xA3A])
+        self.assertEqual(
+            result[
+                MENU_SETUP_OFFSET : MENU_SETUP_OFFSET + len(MENU_SETUP_FINAL)
+            ],
+            MENU_SETUP_FINAL,
+        )
+        self.assertEqual(
+            result[
+                BACK_DISPATCH_OFFSET : BACK_DISPATCH_OFFSET
+                + len(BACK_DISPATCH_FINAL)
+            ],
+            BACK_DISPATCH_FINAL,
+        )
+        self.assertEqual(
+            result[
+                SELF_PARENT_GUARD_OFFSET : SELF_PARENT_GUARD_OFFSET
+                + len(SELF_PARENT_GUARD)
+            ],
+            SELF_PARENT_GUARD,
+        )
+        for offset, expected, _label in FINAL_MENU_CANCEL_SURFACES:
+            self.assertEqual(result[offset : offset + len(expected)], expected)
         self.assertEqual(
             sum(a != b for a, b in zip(self.engine, result, strict=True)), 3
         )
@@ -56,7 +84,7 @@ class MenuCancelTests(unittest.TestCase):
                     patch_menu_cancel(bytes(changed))
 
     def test_reapplication_is_rejected(self) -> None:
-        """Require exactly the expected pre-patch engine."""
+        """Require exactly the expected pre-finalizer engine."""
         with self.assertRaises(ReleaseBuildError):
             patch_menu_cancel(patch_menu_cancel(bytes(self.engine)))
 

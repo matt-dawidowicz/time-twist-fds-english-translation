@@ -1,6 +1,6 @@
 {
   "schema": "Time Twist release source lock v5",
-  "authority": "The private v25 safe-encoding seed image, frozen v38 compiler bundle and 13 active translation maps are the non-code-lock inputs. Compiler payloads are independently hash-checked before execution. The recovered v38 bundle remains an immutable historical checkpoint; the canonical behavioral target is final v50, and maintained source/build steps must reproduce it.",
+  "authority": "The private v25 safe-encoding seed image, frozen v38 compiler bundle, validated v38-to-v41 and v41-to-v50 checkpoint deltas, and 13 active translation maps are the locked release inputs. The frozen compiler reproduces exact v38; guarded checkpoint promotion follows the validated binary lineage to exact final v50.",
   "subtitle": "On the Outskirts of History...",
   "files": {
     "work/baseline/time_twist_v25_safe_encoding.fds": {
@@ -115,33 +115,33 @@
     },
     "work/translations/T22.json": {
       "normalization": "lf",
-      "sha256": "D0BA8659191F19C5586D346E72061E4F5431B08745DF07DB009889334CC5205A",
+      "sha256": "EA9337C697E99B788D241D1C8D442020DE2053A625E1A3E7B076D4214789F766",
       "bytes": 5331
     },
     "work/translations/TT3A.json": {
       "normalization": "lf",
-      "sha256": "EAEE384FA7586C84EFC2B870CFD8CE74EAACC7797ABDF2D22B3B937D209F1D67",
-      "bytes": 11821
+      "sha256": "A6E48B7D70A3193492860921F0678032FFC39EC51FB5582CBD62533C8AB04DF4",
+      "bytes": 11771
     },
     "work/translations/TT3B.json": {
       "normalization": "lf",
-      "sha256": "1C4FAA52C224F08FFD277E5CBBCB30ADEACE38DBCEF426EFF3255856B273E8C4",
-      "bytes": 5594
+      "sha256": "9C62A0C53C4B9217D392AF54FBDBFDAECA424C557A6A503B8185A90CB41D4511",
+      "bytes": 6065
     },
     "work/translations/TT4.json": {
       "normalization": "lf",
-      "sha256": "588098A656F4A45DD3095BE53F708F1F7EE79DE3D4DFA2B5FDB2C7853100F0DC",
-      "bytes": 14143
+      "sha256": "DDC273558FB25141EF37584BA2DE24D5CC7278DB0540D3A43FB1130C94A60878",
+      "bytes": 14257
     },
     "work/translations/TT5.json": {
       "normalization": "lf",
-      "sha256": "5991FE77F5306762C12D6F7613669BE4F9BFAD37E97D9903FF0D805D5578E981",
+      "sha256": "402C6069EB547039DC7E5FFA4B04BEAF46B21E56D1144F6782A296CCCB84C7C1",
       "bytes": 10991
     },
     "work/translations/T25.json": {
       "normalization": "lf",
-      "sha256": "EBCDB617FD0A7008613819E5B35D9734DFD87F5E7490B1C54366C35E4B535217",
-      "bytes": 6994
+      "sha256": "5341DF9517258E20CD077864681C853DA5F7768BDB5B4ACE54BB018AC9067636",
+      "bytes": 6989
     },
     "work/translations/TT6A.json": {
       "normalization": "lf",
@@ -162,6 +162,31 @@
       "normalization": "lf",
       "sha256": "33BE7847F50896FED7D751D19EBB233D07E408C52AD45FC8D3BC74D7DC3638C4",
       "bytes": 876
+    },
+    "recovery/v41/README.md": {
+      "normalization": "raw",
+      "sha256": "F4962CEABEF655D8D791B3E77E063763C04004F55232F3FA2BB0D57E38EA0383",
+      "bytes": 1141
+    },
+    "recovery/v41/patches/v38-to-v41.ttd.zlib.b64.part00": {
+      "normalization": "raw",
+      "sha256": "56401CF47A00605D5789713F396E138566FED3DCE049CC9C52E229F9B1F7843C",
+      "bytes": 16001
+    },
+    "recovery/v41/patches/v38-to-v41.ttd.zlib.b64.part01": {
+      "normalization": "raw",
+      "sha256": "6A6B2DC85B11E5C5FD6F8CEABEE50AB3BA30D4B51377AC3ACD810CA89752AAD6",
+      "bytes": 16001
+    },
+    "recovery/v41/patches/v38-to-v41.ttd.zlib.b64.part02": {
+      "normalization": "raw",
+      "sha256": "76C244C70EAF343F014BA55CB7B586727EBD120FB0AA135F5DDC1CE6D4A35963",
+      "bytes": 11645
+    },
+    "recovery/v41/patches/v41-to-v50.ttd.zlib.b64.part00": {
+      "normalization": "raw",
+      "sha256": "546BC50ED7A94F84D34E40BBBB9E761EA0088EE3A4050842A0E3C9362699A84F",
+      "bytes": 2477
     }
   }
 }

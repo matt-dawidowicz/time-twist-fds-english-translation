@@ -13,7 +13,7 @@ are evidence, not release input.
 | Set up or build | [Quickstart](../QUICKSTART.md) | [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md) |
 | Edit scenario English | [Translation contributor guide](../CONTRIBUTING_TRANSLATION.md) | [Translation workflow](TRANSLATION_WORKFLOW.md), [English pagination policy](ENGLISH_PAGINATION_POLICY.md) |
 | Change Python/tooling | [Code contributor guide](../CONTRIBUTING_CODE.md) | [Code tour](CODE_TOUR.md), [Module map](MODULE_MAP.md) |
-| Investigate runtime behavior | [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) | [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md) |
+| Investigate runtime behavior | [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) | [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md), [engine change history](ENGINE_CHANGELOG.md) |
 | Diagnose dialogue layout | [Text layout engine reference](TEXT_LAYOUT_ENGINE_REFERENCE.md) | [Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md) |
 | Diagnose gameplay script logic | [Gameplay script engine](GAMEPLAY_SCRIPT_ENGINE.md) | [Retail VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md) |
 | Diagnose graphics/scene composition | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | [ROM modification inventory](ROM_MODIFICATION_INVENTORY.md) |
@@ -42,38 +42,39 @@ as current release instructions.
 1. [Translation workflow](TRANSLATION_WORKFLOW.md)
 2. [Production localization standard](PRODUCTION_LOCALIZATION_STANDARD.md)
 3. [English pagination policy](ENGLISH_PAGINATION_POLICY.md)
-4. [Text layout engine reference](TEXT_LAYOUT_ENGINE_REFERENCE.md)
-5. [Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md)
-6. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
-7. [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md)
-8. [Cross-bank terminology decisions](../work/audits/final_cross_bank_consistency.md)
-9. [ROM modification inventory](ROM_MODIFICATION_INVENTORY.md) — text, UI, graphics, functions, credits, and late candidate lineage
+5. [Text layout engine reference](TEXT_LAYOUT_ENGINE_REFERENCE.md)
+6. [Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md)
+7. [Scenario-bank format](FORMATS.md#scenario-bank-layout)
+8. [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md)
+9. [Cross-bank terminology decisions](../work/audits/final_cross_bank_consistency.md)
+10. [ROM modification inventory](ROM_MODIFICATION_INVENTORY.md) — text, UI, graphics, functions, credits, and late candidate lineage
 
 ## Runtime and reverse engineering
 
 1. [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md) — current solved/unsolved ledger
-2. [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) — evidence model and investigation workflow
-3. [Architecture](ARCHITECTURE.md) — runtime/build architecture
-4. [Gameplay script and event VM](GAMEPLAY_SCRIPT_ENGINE.md)
-5. [Retail gameplay VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md)
-6. [Gameplay VM reachability-island audit](GAMEPLAY_VM_REACHABILITY_AUDIT.md)
-7. [Gameplay graphics and scene engine](GAMEPLAY_GRAPHICS_ENGINE.md)
-8. [Gameplay palette-animation engine](PALETTE_ANIMATION_ENGINE.md)
-9. [Audio command map](AUDIO_COMMAND_MAP.md)
-10. [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md)
-11. [Part 1 to Part 2 handoff](PART1_PART2_HANDOFF.md)
-12. [TT1A Fortune Teller logic](TT1A_FORTUNE_TELLER_LOGIC.md)
+2. [Engine change and bug-fix history](ENGINE_CHANGELOG.md) — durable record of major runtime fixes and retired assumptions
+3. [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) — evidence model and investigation workflow
+5. [Architecture](ARCHITECTURE.md) — runtime/build architecture
+5. [Gameplay script and event VM](GAMEPLAY_SCRIPT_ENGINE.md)
+6. [Retail gameplay VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md)
+7. [Gameplay VM reachability-island audit](GAMEPLAY_VM_REACHABILITY_AUDIT.md)
+8. [Gameplay graphics and scene engine](GAMEPLAY_GRAPHICS_ENGINE.md)
+9. [Gameplay palette-animation engine](PALETTE_ANIMATION_ENGINE.md)
+10. [Audio command map](AUDIO_COMMAND_MAP.md)
+11. [FDS scene-transition map](FDS_SCENE_TRANSITIONS.md)
+12. [Part 1 to Part 2 handoff](PART1_PART2_HANDOFF.md)
+13. [TT1A Fortune Teller logic](TT1A_FORTUNE_TELLER_LOGIC.md)
 
 ## Build, code, and maintenance
 
 1. [Code tour](CODE_TOUR.md)
 2. [Module map](MODULE_MAP.md)
 3. [Formats](FORMATS.md)
-4. [Development guide](DEVELOPMENT.md)
-5. [CLI reference](CLI_REFERENCE.md)
-6. [V38 canonical build](V38_CANONICAL_BUILD.md)
-7. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
-8. [Private fixtures](PRIVATE_FIXTURES.md)
+5. [Development guide](DEVELOPMENT.md)
+6. [CLI reference](CLI_REFERENCE.md)
+7. [V38 canonical build](V38_CANONICAL_BUILD.md)
+8. [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md)
+9. [Private fixtures](PRIVATE_FIXTURES.md)
 
 ## Historical material
 

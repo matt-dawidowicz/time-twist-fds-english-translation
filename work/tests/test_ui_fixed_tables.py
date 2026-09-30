@@ -24,7 +24,7 @@ PLAYTESTED_FIXED_TABLES = {
     ),
     "TT3A": (
         95,
-        "48D294F24EA866B6335E7C94E629A46E363A6D05021B4F65C861C01A0D380D3D",
+        "D29BAF80584B2F4988E4799AE371CB50A445E505ACA65A7FED6679BB7365B460",
     ),
     "TT3B": (
         21,
@@ -32,7 +32,7 @@ PLAYTESTED_FIXED_TABLES = {
     ),
     "TT4": (
         97,
-        "0E0D53BADFC47768697F5470474762B267D27C1F81B1023559198BC434E61E2C",
+        "4C5B0AA61FB8239961887978D522713CD048F0A8F48525A237BA338CB45B1C4E",
     ),
     "TT5": (
         113,
@@ -244,6 +244,7 @@ class FixedMenuCopyTests(unittest.TestCase):
         self.assertEqual(ui.TT1B_FIXED_TEXT_RECORDS[51], "Time Belt")
         self.assertEqual(ui.TT2_FIXED_TEXT_RECORDS[47], "Offer")
         self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[56], "Plantain herb")
+        self.assertEqual(ui.TT4_FIXED_TEXT_RECORDS[89], "Ice Non")
 
     def test_disk_copy_is_title_case_and_exactly_size_neutral(self) -> None:
         """Preserve every NOV2 prompt slot while avoiding all-caps copy."""

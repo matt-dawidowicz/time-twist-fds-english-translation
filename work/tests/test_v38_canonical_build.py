@@ -9,10 +9,20 @@ from pathlib import Path
 
 from time_twist.release_metadata import ReleaseBuildError
 from time_twist.v38_build import (
+    TT3B_MENU_POINTER_BAD,
+    TT3B_MENU_POINTER_GOOD,
+    TT3B_MENU_POINTER_OFFSET,
     build_release_images,
+    patch_tt3b_menu_pointer,
     restore_checkpoint,
     validate_checkpoint_record_ids,
     validate_checkpoint_records,
+)
+from time_twist.v50_finalizer import (
+    FINAL_SCENARIO_RECORDS,
+    FINAL_V50_SHA256,
+    PREFINAL_SCENARIO_RECORDS,
+    compiler_prefinal_records,
 )
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -74,6 +84,46 @@ class V38CanonicalBuildTests(unittest.TestCase):
             validate_checkpoint_record_ids(extra, self.approved)
         with self.assertRaises(ReleaseBuildError):
             validate_checkpoint_records(control, self.approved)
+
+    def test_canonical_maps_use_final_v50_wording(self) -> None:
+        """Keep public source readable as final v50, not a pre-final compiler view."""
+        for record_id, expected in FINAL_SCENARIO_RECORDS.items():
+            with self.subTest(record=record_id):
+                self.assertEqual(self.actual[record_id], expected)
+        self.assertEqual(
+            FINAL_V50_SHA256,
+            "820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43",
+        )
+
+    def test_frozen_compiler_view_is_narrow_and_explicit(self) -> None:
+        """Only exact-footprint late records may revert before v50 finalization."""
+        prefinal = compiler_prefinal_records(self.actual)
+        changed = {
+            record_id
+            for record_id in self.actual
+            if prefinal[record_id] != self.actual[record_id]
+        }
+        self.assertEqual(changed, set(PREFINAL_SCENARIO_RECORDS))
+        for record_id, expected in PREFINAL_SCENARIO_RECORDS.items():
+            with self.subTest(record=record_id):
+                self.assertEqual(prefinal[record_id], expected)
+
+    def test_tt3b_menu_pointer_repair_is_guarded_and_idempotent(self) -> None:
+        """Keep TT3B record zero on the fixed-menu stream, not late dialogue."""
+        data = bytearray(b"\x00" * 0x100)
+        offset = TT3B_MENU_POINTER_OFFSET
+        data[offset : offset + 2] = TT3B_MENU_POINTER_BAD.to_bytes(2, "little")
+
+        repaired = patch_tt3b_menu_pointer(bytes(data))
+        self.assertEqual(
+            int.from_bytes(repaired[offset : offset + 2], "little"),
+            TT3B_MENU_POINTER_GOOD,
+        )
+        self.assertEqual(patch_tt3b_menu_pointer(repaired), repaired)
+
+        data[offset : offset + 2] = (0xA222).to_bytes(2, "little")
+        with self.assertRaisesRegex(ReleaseBuildError, "unexpected TT3B"):
+            patch_tt3b_menu_pointer(bytes(data))
 
     def test_invalid_baseline_fails_before_compiler_execution(self) -> None:
         """Reject a Japanese ROM or arbitrary input instead of falling back."""

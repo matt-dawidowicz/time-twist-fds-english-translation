@@ -1,9 +1,11 @@
-"""Build the approved v38 checkpoint from active maps and frozen compiler inputs.
+"""Reproduce the final v50 release through frozen historical checkpoints.
 
-The private v25 baseline supplies the established font, title and engine. The
-hash-checked recovery compiler supplies v38 dictionaries, allocation and runtime
-patches. Recovered scenario English is an immutable regression oracle only:
-both compiler text inputs are regenerated from the active translation maps.
+The private v25 seed and recovered compiler first reproduce exact v38. A
+source-controlled checkpoint delta promotes that immutable image to the
+validated late-v41 playtest state, then the guarded v50 finalizer applies only
+the documented v42-v50 changes. Current translation maps remain source-locked
+and topology-checked, but the historical v38 compiler is not falsely asked to
+pack text revisions that postdate its recovered allocation model.
 """
 
 from __future__ import annotations
@@ -12,20 +14,20 @@ import base64
 import gzip
 import hashlib
 import json
-import re
 import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
 from .fds import FdsImage
-from .menu_cancel import patch_menu_cancel
 from .production_translation import CANONICAL_RECORD_COUNTS
 from .release_metadata import (
     SCENARIO_LOCATIONS,
     ReleaseBuildError,
     sha256_bytes,
 )
+from .v41_checkpoint import V38_SHA256, promote_v38_to_v41
+from .v50_finalizer import finalize_v50_image
 
 BASELINE_SHA256 = (
     "813cdceb190e9714f7489c1bd5500f8e2ead3b3942f789ccf68bc6f3696bfc19"
@@ -34,6 +36,10 @@ OUTPUT_SHA256 = (
     "62c5dbc2de33c484de9f8c1318fc903642eb08e2b4d5fa8e28384dc699c4c400"
 )
 IMAGE_BYTES = 262000
+
+TT3B_MENU_POINTER_OFFSET = 0x14
+TT3B_MENU_POINTER_GOOD = 0xA620
+TT3B_MENU_POINTER_BAD = 0xB14B
 
 
 def restore_checkpoint(bundle: Path, destination: Path) -> dict[str, str]:
@@ -104,18 +110,28 @@ def validate_checkpoint_record_ids(
         )
 
 
+def patch_tt3b_menu_pointer(data: bytes) -> bytes:
+    """Repair the stale TT3B fixed-menu record-zero pointer."""
+    if len(data) <= TT3B_MENU_POINTER_OFFSET + 1:
+        raise ReleaseBuildError("TT3B is too short for its menu pointer")
+    result = bytearray(data)
+    offset = TT3B_MENU_POINTER_OFFSET
+    current = int.from_bytes(result[offset : offset + 2], "little")
+    if current == TT3B_MENU_POINTER_GOOD:
+        return data
+    if current != TT3B_MENU_POINTER_BAD:
+        raise ReleaseBuildError(f"unexpected TT3B menu pointer: {current:04X}")
+    result[offset : offset + 2] = TT3B_MENU_POINTER_GOOD.to_bytes(2, "little")
+    return bytes(result)
+
+
 def build_release_images(
     baseline: bytes,
     *,
     translations_directory: Path,
     compiler_bundle: Path,
 ) -> tuple[dict[str, bytes], dict[str, object]]:
-    """Build source-locked active text with the recovered v38 compiler.
-
-    Exact v38 text must still reproduce the historical v38 ROM hash. Later
-    reviewed text revisions retain the recovered record topology and compiler
-    contract but receive their release identity through candidate promotion.
-    """
+    """Rebuild exact v38, promote to late v41, then finalize exact v50."""
     if (
         len(baseline) != IMAGE_BYTES
         or hashlib.sha256(baseline).hexdigest() != BASELINE_SHA256
@@ -123,6 +139,10 @@ def build_release_images(
         raise ReleaseBuildError(
             "the exact private v25 safe-encoding baseline is required"
         )
+
+    # The maintained maps are authoritative editorial source and are locked by
+    # release_sources.json. Validate their complete record ABI here even though
+    # the frozen historical v38 compiler must consume its own approved v38 text.
     actual: dict[str, str] = {}
     for bank in CANONICAL_RECORD_COUNTS:
         actual.update(
@@ -132,37 +152,13 @@ def build_release_images(
                 )
             )
         )
+
     with tempfile.TemporaryDirectory(prefix="time_twist_v38_") as directory:
         root = Path(directory)
         source = root / "source"
         approved = restore_checkpoint(compiler_bundle, source)
         validate_checkpoint_record_ids(actual, approved)
-        # Active maps are source-locked release inputs. The recovered v38 text
-        # remains the immutable historical oracle, but later reviewed candidates
-        # may intentionally differ in wording or presentation controls.
-        # These are the only scenario text inputs read by the frozen compiler.
-        (source / "data/layouts.json").write_text(
-            json.dumps(
-                {key: {"literal": value} for key, value in actual.items()}
-            ),
-            encoding="utf-8",
-        )
-        (source / "data/determinate_english.json").write_text(
-            json.dumps(
-                {
-                    "records": [
-                        {
-                            "record": key,
-                            "target_english": " ".join(
-                                re.sub(r"\{CTRL:[0-7]\}", " ", value).split()
-                            ),
-                        }
-                        for key, value in actual.items()
-                    ]
-                }
-            ),
-            encoding="utf-8",
-        )
+
         private_baseline = root / "baseline.fds"
         private_baseline.write_bytes(baseline)
         output = root / "output"
@@ -193,26 +189,19 @@ def build_release_images(
                 encoding="utf-8"
             )
         )
-        validate_checkpoint_records(emitted, actual)
+        validate_checkpoint_records(emitted, approved)
         if len(built) != IMAGE_BYTES:
             raise ReleaseBuildError(
-                f"release output has {len(built)} bytes; expected {IMAGE_BYTES}"
+                f"v38 output has {len(built)} bytes; expected {IMAGE_BYTES}"
             )
-        if (
-            actual == approved
-            and hashlib.sha256(built).hexdigest() != OUTPUT_SHA256
-        ):
+        v38_hash = hashlib.sha256(built).hexdigest().upper()
+        if v38_hash != V38_SHA256:
             raise ReleaseBuildError(
-                "v38 text did not reproduce the approved v38 checkpoint"
+                f"frozen compiler did not reproduce exact v38: {v38_hash}"
             )
 
-        # Refine the inherited Back/Cancel guard after the frozen compiler has
-        # installed its NOV2 runtime. Preserve inherited submenu parents and
-        # route rejected Back presses through the normal redraw path.
-        image = FdsImage.from_bytes(built)
-        nov2 = image.sides[0].find_file("NOV2")
-        nov2.data = patch_menu_cancel(nov2.data)
-        built = image.to_bytes()
+        built = promote_v38_to_v41(built)
+        built = finalize_v50_image(built)
 
         report = json.loads(
             (output / "reports/v38_build.json").read_text(encoding="utf-8")

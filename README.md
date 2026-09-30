@@ -21,6 +21,7 @@ FDS BIOS files, emulator bundles, save states, or extracted retail payloads.
 - **Improve tools or tests:** [CONTRIBUTING_CODE.md](CONTRIBUTING_CODE.md)
 - **Read the architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - **See what is reverse-engineered:** [docs/REVERSE_ENGINEERING_STATUS.md](docs/REVERSE_ENGINEERING_STATUS.md)
+- **Review major engine changes and bug fixes:** [docs/ENGINE_CHANGELOG.md](docs/ENGINE_CHANGELOG.md)
 - **See what the English ROM actually changes:** [docs/ROM_MODIFICATION_INVENTORY.md](docs/ROM_MODIFICATION_INVENTORY.md)
 - **Tour the implementation:** [docs/CODE_TOUR.md](docs/CODE_TOUR.md)
 
@@ -52,8 +53,10 @@ work/translations/<BANK>.json
 ```
 
 The 13 bank files contain the complete current wording **and** the approved
-renderer-control layout for all **1,299 scenario records**. The release builder
-validates and consumes those maps directly.
+renderer-control layout for all **1,299 scenario records**. They are the
+editorial source of truth and are source-locked as release inputs. The exact
+v1.0 binary build also validates their complete record topology, while binary
+reproduction follows the separately verified historical checkpoint lineage.
 
 `work/source_records/*.json` is the Japanese/source-structure evidence. It is
 not an alternate English source.
@@ -63,11 +66,12 @@ verified SHA-256 is
 `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`.
 Maintained source and build tooling are expected to reproduce that behavior.
 
-The pipeline still uses recovered v38 compiler material and the private v25
-safe-encoding image as implementation inputs while source parity is completed.
-Those older artifacts are historical recovery/regression evidence, **not** the
-behavioral baseline. When an old input disagrees with verified v50 behavior,
-v50 wins and the maintained source must be advanced accordingly.
+Exact release reproduction uses the private v25 safe-encoding image to rebuild
+the frozen v38 checkpoint, then applies hash-guarded v38-to-v41 and
+late-v41-to-v50 checkpoint deltas. This path reproduces final v50 byte for byte.
+The older checkpoints are historical implementation inputs and regression
+evidence, **not** competing behavioral authorities. When historical state and
+verified v50 behavior differ, v50 remains authoritative.
 
 Generated ROMs remain build products rather than editable source material.
 
@@ -92,10 +96,11 @@ Generated ROMs remain build products rather than editable source material.
 | --- | --- |
 | `work/translations/*.json` | Sole current scenario-English wording and approved control layout |
 | `work/source_records/*.json` | Decoded Japanese/source evidence and stable record IDs |
-| Final v50 ROM behavior | Canonical release baseline and source-parity target |
-| `recovery/v38/repro_bundle/` | Historical compiler/recovery material and immutable regression oracle |
-| Private v25 safe-encoding seed image | Historical build seed for unchanged retail payloads while source parity is completed |
-| `work/release_sources.json` | Approved non-code release inputs and hashes |
+| Final v50 ROM behavior | Canonical release baseline and exact reproduction target |
+| `recovery/v38/repro_bundle/` | Frozen compiler/recovery material that reproduces exact v38 |
+| `recovery/v41/` | Hash-guarded checkpoint deltas that reproduce the validated v38 -> late-v41 -> v50 lineage |
+| Private v25 safe-encoding seed image | Required historical seed for exact v38 reconstruction |
+| `work/release_sources.json` | Approved non-code release inputs and hashes, including checkpoint payloads |
 | `work/release_target.json` | Promoted output/provenance authority when present |
 | `docs/history/` and `audit/` | Historical engineering evidence only; never release input |
 
@@ -158,17 +163,15 @@ are not committed.
 
 ## Build and promote a release
 
-The normal command currently rebuilds from recovered v38 compiler material and the
-exact private v25 safe-encoding **seed image** while the maintained pipeline is
-being brought to parity with the final v50 baseline. Put that locally supplied
-seed image at:
+The reproducible release command starts from the exact private v25
+safe-encoding **seed image**. Put that locally supplied image at:
 
 ```text
 work/baseline/time_twist_v25_safe_encoding.fds
 ```
 
 Required SHA-256:
-`813cdceb190e9714f7489c1bd5500f8e2ead3b3942f789ccf68bc6f3696bfc19`.
+`813CDCEB190E9714F7489C1BD5500F8E2EAD3B3942F789CCF68BC6F3696BFC19`.
 It is a 262,000-byte four-side image, not either Japanese retail image.
 
 ```powershell
@@ -176,16 +179,27 @@ time-twist release-lock
 time-twist release-build --candidate --output-dir build/candidate
 ```
 
-The lock covers the seed image, all 1,299 active maps, and every frozen compiler
-payload. Active records must retain the recovered v38 record topology, but
-reviewed wording/layout may advance beyond v38. If the active maps are exactly
-the v38 text, the historical four-side SHA-256
-`62c5dbc2de33c484de9f8c1318fc903642eb08e2b4d5fa8e28384dc699c4c400`
-is still enforced. Later candidates receive their output identity through the
-candidate manifest and explicit promotion. The executing package is
-independently hashed, and compilation/source checks finish before publication.
+The exact binary lineage is explicit and fail-closed:
 
-After complete playtesting and review, a maintainer can promote that candidate:
+1. the recovered compiler rebuilds the immutable v38 checkpoint,
+   SHA-256 `62C5DBC2DE33C484DE9F8C1318FC903642EB08E2B4D5FA8E28384DC699C4C400`;
+2. the reviewed `TTD1` source-copy delta promotes exact v38 to the validated
+   late-v41 checkpoint,
+   SHA-256 `13D4E21D1D4393E5B24A1FAEEBE3FF99CE28E5887B2CC7B54BA1AD664EBC91D1`;
+3. a second guarded delta promotes that checkpoint to final v50,
+   SHA-256 `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`.
+
+Each bridge verifies its source, delta, and target identities. The final build
+also reproduces the two translated 131,000-byte disk halves exactly. No complete
+ROM image is stored in the checkpoint source tree.
+
+The source lock covers the v25 seed, all 1,299 canonical translation records,
+the frozen v38 compiler bundle, and the checkpoint payloads. The current maps
+must retain the complete record topology and remain the authoritative editorial
+English. The historical compiler is deliberately **not** claimed to compile
+post-v38 text/layout changes that exceed its recovered packing model.
+
+After review, a maintainer can still promote a candidate manifest:
 
 ```powershell
 time-twist release-promote build/candidate/release_manifest.json \
@@ -193,15 +207,12 @@ time-twist release-promote build/candidate/release_manifest.json \
 time-twist release-build
 ```
 
-Future wording or layout changes require review, source-lock refresh, targeted
-runtime validation, and a newly promoted candidate output. The historical v38
-checkpoint itself remains immutable; see
-[the v38 integration notes](docs/V38_CANONICAL_BUILD.md).
+Future wording, layout, graphics, or runtime changes require a new reviewed
+lineage, refreshed source locks, targeted runtime validation, and a new final
+hash. The existing v38, late-v41, and v50 checkpoints are immutable provenance.
 
-No release target is checked in yet. That promotion metadata is distinct from the
-behavioral authority: final v50 is already the project baseline. Remaining
-candidate/promotion machinery describes build provenance, not authority over game
-behavior; source work is complete only when it reproduces the final baseline.
+No release target is checked in yet. Promotion metadata remains separate from
+the already verified behavioral and binary authority of final v50.
 
 ## Documentation
 
@@ -215,6 +226,7 @@ behavior; source work is complete only when it reproduces the final baseline.
 - [docs/ENGLISH_PAGINATION_POLICY.md](docs/ENGLISH_PAGINATION_POLICY.md)
 - [docs/REVERSE_ENGINEERING_GUIDE.md](docs/REVERSE_ENGINEERING_GUIDE.md)
 - [docs/REVERSE_ENGINEERING_STATUS.md](docs/REVERSE_ENGINEERING_STATUS.md)
+- [docs/ENGINE_CHANGELOG.md](docs/ENGINE_CHANGELOG.md)
 - [docs/ROM_MODIFICATION_INVENTORY.md](docs/ROM_MODIFICATION_INVENTORY.md)
 - [docs/TEXT_LAYOUT_ENGINE_REFERENCE.md](docs/TEXT_LAYOUT_ENGINE_REFERENCE.md)
 - [docs/TT1A_FORTUNE_TELLER_LOGIC.md](docs/TT1A_FORTUNE_TELLER_LOGIC.md)
