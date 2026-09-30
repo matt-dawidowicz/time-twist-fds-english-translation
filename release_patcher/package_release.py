@@ -36,14 +36,14 @@ def main() -> None:
     parser.add_argument("--package-dir", type=Path, required=True)
     args = parser.parse_args()
     root = Path(__file__).resolve().parent
-    advanced = args.package_dir / "advanced"
-    advanced.mkdir(parents=True, exist_ok=True)
+    bps_dir = args.package_dir / "BPS-Patches"
+    bps_dir.mkdir(parents=True, exist_ok=True)
     lines = []
     for kind, (filename, expected) in PATCHES.items():
         data = load_patch(root / "patches", kind)
-        target = advanced / filename
+        target = bps_dir / filename
         target.write_bytes(data)
-        lines.append(f"{expected.upper()}  advanced/{filename}")
+        lines.append(f"{expected.upper()}  BPS-Patches/{filename}")
     (args.package_dir / "SHA256SUMS.txt").write_text(
         "\n".join(lines) + "\n", encoding="ascii"
     )
