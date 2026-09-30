@@ -25,8 +25,8 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
       - name: Verify embedded patch resources and safety behavior
@@ -36,14 +36,14 @@ jobs:
     runs-on: windows-latest
     needs: verify
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.11'
       - name: Build and smoke-test Windows executable
         shell: powershell
         run: ./release_patcher/build_windows.ps1
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: Time-Twist-English-v1.0-Release
           path: |
