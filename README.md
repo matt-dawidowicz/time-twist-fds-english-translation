@@ -79,17 +79,18 @@ reproduction follows the separately verified historical checkpoint lineage.
 `work/source_records/*.json` is the Japanese/source-structure evidence. It is
 not an alternate English source.
 
-The completed **v50** ROM is the project's behavioral release baseline. Its
-verified SHA-256 is
+The completed **v50** ROM remains the project's end-to-end playtest baseline,
+SHA-256
 `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`.
-Maintained source and build tooling are expected to reproduce that behavior.
+The corrected public release applies one reviewed TT1A fortune-menu control-byte
+fix on top of that baseline and has SHA-256
+`BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B`.
 
 Exact release reproduction uses the private v25 safe-encoding image to rebuild
-the frozen v38 checkpoint, then applies hash-guarded v38-to-v41 and
-late-v41-to-v50 checkpoint deltas. This path reproduces final v50 byte for byte.
-The older checkpoints are historical implementation inputs and regression
-evidence, **not** competing behavioral authorities. When historical state and
-verified v50 behavior differ, v50 remains authoritative.
+the frozen v38 checkpoint, applies the hash-guarded v38-to-v41 and
+late-v41-to-v50 checkpoint deltas, then applies the guarded TT1A correction.
+The older checkpoints remain historical implementation inputs and regression
+evidence, **not** competing release authorities.
 
 Generated ROMs remain build products rather than editable source material.
 
@@ -114,7 +115,8 @@ Generated ROMs remain build products rather than editable source material.
 | --- | --- |
 | `work/translations/*.json` | Sole current scenario-English wording and approved control layout |
 | `work/source_records/*.json` | Decoded Japanese/source evidence and stable record IDs |
-| Final v50 ROM behavior | Canonical release baseline and exact reproduction target |
+| Final v50 ROM behavior | End-to-end playtest baseline |
+| Corrected final release | v50 plus the guarded TT1A fortune-menu handoff fix |
 | `recovery/v38/repro_bundle/` | Frozen compiler/recovery material that reproduces exact v38 |
 | `recovery/v41/` | Hash-guarded checkpoint deltas that reproduce the validated v38 -> late-v41 -> v50 lineage |
 | Private v25 safe-encoding seed image | Required historical seed for exact v38 reconstruction |
@@ -206,6 +208,8 @@ The exact binary lineage is explicit and fail-closed:
    SHA-256 `13D4E21D1D4393E5B24A1FAEEBE3FF99CE28E5887B2CC7B54BA1AD664EBC91D1`;
 3. a second guarded delta promotes that checkpoint to final v50,
    SHA-256 `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`.
+4. a guarded one-byte TT1A control correction produces the public release,
+   SHA-256 `BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B`.
 
 Each bridge verifies its source, delta, and target identities. The final build
 also reproduces the two translated 131,000-byte disk halves exactly. No complete
