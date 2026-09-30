@@ -6,6 +6,7 @@ on:
       - release/v1.0-public-patcher
     paths:
       - 'release_patcher/**'
+      - 'LICENSE'
       - '.github/workflows/build-public-patcher.yml'
   workflow_dispatch:
 
