@@ -19,6 +19,31 @@ SELF_PARENT_GUARD_OFFSET = 0x0A2E
 SELF_PARENT_GUARD = bytes.fromhex("A5 9C C5 C6 D0 04 A5 9B C5 C5 60 EA")
 PATCHES = ((0x0BAA, 0xC5, 0x10), (0x39DF, 0xFB, 0xAC), (0x39E4, 0xF6, 0xA7))
 
+# These are the bytes an incremental/playtest baseline must contain after the
+# frozen compiler and this finalizer have both run.  Keep this separate from
+# entropy_runtime.py's intermediate patch image: the finalizer deliberately
+# overrides the no-parent branch operand at $6BAA.
+MENU_SETUP_FINAL = bytes.fromhex(
+    "A0 00 B1 C5 29 08 F0 10 A5 C5 85 9B A5 C6 85 9C "
+    "A5 9D 85 9F A5 9E 85 A0"
+)
+BACK_DISPATCH_FINAL = bytes.fromhex(
+    "A5 9C F0 AC 20 2E 6A F0 A7 A9 04 4C B6 7D"
+)
+FINAL_MENU_CANCEL_SURFACES = (
+    (MENU_SETUP_OFFSET, MENU_SETUP_FINAL, "final menu-parent setup"),
+    (
+        BACK_DISPATCH_OFFSET,
+        BACK_DISPATCH_FINAL,
+        "final Back/Cancel dispatcher",
+    ),
+    (
+        SELF_PARENT_GUARD_OFFSET,
+        SELF_PARENT_GUARD,
+        "saved/current-PC Back guard",
+    ),
+)
+
 
 def patch_menu_cancel(nov2: bytes) -> bytes:
     """Verify the inherited engine revision and change three branch operands.

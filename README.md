@@ -21,6 +21,7 @@ FDS BIOS files, emulator bundles, save states, or extracted retail payloads.
 - **Improve tools or tests:** [CONTRIBUTING_CODE.md](CONTRIBUTING_CODE.md)
 - **Read the architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - **See what is reverse-engineered:** [docs/REVERSE_ENGINEERING_STATUS.md](docs/REVERSE_ENGINEERING_STATUS.md)
+- **Review major engine changes and bug fixes:** [docs/ENGINE_CHANGELOG.md](docs/ENGINE_CHANGELOG.md)
 - **See what the English ROM actually changes:** [docs/ROM_MODIFICATION_INVENTORY.md](docs/ROM_MODIFICATION_INVENTORY.md)
 - **Tour the implementation:** [docs/CODE_TOUR.md](docs/CODE_TOUR.md)
 
@@ -215,6 +216,7 @@ behavior; source work is complete only when it reproduces the final baseline.
 - [docs/ENGLISH_PAGINATION_POLICY.md](docs/ENGLISH_PAGINATION_POLICY.md)
 - [docs/REVERSE_ENGINEERING_GUIDE.md](docs/REVERSE_ENGINEERING_GUIDE.md)
 - [docs/REVERSE_ENGINEERING_STATUS.md](docs/REVERSE_ENGINEERING_STATUS.md)
+- [docs/ENGINE_CHANGELOG.md](docs/ENGINE_CHANGELOG.md)
 - [docs/ROM_MODIFICATION_INVENTORY.md](docs/ROM_MODIFICATION_INVENTORY.md)
 - [docs/TEXT_LAYOUT_ENGINE_REFERENCE.md](docs/TEXT_LAYOUT_ENGINE_REFERENCE.md)
 - [docs/TT1A_FORTUNE_TELLER_LOGIC.md](docs/TT1A_FORTUNE_TELLER_LOGIC.md)

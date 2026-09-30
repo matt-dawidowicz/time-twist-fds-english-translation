@@ -21,6 +21,7 @@ from pathlib import Path
 from .fds import FdsImage
 from .menu_cancel import patch_menu_cancel
 from .production_translation import CANONICAL_RECORD_COUNTS
+from .tt4_quiz import patch_tt4_athena_quiz
 from .release_metadata import (
     SCENARIO_LOCATIONS,
     ReleaseBuildError,
@@ -34,6 +35,10 @@ OUTPUT_SHA256 = (
     "62c5dbc2de33c484de9f8c1318fc903642eb08e2b4d5fa8e28384dc699c4c400"
 )
 IMAGE_BYTES = 262000
+
+TT3B_MENU_POINTER_OFFSET = 0x14
+TT3B_MENU_POINTER_GOOD = 0xA620
+TT3B_MENU_POINTER_BAD = 0xB14B
 
 
 def restore_checkpoint(bundle: Path, destination: Path) -> dict[str, str]:
@@ -104,6 +109,23 @@ def validate_checkpoint_record_ids(
         )
 
 
+def patch_tt3b_menu_pointer(data: bytes) -> bytes:
+    """Repair the stale TT3B fixed-menu record-zero pointer."""
+    if len(data) <= TT3B_MENU_POINTER_OFFSET + 1:
+        raise ReleaseBuildError("TT3B is too short for its menu pointer")
+    result = bytearray(data)
+    offset = TT3B_MENU_POINTER_OFFSET
+    current = int.from_bytes(result[offset : offset + 2], "little")
+    if current == TT3B_MENU_POINTER_GOOD:
+        return data
+    if current != TT3B_MENU_POINTER_BAD:
+        raise ReleaseBuildError(
+            f"unexpected TT3B menu pointer: {current:04X}"
+        )
+    result[offset : offset + 2] = TT3B_MENU_POINTER_GOOD.to_bytes(2, "little")
+    return bytes(result)
+
+
 def build_release_images(
     baseline: bytes,
     *,
@@ -137,6 +159,19 @@ def build_release_images(
         source = root / "source"
         approved = restore_checkpoint(compiler_bundle, source)
         validate_checkpoint_record_ids(actual, approved)
+
+        # Source-verified fixed-menu corrections made after the recovered v38
+        # compiler checkpoint must be fed into that compiler explicitly.
+        # The override indices are zero-based fixed-record indices.
+        menu_overrides_path = source / "data/menu_overrides_v32.json"
+        menu_overrides = json.loads(
+            menu_overrides_path.read_text(encoding="utf-8")
+        )
+        menu_overrides.setdefault("TT4", {})["89"] = "Ice Non"
+        menu_overrides_path.write_text(
+            json.dumps(menu_overrides, indent=2) + "\n",
+            encoding="utf-8",
+        )
         # Active maps are source-locked release inputs. The recovered v38 text
         # remains the immutable historical oracle, but later reviewed candidates
         # may intentionally differ in wording or presentation controls.
@@ -210,6 +245,12 @@ def build_release_images(
         # installed its NOV2 runtime. Preserve inherited submenu parents and
         # route rejected Back presses through the normal redraw path.
         image = FdsImage.from_bytes(built)
+        tt3b = image.sides[0].find_file("TT3B")
+        tt3b.data = patch_tt3b_menu_pointer(tt3b.data)
+        # TT4 is on Kouhen side B, which is side index 3 in the combined
+        # four-side image.
+        tt4 = image.sides[3].find_file("TT4")
+        tt4.data = patch_tt4_athena_quiz(tt4.data)
         nov2 = image.sides[0].find_file("NOV2")
         nov2.data = patch_menu_cancel(nov2.data)
         built = image.to_bytes()

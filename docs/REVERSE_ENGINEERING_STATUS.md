@@ -4,6 +4,8 @@ This page is the maintainer index for what has actually been recovered. It
 prevents a solved subsystem from being treated as unknown and, equally
 importantly, prevents an inference from being promoted into architecture.
 
+For the chronological engineering record, see [Engine changes and bug-fix history](ENGINE_CHANGELOG.md).
+
 Status vocabulary follows [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md):
 **VERIFIED**, **OBSERVED**, **DERIVED**, **INFERRED**, and **UNKNOWN**.
 
