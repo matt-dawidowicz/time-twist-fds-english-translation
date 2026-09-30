@@ -1,0 +1,22 @@
+name: temporary-v50-source-export
+
+on:
+  push:
+    branches:
+      - source-parity/v50-clean
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: source-parity/v50-clean
+      - name: Remove Git metadata
+        run: rm -rf .git
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v50-clean-source
+          path: .
+          include-hidden-files: true
+          retention-days: 1
