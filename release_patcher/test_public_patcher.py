@@ -28,6 +28,20 @@ def main() -> None:
         else:
             raise AssertionError("source/output collision was not rejected")
 
+        first_output = root / "first-output.fds"
+        second_output = root / "second-output.fds"
+        first_output.write_bytes(b"alias-test")
+        try:
+            second_output.hardlink_to(first_output)
+        except OSError:
+            second_output.symlink_to(first_output)
+        try:
+            patcher._assert_destinations_safe((), (first_output, second_output))
+        except patcher.PatcherError:
+            pass
+        else:
+            raise AssertionError("output/output alias collision was not rejected")
+
     print("Public patch resources and output-safety checks verified.")
 
 if __name__ == "__main__":
