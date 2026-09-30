@@ -215,6 +215,7 @@ def _candidate_record_zero(path: Path, bank: str) -> int:
 
 
 def _word_or_none(state: MesenState, address: int) -> str:
+    """Format a CPU word when mapped, otherwise return an unavailable marker."""
     try:
         return f"${state.cpu_word(address):04X}"
     except MesenStateError:
