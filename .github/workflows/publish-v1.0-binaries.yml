@@ -28,6 +28,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force release | Out-Null
           Copy-Item dist/Time-Twist-English-v1.0-Windows.zip release/Time-Twist-English-v1.0-Windows.zip -Force
+          Copy-Item dist/Time-Twist-English-v1.0/TimeTwistEnglishPatcher.exe release/TimeTwistEnglishPatcher.exe -Force
           Copy-Item dist/Time-Twist-English-v1.0-Zenpen.bps release/Time-Twist-English-v1.0-Zenpen.bps -Force
           Copy-Item dist/Time-Twist-English-v1.0-Kouhen.bps release/Time-Twist-English-v1.0-Kouhen.bps -Force
       - name: Commit distributables
@@ -35,7 +36,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add release
+          git add -f release/TimeTwistEnglishPatcher.exe release/Time-Twist-English-v1.0-Windows.zip release/Time-Twist-English-v1.0-Zenpen.bps release/Time-Twist-English-v1.0-Kouhen.bps
           if (git diff --cached --quiet) {
             Write-Host "No release binary changes."
             exit 0
