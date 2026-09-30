@@ -36,6 +36,9 @@ jobs:
         run: ./release_patcher/build_windows.ps1
       - uses: actions/upload-artifact@v4
         with:
-          name: Time-Twist-English-v1.0-Windows
-          path: dist/Time-Twist-English-v1.0-Windows.zip
+          name: Time-Twist-English-v1.0-Release
+          path: |
+            dist/Time-Twist-English-v1.0-Windows.zip
+            dist/Time-Twist-English-v1.0-Zenpen.bps
+            dist/Time-Twist-English-v1.0-Kouhen.bps
           if-no-files-found: error
