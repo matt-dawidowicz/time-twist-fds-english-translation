@@ -156,13 +156,20 @@ def _same_file_or_path(left: Path, right: Path) -> bool:
 
 
 def _assert_destinations_safe(sources: tuple[Path, ...], destinations: tuple[Path, ...]) -> None:
-    """Refuse any output path that aliases one of the selected source images."""
+    """Refuse source/output or output/output path aliases before any write."""
     for destination in destinations:
         for source in sources:
             if _same_file_or_path(destination, source):
                 raise PatcherError(
                     f"Refusing to overwrite source image {source}. "
                     f"Choose a different output folder."
+                )
+    for index, destination in enumerate(destinations):
+        for other in destinations[index + 1:]:
+            if _same_file_or_path(destination, other):
+                raise PatcherError(
+                    f"Output paths {destination} and {other} refer to the same file. "
+                    f"Remove the alias or choose a different output folder."
                 )
 
 
