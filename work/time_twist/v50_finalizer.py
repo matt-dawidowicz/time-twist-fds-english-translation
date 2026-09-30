@@ -18,6 +18,12 @@ from .release_metadata import ReleaseBuildError
 FINAL_V50_SHA256 = (
     "820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43"
 )
+FINAL_RELEASE_SHA256 = (
+    "BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B"
+)
+FINAL_RELEASE_TT1A_CONTROL_OFFSET = 0x141CA
+FINAL_RELEASE_TT1A_CONTROL_OLD = 0x80
+FINAL_RELEASE_TT1A_CONTROL_NEW = 0x8C
 IMAGE_BYTES = 262000
 
 # Canonical source text is the final v50 wording. The historical late-v41
@@ -102,3 +108,24 @@ def finalize_v50_image(raw: bytes) -> bytes:
             f"final v50 image hash mismatch: {digest} != {FINAL_V50_SHA256}"
         )
     return result
+
+
+def finalize_release_image(raw: bytes) -> bytes:
+    """Promote late-v41 through v50 and apply the reviewed TT1A menu fix."""
+    v50 = finalize_v50_image(raw)
+    result = bytearray(v50)
+    offset = FINAL_RELEASE_TT1A_CONTROL_OFFSET
+    if result[offset] != FINAL_RELEASE_TT1A_CONTROL_OLD:
+        raise ReleaseBuildError(
+            "final release TT1A control source byte mismatch: "
+            f"{result[offset]:02X} != {FINAL_RELEASE_TT1A_CONTROL_OLD:02X}"
+        )
+    result[offset] = FINAL_RELEASE_TT1A_CONTROL_NEW
+    final = bytes(result)
+    digest = _sha256(final)
+    if digest != FINAL_RELEASE_SHA256:
+        raise ReleaseBuildError(
+            "corrected final release hash mismatch: "
+            f"{digest} != {FINAL_RELEASE_SHA256}"
+        )
+    return final
