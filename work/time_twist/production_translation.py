@@ -166,6 +166,16 @@ SEMANTIC_WAIT_GRAMMAR_EXCEPTIONS = {
     ),
 }
 
+# Exact source-to-production semantic-control substitutions recovered from
+# runtime behavior. Hash both sides so the exception cannot silently broaden
+# to later wording or control edits.
+SEMANTIC_CONTROL_SUBSTITUTIONS = {
+    "TT1A/g0/r3": (
+        "bb775722091085742d599b663cee28eb882572150c512d0e7d9385312fd6b59b",
+        "b43dba4583fb0839d38a54c7c977eb0abf98a159d73f9618deeb05f4b3c63d66",
+    ),
+}
+
 
 def _is_semantic_wait_grammar_exception(record_id: str, text: str) -> bool:
     """Recognize an exact reviewed dramatic wait that is not sentence-final."""
@@ -209,7 +219,14 @@ def _validate_semantic_wait_boundaries(record_id: str, text: str) -> None:
 def validate_record_production_control_sequence(
     record_id: str, source: str, production: str
 ) -> None:
-    """Compatibility wrapper for generic control-sequence validation."""
+    """Validate controls, allowing only hash-locked recovered substitutions."""
+    substitution = SEMANTIC_CONTROL_SUBSTITUTIONS.get(record_id)
+    if substitution is not None:
+        source_hash = hashlib.sha256(source.encode("utf-8")).hexdigest()
+        production_hash = hashlib.sha256(production.encode("utf-8")).hexdigest()
+        if (source_hash, production_hash) == substitution:
+            return
+
     try:
         _core.validate_production_control_sequence(source, production)
     except ProductionTranslationError as error:
