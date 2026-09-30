@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
@@ -15,7 +16,19 @@ def main() -> None:
     assert len(kouhen) == 79852
     assert hashlib.sha256(zenpen).hexdigest() == patcher.ZENPEN_PATCH_SHA256
     assert hashlib.sha256(kouhen).hexdigest() == patcher.KOUHEN_PATCH_SHA256
-    print("Public patch resources decoded and verified.")
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        root = Path(temp_dir)
+        source = root / "Time Twist - English Translation v1.0 - Zenpen.fds"
+        source.write_bytes(b"test")
+        try:
+            patcher._assert_destinations_safe((source,), (source,))
+        except patcher.PatcherError:
+            pass
+        else:
+            raise AssertionError("source/output collision was not rejected")
+
+    print("Public patch resources and output-safety checks verified.")
 
 if __name__ == "__main__":
     main()
