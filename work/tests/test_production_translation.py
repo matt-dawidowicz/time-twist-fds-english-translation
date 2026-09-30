@@ -183,7 +183,9 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         self.assertEqual(len(red), len(target))
 
         merged: list[str] = []
-        for red_row, blue_row, target_row in zip(red, blue, target, strict=True):
+        for red_row, blue_row, target_row in zip(
+            red, blue, target, strict=True
+        ):
             width = max(len(red_row), len(blue_row), len(target_row))
             row: list[str] = []
             for column in range(width):
