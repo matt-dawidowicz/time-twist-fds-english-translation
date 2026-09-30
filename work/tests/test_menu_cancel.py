@@ -47,20 +47,22 @@ class MenuCancelTests(unittest.TestCase):
             )
             self.assertEqual(operand + 1 + displacement, target)
         self.assertEqual(
-            result[MENU_SETUP_OFFSET : MENU_SETUP_OFFSET + len(MENU_SETUP_FINAL)],
+            result[
+                MENU_SETUP_OFFSET : MENU_SETUP_OFFSET + len(MENU_SETUP_FINAL)
+            ],
             MENU_SETUP_FINAL,
         )
         self.assertEqual(
             result[
-                BACK_DISPATCH_OFFSET
-                : BACK_DISPATCH_OFFSET + len(BACK_DISPATCH_FINAL)
+                BACK_DISPATCH_OFFSET : BACK_DISPATCH_OFFSET
+                + len(BACK_DISPATCH_FINAL)
             ],
             BACK_DISPATCH_FINAL,
         )
         self.assertEqual(
             result[
-                SELF_PARENT_GUARD_OFFSET
-                : SELF_PARENT_GUARD_OFFSET + len(SELF_PARENT_GUARD)
+                SELF_PARENT_GUARD_OFFSET : SELF_PARENT_GUARD_OFFSET
+                + len(SELF_PARENT_GUARD)
             ],
             SELF_PARENT_GUARD,
         )

@@ -19,11 +19,7 @@ def _serializer(entries: dict[str, bytes], *, compressed: bool) -> bytes:
     if not compressed:
         return b"\x00" + bytes(payload)
     packed = zlib.compress(bytes(payload))
-    return (
-        b"\x01"
-        + struct.pack("<II", len(payload), len(packed))
-        + packed
-    )
+    return b"\x01" + struct.pack("<II", len(payload), len(packed)) + packed
 
 
 def _state(entries: dict[str, bytes], *, compressed: bool = True) -> bytes:
@@ -48,7 +44,7 @@ def test_parse_mesen_state_and_ram_mapping(compressed: bool) -> None:
     internal_ram[0x6C] = 0x80
 
     work_ram = bytearray(0x8000)
-    work_ram[0xA214 - 0x6000 : 0xA216 - 0x6000] = b"\x20\xA6"
+    work_ram[0xA214 - 0x6000 : 0xA216 - 0x6000] = b"\x20\xa6"
 
     parsed = parse_mesen_state(
         _state(

@@ -27,8 +27,6 @@ class DialogueFlowRegressionTests(unittest.TestCase):
                 checked += 1
         self.assertEqual(checked, 1299)
 
-
-
     def test_no_unintended_premature_scroll_controls(self) -> None:
         """Reject scroll controls that manufacture blank dialogue rows."""
         allowed = {("TT4/g4/r20", 3)}
@@ -41,15 +39,11 @@ class DialogueFlowRegressionTests(unittest.TestCase):
                 visible_on_current_row = False
                 parts = [
                     part
-                    for part in re.split(
-                        r"(\{CTRL:[0-7]\})", text
-                    )
+                    for part in re.split(r"(\{CTRL:[0-7]\})", text)
                     if part
                 ]
                 for part in parts:
-                    match = re.fullmatch(
-                        r"\{CTRL:([0-7])\}", part
-                    )
+                    match = re.fullmatch(r"\{CTRL:([0-7])\}", part)
                     if match is None:
                         if part.strip():
                             visible_on_current_row = True

@@ -216,7 +216,7 @@ class IncrementalBuildTests(unittest.TestCase):
         for patches in _CANONICAL_NOV2_RUNTIME_PATCH_GROUPS:
             for patch in patches:
                 end = patch.file_offset + len(patch.replacement)
-                nov2[patch.file_offset:end] = patch.replacement
+                nov2[patch.file_offset : end] = patch.replacement
 
         validate_incremental_nov2_runtime(bytes(nov2))
 

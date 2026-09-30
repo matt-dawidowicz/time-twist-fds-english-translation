@@ -23,7 +23,11 @@ from time_twist.entropy_runtime import (
     PARENT_BACK_GUARD_PATCHES,
 )
 from time_twist.fds import FdsImage
-from time_twist.mesen_state import MesenState, MesenStateError, read_mesen_state
+from time_twist.mesen_state import (
+    MesenState,
+    MesenStateError,
+    read_mesen_state,
+)
 from time_twist.scenario import DICTIONARY_POINTER_OFFSET
 from time_twist.textcodec import SymbolKind
 
@@ -135,9 +139,7 @@ def _decode_resident_menu(
     expansions = []
     if required_dictionary_entries:
         dictionary_address = int.from_bytes(
-            data[
-                DICTIONARY_POINTER_OFFSET : DICTIONARY_POINTER_OFFSET + 2
-            ],
+            data[DICTIONARY_POINTER_OFFSET : DICTIONARY_POINTER_OFFSET + 2],
             "little",
         )
         dictionary_offset = dictionary_address - BANK_LOAD
@@ -203,8 +205,8 @@ def _candidate_record_zero(path: Path, bank: str) -> int:
     data = _find_bank(path, bank)
     return int.from_bytes(
         data[
-            ui.FIXED_RECORD_TABLE_POINTER_OFFSET
-            : ui.FIXED_RECORD_TABLE_POINTER_OFFSET + 2
+            ui.FIXED_RECORD_TABLE_POINTER_OFFSET : ui.FIXED_RECORD_TABLE_POINTER_OFFSET
+            + 2
         ],
         "little",
     )
@@ -288,9 +290,7 @@ def main() -> int:
                 f"{len(labels) - len(mismatches)}/{len(labels)} labels match"
             )
             for index, actual, expected in mismatches[:12]:
-                print(
-                    f"  {index:03d}: {actual!r} != {expected!r}"
-                )
+                print(f"  {index:03d}: {actual!r} != {expected!r}")
 
         disk_pointer = None
         if args.fds is not None and bank and "(" not in bank:

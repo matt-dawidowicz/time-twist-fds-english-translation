@@ -146,7 +146,7 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         )
         self.assertEqual(
             tt3a["TT3A/g2/r31"],
-            '      kilometers{CTRL:0}          of here. Wait{CTRL:0}'
+            "      kilometers{CTRL:0}          of here. Wait{CTRL:0}"
             '         of the old{CTRL:0}           Rebecca"',
         )
         self.assertEqual(
@@ -188,9 +188,7 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             row: list[str] = []
             for column in range(width):
                 red_char = red_row[column] if column < len(red_row) else " "
-                blue_char = (
-                    blue_row[column] if column < len(blue_row) else " "
-                )
+                blue_char = blue_row[column] if column < len(blue_row) else " "
                 target_char = (
                     target_row[column] if column < len(target_row) else " "
                 )

@@ -76,8 +76,8 @@ def _candidate_menu_records(
     runtime_start = (
         int.from_bytes(
             data[
-                ui.FIXED_RECORD_TABLE_POINTER_OFFSET
-                : ui.FIXED_RECORD_TABLE_POINTER_OFFSET + 2
+                ui.FIXED_RECORD_TABLE_POINTER_OFFSET : ui.FIXED_RECORD_TABLE_POINTER_OFFSET
+                + 2
             ],
             "little",
         )
@@ -85,15 +85,17 @@ def _candidate_menu_records(
     )
     page_index_address = int.from_bytes(
         data[
-            ui.FIXED_RECORD_PAGE_POINTER_OFFSET
-            : ui.FIXED_RECORD_PAGE_POINTER_OFFSET + 2
+            ui.FIXED_RECORD_PAGE_POINTER_OFFSET : ui.FIXED_RECORD_PAGE_POINTER_OFFSET
+            + 2
         ],
         "little",
     )
     page_index_offset = page_index_address - load_address
     pointer_bytes = ui.fixed_record_table_page_pointer_bytes(bank_name)
     if not 0 <= runtime_start < len(data):
-        raise ValueError(f"{bank_name} runtime menu record-zero pointer is invalid")
+        raise ValueError(
+            f"{bank_name} runtime menu record-zero pointer is invalid"
+        )
     if not 0 <= page_index_offset <= len(data):
         raise ValueError(f"{bank_name} candidate menu page index is invalid")
     if page_index_offset + pointer_bytes > len(data):
@@ -114,15 +116,14 @@ def _candidate_menu_records(
         count = min(ui.FIXED_RECORDS_PER_PAGE, remaining)
         if count <= 0 or not 0 <= start < len(data):
             raise ValueError(f"{bank_name} candidate menu page is malformed")
-        decoded.extend(
-            unpack_entropy_stream(data[start:], record_count=count)
-        )
+        decoded.extend(unpack_entropy_stream(data[start:], record_count=count))
     if len(decoded) != record_count:
         raise ValueError(
             f"{bank_name} candidate menu decoded {len(decoded)} records, "
             f"expected {record_count}"
         )
     return tuple(decoded)
+
 
 def _candidate_dictionary_prefix(
     data: bytes,

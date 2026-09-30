@@ -22,7 +22,9 @@ from functools import lru_cache
 from .fds import FdsImage
 from .release_metadata import ReleaseBuildError
 
-FINAL_V50_SHA256 = "820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43"
+FINAL_V50_SHA256 = (
+    "820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43"
+)
 IMAGE_BYTES = 262000
 
 # Canonical source text is the final v50 wording.  The frozen compiler must
@@ -53,7 +55,9 @@ def _patch_specs() -> dict[str, dict[str, object]]:
     raw = gzip.decompress(base64.b64decode(_PATCH_PAYLOAD_B64))
     payload = json.loads(raw.decode("ascii"))
     if set(payload) != {"NOV2", "TT4", "TT5", "T25", "TT6D", "OBJ6D"}:
-        raise ReleaseBuildError("v50 finalizer payload has unexpected components")
+        raise ReleaseBuildError(
+            "v50 finalizer payload has unexpected components"
+        )
     return payload
 
 
@@ -98,7 +102,9 @@ def finalize_v50_image(raw: bytes) -> bytes:
             replacement = bytes.fromhex(str(replacement_hex))
             end = offset + len(replacement)
             if offset < previous_end or end > len(patched):
-                raise ReleaseBuildError(f"invalid/overlapping v50 {name} patch span")
+                raise ReleaseBuildError(
+                    f"invalid/overlapping v50 {name} patch span"
+                )
             patched[offset:end] = replacement
             previous_end = end
         output_hash = _sha256(patched)

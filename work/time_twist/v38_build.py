@@ -120,9 +120,7 @@ def patch_tt3b_menu_pointer(data: bytes) -> bytes:
     if current == TT3B_MENU_POINTER_GOOD:
         return data
     if current != TT3B_MENU_POINTER_BAD:
-        raise ReleaseBuildError(
-            f"unexpected TT3B menu pointer: {current:04X}"
-        )
+        raise ReleaseBuildError(f"unexpected TT3B menu pointer: {current:04X}")
     result[offset : offset + 2] = TT3B_MENU_POINTER_GOOD.to_bytes(2, "little")
     return bytes(result)
 
@@ -180,7 +178,10 @@ def build_release_images(
         # These are the only scenario text inputs read by the frozen compiler.
         (source / "data/layouts.json").write_text(
             json.dumps(
-                {key: {"literal": value} for key, value in compiler_actual.items()}
+                {
+                    key: {"literal": value}
+                    for key, value in compiler_actual.items()
+                }
             ),
             encoding="utf-8",
         )

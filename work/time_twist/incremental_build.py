@@ -98,10 +98,8 @@ def validate_incremental_nov2_runtime(data: bytes) -> None:
     for patches in _CANONICAL_NOV2_RUNTIME_PATCH_GROUPS:
         for patch in patches:
             end = patch.file_offset + len(patch.replacement)
-            if data[patch.file_offset:end] != patch.replacement:
-                mismatches.append(
-                    f"${patch.cpu_address:04X} {patch.label}"
-                )
+            if data[patch.file_offset : end] != patch.replacement:
+                mismatches.append(f"${patch.cpu_address:04X} {patch.label}")
     for offset, expected, label in FINAL_MENU_CANCEL_SURFACES:
         end = offset + len(expected)
         if data[offset:end] != expected:
