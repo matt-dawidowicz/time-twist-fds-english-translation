@@ -1,6 +1,6 @@
 {
   "schema": "Time Twist release source lock v5",
-  "authority": "The private v25 safe-encoding seed image, frozen v38 compiler bundle and 13 active translation maps are the non-code-lock inputs. Compiler payloads are independently hash-checked before execution. The recovered v38 bundle remains an immutable historical checkpoint; the canonical behavioral target is final v50, and maintained source/build steps must reproduce it.",
+  "authority": "The private v25 safe-encoding seed image, frozen v38 compiler bundle, validated v38-to-v41 and v41-to-v50 checkpoint deltas, and 13 active translation maps are the locked release inputs. The frozen compiler reproduces exact v38; guarded checkpoint promotion follows the validated binary lineage to exact final v50.",
   "subtitle": "On the Outskirts of History...",
   "files": {
     "work/baseline/time_twist_v25_safe_encoding.fds": {
@@ -162,6 +162,31 @@
       "normalization": "lf",
       "sha256": "33BE7847F50896FED7D751D19EBB233D07E408C52AD45FC8D3BC74D7DC3638C4",
       "bytes": 876
+    },
+    "recovery/v41/README.md": {
+      "normalization": "raw",
+      "sha256": "F4962CEABEF655D8D791B3E77E063763C04004F55232F3FA2BB0D57E38EA0383",
+      "bytes": 1141
+    },
+    "recovery/v41/patches/v38-to-v41.ttd.zlib.b64.part00": {
+      "normalization": "raw",
+      "sha256": "56401CF47A00605D5789713F396E138566FED3DCE049CC9C52E229F9B1F7843C",
+      "bytes": 16001
+    },
+    "recovery/v41/patches/v38-to-v41.ttd.zlib.b64.part01": {
+      "normalization": "raw",
+      "sha256": "6A6B2DC85B11E5C5FD6F8CEABEE50AB3BA30D4B51377AC3ACD810CA89752AAD6",
+      "bytes": 16001
+    },
+    "recovery/v41/patches/v38-to-v41.ttd.zlib.b64.part02": {
+      "normalization": "raw",
+      "sha256": "76C244C70EAF343F014BA55CB7B586727EBD120FB0AA135F5DDC1CE6D4A35963",
+      "bytes": 11645
+    },
+    "recovery/v41/patches/v41-to-v50.ttd.zlib.b64.part00": {
+      "normalization": "raw",
+      "sha256": "546BC50ED7A94F84D34E40BBBB9E761EA0088EE3A4050842A0E3C9362699A84F",
+      "bytes": 2477
     }
   }
 }
