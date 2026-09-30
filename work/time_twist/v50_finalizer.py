@@ -39,7 +39,9 @@ V41_SHA256 = "13D4E21D1D4393E5B24A1FAEEBE3FF99CE28E5887B2CC7B54BA1AD664EBC91D1"
 V41_TO_V50_DELTA_SHA256 = (
     "07F8ED88371DD5E2FC63427490A9BA73DBDC3FA1BFA4037B4D374626E5F689B9"
 )
-_PATCH_DIRECTORY = Path(__file__).resolve().parents[2] / "recovery" / "v41" / "patches"
+_PATCH_DIRECTORY = (
+    Path(__file__).resolve().parents[2] / "recovery" / "v41" / "patches"
+)
 
 
 def _sha256(data: bytes) -> str:

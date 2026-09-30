@@ -45,13 +45,17 @@ def apply_checkpoint_delta(source: bytes, patch: bytes) -> bytes:
             length, position = _read_varint(patch, position)
             end = offset + length
             if end > len(source):
-                raise ReleaseBuildError("checkpoint delta copy is out of range")
+                raise ReleaseBuildError(
+                    "checkpoint delta copy is out of range"
+                )
             output.extend(source[offset:end])
         elif opcode == 1:
             length, position = _read_varint(patch, position)
             end = position + length
             if end > len(patch):
-                raise ReleaseBuildError("checkpoint delta literal is truncated")
+                raise ReleaseBuildError(
+                    "checkpoint delta literal is truncated"
+                )
             output.extend(patch[position:end])
             position = end
         else:
