@@ -5,6 +5,7 @@ $Patcher = Join-Path $PSScriptRoot 'TimeTwistPatcher.py'
 $PatchDir = Join-Path $PSScriptRoot 'patches'
 $Dist = Join-Path $Root 'dist'
 $Package = Join-Path $Dist 'Time-Twist-English-v1.0'
+$Exe = Join-Path $Package 'TimeTwistEnglishPatcher.exe'
 
 python -m pip install --upgrade pip
 python -m pip install pyinstaller
@@ -25,15 +26,27 @@ python -m PyInstaller `
   $Patcher
 
 New-Item -ItemType Directory -Force $Package | Out-Null
-Move-Item (Join-Path $Dist 'TimeTwistEnglishPatcher.exe') $Package
+Move-Item (Join-Path $Dist 'TimeTwistEnglishPatcher.exe') $Exe
 Copy-Item (Join-Path $PSScriptRoot 'README.md') (Join-Path $Package 'README.md')
 Copy-Item (Join-Path $Root 'LICENSE') (Join-Path $Package 'LICENSE')
 
 python (Join-Path $PSScriptRoot 'package_release.py') --package-dir $Package
 
+# Smoke-test the frozen executable without opening the GUI.
+$process = Start-Process -FilePath $Exe -ArgumentList '--version' -Wait -PassThru
+if ($process.ExitCode -ne 0) {
+  throw "Frozen patcher smoke test failed with exit code $($process.ExitCode)"
+}
+
+# Also expose the two manual patches as top-level workflow artifacts.
 Copy-Item (Join-Path $Package 'BPS-Patches\Time-Twist-English-v1.0-Zenpen.bps') $Dist
 Copy-Item (Join-Path $Package 'BPS-Patches\Time-Twist-English-v1.0-Kouhen.bps') $Dist
 
 $zip = Join-Path $Dist 'Time-Twist-English-v1.0-Windows.zip'
 Compress-Archive -Path (Join-Path $Package '*') -DestinationPath $zip -Force
-Get-FileHash $zip -Algorithm SHA256 | Format-List
+
+Write-Host 'Release artifacts:'
+Get-FileHash $Exe -Algorithm SHA256 | Format-Table -AutoSize
+Get-FileHash (Join-Path $Dist 'Time-Twist-English-v1.0-Zenpen.bps') -Algorithm SHA256 | Format-Table -AutoSize
+Get-FileHash (Join-Path $Dist 'Time-Twist-English-v1.0-Kouhen.bps') -Algorithm SHA256 | Format-Table -AutoSize
+Get-FileHash $zip -Algorithm SHA256 | Format-Table -AutoSize
