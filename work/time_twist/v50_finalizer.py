@@ -18,6 +18,7 @@ import gzip
 import hashlib
 import json
 from functools import lru_cache
+from typing import TypedDict, cast
 
 from .fds import FdsImage
 from .release_metadata import ReleaseBuildError
@@ -50,10 +51,18 @@ def _sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest().upper()
 
 
+class _PatchSpec(TypedDict):
+    side: int
+    size: int
+    input_sha256: str
+    output_sha256: str
+    spans: list[tuple[int, str]]
+
+
 @lru_cache(maxsize=1)
-def _patch_specs() -> dict[str, dict[str, object]]:
+def _patch_specs() -> dict[str, _PatchSpec]:
     raw = gzip.decompress(base64.b64decode(_PATCH_PAYLOAD_B64))
-    payload = json.loads(raw.decode("ascii"))
+    payload = cast(dict[str, _PatchSpec], json.loads(raw.decode("ascii")))
     if set(payload) != {"NOV2", "TT4", "TT5", "T25", "TT6D", "OBJ6D"}:
         raise ReleaseBuildError(
             "v50 finalizer payload has unexpected components"
