@@ -27,6 +27,7 @@ from time_twist.incremental_build import (
     rebuild_entropy_bank,
     validate_incremental_nov2_runtime,
 )
+from time_twist.menu_cancel import FINAL_MENU_CANCEL_SURFACES
 from time_twist.scenario import (
     DICTIONARY_POINTER_OFFSET,
     GROUP_TABLE_POINTER_OFFSET,
@@ -217,6 +218,9 @@ class IncrementalBuildTests(unittest.TestCase):
             for patch in patches:
                 end = patch.file_offset + len(patch.replacement)
                 nov2[patch.file_offset : end] = patch.replacement
+        for offset, expected, _label in FINAL_MENU_CANCEL_SURFACES:
+            end = offset + len(expected)
+            nov2[offset:end] = expected
 
         validate_incremental_nov2_runtime(bytes(nov2))
 
