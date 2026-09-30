@@ -48,10 +48,13 @@ _PATCH_PAYLOAD_B64 = "H4sIAAAAAAAC/4VZO49stw3+L1vfQhIpSrqdnkWKuDHSGEZgIAHixjFgu4
 
 
 def _sha256(data: bytes) -> str:
+    """Return the uppercase SHA-256 used by release provenance."""
     return hashlib.sha256(data).hexdigest().upper()
 
 
 class _PatchSpec(TypedDict):
+    """Describe one source-guarded late-playtest component patch."""
+
     side: int
     size: int
     input_sha256: str
@@ -61,6 +64,7 @@ class _PatchSpec(TypedDict):
 
 @lru_cache(maxsize=1)
 def _patch_specs() -> dict[str, _PatchSpec]:
+    """Decode and validate the embedded sparse v41-to-v50 patch metadata."""
     raw = gzip.decompress(base64.b64decode(_PATCH_PAYLOAD_B64))
     payload = cast(dict[str, _PatchSpec], json.loads(raw.decode("ascii")))
     if set(payload) != {"NOV2", "TT4", "TT5", "T25", "TT6D", "OBJ6D"}:
