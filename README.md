@@ -10,8 +10,26 @@ It covers both halves:
 - `Zenpen` (Part 1)
 - `Kouhen` (Part 2)
 
-The repository is source-only. It contains no original or patched game images,
-FDS BIOS files, emulator bundles, save states, or extracted retail payloads.
+The repository contains no original or patched game images, FDS BIOS files,
+emulator bundles, save states, or extracted retail payloads. Public patcher
+binaries and BPS patch files are provided under `release/`.
+
+## Download the English patch
+
+For most Windows users:
+
+- **[Download TimeTwistEnglishPatcher.exe](release/TimeTwistEnglishPatcher.exe)** — self-contained patcher with both BPS patches built in
+- **[Download the complete Windows package](release/Time-Twist-English-v1.0-Windows.zip)** — EXE, README, license, checksums, and both BPS patches
+
+Manual BPS patches:
+
+- [Zenpen BPS patch](release/Time-Twist-English-v1.0-Zenpen.bps)
+- [Kouhen BPS patch](release/Time-Twist-English-v1.0-Kouhen.bps)
+
+The executable takes the two clean Japanese retail FDS images, identifies
+Zenpen/Kouhen automatically, and can create the two translated disks, the
+combined four-side v1.0 image, or both. It never contains or distributes the
+original game data.
 
 ## Start here
 
