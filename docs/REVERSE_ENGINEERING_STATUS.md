@@ -23,7 +23,7 @@ Status vocabulary follows [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.
 | Gameplay CHR ownership/load composition | **VERIFIED** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | Story-facing naming only |
 | Same-address `$A200` overlay inheritance | **VERIFIED** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md#4-same-address-a200-overlays-deliberately-inherit-data) | No structural unknown |
 | Metasprites/static placements/actor tables | **VERIFIED** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | Scene-specific edits only |
-| Ending/staff-roll TT6D metasprites + OBJ6D CHR | **VERIFIED / v50 baseline** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md#15-endingstaff-roll-localization-tt6d--obj6d) | Keep source/build generation in parity with v50 |
+| Ending/staff-roll TT6D metasprites + OBJ6D CHR | **VERIFIED / v50 baseline** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md#15-endingstaff-roll-localization-tt6d--obj6d) | Exact v50 output is checkpoint-reproduced; revisit only for future edits |
 | Gameplay background map descriptors/RLE | **VERIFIED** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | No structural unknown |
 | Hotspot rectangle structure and FD/FE directions | **VERIFIED** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | Higher-level event naming where useful |
 | Palette definitions | **VERIFIED structural** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md#11-palette-engine-at-a208) | Exact narrative meaning of some tag values |
@@ -64,8 +64,8 @@ maintained playtest route.
 The project is no longer blocked by broad engine unknowns. Remaining work is
 primarily:
 
-1. bring maintained source/build steps into complete parity with the final v50
-   behavioral baseline;
+1. keep the verified v25 -> v38 -> late-v41 -> v50 release lineage reproducible
+   and source-locked if release tooling changes;
 2. keep one-off reverse-engineering discoveries in maintained repo documentation/tests
    rather than chat-only notes;
 3. give higher-level names to the few gameplay commands/palette effects only when
