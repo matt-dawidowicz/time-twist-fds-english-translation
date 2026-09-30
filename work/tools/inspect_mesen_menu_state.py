@@ -222,6 +222,7 @@ def _word_or_none(state: MesenState, address: int) -> str:
 
 
 def main() -> int:
+    """Inspect a Mesen state and report resident menu/runtime compatibility."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("state", type=Path, help="Mesen .mss snapshot")
     parser.add_argument(
