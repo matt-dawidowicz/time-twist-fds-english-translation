@@ -1,126 +1,175 @@
-# Time Twist English Translation v1.0
+# Time Twist English Translation v1.0 — Public Patcher
 
-This release patches the Japanese Famicom Disk System version of
-*Time Twist: Rekishi no Katasumi de...* into English.
+This folder contains the public Windows patcher and the source assets used to
+build it.
 
-No Japanese or translated FDS image is distributed. You must provide clean copies
-of both original Japanese disks.
+The public release is designed for users who own clean Japanese retail FDS
+images of both halves of *Time Twist: Rekishi no Katasumi de...*:
 
-## Choose your patching method
+- Zenpen (Part 1)
+- Kouhen (Part 2)
 
-There are two supported ways to install the translation.
+## Recommended method: Windows executable
 
-### Option 1: Windows patcher
+Run:
 
-Run `TimeTwistEnglishPatcher.exe`.
+`TimeTwistEnglishPatcher.exe`
 
-Select your two clean Japanese FDS images. Their filenames and selection order do
-not matter because the patcher identifies Zenpen and Kouhen by SHA-256.
+The executable contains both required BPS patches internally. You do **not**
+need to put BPS files next to the program.
 
-You can then choose either or both output layouts:
+Select the two clean retail FDS images. Their order does not matter; the patcher
+identifies Zenpen and Kouhen by SHA-256 before it changes anything.
 
-- **Original two-disk layout**
+Choose one or both output layouts:
+
+- two translated two-side FDS files:
   - `Time Twist - English Translation v1.0 - Zenpen.fds`
   - `Time Twist - English Translation v1.0 - Kouhen.fds`
-- **Combined four-side layout**
+- one combined four-side image:
   - `Time Twist - English Translation v1.0.fds`
 
-The patcher verifies the source images, applies the translation, verifies the
-finished output hashes, and refuses any output path that would overwrite or alias
-one of the selected source images.
+The program patches both disks in memory, verifies the translated hashes, then
+writes the selected outputs. It never modifies the two source images.
 
-### Option 2: Manual BPS patches
+Existing translated output files are not silently overwritten. The GUI asks
+before replacement; the CLI requires `--force`.
 
-If you prefer to use your own BPS patching program, use the two standalone patches
-included with the release:
+## Manual BPS patches
+
+For users who prefer another BPS patcher, the release also includes:
 
 - `Time-Twist-English-v1.0-Zenpen.bps`
 - `Time-Twist-English-v1.0-Kouhen.bps`
 
-Apply them separately:
+These are the same two BPS payloads embedded inside the Windows executable.
 
-1. Apply `Time-Twist-English-v1.0-Zenpen.bps` to the clean Japanese Zenpen image.
-2. Apply `Time-Twist-English-v1.0-Kouhen.bps` to the clean Japanese Kouhen image.
+Apply each patch to its matching clean Japanese retail image.
 
-This produces the translated original two-disk layout.
+## Required source images
 
-The Windows patcher is the easiest way to create the combined four-side image. If
-you create it manually, concatenate the complete translated Zenpen image first and
-the complete translated Kouhen image second. Do not insert an additional header
-between them.
+The patcher accepts raw/headerless 131,000-byte FDS images only.
 
-The two BPS files are available both as standalone release files and inside the
-Windows ZIP under `BPS-Patches/`.
+### Zenpen
 
-## Supported source images
+SHA-256:
 
-Both source files are raw/headerless two-side FDS images of exactly 131,000 bytes.
+`B9424DD29EE195A9FA9AC4F844F058C380E30F7ACA741218789FA8611F741916`
 
-| Disk | SHA-256 |
-| --- | --- |
-| Zenpen | `B9424DD29EE195A9FA9AC4F844F058C380E30F7ACA741218789FA8611F741916` |
-| Kouhen | `F62A7424FE489CBE479C3EBAABE4CE62D85127601FFD3D08ABD4E5A0DC39442A` |
+### Kouhen
 
-Modified dumps and unsupported variants are rejected by the Windows patcher.
+SHA-256:
 
-## Certified translated outputs
+`F62A7424FE489CBE479C3EBAABE4CE62D85127601FFD3D08ABD4E5A0DC39442A`
 
-| Output | Bytes | SHA-256 |
-| --- | ---: | --- |
-| `Time Twist - English Translation v1.0 - Zenpen.fds` | 131,000 | `426AADCE09FDC55EF0B4E3A41EA276B7B3C24EEC4CCBA979E52388F1A456B85F` |
-| `Time Twist - English Translation v1.0 - Kouhen.fds` | 131,000 | `81483F8A76A88BCD069EA87E3D31E8D598F202112E1B39E464FFE0B2B925E3D3` |
-| `Time Twist - English Translation v1.0.fds` | 262,000 | `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43` |
+If either source image differs, the executable stops before creating output.
 
-The four-side image contains:
+## Verified translated outputs
 
-1. Zenpen Side A
-2. Zenpen Side B
-3. Kouhen Side A
-4. Kouhen Side B
+### Zenpen
 
-The combined output is byte-identical to the final v50 playtest baseline. Public
-release numbering starts at v1.0.
+- Size: 131,000 bytes
+- SHA-256:
+  `426AADCE09FDC55EF0B4E3A41EA276B7B3C24EEC4CCBA979E52388F1A456B85F`
 
-## Manual BPS checksums
+### Kouhen
 
-| Patch | SHA-256 |
-| --- | --- |
-| `Time-Twist-English-v1.0-Zenpen.bps` | `A42EC859F7B28FA61356D6EA2FE650A29C1172129738F1136572EF427DF9E255` |
-| `Time-Twist-English-v1.0-Kouhen.bps` | `9AF9AD6E479C8024427766A1F4C1396ED76D8B33BAF919BFA430507EF6F21879` |
+- Size: 131,000 bytes
+- SHA-256:
+  `81483F8A76A88BCD069EA87E3D31E8D598F202112E1B39E464FFE0B2B925E3D3`
 
-The Windows ZIP also includes `SHA256SUMS.txt`.
+### Combined four-side image
 
-## Repository-only Python / command-line workflow
+- Size: 262,000 bytes
+- SHA-256:
+  `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`
 
-The Python commands below are for developers using a full checkout of this GitHub
-repository. The Windows release ZIP does not include the Python source tree or its
-embedded patch-resource chunks.
+The combined image is exactly translated Zenpen followed by translated Kouhen
+in the original four-side order.
 
-Python 3.11 or newer is sufficient.
+## Command-line use
+
+The same executable can be used from a terminal:
 
 ```powershell
-python release_patcher/TimeTwistPatcher.py Zenpen.fds Kouhen.fds -o patched
+TimeTwistEnglishPatcher.exe Zenpen.fds Kouhen.fds -o translated
 ```
 
-Create only the original two-disk layout:
+Input order does not matter.
+
+By default it creates both the two-disk layout and the combined four-side image.
+
+Two-disk output only:
 
 ```powershell
-python release_patcher/TimeTwistPatcher.py Zenpen.fds Kouhen.fds -o patched --two-disk-only
+TimeTwistEnglishPatcher.exe Zenpen.fds Kouhen.fds -o translated --two-disk-only
 ```
 
-Create only the combined four-side layout:
+Combined image only:
 
 ```powershell
-python release_patcher/TimeTwistPatcher.py Zenpen.fds Kouhen.fds -o patched --four-side-only
+TimeTwistEnglishPatcher.exe Zenpen.fds Kouhen.fds -o translated --four-side-only
 ```
 
-## Repository resource format
+Replace existing translated output files:
 
-The repository stores the BPS payloads as gzip-compressed, Base64-encoded text
-chunks. `TimeTwistPatcher.py` reconstructs and SHA-256 verifies those payloads
-before use. The Windows executable embeds the same verified patch data.
+```powershell
+TimeTwistEnglishPatcher.exe Zenpen.fds Kouhen.fds -o translated --force
+```
 
-## License
+## Release package layout
 
-The patcher software is distributed under the MIT License. See `LICENSE` in the
-release ZIP and repository.
+The Windows ZIP contains:
+
+```text
+TimeTwistEnglishPatcher.exe
+README.md
+LICENSE
+SHA256SUMS.txt
+BPS-Patches/
+  Time-Twist-English-v1.0-Zenpen.bps
+  Time-Twist-English-v1.0-Kouhen.bps
+```
+
+The two BPS files are also published individually beside the ZIP for users who
+do not want the executable.
+
+## Integrity model
+
+The release uses several independent checks:
+
+1. each input FDS image must match the exact expected SHA-256;
+2. each embedded BPS payload must match its own SHA-256;
+3. BPS patch CRC, source CRC, and target CRC are validated;
+4. translated Zenpen and Kouhen must match their exact final SHA-256 values;
+5. the optional combined four-side image must match the final v50 SHA-256;
+6. writes occur only after the requested outputs have already been patched and
+   verified in memory;
+7. source/output path collisions are rejected.
+
+The executable therefore fails closed on unsupported dumps, damaged embedded
+patch data, patching errors, or unexpected final output.
+
+## Building the Windows release
+
+From PowerShell:
+
+```powershell
+./release_patcher/build_windows.ps1
+```
+
+The build uses PyInstaller `--onefile --windowed` and embeds the patch resource
+directory into `TimeTwistEnglishPatcher.exe`.
+
+The build then smoke-tests the frozen executable with `--version`, reconstructs
+the standalone BPS files, generates `SHA256SUMS.txt`, and creates:
+
+`dist/Time-Twist-English-v1.0-Windows.zip`
+
+No original or fully patched FDS image is included in the public package.
+
+## Legal notice
+
+This is an unofficial fan translation. The release contains original project
+code and binary patch deltas only. Users must provide their own legally obtained
+original game images.
