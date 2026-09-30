@@ -204,6 +204,7 @@ def _find_bank(path: Path, bank: str) -> bytes:
 
 
 def _candidate_record_zero(path: Path, bank: str) -> int:
+    """Read the runtime fixed-menu record-zero pointer from one FDS bank."""
     data = _find_bank(path, bank)
     return int.from_bytes(
         data[
