@@ -71,6 +71,10 @@ def make_synthetic_project(root: Path) -> Path:
         PROJECT_ROOT / "recovery/v38/repro_bundle",
         root / "recovery/v38/repro_bundle",
     )
+    shutil.copytree(
+        PROJECT_ROOT / "recovery/v41",
+        root / "recovery/v41",
+    )
     return root
 
 
