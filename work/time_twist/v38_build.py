@@ -21,13 +21,13 @@ from pathlib import Path
 from .fds import FdsImage
 from .menu_cancel import patch_menu_cancel
 from .production_translation import CANONICAL_RECORD_COUNTS
-from .tt4_quiz import patch_tt4_athena_quiz
-from .v50_finalizer import compiler_prefinal_records, finalize_v50_image
 from .release_metadata import (
     SCENARIO_LOCATIONS,
     ReleaseBuildError,
     sha256_bytes,
 )
+from .tt4_quiz import patch_tt4_athena_quiz
+from .v50_finalizer import compiler_prefinal_records, finalize_v50_image
 
 BASELINE_SHA256 = (
     "813cdceb190e9714f7489c1bd5500f8e2ead3b3942f789ccf68bc6f3696bfc19"

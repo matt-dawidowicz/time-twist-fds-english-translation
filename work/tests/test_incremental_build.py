@@ -14,11 +14,12 @@ from time_twist.entropy_fixed_ui import (
     tt1a_entropy_payload,
     tt1a_renderer_entropy_payload,
 )
+from time_twist.entropy_runtime import NOV2_SIZE
 from time_twist.incremental_build import (
+    _CANONICAL_NOV2_RUNTIME_PATCH_GROUPS,
     FIXED_TAIL_BOUNDARIES,
     GROUP_RECORD_COUNTS,
     IncrementalBuildError,
-    _CANONICAL_NOV2_RUNTIME_PATCH_GROUPS,
     _allocate_groups,
     _bank_layout_report,
     _load_entropy_bank,
@@ -26,7 +27,6 @@ from time_twist.incremental_build import (
     rebuild_entropy_bank,
     validate_incremental_nov2_runtime,
 )
-from time_twist.entropy_runtime import NOV2_SIZE
 from time_twist.scenario import (
     DICTIONARY_POINTER_OFFSET,
     GROUP_TABLE_POINTER_OFFSET,

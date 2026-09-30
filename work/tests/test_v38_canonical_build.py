@@ -8,12 +8,6 @@ import unittest
 from pathlib import Path
 
 from time_twist.release_metadata import ReleaseBuildError
-from time_twist.v50_finalizer import (
-    FINAL_SCENARIO_RECORDS,
-    FINAL_V50_SHA256,
-    PREFINAL_SCENARIO_RECORDS,
-    compiler_prefinal_records,
-)
 from time_twist.v38_build import (
     TT3B_MENU_POINTER_BAD,
     TT3B_MENU_POINTER_GOOD,
@@ -23,6 +17,12 @@ from time_twist.v38_build import (
     restore_checkpoint,
     validate_checkpoint_record_ids,
     validate_checkpoint_records,
+)
+from time_twist.v50_finalizer import (
+    FINAL_SCENARIO_RECORDS,
+    FINAL_V50_SHA256,
+    PREFINAL_SCENARIO_RECORDS,
+    compiler_prefinal_records,
 )
 
 ROOT = Path(__file__).resolve().parents[2]

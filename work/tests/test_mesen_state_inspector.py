@@ -4,7 +4,6 @@ import struct
 import zlib
 
 import pytest
-
 from time_twist.mesen_state import MesenStateError, parse_mesen_state
 
 
