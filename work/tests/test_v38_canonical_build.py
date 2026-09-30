@@ -19,6 +19,7 @@ from time_twist.v38_build import (
     validate_checkpoint_records,
 )
 from time_twist.v50_finalizer import (
+    FINAL_RELEASE_SHA256,
     FINAL_SCENARIO_RECORDS,
     FINAL_V50_SHA256,
     PREFINAL_SCENARIO_RECORDS,
@@ -93,6 +94,10 @@ class V38CanonicalBuildTests(unittest.TestCase):
         self.assertEqual(
             FINAL_V50_SHA256,
             "820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43",
+        )
+        self.assertEqual(
+            FINAL_RELEASE_SHA256,
+            "BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B",
         )
 
     def test_frozen_compiler_view_is_narrow_and_explicit(self) -> None:
