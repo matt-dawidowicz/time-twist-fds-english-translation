@@ -8,6 +8,7 @@ import unittest
 from pathlib import Path
 
 from time_twist.fds import FdsImage
+from time_twist.v50_finalizer import FINAL_V50_SHA256
 from time_twist.release import (
     DEFAULT_RELEASE_TARGET,
     DEFAULT_SOURCE_LOCK,
@@ -85,6 +86,10 @@ class ReleaseBuildTests(unittest.TestCase):
             self.assertEqual(
                 sha256_bytes(four_side),
                 first["outputs"]["four_side"]["sha256"],
+            )
+            self.assertEqual(
+                sha256_bytes(four_side),
+                FINAL_V50_SHA256,
             )
 
             candidate_images = {
