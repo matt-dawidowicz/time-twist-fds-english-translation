@@ -52,9 +52,14 @@ def make_synthetic_project(root: Path) -> Path:
     (baseline / "time_twist_zenpen_japan.fds").write_bytes(b"zenpen")
     (baseline / "time_twist_kouhen_japan.fds").write_bytes(b"kouhen")
     (baseline / "time_twist_v25_safe_encoding.fds").write_bytes(b"v25")
+    project_root = Path(__file__).resolve().parents[2]
     shutil.copytree(
-        Path(__file__).resolve().parents[2] / "recovery/v38/repro_bundle",
+        project_root / "recovery/v38/repro_bundle",
         root / "recovery/v38/repro_bundle",
+    )
+    shutil.copytree(
+        project_root / "recovery/v41",
+        root / "recovery/v41",
     )
     return root
 
