@@ -75,6 +75,12 @@ TT1A_ENTRY_ADDRESSES = tuple(
     TT1A_LOAD_ADDRESS + offset
     for offset, _source, _english in TT1A_CHOICE_PATCHES
 )
+# The generic NOV2 fixed-menu scanner owns a complete 32-record page even
+# when a bank exposes fewer real labels.  TT1A has only 19 semantic choices,
+# so the sequential renderer copy must terminate the remaining 13 slots
+# explicitly instead of allowing scanner/draw cleanup to fall through into
+# scenario group zero.
+TT1A_RENDERER_PAGE_RECORDS = 32
 
 
 # ---------------------------------------------------------------------------
@@ -225,10 +231,16 @@ def tt1a_entropy_payloads() -> tuple[bytes, ...]:
 
 
 def tt1a_renderer_entropy_payload() -> bytes:
-    """Return the sequential entropy stream consumed by the menu renderer."""
-    return pack_entropy_stream(
-        tuple(encode_english(text) for text in TT1A_CHOICE_TEXT)
-    )
+    """Return one complete 32-record page for the generic menu renderer.
+
+    The first 19 records are the real TT1A selector labels.  The remaining
+    records are explicit empty terminators.  Keeping the whole page inside one
+    entropy stream prevents short-menu redraw/cleanup scans from crossing into
+    scenario dialogue after the last selector record.
+    """
+    records = tuple(encode_english(text) for text in TT1A_CHOICE_TEXT)
+    padding = ((),) * (TT1A_RENDERER_PAGE_RECORDS - len(records))
+    return pack_entropy_stream((*records, *padding))
 
 
 def tt1a_entropy_payload() -> bytes:
@@ -314,15 +326,19 @@ def _audit_tt1a(data: bytes) -> None:
         raise EntropyFixedTextError("TT1A sequential renderer stream changed")
     decoded = unpack_entropy_stream(
         data[renderer_offset:renderer_end],
-        record_count=len(TT1A_CHOICE_TEXT),
+        record_count=TT1A_RENDERER_PAGE_RECORDS,
     )
     for index, (record, text) in enumerate(
-        zip(decoded, TT1A_CHOICE_TEXT, strict=True)
+        zip(decoded[: len(TT1A_CHOICE_TEXT)], TT1A_CHOICE_TEXT, strict=True)
     ):
         if _semantic(record) != _semantic(encode_english(text)):
             raise EntropyFixedTextError(
                 f"TT1A renderer choice {index} failed semantic audit"
             )
+    if any(decoded[len(TT1A_CHOICE_TEXT) :]):
+        raise EntropyFixedTextError(
+            "TT1A renderer guard records must remain empty"
+        )
 
 
 def patched_nov4_entropy_text(data: bytes) -> bytes:
@@ -484,7 +500,7 @@ def entropy_fixed_text_coverage() -> dict[str, dict[str, int]]:
             "capacity_bytes": TT1A_TABLE_CAPACITY,
         },
         "TT1A_renderer": {
-            "records": len(TT1A_CHOICE_TEXT),
+            "records": TT1A_RENDERER_PAGE_RECORDS,
             "streams": 1,
             "packed_bytes": len(tt1a_renderer),
             "capacity_bytes": len(tt1a_renderer),
