@@ -91,8 +91,10 @@ def _resident_menu_records(
     page_count = math.ceil(record_count / RECORDS_PER_PAGE)
 
     starts = [record_zero]
-    for page in range(1, page_count):
-        starts.append(state.cpu_word(page_table + (page - 1) * 2))
+    starts.extend(
+        state.cpu_word(page_table + (page - 1) * 2)
+        for page in range(1, page_count)
+    )
 
     decoded: list[tuple[object, ...]] = []
     for page, start in enumerate(starts):
