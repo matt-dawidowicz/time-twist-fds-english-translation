@@ -1,0 +1,21 @@
+name: Export PR source
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Archive source checkout
+        run: git archive --format=zip HEAD -o time-twist-pr-source.zip
+      - uses: actions/upload-artifact@v5
+        with:
+          name: time-twist-pr-source
+          path: time-twist-pr-source.zip
+          if-no-files-found: error
+          retention-days: 1
