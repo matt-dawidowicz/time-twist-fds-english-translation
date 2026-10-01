@@ -85,6 +85,7 @@ SHA-256
 The public release applies the reviewed TT1A fortune-menu handoff correction and
 the Dr. Simon dialogue-scroll regression fix on top of that baseline. Its SHA-256 is
 `39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5`.
+Kouhen remains byte-identical to the previous public v1.0 build.
 
 Exact release reproduction uses the private v25 safe-encoding image to rebuild
 the frozen v38 checkpoint, applies the hash-guarded v38-to-v41 and
