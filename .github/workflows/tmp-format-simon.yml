@@ -1,0 +1,33 @@
+name: Temporary format Simon release
+
+on:
+  push:
+    branches:
+      - tmp/format-simon-release
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements.txt
+      - name: Format changed Python files
+        run: >-
+          python -m black
+          work/tests/test_v38_canonical_build.py
+          work/time_twist/v50_finalizer.py
+          work/time_twist/release_metadata.py
+      - uses: actions/upload-artifact@v5
+        with:
+          name: formatted-simon-release
+          path: |
+            work/tests/test_v38_canonical_build.py
+            work/time_twist/v50_finalizer.py
+            work/time_twist/release_metadata.py
+          if-no-files-found: error
