@@ -13,7 +13,7 @@ import TimeTwistPatcher as patcher
 PATCHES = {
     "zenpen": (
         "Time-Twist-English-v1.0-Zenpen.bps",
-        "f6d9982eeb2a5a087bb2f21d95f5e60f1aca7b9a31897bebdb9f1d7b31626580",
+        "2b97d6bca5f56f213a13584cf50db59025b3b188534af58f461e254be5b26194",
     ),
     "kouhen": (
         "Time-Twist-English-v1.0-Kouhen.bps",
