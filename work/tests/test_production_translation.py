@@ -107,6 +107,15 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             "When was the last time I{CTRL:0}saw a blue sky?",
         )
         self.assertNotIn("When did I last see it?", tt1b.values())
+        self.assertEqual(
+            tt1b["TT1B/g3/r6"],
+            (
+                "Simon: M-monster!{CTRL:1}Me: No! The devil just{CTRL:0}"
+                "forced me to swap bodies{CTRL:0}with him! Believe me!"
+                "{CTRL:3}Simon: …"
+            ),
+        )
+        self.assertNotIn("{CTRL:4}", tt1b["TT1B/g3/r6"])
 
         tt1a = _canonical("TT1A")
         self.assertEqual(
