@@ -22,7 +22,7 @@ PRE_SIMON_RELEASE_SHA256 = (
     "BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B"
 )
 FINAL_RELEASE_SHA256 = (
-    "39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5"
+    "22266A4D9BCA5844DC7C3C925B4A4474D5BC07932AC6DC8D8B264BF9A0B7DDF8"
 )
 SIMON_FIX_DELTA_SHA256 = (
     "5D708BA25707C1DB096FDAA4980C88D406E45194E6B6E7A4F74A6D14C9329E9B"
@@ -30,6 +30,18 @@ SIMON_FIX_DELTA_SHA256 = (
 FINAL_RELEASE_TT1A_CONTROL_OFFSET = 0x141CA
 FINAL_RELEASE_TT1A_CONTROL_OLD = 0x80
 FINAL_RELEASE_TT1A_CONTROL_NEW = 0x8C
+
+# v50's late checkpoint accidentally flattened the native two-stage birth-month
+# selector into one 12-choice menu. NOV2's live selector geometry is only safe
+# for the native 7-choice first page (Jan-Jun + Jul-Dec) followed by the
+# 6-choice Jul-Dec page. Restore that verified retail descriptor topology.
+FINAL_RELEASE_TT1A_MONTH_MENU_OFFSET = 0x1387F
+FINAL_RELEASE_TT1A_MONTH_MENU_FLATTENED = bytes.fromhex(
+    "0C 05 06 07 08 09 0A 0C 0D 0E 0F 10 11 01 0B"
+)
+FINAL_RELEASE_TT1A_MONTH_MENU_NATIVE = bytes.fromhex(
+    "07 05 06 07 08 09 0A 0B 06 0C 0D 0E 0F 10 11"
+)
 IMAGE_BYTES = 262000
 
 # Canonical source text is the final v50 wording. The historical late-v41
@@ -163,11 +175,25 @@ def finalize_release_image(raw: bytes) -> bytes:
             "Simon dialogue-fix delta SHA-256 mismatch: "
             f"{patch_hash} != {SIMON_FIX_DELTA_SHA256}"
         )
-    final = apply_checkpoint_delta(corrected, patch)
+    simon_fixed = apply_checkpoint_delta(corrected, patch)
+
+    result = bytearray(simon_fixed)
+    month_offset = FINAL_RELEASE_TT1A_MONTH_MENU_OFFSET
+    month_end = month_offset + len(FINAL_RELEASE_TT1A_MONTH_MENU_FLATTENED)
+    current_month_menu = bytes(result[month_offset:month_end])
+    if current_month_menu != FINAL_RELEASE_TT1A_MONTH_MENU_FLATTENED:
+        raise ReleaseBuildError(
+            "final release TT1A birth-month descriptor source mismatch: "
+            f"{current_month_menu.hex().upper()} != "
+            f"{FINAL_RELEASE_TT1A_MONTH_MENU_FLATTENED.hex().upper()}"
+        )
+    result[month_offset:month_end] = FINAL_RELEASE_TT1A_MONTH_MENU_NATIVE
+    final = bytes(result)
+
     digest = _sha256(final)
     if digest != FINAL_RELEASE_SHA256:
         raise ReleaseBuildError(
-            "final release hash mismatch after Simon dialogue fix: "
+            "final release hash mismatch after Simon and TT1A month-menu fixes: "
             f"{digest} != {FINAL_RELEASE_SHA256}"
         )
     return final
