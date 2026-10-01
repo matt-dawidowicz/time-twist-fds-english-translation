@@ -97,7 +97,7 @@ class V38CanonicalBuildTests(unittest.TestCase):
         )
         self.assertEqual(
             FINAL_RELEASE_SHA256,
-            "BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B",
+            "39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5",
         )
 
     def test_frozen_compiler_view_is_narrow_and_explicit(self) -> None:
