@@ -1,6 +1,6 @@
 {
   "schema": "Time Twist release source lock v5",
-  "authority": "The private v25 safe-encoding seed image, frozen v38 compiler bundle, validated v38-to-v41 and v41-to-v50 checkpoint deltas, and 13 active translation maps are the locked release inputs. The frozen compiler reproduces exact v38; guarded checkpoint promotion reaches exact v50 and the release finalizer then applies the reviewed TT1A fortune-menu control correction.",
+  "authority": "The exact private v25 safe-encoding baseline, frozen v38 compiler bundle, validated v38-to-v41, v41-to-v50, and final Simon-fix checkpoint deltas, and 13 active translation maps are the non-code-lock inputs. Compiler payloads and checkpoint deltas are independently hash-checked before execution. The recovered v38 bundle remains an immutable historical checkpoint and the guarded checkpoint lineage must reproduce exact final v50.",
   "subtitle": "On the Outskirts of History...",
   "files": {
     "work/baseline/time_twist_v25_safe_encoding.fds": {
@@ -187,6 +187,11 @@
       "normalization": "raw",
       "sha256": "546BC50ED7A94F84D34E40BBBB9E761EA0088EE3A4050842A0E3C9362699A84F",
       "bytes": 2477
+    },
+    "recovery/v50/patches/release-to-simon-fix.ttd.zlib.b64.part00": {
+      "normalization": "raw",
+      "sha256": "74CD8F7FDBCD838BAAA44919E0CCA89079D9C96BB2DB9E76C7D191C904D7BF33",
+      "bytes": 54977
     }
   }
 }
