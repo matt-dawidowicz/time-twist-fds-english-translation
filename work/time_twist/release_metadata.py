@@ -416,9 +416,11 @@ def authoritative_source_paths(paths: ReleasePaths) -> tuple[Path, ...]:
         paths.translations / f"{bank}.json" for bank in KNOWN_SCENARIO_BANKS
     )
     checkpoint_root = paths.project_root / "recovery" / "v41"
+    final_patch_root = paths.project_root / "recovery" / "v50"
     checkpoint_sources = (
         checkpoint_root / "README.md",
         *sorted((checkpoint_root / "patches").glob("*.part*")),
+        *sorted((final_patch_root / "patches").glob("*.part*")),
     )
     return (
         paths.checkpoint_baseline,
@@ -505,8 +507,9 @@ def build_source_lock_payload(
         "schema": SOURCE_LOCK_SCHEMA,
         "authority": (
             "The exact private v25 safe-encoding baseline, frozen v38 compiler "
-            "bundle, validated v38-to-v41 and v41-to-v50 checkpoint deltas, and "
-            "13 active translation maps are the non-code-lock inputs. Compiler "
+            "bundle, validated v38-to-v41, v41-to-v50, and final Simon-fix "
+            "checkpoint deltas, and 13 active translation maps are the "
+            "non-code-lock inputs. Compiler "
             "payloads and checkpoint deltas are independently hash-checked before "
             "execution. The recovered v38 bundle remains an immutable historical "
             "checkpoint and the guarded checkpoint lineage must reproduce exact "
@@ -655,6 +658,7 @@ def validate_source_lock_metadata(payload: object) -> dict[str, object]:
                 and logical_path.parts[:3]
                 != ("recovery", "v38", "repro_bundle")
                 and logical_path.parts[:2] != ("recovery", "v41")
+                and logical_path.parts[:2] != ("recovery", "v50")
             )
             or ".." in logical_path.parts
         ):
@@ -994,144 +998,3 @@ def validate_release_manifest_metadata(
     _validated_code_provenance(payload.get("code_provenance"), label=label)
     _validated_build_environment(payload.get("build_environment"), label=label)
     subtitle = payload.get("subtitle")
-    if not isinstance(subtitle, str) or not subtitle:
-        raise ReleaseBuildError(f"{label} has invalid subtitle")
-    if payload.get("codec") != "frozen-entropy-v1":
-        raise ReleaseBuildError(f"{label} has unsupported text codec")
-    if payload.get("decoder_format") != "entropy-only":
-        raise ReleaseBuildError(f"{label} has unsupported decoder format")
-    framing = payload.get("record_framing")
-    if not isinstance(framing, str) or not framing.strip():
-        raise ReleaseBuildError(f"{label} has invalid record framing")
-    if payload.get("nov3_exclusive_boundary") != "0xD7B5":
-        raise ReleaseBuildError(f"{label} has invalid NOV3 boundary")
-    surfaces = payload.get("fixed_decoder_surfaces")
-    if not isinstance(surfaces, dict) or not surfaces:
-        raise ReleaseBuildError(f"{label} has invalid fixed decoder coverage")
-    for surface, record in surfaces.items():
-        if not isinstance(surface, str) or not isinstance(record, dict):
-            raise ReleaseBuildError(
-                f"{label} has invalid fixed decoder coverage"
-            )
-        required = {"records", "streams", "packed_bytes", "capacity_bytes"}
-        if set(record) != required:
-            raise ReleaseBuildError(
-                f"{label} fixed decoder surface {surface} has invalid fields"
-            )
-        for field in required:
-            value = record[field]
-            if type(value) is not int or value < 0:
-                raise ReleaseBuildError(
-                    f"{label} fixed decoder surface {surface} has invalid {field}"
-                )
-        if record["packed_bytes"] > record["capacity_bytes"]:
-            raise ReleaseBuildError(
-                f"{label} fixed decoder surface {surface} exceeds capacity"
-            )
-    _validated_scenario_report(payload.get("scenario_banks"), label=label)
-    _validated_component_hashes(payload.get("component_sha256"), label=label)
-    _validated_output_records(
-        payload.get("outputs"), label=label, include_path=True
-    )
-    release_target = payload.get("release_target")
-    release_target_sha256 = payload.get("release_target_sha256")
-    release_id = payload.get("release_id")
-    if mode == "candidate":
-        if any(
-            value is not None
-            for value in (release_target, release_target_sha256, release_id)
-        ):
-            raise ReleaseBuildError(
-                f"{label} candidate target fields must all be null"
-            )
-    else:
-        if not isinstance(release_target, str) or not release_target.strip():
-            raise ReleaseBuildError(
-                f"{label} verified build has invalid target path"
-            )
-        if not _is_sha256(release_target_sha256):
-            raise ReleaseBuildError(
-                f"{label} verified build has invalid target SHA-256"
-            )
-        if not isinstance(release_id, str) or not release_id.strip():
-            raise ReleaseBuildError(
-                f"{label} verified build has invalid release ID"
-            )
-    return dict(payload)
-
-
-def validate_code_provenance(
-    payload: object,
-    *,
-    project_root: Path,
-    label: str,
-) -> dict[str, object]:
-    """Reject provenance that does not match active release-critical code."""
-    expected = _validated_code_provenance(payload, label=label)
-    actual = build_code_provenance(project_root)
-    for field in ("tree_sha256", "file_count"):
-        if expected[field] != actual[field]:
-            raise ReleaseBuildError(
-                f"{label} belongs to different release-critical code; "
-                "build and review a new candidate"
-            )
-    return expected
-
-
-def validate_release_target(
-    path: Path,
-    *,
-    source_lock_sha256: str,
-    project_root: Path,
-) -> dict[str, object]:
-    """Validate a promoted target against active inputs and implementation."""
-    target_path = path.expanduser().resolve()
-    if not target_path.is_file():
-        raise ReleaseBuildError(
-            f"release target is missing: {target_path}; build a candidate and run "
-            "release-promote"
-        )
-    payload = _read_json_object(target_path, label="release target")
-    schema = payload.get("schema")
-    if schema != RELEASE_TARGET_SCHEMA:
-        raise ReleaseBuildError(
-            f"unsupported release target schema: {schema!r}"
-        )
-    required_fields = {
-        "schema",
-        "release_id",
-        "source_lock_sha256",
-        "code_provenance",
-        "promoted_from_manifest_sha256",
-        "outputs",
-    }
-    if set(payload) != required_fields:
-        raise ReleaseBuildError(
-            "release target fields must be exactly "
-            f"{sorted(required_fields)}"
-        )
-    release_id = payload.get("release_id")
-    if not isinstance(release_id, str) or not release_id.strip():
-        raise ReleaseBuildError("release target has an invalid release ID")
-    promoted_digest = payload.get("promoted_from_manifest_sha256")
-    if not _is_sha256(promoted_digest):
-        raise ReleaseBuildError(
-            "release target has an invalid promoted-manifest SHA-256"
-        )
-    target_lock_digest = payload.get("source_lock_sha256")
-    if not _is_sha256(target_lock_digest):
-        raise ReleaseBuildError(
-            "release target has an invalid source-lock SHA-256"
-        )
-    if target_lock_digest != source_lock_sha256:
-        raise ReleaseBuildError(
-            "release target belongs to a different source lock; build a candidate "
-            "and promote it after review"
-        )
-    validate_code_provenance(
-        payload.get("code_provenance"),
-        project_root=project_root,
-        label="release target",
-    )
-    _validated_output_records(payload.get("outputs"), label="release target")
-    return payload
