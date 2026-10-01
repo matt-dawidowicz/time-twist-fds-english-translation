@@ -70,7 +70,7 @@ If either source image differs, the executable stops before creating output.
 
 - Size: 131,000 bytes
 - SHA-256:
-  `A88A53E65B3594D8F9745F4945303967948E83453D8356D04B0BE75D49E38C09`
+  `1CC094577F05182960258A8AFC264ED804A5589B61D8DA6E945718073C1C073A`
 
 ### Kouhen
 
@@ -82,14 +82,15 @@ If either source image differs, the executable stops before creating output.
 
 - Size: 262,000 bytes
 - SHA-256:
-  `BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B`
+  `39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5`
 
 The combined image is exactly translated Zenpen followed by translated Kouhen
 in the original four-side order.
 
-This corrected release preserves the completed v50 playtest baseline and changes one
-TT1A encoded control byte so the fortune-teller blood-type menu no longer overwrites
-the final prompt row. Kouhen is byte-identical to the v1.0 baseline.
+This corrected release preserves the completed v50 playtest baseline, fixes the
+TT1A fortune-teller blood-type menu handoff, and removes the unnecessary extra
+dialogue scroll that caused stale gutter text in the Dr. Simon / Time Belt scene.
+Kouhen is byte-identical to the v1.0 baseline.
 
 ## Command-line use
 

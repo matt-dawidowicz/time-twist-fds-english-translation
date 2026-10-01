@@ -18,8 +18,14 @@ from .release_metadata import ReleaseBuildError
 FINAL_V50_SHA256 = (
     "820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43"
 )
-FINAL_RELEASE_SHA256 = (
+PRE_SIMON_RELEASE_SHA256 = (
     "BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B"
+)
+FINAL_RELEASE_SHA256 = (
+    "39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5"
+)
+SIMON_FIX_DELTA_SHA256 = (
+    "5D708BA25707C1DB096FDAA4980C88D406E45194E6B6E7A4F74A6D14C9329E9B"
 )
 FINAL_RELEASE_TT1A_CONTROL_OFFSET = 0x141CA
 FINAL_RELEASE_TT1A_CONTROL_OLD = 0x80
@@ -48,6 +54,9 @@ V41_TO_V50_DELTA_SHA256 = (
 _PATCH_DIRECTORY = (
     Path(__file__).resolve().parents[2] / "recovery" / "v41" / "patches"
 )
+_SIMON_PATCH_DIRECTORY = (
+    Path(__file__).resolve().parents[2] / "recovery" / "v50" / "patches"
+)
 
 
 def _sha256(data: bytes) -> str:
@@ -68,6 +77,24 @@ def _load_delta() -> bytes:
     except (OSError, ValueError, zlib.error) as exc:
         raise ReleaseBuildError(
             "could not decode v41-to-v50 checkpoint delta"
+        ) from exc
+
+
+def _load_simon_fix_delta() -> bytes:
+    """Decode the reviewed public-release-to-Simon-fix checkpoint delta."""
+    parts = sorted(
+        _SIMON_PATCH_DIRECTORY.glob("release-to-simon-fix.ttd.zlib.b64.part*")
+    )
+    if not parts:
+        raise ReleaseBuildError("missing Simon dialogue-fix checkpoint delta")
+    try:
+        encoded = "".join(
+            part.read_text(encoding="ascii").strip() for part in parts
+        )
+        return zlib.decompress(base64.b64decode(encoded, validate=True))
+    except (OSError, ValueError, zlib.error) as exc:
+        raise ReleaseBuildError(
+            "could not decode Simon dialogue-fix checkpoint delta"
         ) from exc
 
 
@@ -111,7 +138,7 @@ def finalize_v50_image(raw: bytes) -> bytes:
 
 
 def finalize_release_image(raw: bytes) -> bytes:
-    """Promote late-v41 through v50 and apply the reviewed TT1A menu fix."""
+    """Promote through v50, TT1A correction, and the reviewed Simon fix."""
     v50 = finalize_v50_image(raw)
     result = bytearray(v50)
     offset = FINAL_RELEASE_TT1A_CONTROL_OFFSET
@@ -121,11 +148,26 @@ def finalize_release_image(raw: bytes) -> bytes:
             f"{result[offset]:02X} != {FINAL_RELEASE_TT1A_CONTROL_OLD:02X}"
         )
     result[offset] = FINAL_RELEASE_TT1A_CONTROL_NEW
-    final = bytes(result)
+    corrected = bytes(result)
+    digest = _sha256(corrected)
+    if digest != PRE_SIMON_RELEASE_SHA256:
+        raise ReleaseBuildError(
+            "corrected pre-Simon release hash mismatch: "
+            f"{digest} != {PRE_SIMON_RELEASE_SHA256}"
+        )
+
+    patch = _load_simon_fix_delta()
+    patch_hash = _sha256(patch)
+    if patch_hash != SIMON_FIX_DELTA_SHA256:
+        raise ReleaseBuildError(
+            "Simon dialogue-fix delta SHA-256 mismatch: "
+            f"{patch_hash} != {SIMON_FIX_DELTA_SHA256}"
+        )
+    final = apply_checkpoint_delta(corrected, patch)
     digest = _sha256(final)
     if digest != FINAL_RELEASE_SHA256:
         raise ReleaseBuildError(
-            "corrected final release hash mismatch: "
+            "final release hash mismatch after Simon dialogue fix: "
             f"{digest} != {FINAL_RELEASE_SHA256}"
         )
     return final

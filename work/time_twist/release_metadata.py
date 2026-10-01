@@ -416,9 +416,11 @@ def authoritative_source_paths(paths: ReleasePaths) -> tuple[Path, ...]:
         paths.translations / f"{bank}.json" for bank in KNOWN_SCENARIO_BANKS
     )
     checkpoint_root = paths.project_root / "recovery" / "v41"
+    final_patch_root = paths.project_root / "recovery" / "v50"
     checkpoint_sources = (
         checkpoint_root / "README.md",
         *sorted((checkpoint_root / "patches").glob("*.part*")),
+        *sorted((final_patch_root / "patches").glob("*.part*")),
     )
     return (
         paths.checkpoint_baseline,
@@ -505,8 +507,9 @@ def build_source_lock_payload(
         "schema": SOURCE_LOCK_SCHEMA,
         "authority": (
             "The exact private v25 safe-encoding baseline, frozen v38 compiler "
-            "bundle, validated v38-to-v41 and v41-to-v50 checkpoint deltas, and "
-            "13 active translation maps are the non-code-lock inputs. Compiler "
+            "bundle, validated v38-to-v41, v41-to-v50, and final Simon-fix "
+            "checkpoint deltas, and 13 active translation maps are the "
+            "non-code-lock inputs. Compiler "
             "payloads and checkpoint deltas are independently hash-checked before "
             "execution. The recovered v38 bundle remains an immutable historical "
             "checkpoint and the guarded checkpoint lineage must reproduce exact "
@@ -655,6 +658,7 @@ def validate_source_lock_metadata(payload: object) -> dict[str, object]:
                 and logical_path.parts[:3]
                 != ("recovery", "v38", "repro_bundle")
                 and logical_path.parts[:2] != ("recovery", "v41")
+                and logical_path.parts[:2] != ("recovery", "v50")
             )
             or ".." in logical_path.parts
         ):

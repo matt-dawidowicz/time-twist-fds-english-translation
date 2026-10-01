@@ -82,13 +82,15 @@ not an alternate English source.
 The completed **v50** ROM remains the project's end-to-end playtest baseline,
 SHA-256
 `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`.
-The corrected public release applies one reviewed TT1A fortune-menu control-byte
-fix on top of that baseline and has SHA-256
-`BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B`.
+The public release applies the reviewed TT1A fortune-menu handoff correction and
+the Dr. Simon dialogue-scroll regression fix on top of that baseline. Its SHA-256 is
+`39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5`.
+Kouhen remains byte-identical to the previous public v1.0 build.
 
 Exact release reproduction uses the private v25 safe-encoding image to rebuild
 the frozen v38 checkpoint, applies the hash-guarded v38-to-v41 and
-late-v41-to-v50 checkpoint deltas, then applies the guarded TT1A correction.
+late-v41-to-v50 checkpoint deltas, applies the guarded TT1A correction, and then
+applies the reviewed Dr. Simon dialogue-fix delta.
 The older checkpoints remain historical implementation inputs and regression
 evidence, **not** competing release authorities.
 
@@ -208,8 +210,11 @@ The exact binary lineage is explicit and fail-closed:
    SHA-256 `13D4E21D1D4393E5B24A1FAEEBE3FF99CE28E5887B2CC7B54BA1AD664EBC91D1`;
 3. a second guarded delta promotes that checkpoint to final v50,
    SHA-256 `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`.
-4. a guarded one-byte TT1A control correction produces the public release,
-   SHA-256 `BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B`.
+4. a guarded one-byte TT1A control correction produces the pre-Simon public
+   release, SHA-256 `BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B`;
+5. a final guarded delta changes only `TT1B/g3/r6` semantically, removing the
+   unnecessary intermediate dialogue scroll in the Dr. Simon scene and producing
+   SHA-256 `39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5`.
 
 Each bridge verifies its source, delta, and target identities. The final build
 also reproduces the two translated 131,000-byte disk halves exactly. No complete

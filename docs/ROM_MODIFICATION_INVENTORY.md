@@ -13,16 +13,16 @@ works. This file describes the localization layer built on top of that model.
 > The completed, end-to-end playtested **v50** image remains the behavioral
 > baseline, SHA-256
 > `820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`.
-> The corrected public release adds one reviewed TT1A fortune-menu handoff byte
-> and is SHA-256
-> `BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B`,
+> The public release adds the reviewed TT1A fortune-menu handoff correction and
+> the Dr. Simon dialogue-scroll fix, and is SHA-256
+> `39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5`,
 > still a 262,000-byte four-side FDS image.
 >
 > Older v25/v38 artifacts are retained as historical build inputs and regression
 > evidence. They do **not** define target behavior. Exact release reproduction now
 > rebuilds frozen v38 from the v25 seed and then follows the validated, hash-guarded
 > v38 -> late-v41 -> v50 checkpoint lineage, followed by the guarded TT1A
-> correction. The final release is never regressed
+> correction and the final Dr. Simon dialogue-fix delta. The final release is never regressed
 > to match an older recovery state.
 
 ## 1. Scope
@@ -471,7 +471,7 @@ explicitly rather than claiming capabilities the recovered compiler does not hav
    `13D4E21D1D4393E5B24A1FAEEBE3FF99CE28E5887B2CC7B54BA1AD664EBC91D1`;
 3. a second guarded checkpoint delta reproduces the reviewed v42-v50 changes and
    requires the corrected four-side SHA-256
-   `BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B`.
+   `39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5`.
 
 The checkpoint payloads contain only copy/literal deltas, not a complete original or
 translated FDS image. Their SHA-256 values, source identities, target identities,
