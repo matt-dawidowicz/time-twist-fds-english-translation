@@ -80,7 +80,6 @@ def _load_delta() -> bytes:
         ) from exc
 
 
-
 def _load_simon_fix_delta() -> bytes:
     """Decode the reviewed public-release-to-Simon-fix checkpoint delta."""
     parts = sorted(
@@ -97,6 +96,7 @@ def _load_simon_fix_delta() -> bytes:
         raise ReleaseBuildError(
             "could not decode Simon dialogue-fix checkpoint delta"
         ) from exc
+
 
 def compiler_prefinal_records(records: dict[str, str]) -> dict[str, str]:
     """Return the two pre-v50 literals used by historical in-place edits."""
