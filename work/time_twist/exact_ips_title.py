@@ -63,13 +63,14 @@ _MAX_ORIGINAL_TITLE_STREAM_END = 0x094D
 # Pixel-exact corrections to the completed monochrome swipe frame. Coordinates
 # are native 256x96 screen pixels at the final swipe origin ($0100), which maps
 # directly to the second physical nametable.  Each tuple is (x, y, expected_on,
-# target_on).  These are intentionally limited to the four reviewed pixels:
-# one stray tip pixel on the first T and three missing pixels at the E/T join.
+# target_on).  These are intentionally limited to the five reviewed pixels:
+# two stray tip pixels on the first T and three missing pixels at the E/T join.
 _SLIDE_LOGO_PIXEL_CORRECTIONS: tuple[tuple[int, int, bool, bool], ...] = (
-    (53, 12, True, False),
-    (125, 53, False, True),
-    (126, 53, False, True),
-    (127, 54, False, True),
+    (56, 29, True, False),
+    (56, 30, True, False),
+    (123, 64, False, True),
+    (122, 65, False, True),
+    (121, 66, False, True),
 )
 
 # Final-playtest pixel corrections to the definitive IPS colored wordmark.
