@@ -235,6 +235,42 @@ def _overlay_exact_ips_differences(
     return bytes(result)
 
 
+_SLIDE_CHR_PIXEL_CORRECTIONS: tuple[tuple[int, bytes, bytes], ...] = (
+    (
+        0x1A,
+        bytes.fromhex("00000080808080800000000000000000"),
+        bytes.fromhex("00000080800000800000000000000000"),
+    ),
+    (
+        0xEB,
+        bytes.fromhex("0e0e0e0e0effffff03030303030000fc"),
+        bytes.fromhex("1e2e4e0e0effffff03030303030000fc"),
+    ),
+)
+
+
+def _install_slide_chr_pixel_corrections(data: bytes) -> bytes:
+    """Apply the reviewed five-pixel logo fix directly to two existing CHR tiles.
+
+    This deliberately does not allocate or remap any tile IDs. The title
+    sequence reuses nearly every background slot across multiple phases, so
+    introducing "spare" IDs can corrupt the Nintendo/title transition. These
+    edits keep the native nametables, RLE streams, tile ownership, and phase
+    timing byte-for-byte unchanged.
+    """
+    result = bytearray(data)
+    for tile_id, expected, corrected in _SLIDE_CHR_PIXEL_CORRECTIONS:
+        offset = TITLE_CHR_OFFSET + tile_id * 16
+        current = bytes(result[offset : offset + 16])
+        if current != expected:
+            raise TitlePatchError(
+                f"definitive title tile ${tile_id:02X} changed under "
+                "sliding-logo pixel correction"
+            )
+        result[offset : offset + 16] = corrected
+    return bytes(result)
+
+
 def _subtitle_tiles(subtitle: str) -> tuple[dict[int, bytes], list[int]]:
     """Rasterize the subtitle into one 8-pixel tile row using palette index 2."""
     width = sum(4 if character == " " else 6 for character in subtitle) - 1
@@ -433,4 +469,5 @@ def patched_nov4_exact_ips_title(
     """Install the historical logo base plus approved final-phase corrections."""
     base_nov4, patched_nov4 = _exact_ips_nov4(zenpen_raw)
     exact = _overlay_exact_ips_differences(data, base_nov4, patched_nov4)
+    exact = _install_slide_chr_pixel_corrections(exact)
     return _install_subtitle(exact, subtitle)
