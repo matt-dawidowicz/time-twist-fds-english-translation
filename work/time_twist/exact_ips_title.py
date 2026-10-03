@@ -64,6 +64,18 @@ _MAX_ORIGINAL_TITLE_STREAM_END = 0x094D
 # duplicates one IPS-owned tile into spare final-phase CHR, changes only the
 # reviewed pixels, and remaps exactly one final nametable cell. The moving
 # monochrome swipe remains byte-for-byte identical to the historical IPS.
+# Pixel-exact corrections to the completed monochrome swipe frame.  Coordinates
+# are native 256x96 screen pixels at the final swipe origin ($0100), which maps
+# directly to the second physical nametable.  Each tuple is (x, y, expected_on,
+# target_on).  These are intentionally limited to the four reviewed pixels:
+# one stray tip pixel on the first T and three missing pixels at the E/T join.
+_SLIDE_LOGO_PIXEL_CORRECTIONS: tuple[tuple[int, int, bool, bool], ...] = (
+    (53, 12, True, False),
+    (125, 53, False, True),
+    (126, 53, False, True),
+    (127, 54, False, True),
+)
+
 _FINAL_LOGO_TILE_CORRECTIONS: tuple[tuple[int, int, bytes, bytes], ...] = (
     (
         0x066,
@@ -232,6 +244,96 @@ def _overlay_exact_ips_differences(
         raise TitlePatchError(
             f"definitive title IPS overlaps localized NOV4 at 0x{first:04X}"
         )
+    return bytes(result)
+
+
+def _tile_pixel(pattern: bytes, x: int, y: int) -> int:
+    """Return one 2bpp pixel from a 16-byte NES pattern."""
+    if len(pattern) != 16 or not 0 <= x < 8 or not 0 <= y < 8:
+        raise TitlePatchError("invalid tile pixel lookup")
+    shift = 7 - x
+    return ((pattern[y] >> shift) & 1) | (((pattern[y + 8] >> shift) & 1) << 1)
+
+
+def _with_tile_pixel(pattern: bytes, x: int, y: int, value: int) -> bytes:
+    """Return one NES pattern with exactly one 2bpp pixel replaced."""
+    if len(pattern) != 16 or not 0 <= x < 8 or not 0 <= y < 8:
+        raise TitlePatchError("invalid tile pixel edit")
+    if not 0 <= value <= 3:
+        raise TitlePatchError("tile pixel value is outside 0-3")
+    result = bytearray(pattern)
+    mask = 1 << (7 - x)
+    result[y] = (result[y] & ~mask) | ((value & 1) << (7 - x))
+    result[y + 8] = (result[y + 8] & ~mask) | (((value >> 1) & 1) << (7 - x))
+    return bytes(result)
+
+
+def _install_slide_pixel_corrections(data: bytes) -> bytes:
+    """Apply the reviewed four-pixel swipe-logo fix without touching final art."""
+    final, second_offset = decode_title_rle(data, FINAL_NAMETABLE_START)
+    second, terminator_offset = decode_title_rle(data, second_offset)
+    if terminator_offset >= len(data) or data[terminator_offset] != 0xFF:
+        raise TitlePatchError("definitive IPS title stream lost its terminator")
+
+    final_ids = set(final[:960])
+    second_ids = set(second[:960])
+    spare_ids = [
+        tile_id
+        for tile_id in range(CLOCK_SOURCE_TILE)
+        if tile_id not in final_ids and tile_id not in second_ids
+    ]
+
+    grouped: dict[int, list[tuple[int, int, bool, bool]]] = {}
+    for x, y, expected_on, target_on in _SLIDE_LOGO_PIXEL_CORRECTIONS:
+        if not 0 <= x < 256 or not 0 <= y < 96:
+            raise TitlePatchError("slide-logo correction is outside 256x96")
+        cell = (y // 8) * 32 + (x // 8)
+        grouped.setdefault(cell, []).append((x, y, expected_on, target_on))
+
+    if len(spare_ids) < len(grouped):
+        raise TitlePatchError("not enough unused CHR tiles for slide-logo correction")
+
+    result = bytearray(data)
+    second_mut = bytearray(second)
+    for spare_tile, (cell, edits) in zip(spare_ids, sorted(grouped.items()), strict=False):
+        source_tile = second_mut[cell]
+        source_offset = TITLE_CHR_OFFSET + source_tile * 16
+        pattern = bytes(result[source_offset : source_offset + 16])
+        if len(pattern) != 16:
+            raise TitlePatchError("slide-logo source tile is truncated")
+        corrected = pattern
+        for x, y, expected_on, target_on in edits:
+            local_x = x & 7
+            local_y = y & 7
+            current = _tile_pixel(corrected, local_x, local_y)
+            if bool(current) != expected_on:
+                raise TitlePatchError(
+                    f"slide-logo pixel ({x},{y}) no longer matches reviewed source"
+                )
+            corrected = _with_tile_pixel(
+                corrected,
+                local_x,
+                local_y,
+                1 if target_on else 0,
+            )
+        spare_offset = TITLE_CHR_OFFSET + spare_tile * 16
+        result[spare_offset : spare_offset + 16] = corrected
+        second_mut[cell] = spare_tile
+
+    rebuilt_stream = b"".join(
+        (encode_title_rle(final), encode_title_rle(bytes(second_mut)), b"\xff")
+    )
+    stream_end = FINAL_NAMETABLE_START + len(rebuilt_stream)
+    if stream_end > TITLE_CHR_OFFSET:
+        raise TitlePatchError("slide-logo correction overruns title CHR")
+    result[FINAL_NAMETABLE_START:stream_end] = rebuilt_stream
+
+    check_final, check_second_offset = decode_title_rle(result, FINAL_NAMETABLE_START)
+    check_second, check_terminator = decode_title_rle(result, check_second_offset)
+    if check_final != final or check_second != bytes(second_mut):
+        raise TitlePatchError("slide-logo correction stream verification failed")
+    if result[check_terminator] != 0xFF:
+        raise TitlePatchError("slide-logo correction lost stream terminator")
     return bytes(result)
 
 
@@ -433,4 +535,5 @@ def patched_nov4_exact_ips_title(
     """Install the historical logo base plus approved final-phase corrections."""
     base_nov4, patched_nov4 = _exact_ips_nov4(zenpen_raw)
     exact = _overlay_exact_ips_differences(data, base_nov4, patched_nov4)
+    exact = _install_slide_pixel_corrections(exact)
     return _install_subtitle(exact, subtitle)
