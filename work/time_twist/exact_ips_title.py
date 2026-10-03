@@ -34,6 +34,8 @@ from .title_layout import (
     FINAL_NAMETABLE_START,
     NOV3_LOAD_ADDRESS,
     NOV4_LOAD_ADDRESS,
+    SLIDE_PREP_CALL_OFFSET,
+    SLIDE_PREP_CALL_SOURCE,
     TITLE_CHR_OFFSET,
     TITLE_TRANSITION_CALL_OFFSET,
     TITLE_TRANSITION_CALL_SOURCE,
@@ -235,6 +237,167 @@ def _overlay_exact_ips_differences(
     return bytes(result)
 
 
+_SLIDE_LOGO_CORRECTION_CELLS: tuple[int, int] = (0x066, 0x0F1)
+
+
+def _install_slide_logo_corrections(data: bytes) -> bytes:
+    """Apply the two reviewed logo corrections to the moving swipe only.
+
+    The final-phase title already remaps the six reviewed wordmark corrections
+    into temporary tile IDs that are uploaded at the colored-title transition.
+    Two of those corrections are also needed in the monochrome swipe: the top
+    tip of the first T and the E/T junction.
+
+    Reuse those already-allocated scratch IDs instead of changing shared base
+    CHR. Their only second-nametable uses are below the 96-pixel swipe viewport.
+    Immediately before the swipe, blank rendering/NMI, upload the corrected
+    scratch patterns, install the native $01F0 origin, queue the native palette,
+    then restore NMI while leaving $2001 blank for the next NMI to restore.
+    """
+    final, second_offset = decode_title_rle(data, FINAL_NAMETABLE_START)
+    second, terminator_offset = decode_title_rle(data, second_offset)
+    if terminator_offset >= len(data) or data[terminator_offset] != 0xFF:
+        raise TitlePatchError("definitive IPS title stream lost its terminator")
+    if (
+        data[
+            SLIDE_PREP_CALL_OFFSET : SLIDE_PREP_CALL_OFFSET
+            + len(SLIDE_PREP_CALL_SOURCE)
+        ]
+        != SLIDE_PREP_CALL_SOURCE
+    ):
+        raise TitlePatchError("pre-slide palette call changed")
+
+    corrections_by_cell = {
+        cell: (source_tile, expected, corrected)
+        for cell, source_tile, expected, corrected
+        in _FINAL_LOGO_TILE_CORRECTIONS
+        if cell in _SLIDE_LOGO_CORRECTION_CELLS
+    }
+    if set(corrections_by_cell) != set(_SLIDE_LOGO_CORRECTION_CELLS):
+        raise TitlePatchError("reviewed slide-logo corrections are incomplete")
+
+    second_mut = bytearray(second)
+    scratch_patterns: dict[int, bytes] = {}
+    for cell in _SLIDE_LOGO_CORRECTION_CELLS:
+        source_tile, expected_pattern, corrected_pattern = corrections_by_cell[
+            cell
+        ]
+        if second_mut[cell] != source_tile:
+            raise TitlePatchError(
+                f"slide cell 0x{cell:03X} no longer uses expected tile "
+                f"${source_tile:02X}"
+            )
+        scratch_tile = final[cell]
+        if scratch_tile == source_tile:
+            raise TitlePatchError(
+                f"slide cell 0x{cell:03X} has no final-phase scratch tile"
+            )
+        if any(
+            tile == scratch_tile
+            for tile in second[: 12 * 32]
+        ):
+            raise TitlePatchError(
+                f"slide scratch tile ${scratch_tile:02X} is already visible"
+            )
+        source_offset = TITLE_CHR_OFFSET + source_tile * 16
+        if data[source_offset : source_offset + 16] != expected_pattern:
+            raise TitlePatchError(
+                f"definitive title tile ${source_tile:02X} changed under "
+                "slide-logo correction"
+            )
+        second_mut[cell] = scratch_tile
+        scratch_patterns[scratch_tile] = corrected_pattern
+
+    scratch_first = min(scratch_patterns)
+    scratch_last = max(scratch_patterns)
+    scratch_count = scratch_last - scratch_first + 1
+    if scratch_count > 0xFF:
+        raise TitlePatchError("slide-logo scratch span is too large")
+    payload = bytearray()
+    for tile_id in range(scratch_first, scratch_last + 1):
+        corrected = scratch_patterns.get(tile_id)
+        if corrected is not None:
+            payload.extend(corrected)
+            continue
+        source_offset = TITLE_CHR_OFFSET + tile_id * 16
+        payload.extend(data[source_offset : source_offset + 16])
+
+    rebuilt_stream = b"".join(
+        (encode_title_rle(final), encode_title_rle(bytes(second_mut)), b"\xff")
+    )
+    stream_end = FINAL_NAMETABLE_START + len(rebuilt_stream)
+    if stream_end > _MAX_ORIGINAL_TITLE_STREAM_END:
+        raise TitlePatchError(
+            "slide-logo title stream exceeds the historical safe boundary"
+        )
+
+    helper_offset = len(data)
+    helper_address = NOV4_LOAD_ADDRESS + helper_offset
+    helper_prefix = bytes.fromhex(
+        "A5 1C 48 A9 00 85 1C 8D 01 20 "
+        "A5 FF 48 29 7F 8D 00 20"
+    )
+    ppu_address = 0x1000 + scratch_first * 16
+    upload_prefix = bytes(
+        (
+            0xA0,
+            ppu_address >> 8,
+            0xA9,
+            ppu_address & 0xFF,
+            0xA2,
+            scratch_count,
+            0x20,
+            0xAF,
+            0xEB,
+        )
+    )
+    helper_suffix = bytes.fromhex(
+        "A9 01 85 58 A9 F0 85 57 85 4D "
+        "20 74 AB "
+        "68 85 FF 09 10 85 FF 8D 00 20 "
+        "68 85 1C EA EA EA 60"
+    )
+    payload_address = (
+        helper_address
+        + len(helper_prefix)
+        + len(upload_prefix)
+        + 2
+        + len(helper_suffix)
+    )
+    helper = (
+        helper_prefix
+        + upload_prefix
+        + payload_address.to_bytes(2, "little")
+        + helper_suffix
+    )
+    loaded_end = payload_address + len(payload)
+    if loaded_end > NOV3_LOAD_ADDRESS:
+        raise TitlePatchError(
+            "slide-logo helper would overlap resident NOV3"
+        )
+
+    result = bytearray(data)
+    result[FINAL_NAMETABLE_START:stream_end] = rebuilt_stream
+    result[
+        SLIDE_PREP_CALL_OFFSET : SLIDE_PREP_CALL_OFFSET
+        + len(SLIDE_PREP_CALL_SOURCE)
+    ] = bytes((0x20, helper_address & 0xFF, helper_address >> 8))
+    result.extend(helper)
+    result.extend(payload)
+
+    check_final, check_second_offset = decode_title_rle(
+        result, FINAL_NAMETABLE_START
+    )
+    check_second, check_terminator = decode_title_rle(
+        result, check_second_offset
+    )
+    if check_final != final or check_second != bytes(second_mut):
+        raise TitlePatchError("slide-logo title-stream verification failed")
+    if result[check_terminator] != 0xFF:
+        raise TitlePatchError("slide-logo title terminator verification failed")
+    return bytes(result)
+
+
 def _subtitle_tiles(subtitle: str) -> tuple[dict[int, bytes], list[int]]:
     """Rasterize the subtitle into one 8-pixel tile row using palette index 2."""
     width = sum(4 if character == " " else 6 for character in subtitle) - 1
@@ -433,4 +596,5 @@ def patched_nov4_exact_ips_title(
     """Install the historical logo base plus approved final-phase corrections."""
     base_nov4, patched_nov4 = _exact_ips_nov4(zenpen_raw)
     exact = _overlay_exact_ips_differences(data, base_nov4, patched_nov4)
-    return _install_subtitle(exact, subtitle)
+    exact = _install_subtitle(exact, subtitle)
+    return _install_slide_logo_corrections(exact)
