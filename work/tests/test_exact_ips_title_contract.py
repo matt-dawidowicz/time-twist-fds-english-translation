@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from time_twist.exact_ips_title import (
     _FINAL_LOGO_TILE_CORRECTIONS,
+    _SLIDE_CHR_PIXEL_CORRECTIONS,
     DEFINITIVE_IPS_ENV,
     _definitive_ips,
     _definitive_ips_path,
@@ -72,6 +73,22 @@ class ExactIpsTitleContractTests(unittest.TestCase):
                 self.assertEqual(len(source), 16)
                 self.assertEqual(len(target), 16)
                 self.assertNotEqual(source, target)
+
+    def test_slide_logo_chr_corrections_are_narrow(self) -> None:
+        """Lock the two CHR tiles and five reviewed pixel-level changes."""
+        self.assertEqual(
+            [tile for tile, _source, _target in _SLIDE_CHR_PIXEL_CORRECTIONS],
+            [0x1A, 0xEB],
+        )
+        changed_bits = 0
+        for _tile, source, target in _SLIDE_CHR_PIXEL_CORRECTIONS:
+            self.assertEqual(len(source), 16)
+            self.assertEqual(len(target), 16)
+            changed_bits += sum(
+                (left ^ right).bit_count()
+                for left, right in zip(source, target, strict=True)
+            )
+        self.assertEqual(changed_bits, 5)
 
     @patch("time_twist.exact_ips_title.decode_title_rle")
     def test_space_only_subtitle_is_rejected_before_chr_upload(
