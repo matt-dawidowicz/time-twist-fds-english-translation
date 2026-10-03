@@ -75,14 +75,15 @@ class ExactIpsTitleContractTests(unittest.TestCase):
                 self.assertNotEqual(source, target)
 
     def test_slide_logo_corrections_are_pixel_exact(self) -> None:
-        """Lock the four reviewed native-pixel edits in the moving logo."""
+        """Lock the five reviewed native-pixel edits in the moving logo."""
         self.assertEqual(
             _SLIDE_LOGO_PIXEL_CORRECTIONS,
             (
-                (53, 12, True, False),
-                (125, 53, False, True),
-                (126, 53, False, True),
-                (127, 54, False, True),
+                (56, 29, True, False),
+                (56, 30, True, False),
+                (123, 64, False, True),
+                (122, 65, False, True),
+                (121, 66, False, True),
             ),
         )
 
