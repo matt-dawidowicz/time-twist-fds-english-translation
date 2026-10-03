@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from time_twist.exact_ips_title import (
     _FINAL_LOGO_TILE_CORRECTIONS,
+    _SLIDE_LOGO_PIXEL_CORRECTIONS,
     DEFINITIVE_IPS_ENV,
     _definitive_ips,
     _definitive_ips_path,
@@ -72,6 +73,18 @@ class ExactIpsTitleContractTests(unittest.TestCase):
                 self.assertEqual(len(source), 16)
                 self.assertEqual(len(target), 16)
                 self.assertNotEqual(source, target)
+
+    def test_slide_logo_corrections_are_pixel_exact(self) -> None:
+        """Lock the four reviewed native-pixel edits in the moving logo."""
+        self.assertEqual(
+            _SLIDE_LOGO_PIXEL_CORRECTIONS,
+            (
+                (53, 12, True, False),
+                (125, 53, False, True),
+                (126, 53, False, True),
+                (127, 54, False, True),
+            ),
+        )
 
     @patch("time_twist.exact_ips_title.decode_title_rle")
     def test_space_only_subtitle_is_rejected_before_chr_upload(
