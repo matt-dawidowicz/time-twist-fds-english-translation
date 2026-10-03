@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 from time_twist.exact_ips_title import (
     _FINAL_LOGO_TILE_CORRECTIONS,
-    _SLIDE_CHR_PIXEL_CORRECTIONS,
+    _SLIDE_TILE_CORRECTIONS,
     DEFINITIVE_IPS_ENV,
     _definitive_ips,
     _definitive_ips_path,
@@ -74,21 +74,33 @@ class ExactIpsTitleContractTests(unittest.TestCase):
                 self.assertEqual(len(target), 16)
                 self.assertNotEqual(source, target)
 
-    def test_slide_logo_chr_corrections_are_narrow(self) -> None:
-        """Lock the two CHR tiles and five reviewed pixel-level changes."""
+    def test_slide_logo_corrections_are_slide_only(self) -> None:
+        """Lock the two swipe cells, safe scratch IDs, and five pixel edits."""
         self.assertEqual(
-            [tile for tile, _source, _target in _SLIDE_CHR_PIXEL_CORRECTIONS],
-            [0x1A, 0xEB],
+            _SLIDE_TILE_CORRECTIONS,
+            (
+                (
+                    0x067,
+                    0x1A,
+                    0x88,
+                    (
+                        (56, 27, 1, 0),
+                        (56, 28, 1, 0),
+                    ),
+                ),
+                (
+                    0x10F,
+                    0xEB,
+                    0x89,
+                    (
+                        (123, 66, 0, 1),
+                        (122, 67, 0, 1),
+                        (121, 68, 0, 1),
+                    ),
+                ),
+            ),
         )
-        changed_bits = 0
-        for _tile, source, target in _SLIDE_CHR_PIXEL_CORRECTIONS:
-            self.assertEqual(len(source), 16)
-            self.assertEqual(len(target), 16)
-            changed_bits += sum(
-                (left ^ right).bit_count()
-                for left, right in zip(source, target, strict=True)
-            )
-        self.assertEqual(changed_bits, 5)
+
 
     @patch("time_twist.exact_ips_title.decode_title_rle")
     def test_space_only_subtitle_is_rejected_before_chr_upload(
