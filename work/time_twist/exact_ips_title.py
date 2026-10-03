@@ -60,11 +60,7 @@ _SUBTITLE_TILE_ROW = 13
 _SUBTITLE_Y = _SUBTITLE_TILE_ROW * 8
 _MAX_ORIGINAL_TITLE_STREAM_END = 0x094D
 
-# Final-playtest pixel corrections to the definitive IPS wordmark. Each entry
-# duplicates one IPS-owned tile into spare final-phase CHR, changes only the
-# reviewed pixels, and remaps exactly one final nametable cell. The moving
-# monochrome swipe remains byte-for-byte identical to the historical IPS.
-# Pixel-exact corrections to the completed monochrome swipe frame.  Coordinates
+# Pixel-exact corrections to the completed monochrome swipe frame. Coordinates
 # are native 256x96 screen pixels at the final swipe origin ($0100), which maps
 # directly to the second physical nametable.  Each tuple is (x, y, expected_on,
 # target_on).  These are intentionally limited to the four reviewed pixels:
@@ -76,6 +72,9 @@ _SLIDE_LOGO_PIXEL_CORRECTIONS: tuple[tuple[int, int, bool, bool], ...] = (
     (127, 54, False, True),
 )
 
+# Final-playtest pixel corrections to the definitive IPS colored wordmark.
+# Each entry duplicates one IPS-owned tile into spare final-phase CHR, changes
+# only the reviewed pixels, and remaps exactly one final nametable cell.
 _FINAL_LOGO_TILE_CORRECTIONS: tuple[tuple[int, int, bytes, bytes], ...] = (
     (
         0x066,
@@ -291,11 +290,15 @@ def _install_slide_pixel_corrections(data: bytes) -> bytes:
         grouped.setdefault(cell, []).append((x, y, expected_on, target_on))
 
     if len(spare_ids) < len(grouped):
-        raise TitlePatchError("not enough unused CHR tiles for slide-logo correction")
+        raise TitlePatchError(
+            "not enough unused CHR tiles for slide-logo correction"
+        )
 
     result = bytearray(data)
     second_mut = bytearray(second)
-    for spare_tile, (cell, edits) in zip(spare_ids, sorted(grouped.items()), strict=False):
+    for spare_tile, (cell, edits) in zip(
+        spare_ids, sorted(grouped.items())
+    ):
         source_tile = second_mut[cell]
         source_offset = TITLE_CHR_OFFSET + source_tile * 16
         pattern = bytes(result[source_offset : source_offset + 16])
@@ -328,8 +331,12 @@ def _install_slide_pixel_corrections(data: bytes) -> bytes:
         raise TitlePatchError("slide-logo correction overruns title CHR")
     result[FINAL_NAMETABLE_START:stream_end] = rebuilt_stream
 
-    check_final, check_second_offset = decode_title_rle(result, FINAL_NAMETABLE_START)
-    check_second, check_terminator = decode_title_rle(result, check_second_offset)
+    check_final, check_second_offset = decode_title_rle(
+        result, FINAL_NAMETABLE_START
+    )
+    check_second, check_terminator = decode_title_rle(
+        result, check_second_offset
+    )
     if check_final != final or check_second != bytes(second_mut):
         raise TitlePatchError("slide-logo correction stream verification failed")
     if result[check_terminator] != 0xFF:
