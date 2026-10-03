@@ -34,8 +34,6 @@ from .title_layout import (
     FINAL_NAMETABLE_START,
     NOV3_LOAD_ADDRESS,
     NOV4_LOAD_ADDRESS,
-    SLIDE_PREP_CALL_OFFSET,
-    SLIDE_PREP_CALL_SOURCE,
     TITLE_CHR_OFFSET,
     TITLE_TRANSITION_CALL_OFFSET,
     TITLE_TRANSITION_CALL_SOURCE,
@@ -237,171 +235,6 @@ def _overlay_exact_ips_differences(
     return bytes(result)
 
 
-_SLIDE_TILE_CORRECTIONS: tuple[
-    tuple[int, int, int, tuple[tuple[int, int, int, int], ...]], ...
-] = (
-    (
-        0x067,
-        0x1A,
-        0x88,
-        (
-            (56, 27, 1, 0),
-            (56, 28, 1, 0),
-        ),
-    ),
-    (
-        0x10F,
-        0xEB,
-        0x89,
-        (
-            (123, 66, 0, 1),
-            (122, 67, 0, 1),
-            (121, 68, 0, 1),
-        ),
-    ),
-)
-
-
-def _tile_pixel(pattern: bytes, x: int, y: int) -> int:
-    """Return one 2bpp pixel from a 16-byte NES pattern."""
-    shift = 7 - x
-    return ((pattern[y] >> shift) & 1) | (((pattern[y + 8] >> shift) & 1) << 1)
-
-
-def _with_tile_pixel(pattern: bytes, x: int, y: int, value: int) -> bytes:
-    """Return one NES pattern with exactly one 2bpp pixel replaced."""
-    result = bytearray(pattern)
-    mask = 1 << (7 - x)
-    result[y] = (result[y] & ~mask) | ((value & 1) << (7 - x))
-    result[y + 8] = (result[y + 8] & ~mask) | (
-        ((value >> 1) & 1) << (7 - x)
-    )
-    return bytes(result)
-
-
-def _install_slide_tile_corrections(data: bytes) -> bytes:
-    """Install two corrected patterns only for the moving monochrome swipe.
-
-    The corrected patterns are uploaded during the existing blanked pre-slide
-    phase into tile IDs $88/$89. Those IDs are referenced only below the
-    96-pixel swipe viewport in the second nametable and are not referenced by
-    the final title nametable. The two visible swipe cells are remapped to
-    $88/$89. Base CHR, clock tiles, final-title cells, and all other phase
-    ownership therefore remain untouched.
-    """
-    final, second_offset = decode_title_rle(data, FINAL_NAMETABLE_START)
-    second, terminator_offset = decode_title_rle(data, second_offset)
-    if terminator_offset >= len(data) or data[terminator_offset] != 0xFF:
-        raise TitlePatchError("definitive IPS title stream lost its terminator")
-
-    second_mut = bytearray(second)
-    corrected_patterns: list[bytes] = []
-    for cell, source_tile, scratch_tile, edits in _SLIDE_TILE_CORRECTIONS:
-        if second_mut[cell] != source_tile:
-            raise TitlePatchError(
-                f"slide cell 0x{cell:03X} no longer uses tile "
-                f"${source_tile:02X}"
-            )
-        if scratch_tile in final[:960]:
-            raise TitlePatchError(
-                f"slide scratch tile ${scratch_tile:02X} is final-title owned"
-            )
-        visible_scratch_uses = [
-            index
-            for index, tile in enumerate(second[: 12 * 32])
-            if tile == scratch_tile
-        ]
-        if visible_scratch_uses:
-            raise TitlePatchError(
-                f"slide scratch tile ${scratch_tile:02X} is already visible"
-            )
-
-        offset = TITLE_CHR_OFFSET + source_tile * 16
-        corrected = bytes(data[offset : offset + 16])
-        if len(corrected) != 16:
-            raise TitlePatchError("slide source tile is truncated")
-        for x, y, expected_on, target_on in edits:
-            local_x, local_y = x & 7, y & 7
-            current_on = bool(_tile_pixel(corrected, local_x, local_y))
-            if current_on != bool(expected_on):
-                raise TitlePatchError(
-                    f"slide pixel ({x},{y}) no longer matches reviewed source"
-                )
-            corrected = _with_tile_pixel(
-                corrected,
-                local_x,
-                local_y,
-                1 if target_on else 0,
-            )
-        corrected_patterns.append(corrected)
-        second_mut[cell] = scratch_tile
-
-    rebuilt_stream = b"".join(
-        (encode_title_rle(final), encode_title_rle(bytes(second_mut)), b"\xff")
-    )
-    stream_end = FINAL_NAMETABLE_START + len(rebuilt_stream)
-    if stream_end > _MAX_ORIGINAL_TITLE_STREAM_END:
-        raise TitlePatchError(
-            "slide-logo title stream exceeds the historical safe boundary"
-        )
-
-    if data[
-        SLIDE_PREP_CALL_OFFSET : SLIDE_PREP_CALL_OFFSET
-        + len(SLIDE_PREP_CALL_SOURCE)
-    ] != SLIDE_PREP_CALL_SOURCE:
-        raise TitlePatchError("pre-slide call site changed")
-
-    scratch_first = _SLIDE_TILE_CORRECTIONS[0][2]
-    scratch_tiles = [item[2] for item in _SLIDE_TILE_CORRECTIONS]
-    if scratch_tiles != list(range(scratch_first, scratch_first + len(scratch_tiles))):
-        raise TitlePatchError("slide scratch tiles must be contiguous")
-
-    helper_offset = len(data)
-    helper_address = NOV4_LOAD_ADDRESS + helper_offset
-    helper_prefix = (
-        SLIDE_PREP_CALL_SOURCE
-        + bytes(
-            (
-                0xA0,
-                0x10 + (scratch_first >> 4),
-                0xA9,
-                (scratch_first & 0x0F) << 4,
-                0xA2,
-                len(scratch_tiles),
-                0x20,
-                0xAF,
-                0xEB,
-            )
-        )
-    )
-    payload_address = helper_address + len(helper_prefix) + 3
-    helper = helper_prefix + payload_address.to_bytes(2, "little") + b"\x60"
-    payload = b"".join(corrected_patterns)
-    if payload_address + len(payload) > NOV3_LOAD_ADDRESS:
-        raise TitlePatchError("slide correction helper would overlap NOV3")
-
-    result = bytearray(data)
-    result[FINAL_NAMETABLE_START:stream_end] = rebuilt_stream
-    result[
-        SLIDE_PREP_CALL_OFFSET : SLIDE_PREP_CALL_OFFSET
-        + len(SLIDE_PREP_CALL_SOURCE)
-    ] = bytes((0x20, helper_address & 0xFF, helper_address >> 8))
-    result.extend(helper)
-    result.extend(payload)
-
-    check_final, check_second_offset = decode_title_rle(
-        result, FINAL_NAMETABLE_START
-    )
-    check_second, check_terminator = decode_title_rle(
-        result, check_second_offset
-    )
-    if check_final != final or check_second != bytes(second_mut):
-        raise TitlePatchError("slide-logo title-stream verification failed")
-    if result[check_terminator] != 0xFF:
-        raise TitlePatchError("slide-logo title terminator verification failed")
-    return bytes(result)
-
-
 def _subtitle_tiles(subtitle: str) -> tuple[dict[int, bytes], list[int]]:
     """Rasterize the subtitle into one 8-pixel tile row using palette index 2."""
     width = sum(4 if character == " " else 6 for character in subtitle) - 1
@@ -600,5 +433,4 @@ def patched_nov4_exact_ips_title(
     """Install the historical logo base plus approved final-phase corrections."""
     base_nov4, patched_nov4 = _exact_ips_nov4(zenpen_raw)
     exact = _overlay_exact_ips_differences(data, base_nov4, patched_nov4)
-    exact = _install_slide_tile_corrections(exact)
     return _install_subtitle(exact, subtitle)
