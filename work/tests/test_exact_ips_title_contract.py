@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from time_twist.exact_ips_title import (
     _FINAL_LOGO_TILE_CORRECTIONS,
+    _SLIDE_LOGO_CORRECTION_CELLS,
     DEFINITIVE_IPS_ENV,
     _definitive_ips,
     _definitive_ips_path,
@@ -72,6 +73,16 @@ class ExactIpsTitleContractTests(unittest.TestCase):
                 self.assertEqual(len(source), 16)
                 self.assertEqual(len(target), 16)
                 self.assertNotEqual(source, target)
+
+    def test_slide_logo_reuses_only_reviewed_final_corrections(
+        self,
+    ) -> None:
+        """Limit the monochrome swipe fix to the two user-reviewed cells."""
+        self.assertEqual(_SLIDE_LOGO_CORRECTION_CELLS, (0x066, 0x0F1))
+        final_cells = {
+            cell for cell, _tile, _source, _target in _FINAL_LOGO_TILE_CORRECTIONS
+        }
+        self.assertTrue(set(_SLIDE_LOGO_CORRECTION_CELLS) <= final_cells)
 
     @patch("time_twist.exact_ips_title.decode_title_rle")
     def test_space_only_subtitle_is_rejected_before_chr_upload(
