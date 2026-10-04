@@ -16,6 +16,7 @@ are evidence, not release input.
 | Investigate runtime behavior | [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) | [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md), [engine change history](ENGINE_CHANGELOG.md) |
 | Diagnose dialogue layout | [Text layout engine reference](TEXT_LAYOUT_ENGINE_REFERENCE.md) | [Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md) |
 | Diagnose gameplay script logic | [Gameplay script engine](GAMEPLAY_SCRIPT_ENGINE.md) | [Retail VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md) |
+| Diagnose quiz behavior | [Quiz engine reverse engineering](QUIZ_ENGINE_REVERSE_ENGINEERING.md) | [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md) |
 | Diagnose graphics/scene composition | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | [ROM modification inventory](ROM_MODIFICATION_INVENTORY.md) |
 | Review English ROM-level changes | [ROM modification inventory](ROM_MODIFICATION_INVENTORY.md) | [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md) |
 
@@ -54,6 +55,7 @@ as current release instructions.
 1. [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md) — current solved/unsolved ledger
 2. [Engine change and bug-fix history](ENGINE_CHANGELOG.md) — durable record of major runtime fixes and retired assumptions
 3. [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) — evidence model and investigation workflow
+4. [Quiz engine reverse engineering](QUIZ_ENGINE_REVERSE_ENGINEERING.md) — complete 39-question menu/result/decoder audit
 5. [Architecture](ARCHITECTURE.md) — runtime/build architecture
 5. [Gameplay script and event VM](GAMEPLAY_SCRIPT_ENGINE.md)
 6. [Retail gameplay VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md)
