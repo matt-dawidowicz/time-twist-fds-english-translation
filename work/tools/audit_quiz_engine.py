@@ -9,6 +9,10 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import sys
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT / "work"))
 
 from time_twist.english import encode_english
 from time_twist.entropy_codec import split_entropy_stream
@@ -223,7 +227,10 @@ def main() -> None:
 
         descriptors = primary_menu_descriptors(data)
         labels = FIXED_LABELS[bank]
-        translations = merged_translation_map(bank)
+        translations = merged_translation_map(
+            bank,
+            base_directory=PROJECT_ROOT / "work" / "translations",
+        )
         wrong_targets = []
         success_targets = []
 
