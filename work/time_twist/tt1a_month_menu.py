@@ -1,13 +1,16 @@
-"""Final-layer 12-month Fortune Teller selector for the English release.
+"""Safe final-layer 12-month Fortune Teller selector.
 
-The retail TT1A birth-month UI uses a seven-choice Jan-Jun/Jul-Dec menu whose
-Jul-Dec entry opens a second six-choice menu.  The English release intentionally
-flattens that presentation into one 4x3 Jan-Dec menu.  Birth month remains
-mechanically irrelevant to the personality result; this module changes only
-selection presentation and the shared NOV2 geometry needed for 9-12 choices.
+v64 proved that the historical September v4/v5 12-choice patch cannot be
+transplanted literally onto the modern NOV2 runtime:
 
-The geometry is recovered from the runtime-tested September v4/v5 implementation,
-adapted to coexist with the later parent-menu Back/Cancel guard.
+* $043B is live first-column-width state, so a width array at $0433-$043E
+  collides with it at slot 8.
+* the historical $821B helper jumped to $94AE, past the modern $22xx PPU
+  address setup, allowing menu redraws to target $00xx CHR pattern RAM.
+
+This implementation keeps the v63 <=8-choice renderer semantics, stores twelve
+per-choice widths in the verified $0470-$047B gap, and adds only the geometry
+needed for 9-12 visible choices.
 """
 
 from __future__ import annotations
@@ -19,19 +22,13 @@ class MonthMenuPatchError(ValueError):
 
 NOV2_LOAD_ADDRESS = 0x6000
 TT1A_LOAD_ADDRESS = 0xA200
+MENU_WIDTH_WORK_RAM_ADDRESS = 0x0470
+MENU_WIDTH_WORK_RAM_END = 0x047B
+
 MONTH_LABELS = (
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "Jun",
-    "Jul",
-    "Aug",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dec",
+    "Jan", "Feb", "Mar", "Apr",
+    "May", "Jun", "Jul", "Aug",
+    "Sep", "Oct", "Nov", "Dec",
 )
 MONTH_DESCRIPTOR = (5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17)
 MONTH_GRID = (
@@ -40,6 +37,8 @@ MONTH_GRID = (
     ("Mar", "Jul", "Nov"),
     ("Apr", "Aug", "Dec"),
 )
+MONTH_CURSOR_X = (0x20, 0x68, 0xB0)
+MONTH_TEXT_BASE = (0x45, 0x4E, 0x57)
 
 _NATIVE_DESCRIPTOR_BYTES = bytes.fromhex(
     "04 01 02 03 04 07 05 06 07 08 09 0A 0B "
@@ -49,44 +48,34 @@ _FLAT_DESCRIPTOR_BYTES = bytes.fromhex(
     "04 01 02 03 04 0C 05 06 07 08 09 0A 0C "
     "0D 0E 0F 10 11 01 0B 02 12 13"
 )
-_PARENT_TRAMPOLINE_BEFORE = bytes.fromhex("4C 4A 81 BB 6B EA")
-_PARENT_TRAMPOLINE_AFTER = bytes.fromhex("84 9C 4C BB 6B EA")
 _CURSOR_REDIRECT_BEFORE = bytes.fromhex(
     "A4 32 C0 04 90 0A 98 29 03 A8 AD 3B 04 69 2F 60 A9 20 60"
 )
-_CURSOR_REDIRECT_AFTER = bytes.fromhex("4C EC 88") + bytes([0xEA]) * 16
-_CURSOR_CONSTANTS = bytes.fromhex("A9 20 60 20 68 B0 EA")
-_THREE_COLUMN_CURSOR_HELPER_BEFORE = bytes.fromhex(
-    "84 9C 4C BB 6B EA EA EA EA EA"
-)
-_THREE_COLUMN_CURSOR_HELPER_AFTER = bytes.fromhex(
-    "98 4A 4A A8 B9 A7 88 60 EA EA"
-)
-_THREE_COLUMN_TEXT_HELPER_BEFORE = bytes([0xEA]) * 11
-_THREE_COLUMN_TEXT_HELPER_AFTER = bytes.fromhex(
-    "E0 08 A9 4E 90 02 A9 57 4C AE 94"
+_CURSOR_REDIRECT_AFTER = (
+    bytes.fromhex("4C EC 88")
+    + bytes.fromhex("98 4A 4A A8 B9 A7 88 60")
+    + bytes([0xEA]) * 8
 )
 _CURSOR_DISPATCH_BEFORE = bytes.fromhex(
     "A4 32 C0 04 90 B2 AD 20 04 C9 09 90 03 4C 4A 81 "
     "98 29 03 A8 AD 3B 04 69 30 60"
 )
 _CURSOR_DISPATCH_AFTER = bytes.fromhex(
-    "A4 32 C0 04 90 B2 AD 20 04 C9 09 90 03 4C 1B 82 "
-    "98 29 03 A8 B9 33 04 69 28 60"
+    "A4 32 C0 04 90 B2 AD 20 04 C9 09 B0 0A "
+    "98 29 03 A8 AD 3B 04 69 30 60 4C 90 6D"
 )
-_RENDERER_BEFORE = bytes.fromhex(
-    "8A C9 04 90 0D 29 03 A8 AD 3B 04 4A 4A 4A 69 47 D0 02 A9 45 "
-    "65 3C 85 3C A9 22 65 3D 85 3D BD 2D 04 4A 4A 4A D0 02 A9 06 "
-    "85 31 A2 00 EA EA EA EA EA EA"
+_TEXT_SPECIAL_BEFORE = bytes([0xEA]) * 11
+_TEXT_SPECIAL_AFTER = bytes.fromhex(
+    "8A 29 08 C9 08 69 4E 4C A4 94 EA"
 )
-_RENDERER_AFTER = bytes.fromhex(
-    "8A C9 04 90 17 A5 91 C9 09 90 03 4C 1B 82 8A 29 03 A8 "
-    "B9 33 04 4A 4A 4A 69 46 D0 02 A9 45 65 3C 85 3C A9 22 "
-    "65 3D 85 3D BD 33 04 4A 4A 4A 85 31 A2 00"
+_RENDERER_PREFIX_BEFORE = bytes.fromhex(
+    "8A C9 04 90 0D 29 03 A8 AD 3B 04 4A 4A 4A 69 47 D0 02 A9 45"
 )
-_TRAILING_ARROW_HELPER = bytes.fromhex(
-    "20 37 81 48 A5 A8 C9 08 68 90 03 18 69 08 60"
+_RENDERER_PREFIX_AFTER = bytes.fromhex(
+    "A9 45 E0 04 90 0E A5 91 C9 09 B0 23 "
+    "AD 3B 04 4A 4A 4A 69 47"
 )
+_RENDERER_TRAMPOLINES = bytes.fromhex("4C C2 94 4C 1B 82")
 
 
 def _guarded(
@@ -98,7 +87,6 @@ def _guarded(
     replacement: bytes,
     label: str,
 ) -> None:
-    """Apply one size-neutral patch only to its known source bytes."""
     if len(expected) != len(replacement):
         raise MonthMenuPatchError(f"{label}: size mismatch")
     offset = cpu_address - load_address
@@ -136,7 +124,7 @@ def parse_tt1a_primary_descriptors(
 
 
 def patch_tt1a_month_descriptor(data: bytes) -> bytes:
-    """Flatten TT1A's retail two-stage month selector into 12 real choices."""
+    """Flatten the retail two-stage month selector into twelve real choices."""
     result = bytearray(data)
     _guarded(
         result,
@@ -168,23 +156,24 @@ def patch_tt1a_month_descriptor(data: bytes) -> bytes:
 
 
 def patch_nov2_twelve_choice_geometry(data: bytes) -> bytes:
-    """Restore the runtime-tested 9-12-choice 4x3 NOV2 menu geometry."""
+    """Add safe 9-12-choice geometry without changing normal <=8 menus."""
     result = bytearray(data)
+
     _guarded(
         result,
         load_address=NOV2_LOAD_ADDRESS,
         cpu_address=0x6DE8,
         expected=bytes.fromhex("99 2D 04"),
-        replacement=bytes.fromhex("99 33 04"),
-        label="relocate menu-width recorder",
+        replacement=bytes.fromhex("99 70 04"),
+        label="relocate per-choice menu widths to $0470",
     )
     _guarded(
         result,
         load_address=NOV2_LOAD_ADDRESS,
         cpu_address=0x813B,
         expected=bytes.fromhex("B9 2D 04"),
-        replacement=bytes.fromhex("B9 33 04"),
-        label="relocate trailing-width lookup",
+        replacement=bytes.fromhex("B9 70 04"),
+        label="selection-span width lookup -> $0470",
     )
     _guarded(
         result,
@@ -192,38 +181,7 @@ def patch_nov2_twelve_choice_geometry(data: bytes) -> bytes:
         cpu_address=0x6D8D,
         expected=_CURSOR_REDIRECT_BEFORE,
         replacement=_CURSOR_REDIRECT_AFTER,
-        label="route cursor-X through 2/3-column dispatcher",
-    )
-    constants = 0x88A4 - NOV2_LOAD_ADDRESS
-    if bytes(result[constants : constants + 7]) != _CURSOR_CONSTANTS:
-        raise MonthMenuPatchError("NOV2 three-column cursor constants drifted")
-
-    # v63 reached the five-byte parent Back guard through an otherwise redundant
-    # trampoline. Inline the same semantics there so the historical $814A cave
-    # can again host the 3-column cursor helper.
-    _guarded(
-        result,
-        load_address=NOV2_LOAD_ADDRESS,
-        cpu_address=0x6B70,
-        expected=_PARENT_TRAMPOLINE_BEFORE,
-        replacement=_PARENT_TRAMPOLINE_AFTER,
-        label="inline parent Back guard",
-    )
-    _guarded(
-        result,
-        load_address=NOV2_LOAD_ADDRESS,
-        cpu_address=0x814A,
-        expected=_THREE_COLUMN_CURSOR_HELPER_BEFORE,
-        replacement=_THREE_COLUMN_CURSOR_HELPER_AFTER,
-        label="install three-column leading-cursor helper",
-    )
-    _guarded(
-        result,
-        load_address=NOV2_LOAD_ADDRESS,
-        cpu_address=0x821B,
-        expected=_THREE_COLUMN_TEXT_HELPER_BEFORE,
-        replacement=_THREE_COLUMN_TEXT_HELPER_AFTER,
-        label="install three-column text helper",
+        label="safe 2/3-column leading-cursor redirect",
     )
     _guarded(
         result,
@@ -231,70 +189,105 @@ def patch_nov2_twelve_choice_geometry(data: bytes) -> bytes:
         cpu_address=0x88EC,
         expected=_CURSOR_DISPATCH_BEFORE,
         replacement=_CURSOR_DISPATCH_AFTER,
-        label="install two/three-column cursor dispatcher",
+        label="safe 2/3-column leading-cursor dispatcher",
+    )
+    _guarded(
+        result,
+        load_address=NOV2_LOAD_ADDRESS,
+        cpu_address=0x821B,
+        expected=_TEXT_SPECIAL_BEFORE,
+        replacement=_TEXT_SPECIAL_AFTER,
+        label="safe 3-column text-base helper",
     )
     _guarded(
         result,
         load_address=NOV2_LOAD_ADDRESS,
         cpu_address=0x9490,
-        expected=_RENDERER_BEFORE,
-        replacement=_RENDERER_AFTER,
-        label="install 4x3 text renderer path",
+        expected=_RENDERER_PREFIX_BEFORE,
+        replacement=_RENDERER_PREFIX_AFTER,
+        label="preserve <=8 renderer and branch >=9 safely",
     )
     _guarded(
         result,
         load_address=NOV2_LOAD_ADDRESS,
-        cpu_address=0x6D90,
-        expected=bytes([0xEA]) * len(_TRAILING_ARROW_HELPER),
-        replacement=_TRAILING_ARROW_HELPER,
-        label="install third-column trailing-arrow correction",
+        cpu_address=0x94AE,
+        expected=bytes.fromhex("BD 2D 04"),
+        replacement=bytes.fromhex("BD 70 04"),
+        label="renderer draw-count width lookup -> $0470",
     )
     _guarded(
         result,
         load_address=NOV2_LOAD_ADDRESS,
-        cpu_address=0x989F,
-        expected=bytes.fromhex("20 37 81"),
-        replacement=bytes.fromhex("20 90 6D"),
-        label="route trailing cursor through v5 wrapper",
+        cpu_address=0x94BC,
+        expected=bytes([0xEA]) * 6,
+        replacement=_RENDERER_TRAMPOLINES,
+        label="normal/special renderer trampolines",
     )
 
     patched = bytes(result)
-    for pattern in (
-        "B9 2D 04",
-        "BD 2D 04",
-        "99 2D 04",
-        "9D 2D 04",
-        "AD 3B 04",
+
+    if any(
+        pattern in patched
+        for pattern in (
+            bytes.fromhex("99 2D 04"),
+            bytes.fromhex("B9 2D 04"),
+            bytes.fromhex("BD 2D 04"),
+            bytes.fromhex("9D 2D 04"),
+        )
     ):
-        if bytes.fromhex(pattern) in patched:
-            raise MonthMenuPatchError(
-                f"stale menu-width reference remains: {pattern}"
-            )
+        raise MonthMenuPatchError("stale indexed $042D width reference remains")
+
     relocated = sum(
         patched.count(bytes.fromhex(pattern))
-        for pattern in ("B9 33 04", "BD 33 04", "99 33 04", "9D 33 04")
+        for pattern in ("99 70 04", "B9 70 04", "BD 70 04", "9D 70 04")
     )
-    if relocated != 5:
+    if relocated != 3:
         raise MonthMenuPatchError(
-            f"expected five indexed $0433 width references, found {relocated}"
+            f"expected three indexed $0470 width references, found {relocated}"
         )
 
-    guard = 0x6B70 - NOV2_LOAD_ADDRESS
-    if bytes(patched[guard : guard + 5]) != bytes.fromhex(
-        "84 9C 4C BB 6B"
+    # The predicate scratch range ends at $046F and event flags start at $0480.
+    if not (
+        0x046F < MENU_WIDTH_WORK_RAM_ADDRESS
+        and MENU_WIDTH_WORK_RAM_END < 0x0480
     ):
-        raise MonthMenuPatchError("parent Back guard semantics were damaged")
+        raise MonthMenuPatchError("12-byte menu-width array escaped safe gap")
+
+    # Modern first-column width state and parent Back guard must remain intact.
+    if bytes.fromhex("CD 3B 04 90 03 8D 3B 04") not in patched:
+        raise MonthMenuPatchError("live $043B max-width state was damaged")
+    guard = 0x814A - NOV2_LOAD_ADDRESS
+    if bytes(patched[guard : guard + 5]) != bytes.fromhex("84 9C 4C BB 6B"):
+        raise MonthMenuPatchError("parent Back guard changed")
+
+    # v65 deliberately keeps the canonical trailing-span call.
+    trailing = 0x989F - NOV2_LOAD_ADDRESS
+    if bytes(patched[trailing : trailing + 3]) != bytes.fromhex("20 37 81"):
+        raise MonthMenuPatchError("canonical trailing-span call changed")
+
     return patched
 
 
-def twelve_month_navigation(slot: int, direction: str) -> int:
-    """Return the 4x3 grid destination for one directional input."""
+def month_text_ppu_address(slot: int) -> int:
+    """Return the exact nametable address used by one 4x3 month slot."""
     if not 0 <= slot < 12:
         raise ValueError(slot)
-    if direction == "up":
-        return (slot & ~3) | ((slot - 1) & 3)
+    row = slot & 3
+    column = slot >> 2
+    address = 0x2200 + MONTH_TEXT_BASE[column] + (row << 6)
+    if not 0x2000 <= address <= 0x23BF:
+        raise MonthMenuPatchError(f"slot {slot} escaped nametable space")
+    return address
+
+
+def twelve_month_navigation(slot: int, direction: str) -> int:
+    """Mirror the native menu input handler for a twelve-choice descriptor."""
+    if not 0 <= slot < 12:
+        raise ValueError(slot)
     if direction == "down":
-        return (slot & ~3) | ((slot + 1) & 3)
+        return (slot + 1) % 12
+    if direction == "up":
+        return (slot - 1) % 12
     if direction == "left":
         return slot - 4 if slot >= 4 else slot
     if direction == "right":
