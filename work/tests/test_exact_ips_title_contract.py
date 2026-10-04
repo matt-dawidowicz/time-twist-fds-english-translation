@@ -77,8 +77,8 @@ class ExactIpsTitleContractTests(unittest.TestCase):
     def test_slide_logo_reuses_only_reviewed_final_corrections(
         self,
     ) -> None:
-        """Limit the monochrome swipe fix to the two user-reviewed cells."""
-        self.assertEqual(_SLIDE_LOGO_CORRECTION_CELLS, (0x066, 0x0F1))
+        """Limit the monochrome swipe fix to the accepted first-T cell."""
+        self.assertEqual(_SLIDE_LOGO_CORRECTION_CELLS, (0x066,))
         final_cells = {
             cell for cell, _tile, _source, _target in _FINAL_LOGO_TILE_CORRECTIONS
         }
