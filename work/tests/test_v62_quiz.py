@@ -46,12 +46,14 @@ class V62QuizCorrectionTests(unittest.TestCase):
             patched[EVE_QUIZ_OFFSET:EVE_QUIZ_OFFSET + 3],
             EVE_QUIZ_REPLACEMENT,
         )
-        # Relative branch base is CPU $A644 after reading opcode $31.
+        # Native $31 relative targets are based at the opcode address $A643.
         deltas = tuple(
             int.from_bytes(bytes((value,)), signed=True)
             for value in EVE_QUIZ_REPLACEMENT[1:]
         )
         self.assertEqual(deltas, (63, 3))
+        resolved = tuple(0xA643 + delta for delta in deltas)
+        self.assertEqual(resolved, (0xA682, 0xA646))
 
     def test_eve_quiz_patch_is_idempotent_and_guarded(self) -> None:
         bank = bytearray(EVE_QUIZ_OFFSET + len(EVE_QUIZ_EXPECTED))
