@@ -73,6 +73,15 @@ FIXED_TAIL_BOUNDARIES: dict[str, int] = {
     "TT6D": 731,
 }
 
+# Runtime playtesting found one TT3A record whose optimal representation ended
+# with a dictionary expansion immediately before the record terminator. The
+# native nested-dictionary return path rendered the intended phrase and then
+# continued into unrelated text. Keep the visible English identical, but force
+# the final semantic glyph to remain a top-level token for this record.
+_RUNTIME_SAFE_TERMINAL_LITERAL_RECORDS = frozenset({
+    ("TT3A", 1, 30),
+})
+
 
 class IncrementalBuildError(ValueError):
     """Report a compiled bank that cannot be safely rebuilt incrementally."""
@@ -216,6 +225,66 @@ def _semantic(
 ) -> tuple[tuple[object, int], ...]:
     """Drop decoder bit positions while retaining semantic symbols."""
     return tuple((symbol.kind, symbol.value) for symbol in record)
+
+
+def _runtime_safe_packed_record(
+    state: _EntropyBankState,
+    group_index: int,
+    record_index: int,
+    literal: tuple[PackedSymbol, ...],
+) -> tuple[PackedSymbol, ...]:
+    """Parse one record while avoiding reviewed runtime-unsafe terminal expansion."""
+    packed = parse_entropy_record_with_expansions(
+        literal,
+        state.expansions,
+    )
+    key = (state.bank_name, group_index, record_index)
+    if key not in _RUNTIME_SAFE_TERMINAL_LITERAL_RECORDS:
+        return packed
+    if not literal:
+        raise IncrementalBuildError(
+            f"{state.bank_name}/g{group_index}/r{record_index} is empty"
+        )
+    safe = (
+        *parse_entropy_record_with_expansions(
+            literal[:-1],
+            state.expansions,
+        ),
+        literal[-1],
+    )
+    if safe[-1].kind is SymbolKind.DICTIONARY:
+        raise IncrementalBuildError(
+            f"{state.bank_name}/g{group_index}/r{record_index} still ends "
+            "in a dictionary reference"
+        )
+    expanded = expand_entropy_record(safe, state.expansions)
+    if _semantic(expanded) != _semantic(literal):
+        raise IncrementalBuildError(
+            f"{state.bank_name}/g{group_index}/r{record_index} runtime-safe "
+            "packing changed semantics"
+        )
+    return tuple(safe)
+
+
+def _runtime_safe_repack_records(
+    state: _EntropyBankState,
+) -> tuple[str, ...]:
+    """Return reviewed records whose compiled representation still needs repair."""
+    repairs: list[str] = []
+    for bank_name, group_index, record_index in sorted(
+        _RUNTIME_SAFE_TERMINAL_LITERAL_RECORDS
+    ):
+        if bank_name != state.bank_name:
+            continue
+        try:
+            record = state.groups[group_index][record_index]
+        except IndexError as error:
+            raise IncrementalBuildError(
+                f"{bank_name}/g{group_index}/r{record_index} topology changed"
+            ) from error
+        if record and record[-1].kind is SymbolKind.DICTIONARY:
+            repairs.append(f"{bank_name}/g{group_index}/r{record_index}")
+    return tuple(repairs)
 
 
 def _translation_topology(
@@ -584,13 +653,15 @@ def _rebuild_loaded_bank(
 
     groups = tuple(
         tuple(
-            parse_entropy_record_with_expansions(
+            _runtime_safe_packed_record(
+                state,
+                group_index,
+                record_index,
                 record,
-                state.expansions,
             )
-            for record in group
+            for record_index, record in enumerate(group)
         )
-        for group in literal_groups
+        for group_index, group in enumerate(literal_groups)
     )
 
     if state.bank_name == "TT1A":
@@ -869,7 +940,9 @@ def rebuild_entropy_bank(
         bank_name,
         translations,
     )
-    if not changed:
+    representation_repairs = _runtime_safe_repack_records(state)
+    effective_changed = tuple(dict.fromkeys((*changed, *representation_repairs)))
+    if not effective_changed:
         return IncrementalBankResult(data=data, changed_records=())
 
     rebuilt = _rebuild_loaded_bank(state, desired)
@@ -885,9 +958,15 @@ def rebuild_entropy_bank(
                 raise IncrementalBuildError(
                     f"{record_id} failed post-build verification"
                 )
+    remaining_repairs = _runtime_safe_repack_records(verified)
+    if remaining_repairs:
+        raise IncrementalBuildError(
+            "runtime-safe representation repair did not converge: "
+            + ", ".join(remaining_repairs)
+        )
     return IncrementalBankResult(
         data=rebuilt,
-        changed_records=changed,
+        changed_records=effective_changed,
     )
 
 
