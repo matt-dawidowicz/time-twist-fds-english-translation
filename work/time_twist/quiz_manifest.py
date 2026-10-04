@@ -35,7 +35,7 @@ QUIZ_ANSWERS = (
     QuizAnswer("TT5", 0x1C, "Mrs. Stowe"),
     QuizAnswer("TT5", 0x1D, "Rushmore"),
     QuizAnswer("TT5", 0x1E, "Projector"),
-    QuizAnswer("TT6B", 0x0F, "Fruit of knowledge"),
+    QuizAnswer("TT6B", 0x0F, "Fruit of wisdom"),
     QuizAnswer("TT6B", 0x10, "Jehovah"),
     QuizAnswer("TT6B", 0x11, "Egypt"),
     QuizAnswer("TT6B", 0x12, "Solomon"),
