@@ -164,7 +164,7 @@ TT2_FIXED_TEXT_RECORDS = (
     "Hundred Years",
     "Pacific Ocean",
     "Merchants",
-    "Citizens",
+    "Commoners",
     "Entertainers",
     "Criminals",
     "Guide",
