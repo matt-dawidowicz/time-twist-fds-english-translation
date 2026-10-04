@@ -6,6 +6,7 @@ import unittest
 
 from time_twist.english import encode_english
 from time_twist.entropy_codec import pack_entropy_stream
+from time_twist.entropy_compression import expand_entropy_record
 from time_twist.entropy_fixed_ui import (
     TT1A_STATIC_POINTERS,
     TT1A_TABLE_END,
@@ -23,6 +24,7 @@ from time_twist.incremental_build import (
     _allocate_groups,
     _bank_layout_report,
     _load_entropy_bank,
+    _runtime_safe_packed_record,
     inspect_entropy_bank,
     rebuild_entropy_bank,
     validate_incremental_nov2_runtime,
@@ -231,6 +233,29 @@ class IncrementalBuildTests(unittest.TestCase):
             "NOV2 runtime drift detected",
         ):
             validate_incremental_nov2_runtime(bytes(nov2))
+
+    def test_tt3a_tunnel_record_keeps_terminal_glyph_top_level(
+        self,
+    ) -> None:
+        """Prevent the runtime-corrupting dictionary-return/terminator edge case."""
+        literal = encode_english("An open tunnel…!")
+        state = type(
+            "State",
+            (),
+            {
+                "bank_name": "TT3A",
+                "expansions": (literal,),
+            },
+        )()
+        ordinary = _runtime_safe_packed_record(state, 1, 29, literal)
+        self.assertEqual(
+            ordinary,
+            (PackedSymbol(SymbolKind.DICTIONARY, 1, 0, 0),),
+        )
+
+        safe = _runtime_safe_packed_record(state, 1, 30, literal)
+        self.assertNotEqual(safe[-1].kind, SymbolKind.DICTIONARY)
+        self.assertEqual(expand_entropy_record(safe, state.expansions), literal)
 
     def test_dictionary_backed_noop_is_byte_identical(self) -> None:
         """Return original bytes when canonical English already matches."""
