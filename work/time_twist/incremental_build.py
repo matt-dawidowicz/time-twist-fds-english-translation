@@ -372,6 +372,17 @@ def _expand_dictionary(
     return tuple(expand(index) for index in range(1, len(definitions) + 1))
 
 
+def _unsafe_dictionary_control_entries(
+    state: _EntropyBankState,
+) -> tuple[int, ...]:
+    """Return dictionary entries whose full expansion contains controls."""
+    return tuple(
+        index
+        for index, expansion in enumerate(state.expansions, start=1)
+        if any(symbol.kind is SymbolKind.CONTROL for symbol in expansion)
+    )
+
+
 def _load_entropy_bank(data: bytes, bank_name: str) -> _EntropyBankState:
     """Load and byte-verify one compiled production scenario bank."""
     try:
@@ -871,6 +882,17 @@ def rebuild_entropy_bank(
     )
     if not changed:
         return IncrementalBankResult(data=data, changed_records=())
+
+    unsafe_dictionary_entries = _unsafe_dictionary_control_entries(state)
+    if unsafe_dictionary_entries:
+        entries = ", ".join(
+            f"D{index}" for index in unsafe_dictionary_entries
+        )
+        raise IncrementalBuildError(
+            f"{bank_name}: compiled dictionary entries {entries} contain "
+            "presentation controls; run a full dictionary rebuild before "
+            "incremental editing"
+        )
 
     rebuilt = _rebuild_loaded_bank(state, desired)
     verified = _load_entropy_bank(rebuilt, bank_name)
