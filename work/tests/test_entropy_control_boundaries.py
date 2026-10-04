@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import unittest
+from types import SimpleNamespace
 
 from time_twist.entropy_compression import optimize_entropy_dictionary
+from time_twist.incremental_build import _unsafe_dictionary_control_entries
 from time_twist.textcodec import PackedSymbol, SymbolKind
 
 
@@ -49,6 +51,16 @@ class EntropyControlBoundaryTests(unittest.TestCase):
                     for symbol in packed_record[:2]
                 )
             )
+
+    def test_incremental_guard_detects_control_bearing_expansions(self) -> None:
+        ctrl = _symbol(SymbolKind.CONTROL, 0)
+        glyph = _symbol(SymbolKind.COMMON, 8)
+        state = SimpleNamespace(expansions=((glyph,), (ctrl, glyph), (glyph, ctrl)))
+
+        self.assertEqual(
+            _unsafe_dictionary_control_entries(state),
+            (2, 3),
+        )
 
 
 if __name__ == "__main__":
