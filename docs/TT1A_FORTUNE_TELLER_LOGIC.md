@@ -52,7 +52,7 @@ statement.
 All 48 blood-type/month combinations therefore enter the same statement graph.
 Month has no effect on the displayed profile.
 
-### English v64 presentation
+### English v65 presentation
 
 The English localization deliberately removes the mechanically meaningless
 `Jul-Dec` doorway and presents all twelve real months on one 4-by-3 menu:
@@ -70,15 +70,16 @@ omits the old `Jul-Dec` doorway record. Every month still jumps directly to
 the existing `$A305` continuation and still has no effect on the profile.
 
 The shared NOV2 menu renderer has a guarded 9-12-choice path for this screen.
-It uses three four-item columns, relocates per-choice width metadata so twelve
-choice IDs cannot overlap it, and preserves the normal two-column behavior for
-menus with eight or fewer visible choices. The third-column trailing cursor
-includes the historical +8-pixel correction recovered from the runtime-tested
-v5 implementation.
+v65 stores the twelve per-choice widths at `$0470-$047B`, preserving the
+modern runtime's live `$043B` maximum-width state. Menus with eight or fewer
+visible choices retain the v63 geometry path. The 9-12-choice text path rejoins
+the normal renderer before its `$22xx/$23xx` PPU-address setup, and the
+canonical v63 trailing-span helper is retained without the obsolete v5 +8
+compensation.
 
 The maintained implementation lives in
 `work/time_twist/tt1a_month_menu.py`; the reproducible final-layer builder is
-`work/tools/build_v64_month_menu.py`.
+`work/tools/build_v65_month_menu.py`.
 
 ## Statement-routing graph
 
@@ -170,7 +171,7 @@ When testing this sequence, treat failures as one of four separate surfaces:
 3. statement-routing correctness;
 4. text/layout/menu presentation.
 
-For v64, verify all twelve months directly from a clean candidate state. In
+For v65, verify all twelve months directly from a clean candidate state. In
 particular, exercise Sep/Oct/Nov/Dec so the third-column text and both selection
 cursors are covered.
 
@@ -181,8 +182,9 @@ routes still produce the same profile; that is the recovered native behavior.
 
 The control flow, cumulative blood-type flags, native month convergence,
 result selector, and fresh-scene flag clear are **VERIFIED** from the recovered
-Zenpen/NOV2 program logic. The v64 4-by-3 month selector is an intentional
-English-localization layer recovered from the earlier runtime-tested v4/v5
-implementation and adapted to coexist with the later Back/Cancel guard. The
+Zenpen/NOV2 program logic. The v65 4-by-3 month selector is an intentional English-localization layer.
+Its safe implementation preserves the modern v63 renderer state and repairs two
+invalid assumptions in the withdrawn v64 transplant: the live $043B collision
+and the historical helper's bypass of the modern $22xx PPU-address setup. The
 description of the questionnaire as presentation or misdirection is a design
 interpretation, not an additional engine fact.
