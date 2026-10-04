@@ -74,8 +74,6 @@ def _is_final_editorial_layout(record_id: str, text: str) -> bool:
 
 
 CHECKPOINT_QUIZ_LAYOUTS = {
-    "TT3A/g4/r7": "9ffab733c0aed46e95e2d614df47a580fcac494715e059f74c94188be5dcad29",
-    "TT4/g5/r7": "9111ed5fa33029a04156a87bed0f3d2f4f6d1885f9692246bf13ff54e02e5f79",
     "TT4/g5/r11": "1689722348c6a4e9f262a3517b9ecdcc7bb160683e76fda559541d4d7b11127e",
     "TT5/g2/r16": "3ea8b405bfe5e4ac0f7e6e8020acb2d2776b6cdb4bb6ab3adfbb15b949f77de5",
     "TT6B/g1/r30": "9f2b496483e317a51adcfb3d0112c2041a6f73f1b48d4dcea4d4b417469113a0",
