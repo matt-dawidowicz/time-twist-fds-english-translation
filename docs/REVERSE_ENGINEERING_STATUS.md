@@ -18,6 +18,7 @@ Status vocabulary follows [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.
 | Fixed/full-word menu addressing | **VERIFIED** | [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md) | Manual coverage of all runtime menu call sites |
 | Dynamic menu width/cursor geometry | **VERIFIED implementation** | [Full-word menu implementation](FULL_WORD_MENU_IMPLEMENTATION.md#dynamic-selection-brackets) | Manual page/cursor/Back testing |
 | Root-menu Back/Cancel guard | **VERIFIED implementation** | `work/time_twist/entropy_runtime.py` | Manual nested/root menu regression testing |
+| Scored quiz engine (39 questions) | **VERIFIED static/binary audit** | [Quiz engine reverse engineering](QUIZ_ENGINE_REVERSE_ENGINEERING.md) | Clean-candidate runtime/PPU certification only |
 | Gameplay script/event VM structure | **VERIFIED** | [Gameplay script engine](GAMEPLAY_SCRIPT_ENGINE.md) | A few higher-level narrative command names |
 | Retail VM opcode reachability | **VERIFIED structural audit** | [Gameplay VM reachability audit](GAMEPLAY_VM_REACHABILITY_AUDIT.md) | Value-level semantics for narrow residual cases |
 | Gameplay CHR ownership/load composition | **VERIFIED** | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | Story-facing naming only |
