@@ -50,7 +50,7 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
         tt4 = _production()
         self.assertEqual(
             tt4["TT4/g5/r7"],
-            "{CTRL:0}{CTRL:0}What were city-states in{CTRL:0}Greece called?",
+            "{CTRL:0}{CTRL:0}What was a Greek{CTRL:0}city-state called?",
         )
         self.assertEqual(
             tt4["TT4/g5/r10"],
@@ -66,7 +66,7 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
         )
         self.assertEqual(
             tt4["TT4/g5/r13"],
-            "{CTRL:0}{CTRL:0}Alongside olives and{CTRL:0}grapes, what was{CTRL:4}Greece's third major{CTRL:4}crop?",
+            "{CTRL:0}{CTRL:0}Which fruit was highly{CTRL:0}prized in ancient{CTRL:4}Athens and often dried{CTRL:4}for storage?",
         )
 
     def test_fixed_menu_uses_the_same_identity(self) -> None:
