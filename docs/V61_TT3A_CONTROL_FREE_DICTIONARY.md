@@ -49,7 +49,7 @@ The migration:
 
 Selected v61 layout:
 
-- dictionary entries: 106
+- dictionary entries: 102
 - unsafe expanded dictionary entries: 0
 - semantic TT3A payload end: 13,633 bytes
 - FDS TT3A file size: 13,737 bytes (padded to retain all later file offsets)
@@ -67,6 +67,6 @@ top-level `CTRL:0, CTRL:0` tokens.
 
 SHA-256:
 
-`9588EAF5E3CE151C97DB9C1CA5ADC3135D5611067E618CC344EAE46C96C50D48`
+`44D87ED3B85A3DABCC8D3295E8B889DA300DF771876F308183C34D01A1FA9634`
 
 The Kouhen half is byte-identical to v59.
