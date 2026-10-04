@@ -39,15 +39,46 @@ the cumulative flag encoding above. The final result predicate begins at
 
 ## Birth month
 
-The first month menu presents January through June plus a `Jul-Dec` entry.
-Choosing `Jul-Dec` opens a second menu for July through December.
+### Native Japanese presentation
 
-**VERIFIED.** All month choices converge at `$A305`, the personality-test
-introduction. The month selector does not set a result flag, store a month
-value for the personality selector, or choose a different first statement.
+The retail game presents January through June plus a `Jul-Dec` doorway.
+Choosing `Jul-Dec` opens a second six-choice menu for July through December.
+
+**VERIFIED.** All twelve actual months converge at `$A305`, the
+personality-test introduction. The month selector does not set a result flag,
+store a month value for the personality selector, or choose a different first
+statement.
 
 All 48 blood-type/month combinations therefore enter the same statement graph.
 Month has no effect on the displayed profile.
+
+### English v64 presentation
+
+The English localization deliberately removes the mechanically meaningless
+`Jul-Dec` doorway and presents all twelve real months on one 4-by-3 menu:
+
+```text
+Jan   May   Sep
+Feb   Jun   Oct
+Mar   Jul   Nov
+Apr   Aug   Dec
+```
+
+This is a presentation/localization change, not a change to the Fortune Teller
+algorithm. The descriptor contains the twelve real fixed-text month records and
+omits the old `Jul-Dec` doorway record. Every month still jumps directly to
+the existing `$A305` continuation and still has no effect on the profile.
+
+The shared NOV2 menu renderer has a guarded 9-12-choice path for this screen.
+It uses three four-item columns, relocates per-choice width metadata so twelve
+choice IDs cannot overlap it, and preserves the normal two-column behavior for
+menus with eight or fewer visible choices. The third-column trailing cursor
+includes the historical +8-pixel correction recovered from the runtime-tested
+v5 implementation.
+
+The maintained implementation lives in
+`work/time_twist/tt1a_month_menu.py`; the reproducible final-layer builder is
+`work/tools/build_v64_month_menu.py`.
 
 ## Statement-routing graph
 
@@ -135,16 +166,23 @@ effect.
 When testing this sequence, treat failures as one of four separate surfaces:
 
 1. blood-type result mapping;
-2. month-menu presentation;
+2. twelve-month 4-by-3 menu presentation and cursor navigation;
 3. statement-routing correctness;
 4. text/layout/menu presentation.
+
+For v64, verify all twelve months directly from a clean candidate state. In
+particular, exercise Sep/Oct/Nov/Dec so the third-column text and both selection
+cursors are covered.
 
 Do not infer a hidden personality-scoring bug merely because different answer
 routes still produce the same profile; that is the recovered native behavior.
 
 ## Evidence boundary
 
-The control flow, cumulative blood-type flags, month convergence, result
-selector, and fresh-scene flag clear are **VERIFIED** from the recovered
-Zenpen/NOV2 program logic. The description of the questionnaire as presentation
-or misdirection is a design interpretation, not an additional engine fact.
+The control flow, cumulative blood-type flags, native month convergence,
+result selector, and fresh-scene flag clear are **VERIFIED** from the recovered
+Zenpen/NOV2 program logic. The v64 4-by-3 month selector is an intentional
+English-localization layer recovered from the earlier runtime-tested v4/v5
+implementation and adapted to coexist with the later Back/Cancel guard. The
+description of the questionnaire as presentation or misdirection is a design
+interpretation, not an additional engine fact.
