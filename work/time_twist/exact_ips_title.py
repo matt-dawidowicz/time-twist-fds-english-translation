@@ -237,16 +237,17 @@ def _overlay_exact_ips_differences(
     return bytes(result)
 
 
-_SLIDE_LOGO_CORRECTION_CELLS: tuple[int, int] = (0x066, 0x0F1)
+_SLIDE_LOGO_CORRECTION_CELLS: tuple[int, ...] = (0x066,)
 
 
 def _install_slide_logo_corrections(data: bytes) -> bytes:
-    """Apply the two reviewed logo corrections to the moving swipe only.
+    """Apply the reviewed first-T correction to the moving swipe only.
 
     The final-phase title already remaps the six reviewed wordmark corrections
     into temporary tile IDs that are uploaded at the colored-title transition.
-    Two of those corrections are also needed in the monochrome swipe: the top
-    tip of the first T and the E/T junction.
+    Only the top-tip correction for the first T is reused in the monochrome
+    swipe. The E/T correction remains final-title-only because applying it to
+    the moving phase produces visible extra pixels around the E and second T.
 
     Reuse those already-allocated scratch IDs instead of changing shared base
     CHR. Their only second-nametable uses are below the 96-pixel swipe viewport.
