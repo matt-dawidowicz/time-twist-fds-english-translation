@@ -66,7 +66,7 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
         )
         self.assertEqual(
             tt4["TT4/g5/r13"],
-            "{CTRL:0}{CTRL:0}Which fruit was highly{CTRL:0}prized in ancient{CTRL:4}Athens and often dried{CTRL:4}for storage?",
+            "{CTRL:0}{CTRL:0}Alongside olives and{CTRL:0}grapes, what was{CTRL:4}Greece's third major{CTRL:4}crop?",
         )
 
     def test_fixed_menu_uses_the_same_identity(self) -> None:
