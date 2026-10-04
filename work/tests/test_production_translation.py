@@ -227,8 +227,6 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         self.assertNotIn("TT1A/g0/r3", CHECKPOINT_QUIZ_LAYOUTS)
         self.assertNotIn("TT1A/g0/r5", CHECKPOINT_QUIZ_LAYOUTS)
         expected = {
-            "TT3A/g4/r7",
-            "TT4/g5/r7",
             "TT4/g5/r11",
             "TT5/g2/r16",
             "TT6B/g1/r30",
