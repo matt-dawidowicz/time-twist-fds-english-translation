@@ -111,6 +111,36 @@ Generated ROMs remain build products rather than editable source material.
 - The complete gameplay route and final ending/credit presentation have been
   playtested; **v50 is the canonical behavioral baseline** for release parity.
 
+## Localization philosophy
+
+This project aims for a **faithful English localization**, not a literal
+transliteration and not a modern fact-corrected rewrite. The goal is for an
+English-speaking player to experience substantially the same game a Japanese
+player experienced in 1991, while removing translation ambiguity and technical
+failures that would obstruct that intent.
+
+For quiz content, that means:
+
+- genuine logic or routing bugs are fixed (for example, the Athena-temple quiz
+  must accept **Parthenon**, not the wrong visible choice);
+- English wording may be clarified when a direct rendering would obscure the
+  intended answer (the Normandy question now specifies the **Supreme Allied
+  Commander**, preserving **Eisenhower** as the intended answer);
+- standard English historical terminology may replace a mechanically literal
+  label where it better expresses the same source concept (**Commoners** for the
+  Third Estate rather than `Citizens`);
+- grammar may be localized without changing content (the `Polis` question is
+  singular because `polis` is singular);
+- factual, theological, or cultural oddities that clearly belong to the
+  Japanese game are preserved rather than silently corrected. Accordingly, the
+  original **Fig** crop question, the original Edison/**Projector** question,
+  **Fruit of wisdom** as the Eve quiz's accepted answer, and **Jehovah** remain
+  part of the English localization.
+
+When the original game itself is questionable, documentation may note the
+issue, but the ROM is not rewritten merely to make Nintendo's 1991 trivia more
+accurate by modern standards.
+
 ## Source of truth
 
 | Material | Authority |
