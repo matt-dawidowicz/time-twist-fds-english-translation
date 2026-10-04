@@ -1,5 +1,7 @@
 # v62 quiz correction pass
 
+> **Superseded by v63.** v62 experimentally corrected several original-game trivia items. v63 restores those source-faithful premises/answers and adopts the preservation-oriented localization policy documented in the README.
+
 v62 builds on the v61 TT3A control-free dictionary candidate and corrects the
 remaining reviewed quiz wording/content issues without changing the requested
 TT6B label **Jehovah**.
