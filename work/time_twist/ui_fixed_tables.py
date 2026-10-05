@@ -557,7 +557,7 @@ TT5_FIXED_TEXT_RECORDS = (
     "Cavalry",
     "Red ship",
     "White ship",
-    "Black ship",
+    "Black Ships",
     "Madame Dewi",
     "Mrs. Stowe",
     "Mrs. Aquino",
