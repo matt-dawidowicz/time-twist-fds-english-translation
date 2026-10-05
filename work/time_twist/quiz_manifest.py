@@ -31,7 +31,7 @@ QUIZ_ANSWERS = (
     QuizAnswer("TT4", 0x33, "Parthenon"),
     QuizAnswer("TT4", 0x34, "Fig"),
     QuizAnswer("TT5", 0x1A, "Cavalry"),
-    QuizAnswer("TT5", 0x1B, "Black ship"),
+    QuizAnswer("TT5", 0x1B, "Black Ships"),
     QuizAnswer("TT5", 0x1C, "Mrs. Stowe"),
     QuizAnswer("TT5", 0x1D, "Rushmore"),
     QuizAnswer("TT5", 0x1E, "Projector"),
