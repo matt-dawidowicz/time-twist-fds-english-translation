@@ -283,12 +283,15 @@ class IncrementalBuildTests(unittest.TestCase):
         """Use the v83 manifest count instead of scanning resident padding."""
         data, translations = _tt6d_bank(dictionary_slack=12)
         mutable = bytearray(data)
-        start = int.from_bytes(
-            mutable[
-                DICTIONARY_POINTER_OFFSET : DICTIONARY_POINTER_OFFSET + 2
-            ],
-            "little",
-        ) - LOAD_ADDRESS
+        start = (
+            int.from_bytes(
+                mutable[
+                    DICTIONARY_POINTER_OFFSET : DICTIONARY_POINTER_OFFSET + 2
+                ],
+                "little",
+            )
+            - LOAD_ADDRESS
+        )
         dictionary_bytes = len(pack_entropy_stream((encode_english("AB"),)))
         mutable[start + dictionary_bytes] = 0xFF
         report = inspect_entropy_bank(

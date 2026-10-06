@@ -946,7 +946,9 @@ def _v83_dictionary_entry_counts(
         raise IncrementalBuildError(
             f"v83 bank manifest is unavailable or invalid: {manifest_path}"
         ) from error
-    if not isinstance(payload, dict) or set(payload) != set(SCENARIO_LOCATIONS):
+    if not isinstance(payload, dict) or set(payload) != set(
+        SCENARIO_LOCATIONS
+    ):
         raise IncrementalBuildError("v83 bank manifest has unexpected banks")
     result: dict[str, int] = {}
     for bank_name in SCENARIO_LOCATIONS:

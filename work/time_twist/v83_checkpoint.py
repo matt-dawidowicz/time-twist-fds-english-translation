@@ -87,9 +87,7 @@ def validate_v83_sources(
     manifest = json.loads(
         (root / "bank_manifest.json").read_text(encoding="utf-8")
     )
-    menus = json.loads(
-        (root / "menus.json").read_text(encoding="utf-8")
-    )
+    menus = json.loads((root / "menus.json").read_text(encoding="utf-8"))
     if hashlib.sha256(raw).hexdigest().upper() != V83_SHA256:
         raise ReleaseBuildError(
             "source audit requires the exact v83 checkpoint"

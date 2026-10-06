@@ -37,15 +37,15 @@ class V83CheckpointTests(unittest.TestCase):
         with self.assertRaisesRegex(ReleaseBuildError, "source SHA-256"):
             promote_release_to_v83(b"unrecognized ROM")
 
-    def test_explicit_recovery_root_overrides_installed_module_path(self) -> None:
+    def test_explicit_recovery_root_overrides_installed_module_path(
+        self,
+    ) -> None:
         """Resolve checkpoint artifacts from the selected checkout."""
         with patch(
             "time_twist.v83_checkpoint.RECOVERY_ROOT",
             ROOT / "missing",
         ):
-            data = load_v83_delta(
-                recovery_root=ROOT / "recovery" / "v83"
-            )
+            data = load_v83_delta(recovery_root=ROOT / "recovery" / "v83")
         self.assertEqual(
             hashlib.sha256(data).hexdigest().upper(),
             DELTA_SHA256,
