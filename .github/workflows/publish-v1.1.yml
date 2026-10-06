@@ -47,8 +47,14 @@ jobs:
             'dist/Time-Twist-v82-to-v83-Kouhen.bps'
           )
 
-          gh release view $tag --repo $repo *> $null
-          if ($LASTEXITCODE -eq 0) {
+          # A missing release is the expected first-publish case. Temporarily
+          # allow gh's nonzero probe result so PowerShell can branch on it.
+          $ErrorActionPreference = 'Continue'
+          gh release view $tag --repo $repo 2>$null | Out-Null
+          $releaseExists = ($LASTEXITCODE -eq 0)
+          $ErrorActionPreference = 'Stop'
+
+          if ($releaseExists) {
             gh release edit $tag --repo $repo --title $title --notes-file $notes
             if ($LASTEXITCODE -ne 0) { throw 'Could not refresh release metadata' }
           } else {
