@@ -934,7 +934,6 @@ def rebuild_entropy_bank(
     )
 
 
-
 def _v83_dictionary_entry_counts(
     translations_directory: Path,
 ) -> dict[str, int]:

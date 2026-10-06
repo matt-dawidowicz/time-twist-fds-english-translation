@@ -18,6 +18,7 @@ The current source includes the confirmed v83 fixes and
 [corrected walkthrough](docs/WALKTHROUGH.txt). See the
 [v83 checkpoint instructions](recovery/v83/README.md) to reproduce that build.
 The v1.1 public patches and Windows package below contain that same v83 build.
+The official tagged release is **v1.1.0**.
 
 ## Download the English patch
 
@@ -85,28 +86,27 @@ work/translations/<BANK>.json
 ```
 
 The 13 bank files contain the complete current wording **and** the approved
-renderer-control layout for all **1,299 scenario records**. They are the
+renderer-control layout for all **1,305 scenario records**. They are the
 editorial source of truth and are source-locked as release inputs. The exact
-v1.0 binary build also validates their complete record topology, while binary
+v1.1/v83 binary build validates their complete record topology, while binary
 reproduction follows the separately verified historical checkpoint lineage.
 
 `work/source_records/*.json` is the Japanese/source-structure evidence. It is
 not an alternate English source.
 
-The completed **v50** ROM remains the project's end-to-end playtest baseline,
-SHA-256
-`820B960AAC377C3EC3072DE67F12EE178F056DAE6147F9A699EDBBB302724E43`.
-The public release applies the reviewed TT1A fortune-menu handoff correction and
-the Dr. Simon dialogue-scroll regression fix on top of that baseline. Its SHA-256 is
-`39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5`.
-Kouhen remains byte-identical to the previous public v1.0 build.
+The confirmed **v83** ROM is the project's current end-to-end playtest and
+release baseline, SHA-256
+`4BBCCB13033B39570B3FE3EB64FBEBA4A9BD4C5C73248852F22665E4A3A9E17A`.
+It includes the validated v50 lineage, the TT1A fortune-menu handoff correction,
+the Dr. Simon dialogue-scroll regression fix, all approved intervening playtest
+revisions, the v82 crowd-pronoun correction, and the v83 Belle response fix.
 
 Exact release reproduction uses the private v25 safe-encoding image to rebuild
 the frozen v38 checkpoint, applies the hash-guarded v38-to-v41 and
-late-v41-to-v50 checkpoint deltas, applies the guarded TT1A correction, and then
-applies the reviewed Dr. Simon dialogue-fix delta.
-The older checkpoints remain historical implementation inputs and regression
-evidence, **not** competing release authorities.
+late-v41-to-v50 checkpoint deltas, applies the guarded TT1A and Dr. Simon
+corrections, and then applies the reviewed public-release-to-v83 checkpoint
+delta. The older checkpoints remain historical implementation inputs and
+regression evidence, **not** competing release authorities.
 
 Generated ROMs remain build products rather than editable source material.
 
@@ -123,7 +123,7 @@ Generated ROMs remain build products rather than editable source material.
 - Fixed UI, title, font, scenario text, and FDS-container changes are built by
   one source-locked release pipeline.
 - The complete gameplay route and final ending/credit presentation have been
-  playtested; **v50 is the canonical behavioral baseline** for release parity.
+  playtested; **v83 is the canonical behavioral and release baseline**.
 
 ## Source of truth
 
@@ -131,8 +131,8 @@ Generated ROMs remain build products rather than editable source material.
 | --- | --- |
 | `work/translations/*.json` | Sole current scenario-English wording and approved control layout |
 | `work/source_records/*.json` | Decoded Japanese/source evidence and stable record IDs |
-| Final v50 ROM behavior | End-to-end playtest baseline |
-| Corrected final release | v50 plus the guarded TT1A fortune-menu handoff fix |
+| Final v83 ROM behavior | End-to-end playtest and release baseline |
+| Public v1.1 release | Exact v83 output, including all confirmed late-playtest fixes |
 | `recovery/v38/repro_bundle/` | Frozen compiler/recovery material that reproduces exact v38 |
 | `recovery/v41/` | Hash-guarded checkpoint deltas that reproduce the validated v38 -> late-v41 -> v50 lineage |
 | Private v25 safe-encoding seed image | Required historical seed for exact v38 reconstruction |
@@ -228,13 +228,16 @@ The exact binary lineage is explicit and fail-closed:
    release, SHA-256 `BB3D147FE2245987EFAE579A4130DD8B8599AD7049C264696EA4B52C8CED4D4B`;
 5. a final guarded delta changes only `TT1B/g3/r6` semantically, removing the
    unnecessary intermediate dialogue scroll in the Dr. Simon scene and producing
-   SHA-256 `39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5`.
+   SHA-256 `39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5`;
+6. the reviewed public-release-to-v83 delta promotes that exact image through
+   the confirmed late playtest revisions to SHA-256
+   `4BBCCB13033B39570B3FE3EB64FBEBA4A9BD4C5C73248852F22665E4A3A9E17A`.
 
 Each bridge verifies its source, delta, and target identities. The final build
 also reproduces the two translated 131,000-byte disk halves exactly. No complete
 ROM image is stored in the checkpoint source tree.
 
-The source lock covers the v25 seed, all 1,299 canonical translation records,
+The source lock covers the v25 seed, all 1,305 canonical translation records,
 the frozen v38 compiler bundle, and the checkpoint payloads. The current maps
 must retain the complete record topology and remain the authoritative editorial
 English. The historical compiler is deliberately **not** claimed to compile
@@ -250,10 +253,11 @@ time-twist release-build
 
 Future wording, layout, graphics, or runtime changes require a new reviewed
 lineage, refreshed source locks, targeted runtime validation, and a new final
-hash. The existing v38, late-v41, and v50 checkpoints are immutable provenance.
+hash. The existing v38, late-v41, v50, and v83 checkpoints are immutable
+provenance.
 
 No release target is checked in yet. Promotion metadata remains separate from
-the already verified behavioral and binary authority of final v50.
+the already verified behavioral and binary authority of final v83.
 
 ## Documentation
 

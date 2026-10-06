@@ -46,7 +46,10 @@ class V83CheckpointTests(unittest.TestCase):
             data = load_v83_delta(
                 recovery_root=ROOT / "recovery" / "v83"
             )
-        self.assertEqual(hashlib.sha256(data).hexdigest().upper(), DELTA_SHA256)
+        self.assertEqual(
+            hashlib.sha256(data).hexdigest().upper(),
+            DELTA_SHA256,
+        )
 
     def test_missing_and_corrupt_patch_parts_are_rejected(self) -> None:
         """Never silently accept a partial or altered checkpoint artifact."""
