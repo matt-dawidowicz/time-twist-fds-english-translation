@@ -20,7 +20,7 @@
   "T25/g0/r18": "Lincoln: America will be{CTRL:0}reborn. The day will{CTRL:0}come when you can make{CTRL:0}full use of your{CTRL:4}talents.",
   "T25/g0/r19": "Meyer: Take some coffee{CTRL:0}out to the guards on{CTRL:0}watch.",
   "T25/g0/r20": "Meyer: Done for today.{CTRL:0}Get some rest.{CTRL:2}You may use the upstairs{CTRL:0}guest room instead of{CTRL:4}the shack.{CTRL:3}George: T-thank you.",
-  "T25/g0/r21": "I'm too nervous to say a{CTRL:0}word.",
+  "T25/g0/r21": "He's too nervous to say{CTRL:0}a word.",
   "T25/g0/r22": "I pour some coffee into{CTRL:0}a cup.",
   "T25/g0/r23": "Now the pot is empty.",
   "T25/g0/r24": "The guest room. Every{CTRL:0}corner is spotless.",
@@ -30,7 +30,7 @@
   "T25/g0/r28": "George: I've never slept{CTRL:0}in a bed like this{CTRL:0}before. Wow…",
   "T25/g0/r29": "George: I actually got{CTRL:0}to speak with the{CTRL:0}President… What a{CTRL:0}thrill.",
   "T25/g0/r30": "The upstairs hallway.",
-  "T25/g0/r31": "Nobody is here.",
+  "T25/g0/r31": "No one here.",
   "T25/g1/r0": "Me: …!{CTRL:0}George: M-mother…!{CTRL:2}Meyer: Belle! George!{CTRL:0}Come downstairs. I've{CTRL:4}got somewhere fun to{CTRL:4}take you.",
   "T25/g1/r1": "Meyer's study. A{CTRL:0}portrait hangs there.",
   "T25/g1/r2": "It has three drawers.",
@@ -67,12 +67,13 @@
   "T25/g2/r1": "George: What now, Mom?!",
   "T25/g2/r2": "Coyote: Whiiine…",
   "T25/g2/r3": "Coyote: Grrrrr…",
-  "T25/g2/r4": "Meyer: Mr. President,{CTRL:0}this is your final{CTRL:0}chance. Leave the slaves{CTRL:0}behind and take the boat{CTRL:4}alone!{CTRL:3}Lincoln: …{CTRL:3}Meyer: Oh, one more{CTRL:4}thing. Coyotes stay calm{CTRL:4}when they face a group{CTRL:4}their own size or{CTRL:4}larger.{CTRL:3}Against a smaller group,{CTRL:4}they attack.{CTRL:3}Do be careful. I'll be{CTRL:4}waiting at the manor.",
+  "T25/g2/r4": "Meyer: Mr. President,{CTRL:0}this is your final{CTRL:0}chance. Leave the slaves{CTRL:0}behind and take the boat{CTRL:4}alone!{CTRL:3}Lincoln: …{CTRL:3}Meyer: Oh, one more{CTRL:4}thing. Coyotes stay calm{CTRL:4}if people equal or{CTRL:4}outnumber them.{CTRL:3}If coyotes outnumber{CTRL:4}people, they attack.{CTRL:3}Do be careful. I'll be{CTRL:4}waiting at the mansion.",
   "T25/g2/r5": "George: Oh, no! It looks{CTRL:0}like the boat can only{CTRL:0}hold two.",
   "T25/g2/r6": "George: We all made it!",
   "T25/g2/r7": "George: Let's save all{CTRL:0}the coyotes too!",
   "T25/g2/r8": "{CTRL:0}George: They'll eat us{CTRL:0}alive!",
   "T25/g2/r9": "George: Mom's too heavy!{CTRL:0}The boat might sink!!",
   "T25/g2/r10": "George: Hurry, let's get{CTRL:0}in!",
-  "T25/g2/r11": "George: The coyotes{CTRL:0}can't take the boat on{CTRL:0}their own."
+  "T25/g2/r11": "George: The coyotes{CTRL:0}can't take the boat on{CTRL:0}their own.",
+  "T25/g2/r12": "Use what?"
 }

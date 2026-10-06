@@ -1,0 +1,18 @@
+v80 applied changes
+
+TT5/g3/r14
+Before: Nothing like home.
+After: So unlike our home.
+Japanese: おれたちのいえとは ずいぶんちがうな
+
+T25/g2/r4
+Before: Meyer: Mr. President,{CTRL:0}this is your final{CTRL:0}chance. Leave the slaves{CTRL:0}behind and take the boat{CTRL:4}alone!{CTRL:3}Lincoln: …{CTRL:3}Meyer: Oh, one more{CTRL:4}thing. Coyotes stay calm{CTRL:4}when they face a group{CTRL:4}their own size or{CTRL:4}larger.{CTRL:3}Against a smaller group,{CTRL:4}they attack.{CTRL:3}Do be careful. I'll be{CTRL:4}waiting at the manor.
+After: Meyer: Mr. President,{CTRL:0}this is your final{CTRL:0}chance. Leave the slaves{CTRL:0}behind and take the boat{CTRL:4}alone!{CTRL:3}Lincoln: …{CTRL:3}Meyer: Oh, one more{CTRL:4}thing. Coyotes stay calm{CTRL:4}if people equal or{CTRL:4}outnumber them.{CTRL:3}If coyotes outnumber{CTRL:4}people, they attack.{CTRL:3}Do be careful. I'll be{CTRL:4}waiting at the manor.
+Japanese: まいやー「だいとうりょうかっか{CTRL:0} さいごの ちゃんすです{CTRL:2} どれいたちのことなど ほっといて{CTRL:0} はやく じぶんだけぼーとにのりなさい／」{CTRL:3}りんかーん「……」{CTRL:3}まいやー「ああ いいわすれていましたが{CTRL:4} ここにいる こよーてどもは じぶんたちより{CTRL:4} おなじかずいじょうのあいてには おとなしいが{CTRL:3} あいてのかずがすくないとみるや{CTRL:4} すぐにおそってきますから きをつけて{CTRL:3} では やしきでおまちしています……」
+
+TT6A/g2/r2
+Before: Mary: It's a token I{CTRL:0}meant to give Joseph at{CTRL:0}our wedding… Her eyes{CTRL:0}fill with tears.{CTRL:4}Mary: I'll wait here{CTRL:4}until Joseph is ready to{CTRL:4}see me.
+After: Mary: It's a token I{CTRL:0}meant to give Joseph at{CTRL:0}our wedding…{CTRL:6}Tears fill her eyes.{CTRL:3}Mary: I'll wait here{CTRL:4}until Joseph is ready to{CTRL:4}see me.
+Japanese: まりあ「それはね けっこんのしるしに{CTRL:0} よせふにあげようと おもっていたの でも…」{CTRL:2}つぶらなひとみから みるみるなみだがあふれてくる{CTRL:6}まりあ「わたしまってる… よせふがわたしを{CTRL:4} ふりむいてくれるまで……」
+
+No bank repacking, dictionary changes, or file-size growth. The home comparison is shortened to So unlike our home. to fit existing space. Mary's narration is shortened to Tears fill her eyes. for row fit.

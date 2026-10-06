@@ -1,0 +1,20 @@
+{
+  "checkpoint_sha256": "4bbccb13033b39570b3fe3eb64fbeba4a9bd4c5c73248852f22665e4a3a9e17a",
+  "byte_exact_reconstruction": true,
+  "canonical_dialogue_records_verified": 1305,
+  "canonical_menu_labels_verified": 721,
+  "public_unit_tests": 315,
+  "public_unit_skips": 0,
+  "checks": [
+    "quick_check",
+    "public_tree",
+    "black",
+    "ruff",
+    "pydocstyle",
+    "mypy",
+    "wheel_and_sdist_build"
+  ],
+  "native_belle_george_and_talk_checks": "Repeated from v82 and matched v83; native 6502 lookup/render, no full PPU emulation.",
+  "private_integration": "Unavailable: complete private fixture overlay, including v25 seed, is absent.",
+  "published_release_assets": "Unchanged; repository source and checkpoint updated."
+}

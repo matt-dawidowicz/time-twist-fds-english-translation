@@ -1,4 +1,4 @@
-"""Self-contained public patcher for Time Twist English Translation v1.0.
+"""Self-contained public patcher for Time Twist English Translation v1.1 (v83).
 
 The Windows build bundles the Zenpen and Kouhen BPS payloads inside the
 executable. Users provide the two clean Japanese retail FDS images; the patcher
@@ -21,7 +21,7 @@ import subprocess
 import sys
 import tempfile
 
-VERSION = "1.0"
+VERSION = "1.1"
 
 ZENPEN_SOURCE_SHA256 = (
     "B9424DD29EE195A9FA9AC4F844F058C380E30F7ACA741218789FA8611F741916"
@@ -30,19 +30,19 @@ KOUHEN_SOURCE_SHA256 = (
     "F62A7424FE489CBE479C3EBAABE4CE62D85127601FFD3D08ABD4E5A0DC39442A"
 )
 ZENPEN_TARGET_SHA256 = (
-    "1CC094577F05182960258A8AFC264ED804A5589B61D8DA6E945718073C1C073A"
+    "0784FE632DB3DB424E963CCA840982942F689A4385EFE9BDE3E7940F325599F7"
 )
 KOUHEN_TARGET_SHA256 = (
-    "81483F8A76A88BCD069EA87E3D31E8D598F202112E1B39E464FFE0B2B925E3D3"
+    "8327F1130563C3C6E87CBE67DA227429BAAC59E596B49D67BE1018FD3A2E398F"
 )
 FOUR_SIDE_TARGET_SHA256 = (
-    "39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5"
+    "4BBCCB13033B39570B3FE3EB64FBEBA4A9BD4C5C73248852F22665E4A3A9E17A"
 )
 ZENPEN_PATCH_SHA256 = (
-    "2b97d6bca5f56f213a13584cf50db59025b3b188534af58f461e254be5b26194"
+    "85337a2a86b531d40e39005e6c965431cee4e985dc3098a409b3a0fb8e43de5e"
 )
 KOUHEN_PATCH_SHA256 = (
-    "9af9ad6e479c8024427766a1f4c1396ed76d8b33baf919bfa430507ef6f21879"
+    "9dc8c7eb2c417deaaf737d54ed53f314aef58234c25da703e894b36476927a95"
 )
 
 SOURCE_BYTES = 131_000
@@ -408,7 +408,7 @@ def _run_cli(argv: list[str]) -> int:
     """Run the command-line patcher."""
     parser = argparse.ArgumentParser(
         description=(
-            "Build Time Twist English Translation v1.0 from clean Japanese "
+            "Build Time Twist English Translation v1.1 (v83) from clean Japanese "
             "retail Zenpen and Kouhen FDS images. Input order does not matter."
         )
     )
@@ -517,7 +517,7 @@ def _run_gui() -> int:
     ttk.Label(
         frame,
         text=(
-            "English Translation v1.0  |  Patches are built into this program"
+            "English Translation v1.1 (v83)  |  Patches are built into this program"
         ),
     ).grid(row=1, column=0, columnspan=3, sticky="w", pady=(2, 14))
 
@@ -726,6 +726,10 @@ def _run_gui() -> int:
 
 def main() -> int:
     """Dispatch to CLI when arguments are present, otherwise launch the GUI."""
+    if sys.argv[1:] == ["--verify-resources"]:
+        _patch_bytes("zenpen")
+        _patch_bytes("kouhen")
+        return 0
     if len(sys.argv) > 1:
         return _run_cli(sys.argv[1:])
     return _run_gui()

@@ -1,0 +1,63 @@
+name: Publish official v1.1 release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/publish-v1.1.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-time-twist-v1.1
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Verify source-only patch resources
+        run: python release_patcher/test_public_patcher.py
+      - name: Build and smoke-test Windows release package
+        shell: powershell
+        run: ./release_patcher/build_windows.ps1
+      - name: Publish or refresh GitHub release
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = 'v1.1.0'
+          $title = 'Time Twist English Translation v1.1'
+          $repo = $env:GITHUB_REPOSITORY
+          $notes = 'release_patcher/CHANGELOG.md'
+          $assets = @(
+            'dist/Time-Twist-English-v1.1-Windows.zip',
+            'dist/Time-Twist-English-v1.1-Zenpen.bps',
+            'dist/Time-Twist-English-v1.1-Kouhen.bps',
+            'dist/Time-Twist-v1.0-Simon-to-v1.1-four-side.bps',
+            'dist/Time-Twist-v82-to-v83-four-side.bps',
+            'dist/Time-Twist-v82-to-v83-Kouhen.bps'
+          )
+
+          gh release view $tag --repo $repo *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release edit $tag --repo $repo --title $title --notes-file $notes
+            if ($LASTEXITCODE -ne 0) { throw 'Could not refresh release metadata' }
+          } else {
+            gh release create $tag --repo $repo --target $env:GITHUB_SHA --title $title --notes-file $notes
+            if ($LASTEXITCODE -ne 0) { throw 'Could not create GitHub release' }
+          }
+
+          foreach ($asset in $assets) {
+            if (-not (Test-Path $asset)) { throw "Missing release asset: $asset" }
+            gh release upload $tag $asset --repo $repo --clobber
+            if ($LASTEXITCODE -ne 0) { throw "Could not upload release asset: $asset" }
+          }

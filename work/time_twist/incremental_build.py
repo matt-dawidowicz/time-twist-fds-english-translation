@@ -7,6 +7,7 @@ It never runs dictionary optimization or reconstructs unrelated runtime assets.
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -44,13 +45,13 @@ NOV3_LOAD_ADDRESS = 0xD7B5
 GROUP_RECORD_COUNTS: dict[str, tuple[int, ...]] = {
     "TT1A": (32, 3),
     "TT1B": (32, 32, 32, 32, 9),
-    "TT2": (32, 32, 32, 32, 32, 9),
-    "T22": (32, 26),
+    "TT2": (32, 32, 32, 32, 32, 10),
+    "T22": (32, 27),
     "TT3A": (32, 32, 32, 32, 24),
     "TT3B": (32, 26),
-    "TT4": (32, 32, 32, 32, 32, 23),
-    "TT5": (32, 32, 32, 27),
-    "T25": (32, 32, 12),
+    "TT4": (32, 32, 32, 32, 32, 24),
+    "TT5": (32, 32, 32, 28, 1),
+    "T25": (32, 32, 13),
     "TT6A": (32, 32, 32, 4),
     "TT6B": (32, 32, 30),
     "TT6C": (32, 32, 32, 10),
@@ -314,13 +315,30 @@ def _decode_dictionary(
     data: bytes,
     *,
     boundary: int,
+    record_count: int | None = None,
 ) -> tuple[tuple[PackedSymbol, ...], ...]:
-    """Infer dictionary count by exact coverage of its packed byte region."""
+    """Decode a dictionary using an exact count or legacy slack inference."""
     start = _offset(_read_word(data, DICTIONARY_POINTER_OFFSET), data)
     if not start <= boundary <= len(data):
         raise IncrementalBuildError(
             "dictionary/fixed-tail boundary is malformed"
         )
+    if record_count is not None:
+        if not 0 <= record_count <= 255:
+            raise IncrementalBuildError("dictionary record count is invalid")
+        if record_count == 0:
+            return ()
+        records = _decode_verified_stream(
+            data,
+            address=_read_word(data, DICTIONARY_POINTER_OFFSET),
+            record_count=record_count,
+        )
+        packed = pack_entropy_stream(records)
+        if start + len(packed) > boundary:
+            raise IncrementalBuildError(
+                "dictionary stream crosses the fixed-tail boundary"
+            )
+        return records
     raw = data[start:boundary]
     if not raw:
         return ()
@@ -372,7 +390,12 @@ def _expand_dictionary(
     return tuple(expand(index) for index in range(1, len(definitions) + 1))
 
 
-def _load_entropy_bank(data: bytes, bank_name: str) -> _EntropyBankState:
+def _load_entropy_bank(
+    data: bytes,
+    bank_name: str,
+    *,
+    dictionary_entries: int | None = None,
+) -> _EntropyBankState:
     """Load and byte-verify one compiled production scenario bank."""
     try:
         counts = GROUP_RECORD_COUNTS[bank_name]
@@ -424,7 +447,11 @@ def _load_entropy_bank(data: bytes, bank_name: str) -> _EntropyBankState:
     dictionary = (
         ()
         if bank_name == "TT1A"
-        else _decode_dictionary(data, boundary=boundary)
+        else _decode_dictionary(
+            data,
+            boundary=boundary,
+            record_count=dictionary_entries,
+        )
     )
     expansions = _expand_dictionary(dictionary)
     literal_groups = tuple(
@@ -846,9 +873,15 @@ def inspect_entropy_bank(
     data: bytes,
     bank_name: str,
     translations: dict[str, str],
+    *,
+    dictionary_entries: int | None = None,
 ) -> IncrementalBankReport:
     """Verify one compiled bank and report layout/source state without rebuilding."""
-    state = _load_entropy_bank(data, bank_name)
+    state = _load_entropy_bank(
+        data,
+        bank_name,
+        dictionary_entries=dictionary_entries,
+    )
     _desired, changed = _desired_translation_state(
         state,
         bank_name,
@@ -861,9 +894,15 @@ def rebuild_entropy_bank(
     data: bytes,
     bank_name: str,
     translations: dict[str, str],
+    *,
+    dictionary_entries: int | None = None,
 ) -> IncrementalBankResult:
     """Rebuild one compiled bank against canonical English using its dictionary."""
-    state = _load_entropy_bank(data, bank_name)
+    state = _load_entropy_bank(
+        data,
+        bank_name,
+        dictionary_entries=dictionary_entries,
+    )
     desired, changed = _desired_translation_state(
         state,
         bank_name,
@@ -873,7 +912,11 @@ def rebuild_entropy_bank(
         return IncrementalBankResult(data=data, changed_records=())
 
     rebuilt = _rebuild_loaded_bank(state, desired)
-    verified = _load_entropy_bank(rebuilt, bank_name)
+    verified = _load_entropy_bank(
+        rebuilt,
+        bank_name,
+        dictionary_entries=dictionary_entries,
+    )
     for group_index, (actual_group, expected_group) in enumerate(
         zip(verified.literal_groups, desired, strict=True)
     ):
@@ -891,6 +934,38 @@ def rebuild_entropy_bank(
     )
 
 
+def _v83_dictionary_entry_counts(
+    translations_directory: Path,
+) -> dict[str, int]:
+    """Load reviewed v83 dictionary counts from the selected checkout."""
+    project_root = translations_directory.expanduser().resolve().parent.parent
+    manifest_path = project_root / "recovery" / "v83" / "bank_manifest.json"
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        raise IncrementalBuildError(
+            f"v83 bank manifest is unavailable or invalid: {manifest_path}"
+        ) from error
+    if not isinstance(payload, dict) or set(payload) != set(
+        SCENARIO_LOCATIONS
+    ):
+        raise IncrementalBuildError("v83 bank manifest has unexpected banks")
+    result: dict[str, int] = {}
+    for bank_name in SCENARIO_LOCATIONS:
+        record = payload.get(bank_name)
+        if not isinstance(record, dict):
+            raise IncrementalBuildError(
+                f"v83 bank manifest has invalid record for {bank_name}"
+            )
+        count = record.get("dictionary_entries")
+        if type(count) is not int or not 0 <= count <= 255:
+            raise IncrementalBuildError(
+                f"v83 bank manifest has invalid dictionary count for {bank_name}"
+            )
+        result[bank_name] = count
+    return result
+
+
 def build_incremental_image(
     image_data: bytes,
     *,
@@ -901,6 +976,7 @@ def build_incremental_image(
     validate_incremental_nov2_runtime(image.sides[0].find_file("NOV2").data)
     changed_banks: list[str] = []
     changed_records: list[str] = []
+    dictionary_entries = _v83_dictionary_entry_counts(translations_directory)
 
     for bank_name, (part, local_side) in SCENARIO_LOCATIONS.items():
         side = local_side + (2 if part == "kouhen" else 0)
@@ -913,6 +989,7 @@ def build_incremental_image(
             entry.data,
             bank_name,
             translations,
+            dictionary_entries=dictionary_entries[bank_name],
         )
         if rebuilt.changed_records:
             entry.data = rebuilt.data
@@ -1057,6 +1134,7 @@ def inspect_incremental_image(
     reports: list[IncrementalBankReport] = []
     changed_banks: list[str] = []
     changed_records: list[str] = []
+    dictionary_entries = _v83_dictionary_entry_counts(translations_directory)
 
     for bank_name, (part, local_side) in SCENARIO_LOCATIONS.items():
         side = local_side + (2 if part == "kouhen" else 0)
@@ -1069,6 +1147,7 @@ def inspect_incremental_image(
             entry.data,
             bank_name,
             translations,
+            dictionary_entries=dictionary_entries[bank_name],
         )
         reports.append(report)
         if report.changed_records:

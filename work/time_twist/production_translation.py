@@ -38,29 +38,37 @@ layout_review_text = _core.layout_review_text
 CANONICAL_RECORD_COUNTS = {
     "TT1A": 35,
     "TT1B": 137,
-    "TT2": 169,
-    "T22": 58,
+    "TT2": 170,
+    "T22": 59,
     "TT3A": 152,
     "TT3B": 58,
-    "TT4": 183,
-    "TT5": 123,
-    "T25": 76,
+    "TT4": 184,
+    "TT5": 125,
+    "T25": 77,
     "TT6A": 100,
     "TT6B": 94,
     "TT6C": 106,
     "TT6D": 8,
 }
 
-# Exact reviewed quiz layouts that intentionally exceed the generic
-# 23-column segment policy. Hashes bind the exception to runtime-validated
-# geometry; edits fall back to the strict policy.
+# Exact reviewed presentation layouts. The v83 entries preserve the confirmed
+# packed ROM, including non-greedy lines that fit their existing sections.
+# Hashes keep exceptions local; edits fall back to the strict wrap policy.
 FINAL_EDITORIAL_LAYOUTS = {
+    "TT6C/g0/r29": "a81fb566d8860989dbd04cc80706f47b2332209d079b7a4eb5976f7a73669e26",
+    "TT5/g2/r23": "0356eeb802e7c2f6cf0c44c65c6ff0d5440bcb13b81521438106356f3874607f",
+    "TT3B/g1/r6": "352bef17f3984f2824a4067da741efd25256bf11ec0a1e04002852a86a5d62e9",
+    "TT3A/g3/r10": "646dc5dbc6a219cd15b834f96a002c8954ac02548657dffa1f8e745091b9ad32",
+    "TT1B/g1/r0": "e3b929a3b5b7a2be2a4218661a8bb92804301126d5a3b1bc2f1f0a50b266d84f",
+    "T22/g1/r21": "74a09abc32d846c38010456b2f048ad931b8f5259e6074ab1462c4788546824e",
+    "T22/g1/r20": "e5285ffa280977c500a71abe3081e990b5fb13bffe9624a2b28b945ac976d584",
+    "T22/g1/r1": "c3db2f97dbfd963798d9ad52187f15d290f46d2fb88e2e8c7ee37f70423ec207",
+    "T22/g0/r10": "c3db2f97dbfd963798d9ad52187f15d290f46d2fb88e2e8c7ee37f70423ec207",
     # These two TT3B battle captions intentionally use balanced rows rather
     # than the generic greedy 24-column fill. Preserve the source wording;
     # only the visual line breaks are exceptional.
     "TT3B/g0/r29": "ca10497ccb9820fe6def2edb18d94cca3812d5dd296bfa077104d167250e1e8d",
     "TT3B/g1/r0": "e5d52ef68d1a9e6afe192e09f1cd2d95e857882a25a9d91473787c26aa93d443",
-    "T22/g0/r10": "ebcc1424a034210ccd4f8b68f9b138239137712ca633a6e60c3e7f3998f58bc9",
     "TT6C/g0/r8": "d1b45a97141c6c56fdf2c7d948238791d5adf23992198a843b7e92703b5cc10a",
     "TT6C/g2/r6": "4a89b0d78742035e75a2ac73eddfa0c299577ff8e6c7099ff4c7150759f352ce",
 }
@@ -157,10 +165,12 @@ STRUCTURAL_LAYOUT_RECORDS = (
 )
 QUIZ_MAX_SEGMENT_COLUMNS = 23
 
-# One source-backed dramatic quote introduction deliberately pauses after a
-# comma. Hash-lock it so future wording/control edits fall back to the strict
+# Reviewed dramatic speech boundaries deliberately pause after a comma.
+# Hash-lock them so future wording/control edits fall back to the strict
 # semantic-wait grammar validator.
 SEMANTIC_WAIT_GRAMMAR_EXCEPTIONS = {
+    # Source-backed Joan speech pauses; exact v83 text only.
+    "T22/g1/r20": "e5285ffa280977c500a71abe3081e990b5fb13bffe9624a2b28b945ac976d584",
     "TT1B/g3/r29": (
         "ef4f1bf007ec09cea89968393673455ed21f09e84bf3dae685ad268b248fd413"
     ),

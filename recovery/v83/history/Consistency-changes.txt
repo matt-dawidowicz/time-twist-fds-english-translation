@@ -1,0 +1,154 @@
+TIME TWIST v72 — CONSISTENCY CHANGES
+
+32 dialogue records edited. Japanese source retained in source/edit-evidence.json.
+
+ACQUISITION
+
+TT1B/g2/r19
+Before: I got the key.{CTRL:0}Old Man: Take your time.
+After:  Obtained the key.{CTRL:0}Old Man: Take your time.
+
+TT4/g2/r1
+Before: {CTRL:4}Received one silver{CTRL:4}coin.
+After:  {CTRL:4}Obtained one silver{CTRL:4}coin.
+
+TT4/g2/r24
+Before: Girl: Her cough is gone.{CTRL:1}We have no money. I{CTRL:0}can't pay your fee.{CTRL:6}Instead, I made oil from{CTRL:4}the olives you gave me.{CTRL:4}Please take it.{CTRL:3}Received olive oil.
+After:  Girl: Her cough is gone.{CTRL:1}We have no money. I{CTRL:0}can't pay your fee.{CTRL:6}Instead, I made oil from{CTRL:4}the olives you gave me.{CTRL:4}Please take it.{CTRL:3}Obtained olive oil.
+
+TT4/g3/r20
+Before: Received the bell.
+After:  Obtained the bell.
+
+ITEM TERMINOLOGY
+
+TT1B/g0/r18
+Before: "Gypsy Amulet":{CTRL:2}A star-shaped medal worn{CTRL:0}by nomadic Gypsies in{CTRL:4}the late 17th century to{CTRL:4}protect themselves from{CTRL:4}the dangers of travel.{CTRL:3}A warding spell is{CTRL:4}engraved on it.
+After:  "Gypsy Charm":{CTRL:2}A star-shaped medal worn{CTRL:0}by nomadic Gypsies in{CTRL:4}the late 17th century to{CTRL:4}protect themselves from{CTRL:4}the dangers of travel.{CTRL:3}A warding spell is{CTRL:4}engraved on it.
+
+TT3A/g1/r9
+Before: Frankie: Take this…{CTRL:1}He holds out a pendant.{CTRL:2}Frankie: Grandma gave me{CTRL:0}this the night before I{CTRL:4}left for war. It's a{CTRL:4}Gypsy amulet.{CTRL:3}With this, there's{CTRL:4}nothing to fear.{CTRL:3}I take the pendant and{CTRL:4}slip it around my neck.{CTRL:3}Frankie: Good luck…
+After:  Frankie: Take this…{CTRL:1}He holds out a pendant.{CTRL:2}Frankie: Grandma gave me{CTRL:0}this the night before I{CTRL:4}left for war. It's a{CTRL:4}Gypsy charm.{CTRL:3}With this, there's{CTRL:4}nothing to fear.{CTRL:3}I take the pendant and{CTRL:4}slip it around my neck.{CTRL:3}Frankie: Good luck…
+
+TT3B/g1/r6
+Before: With trembling hands, I{CTRL:0}take the talisman and{CTRL:0}hold it out in front of{CTRL:0}Hitler.{CTRL:3}Hitler: …!
+After:  With trembling hands, I{CTRL:0}take the charm and{CTRL:0}hold it out in front of{CTRL:0}Hitler.{CTRL:3}Hitler: …!
+
+TT3B/g1/r17
+Before: Cougar: Th-the words on{CTRL:0}the talisman…!
+After:  Cougar: Th-the words on{CTRL:0}the charm…!
+
+TT4/g5/r16
+Before: Fisherman: For a cough,{CTRL:0}use plantain.
+After:  Fisherman: For a cough,{CTRL:0}use plantain herb.
+
+STOCK RESPONSE
+
+T25/g0/r31
+Before: Nobody is here.
+After:  No one here.
+
+TT1B/g0/r10
+Before: Nobody's here.
+After:  No one here.
+
+TT5/g0/r15
+Before: No one is here.
+After:  No one here.
+
+TT6C/g1/r4
+Before: Nobody is here.
+After:  No one here.
+
+T22/g1/r25
+Before: Locked.
+After:  It's locked.
+
+TT2/g0/r23
+Before: Locked.
+After:  It's locked.
+
+TT5/g3/r18
+Before: It is locked.
+After:  It's locked.
+
+TT3A/g3/r31
+Before: Nothing useful.
+After:  Nothing useful here.
+
+TT2/g5/r8
+Before: The rope's too long to{CTRL:0}carry.
+After:  Too long to carry.
+
+T22/g0/r26
+Before: .......................
+After:  …
+
+EXAMINATION
+
+T22/g0/r19
+Before: He's out cold.
+After:  He's unconscious.
+
+TT2/g3/r8
+Before: He's out cold.
+After:  He's unconscious.
+
+T22/g0/r1
+Before: His lips are pressed{CTRL:0}tight.
+After:  His lips are pressed{CTRL:0}tightly together.
+
+T22/g0/r16
+Before: Faint candlelight.
+After:  Dim candlelight.
+
+T22/g0/r18
+Before: His face is contorted{CTRL:0}with pain.
+After:  His face is twisted in{CTRL:0}pain.
+
+TT2/g1/r10
+Before: His eyes keep darting{CTRL:0}around. He looks{CTRL:0}restless.
+After:  His eyes dart around{CTRL:0}restlessly.
+
+TT3A/g4/r0
+Before: His eyes dart around{CTRL:0}nervously.
+After:  His eyes dart around{CTRL:0}restlessly.
+
+TT6B/g1/r21
+Before: Her eyes dart around.
+After:  Her eyes dart around{CTRL:0}restlessly.
+
+TT3B/g0/r13
+Before: I grip it tightly. Maybe{CTRL:0}it's only my imagination{CTRL:0}but courage wells up.
+After:  I grip it tightly.{CTRL:0}Somehow, I feel a little{CTRL:0}braver.
+
+TT3A/g2/r28
+Before: He watches me warily.
+After:  He watches me anxiously.
+
+TT3B/g0/r19
+Before: He looks at me with an{CTRL:0}uneasy expression.
+After:  He watches me anxiously.
+
+TT6C/g0/r26
+Before: He stares with his mouth{CTRL:0}hanging open.
+After:  He stares blankly, mouth{CTRL:0}hanging open.
+
+TT6B/g1/r15
+Before: Spacious… but filthy!
+After:  Spacious, but filthy!
+
+WALKTHROUGH
+- Updated terminology version to v72.
+- Look > Scrap paper corrected to Look > Paper (actual ROM label).
+- Explained that the Gypsy Charm is Frankie's pendant and the Oil menu item is olive oil.
+
+AUDIT DECISIONS
+- All eight short acquisition notices now use Obtained. Four already did.
+- Same-source generic observations now use the same wording, with pronouns matching the subject.
+- No use. and Too heavy to lift. were already consistent.
+- Locked exits use It's locked. Blocked tunnels, story restrictions and unreachable targets retain their distinct meanings.
+- Oil, Bell and Robe remain concise labels for olive oil, Warding Bell and monk's robe.
+- Pendant describes the charm's physical form in the Japanese; retained in the giving scene.
+- No inventory/menu labels or puzzle answer choices changed.
+- Info profiles and the v71 action-specific empty prompts are preserved.

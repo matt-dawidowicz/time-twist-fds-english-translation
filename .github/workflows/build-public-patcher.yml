@@ -9,9 +9,9 @@ on:
   push:
     branches:
       - main
-      - release/v1.0-patcher-polish
+      - release/v1.1-patcher-polish
     tags:
-      - 'v1.0.*'
+      - 'v1.1.*'
     paths:
       - 'release_patcher/**'
       - 'LICENSE'
@@ -45,10 +45,9 @@ jobs:
         run: ./release_patcher/build_windows.ps1
       - uses: actions/upload-artifact@v5
         with:
-          name: Time-Twist-English-v1.0-Release
+          name: Time-Twist-English-v1.1-Release
           path: |
-            dist/Time-Twist-English-v1.0-Windows.zip
-            dist/Time-Twist-English-v1.0-Zenpen.bps
-            dist/Time-Twist-English-v1.0-Kouhen.bps
+            dist/Time-Twist-English-v1.1-Windows.zip
+            dist/*.bps
           if-no-files-found: error
           retention-days: 30

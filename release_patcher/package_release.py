@@ -1,4 +1,4 @@
-"""Assemble the public patcher package and standalone BPS patches."""
+"""Assemble the public patcher package and verified BPS upgrade patches."""
 
 from __future__ import annotations
 
@@ -6,19 +6,18 @@ import argparse
 import base64
 import gzip
 import hashlib
+import json
 from pathlib import Path
 
 import TimeTwistPatcher as patcher
 
+ROOT = Path(__file__).resolve().parent
+MANIFEST = json.loads(
+    (ROOT / "patch_manifest.json").read_text(encoding="utf-8")
+)
 PATCHES = {
-    "zenpen": (
-        "Time-Twist-English-v1.0-Zenpen.bps",
-        "2b97d6bca5f56f213a13584cf50db59025b3b188534af58f461e254be5b26194",
-    ),
-    "kouhen": (
-        "Time-Twist-English-v1.0-Kouhen.bps",
-        "9af9ad6e479c8024427766a1f4c1396ed76d8b33baf919bfa430507ef6f21879",
-    ),
+    kind: (entry["filename"], entry["patch_sha256"].lower())
+    for kind, entry in MANIFEST["patches"].items()
 }
 
 
@@ -28,50 +27,42 @@ def digest(data: bytes) -> str:
 
 
 def load_patch(patch_dir: Path, kind: str) -> bytes:
-    """Decode and verify one chunked BPS resource."""
-    if kind == "zenpen":
-        data = patcher._patch_bytes("zenpen")
+    """Decode one public or upgrade patch and verify its manifest identity."""
+    if kind in {"zenpen", "kouhen"}:
+        data = patcher._patch_bytes(kind)
     else:
         parts = sorted(patch_dir.glob(f"{kind}.bps.gz.b64.part*"))
         if not parts:
             raise RuntimeError(f"missing {kind} patch chunks")
-
         encoded = "".join(
             part.read_text(encoding="ascii").strip() for part in parts
         )
         data = gzip.decompress(base64.b64decode(encoded, validate=True))
-
-    expected = PATCHES[kind][1]
-    if digest(data) != expected:
+    if digest(data) != PATCHES[kind][1]:
         raise RuntimeError(f"{kind} patch hash mismatch")
     return data
 
 
 def main() -> None:
-    """Build BPS-Patches and package-level SHA256SUMS."""
+    """Write all five BPS files and checksums for every packaged file."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--package-dir", type=Path, required=True)
     args = parser.parse_args()
-
-    root = Path(__file__).resolve().parent
     package_dir = args.package_dir
     bps_dir = package_dir / "BPS-Patches"
     bps_dir.mkdir(parents=True, exist_ok=True)
-
-    lines: list[str] = []
-    for kind, (filename, expected) in PATCHES.items():
-        data = load_patch(root / "patches", kind)
-        target = bps_dir / filename
-        target.write_bytes(data)
-        lines.append(f"{expected.upper()}  BPS-Patches/{filename}")
-
-    exe = package_dir / "TimeTwistEnglishPatcher.exe"
-    if exe.is_file():
-        lines.insert(0, f"{digest(exe.read_bytes()).upper()}  {exe.name}")
-
+    for kind, (filename, _) in PATCHES.items():
+        (bps_dir / filename).write_bytes(load_patch(ROOT / "patches", kind))
+    (package_dir / "PATCH-INPUTS.json").write_bytes(
+        (ROOT / "patch_manifest.json").read_bytes()
+    )
+    lines = [
+        f"{digest(path.read_bytes()).upper()}  {path.relative_to(package_dir).as_posix()}"
+        for path in sorted(package_dir.rglob("*"))
+        if path.is_file() and path.name != "SHA256SUMS.txt"
+    ]
     (package_dir / "SHA256SUMS.txt").write_text(
-        "\n".join(lines) + "\n",
-        encoding="ascii",
+        "\n".join(lines) + "\n", encoding="ascii"
     )
 
 

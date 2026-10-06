@@ -1,0 +1,11 @@
+v80 clarity and translation follow-up
+
+The three v79 proposals are now applied; see Clarity-changes-v80.txt.
+
+Reviewed narrative, item/action messages and puzzle instructions across the game, with targeted Japanese comparisons following the previous full English-script pass. No new high-confidence gameplay-affecting mistranslation was identified in this pass. This is not a claim that every translation is perfect, nor a full emulator playthrough.
+
+One additional clarification was checked but skipped because its section is full:
+T22/g0/r11: Jailer: We have to save her!
+Proposed: Jailer: We must save that girl!
+Japanese: だんしゃく「こ これは……／」{CTRL:1}かんしゅ「まちがいなく しきょうのじです／」{CTRL:0}だんしゃく「やつめ やっぱり……」{CTRL:6}かんしゅ「あ…／ あのむすめを たすけないと／」{CTRL:4}だんしゃく「よし／」
+The source says that girl, distinguishing Joan from the baron's wife. The proposed wording requires 799 bytes in a 794-byte stream with no free padding before the next section. Left unchanged per the space constraint.

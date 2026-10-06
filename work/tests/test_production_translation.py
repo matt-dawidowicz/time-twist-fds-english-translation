@@ -37,11 +37,11 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
     """Keep release translation selection single-source and fail-closed."""
 
     def test_all_thirteen_banks_are_complete(self) -> None:
-        """Require exactly 1,299 canonical scenario records."""
+        """Require exactly 1,305 canonical scenario records."""
         self.assertEqual(
             set(CANONICAL_RECORD_COUNTS), set(KNOWN_SCENARIO_BANKS)
         )
-        self.assertEqual(sum(CANONICAL_RECORD_COUNTS.values()), 1299)
+        self.assertEqual(sum(CANONICAL_RECORD_COUNTS.values()), 1305)
         total = 0
         for bank in KNOWN_SCENARIO_BANKS:
             materialized = _canonical(bank)
@@ -51,7 +51,7 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
                 bank,
             )
             total += len(materialized)
-        self.assertEqual(total, 1299)
+        self.assertEqual(total, 1305)
 
     def test_release_api_returns_exact_canonical_file(self) -> None:
         """Do not rewrite or select alternative wording during materialization."""
@@ -70,7 +70,7 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
                 base_directory=TRANSLATIONS,
                 output_directory=output,
             )
-            self.assertEqual(sum(counts.values()), 1299)
+            self.assertEqual(sum(counts.values()), 1305)
             for bank in KNOWN_SCENARIO_BANKS:
                 self.assertEqual(
                     (output / f"{bank}.json").read_bytes(),
@@ -110,7 +110,7 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
         self.assertEqual(
             tt1b["TT1B/g3/r6"],
             (
-                "Simon: M-monster!{CTRL:1}Me: No! The devil just{CTRL:0}"
+                "Simon: M-monster!{CTRL:1}Me: No! The Devil just{CTRL:0}"
                 "forced me to swap bodies{CTRL:0}with him! Believe me!"
                 "{CTRL:3}Simon: …"
             ),
@@ -302,10 +302,10 @@ class CanonicalProductionTranslationTests(unittest.TestCase):
             )
 
     def test_semantic_wait_quote_exception_is_exact_and_unique(self) -> None:
-        """Keep the single source-backed comma-to-quotation pause hash-locked."""
+        """Keep the two reviewed dialogue pauses hash-locked."""
         self.assertEqual(
             set(SEMANTIC_WAIT_GRAMMAR_EXCEPTIONS),
-            {"TT1B/g3/r29"},
+            {"TT1B/g3/r29", "T22/g1/r20"},
         )
         record = _canonical("TT1B")["TT1B/g3/r29"]
         _validate_semantic_wait_boundaries("TT1B/g3/r29", record)

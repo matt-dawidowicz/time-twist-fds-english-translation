@@ -279,6 +279,29 @@ class IncrementalBuildTests(unittest.TestCase):
         self.assertEqual(result.data, data)
         self.assertEqual(result.changed_records, ())
 
+    def test_exact_dictionary_count_does_not_require_zero_slack(self) -> None:
+        """Use the v83 manifest count instead of scanning resident padding."""
+        data, translations = _tt6d_bank(dictionary_slack=12)
+        mutable = bytearray(data)
+        start = (
+            int.from_bytes(
+                mutable[
+                    DICTIONARY_POINTER_OFFSET : DICTIONARY_POINTER_OFFSET + 2
+                ],
+                "little",
+            )
+            - LOAD_ADDRESS
+        )
+        dictionary_bytes = len(pack_entropy_stream((encode_english("AB"),)))
+        mutable[start + dictionary_bytes] = 0xFF
+        report = inspect_entropy_bank(
+            bytes(mutable),
+            "TT6D",
+            translations,
+            dictionary_entries=1,
+        )
+        self.assertEqual(report.dictionary_entries, 1)
+
     def test_tt1a_special_path_rebuilds_without_dictionary(self) -> None:
         """Handle TT1A's direct two-stream layout without a dictionary."""
         data, translations = _tt1a_bank()
@@ -477,10 +500,10 @@ class IncrementalBuildTests(unittest.TestCase):
             )
 
     def test_all_topologies_remain_explicit(self) -> None:
-        """Lock all 1,299 scenario records in one topology table."""
+        """Lock all 1,305 scenario records in one topology table."""
         self.assertEqual(len(GROUP_RECORD_COUNTS), 13)
         total = sum(sum(counts) for counts in GROUP_RECORD_COUNTS.values())
-        self.assertEqual(total, 1299)
+        self.assertEqual(total, 1305)
 
 
 if __name__ == "__main__":

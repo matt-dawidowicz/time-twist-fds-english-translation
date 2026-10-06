@@ -1,0 +1,19 @@
+TIME TWIST v77 — RESPONSE AND PUZZLE CLARITY
+
+T25/g0/r21
+Before: I'm too nervous to say a{CTRL:0}word.
+After:  He's too nervous to say{CTRL:0}a word.
+
+TT5/g2/r23
+Before: Tom: I have exactly one{CTRL:0}thousand dollars. I need{CTRL:0}to buy fifty animals{CTRL:0}total: cows, sheep, and{CTRL:4}pigs. Cows cost $120{CTRL:4}each, sheep $30, and{CTRL:4}pigs $5. How many of{CTRL:4}each should I buy?
+After:  Tom: I must spend{CTRL:0}exactly one thousand{CTRL:0}dollars to buy fifty{CTRL:0}animals: cows, sheep,{CTRL:4}and pigs. Cows cost{CTRL:4}$120 each, sheep $30,{CTRL:4}and pigs $5. How many{CTRL:4}of each should I buy?
+
+TT4/g1/r8
+Before: Merchant: One silver{CTRL:0}coin. I'll take it.
+After:  Merchant: I'll pay one{CTRL:0}silver coin for it.
+
+George: the native Talk > George route now describes his silence in third person.
+Livestock: explicitly requires spending exactly $1,000 on 50 animals. Prices and the 5/7/38 solution are preserved.
+Merchant: explicitly offers to pay the player one silver coin.
+
+All other v76 text, menu labels and gameplay scripts remain unchanged.

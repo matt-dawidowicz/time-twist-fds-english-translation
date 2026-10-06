@@ -1,0 +1,115 @@
+{
+  "T22": {
+    "counts": [
+      32,
+      27
+    ],
+    "dictionary_entries": 73
+  },
+  "T25": {
+    "counts": [
+      32,
+      32,
+      13
+    ],
+    "dictionary_entries": 70
+  },
+  "TT1A": {
+    "counts": [
+      32,
+      3
+    ],
+    "dictionary_entries": 0
+  },
+  "TT1B": {
+    "counts": [
+      32,
+      32,
+      32,
+      32,
+      9
+    ],
+    "dictionary_entries": 129
+  },
+  "TT2": {
+    "counts": [
+      32,
+      32,
+      32,
+      32,
+      32,
+      10
+    ],
+    "dictionary_entries": 126
+  },
+  "TT3A": {
+    "counts": [
+      32,
+      32,
+      32,
+      32,
+      24
+    ],
+    "dictionary_entries": 112
+  },
+  "TT3B": {
+    "counts": [
+      32,
+      26
+    ],
+    "dictionary_entries": 67
+  },
+  "TT4": {
+    "counts": [
+      32,
+      32,
+      32,
+      32,
+      32,
+      24
+    ],
+    "dictionary_entries": 130
+  },
+  "TT5": {
+    "counts": [
+      32,
+      32,
+      32,
+      28,
+      1
+    ],
+    "dictionary_entries": 120
+  },
+  "TT6A": {
+    "counts": [
+      32,
+      32,
+      32,
+      4
+    ],
+    "dictionary_entries": 87
+  },
+  "TT6B": {
+    "counts": [
+      32,
+      32,
+      30
+    ],
+    "dictionary_entries": 68
+  },
+  "TT6C": {
+    "counts": [
+      32,
+      32,
+      32,
+      10
+    ],
+    "dictionary_entries": 111
+  },
+  "TT6D": {
+    "counts": [
+      8
+    ],
+    "dictionary_entries": 9
+  }
+}

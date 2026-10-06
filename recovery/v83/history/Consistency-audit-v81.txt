@@ -1,0 +1,35 @@
+Time Twist v81 — consistency audit
+
+Scope: reviewed all 1,304 English dialogue records and all 721 menu labels for repeated names, locations, items, commands and stock responses. Checked Japanese context for the changed location references. This is a terminology review, not a new exhaustive bilingual translation audit.
+
+Applied changes:
+- T25/g2/r4: manor -> mansion
+- TT1B/g3/r6: The devil -> The Devil
+- TT5/g0/r16: In the hut! -> In the shack!
+- TT5/g3/r16: manor -> mansion
+- TT6C/g2/r19: Baron's -> baron's
+- TT2/g3/r14: prison -> jail
+- TT2 menu 65: Basement -> Cellar
+- T22 menu 32: Prison -> Jail
+- TT6B menu 30: Horse -> Mare
+
+Meaningful distinctions retained:
+- The modern museum basement is a separate location from the French cellar.
+- Jailer is a person, Cell is a room, and Jail is the building.
+- Generic devils and the idiom "the devil's own luck" retain lowercase.
+- Speaker labels such as Old Man remain title case; menu commands remain sentence case.
+- Pendant/medal describe the amulet's shape; Bell/Jar abbreviate the full artifact names.
+
+Skipped because their text sections are full:
+- TT2 menu Official -> Guard: requires 140 bytes, has 139.
+- T22 menu Remove -> Take off: requires 120 bytes with the Jail change, has 119.
+- The previously noted "save her" -> "save that girl" clarification remains skipped.
+
+The alternative Jail -> Prison direction also exceeded the TT2 menu capacity (140 versus 139 bytes), so the shorter Jail was standardized throughout France.
+
+Save migration:
+- Converted the supplied slot 6 state for the combined v81 ROM.
+- Replaced eight bytes of its resident T22 bank and updated the embedded ROM filename.
+- Preserved all progress flags, CPU registers, internal RAM, disk overlays, audio, and PPU state.
+- Existing menu record start addresses are unchanged in the resident bank.
+- Full emulator loading and PPU playtesting were not performed.

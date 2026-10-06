@@ -1,0 +1,21 @@
+TIME TWIST v71 — ACTION PROMPTS
+
+Take what?
+  France: both sections
+  World War II: both sections
+  Ancient Greece: empty Take response (Use retains Use what?)
+  America: empty Take responses, including the formerly shared Take/Use menu
+
+Hold what?
+  Nazareth: the donkey's empty Hold responses
+
+Eat what?
+  Bethlehem: the empty Eat response
+  Nativity finale: the empty Eat response
+
+Use what?
+  Existing v70 responses retained, including all 17 redirected empty-Use paths
+
+Each response occupies a single line of at most ten characters.
+Seven existing response records changed, and two new Take records were added.
+Unrelated dialogue exclamations such as What?! retain their original wording.

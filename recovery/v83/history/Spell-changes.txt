@@ -1,0 +1,12 @@
+TIME TWIST v74 — SPELL SPELLING
+
+Standard form: Maradul Barao Garadura
+
+TT1B/g1/r6: Galdura -> Garadura in all three repetitions.
+TT1B/g4/r7: Galdura -> Garadura in the later attempt before the Devil.
+
+The fortune-telling service, earlier museum attempts, and ending already used
+Garadura. This deliberately normalizes a variation in the original Japanese,
+as approved by the user. It changes displayed text, not event conditions.
+
+All other v73 dialogue and menu labels remain unchanged.

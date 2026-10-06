@@ -3,8 +3,10 @@
 This document defines the editing workflow for scenario English. The recovered
 v38 text and ROM are frozen historical checkpoints: see
 [V38_CANONICAL_BUILD.md](V38_CANONICAL_BUILD.md). Current source-locked maps may
-advance beyond v38 after review, while retaining the recovered 1,299-record
-topology and passing runtime/layout validation.
+advance beyond v38 after review. The current v83 maps retain all 1,299 original
+records and add six explicitly registered responses, for 1,305 records.
+See [v83 checkpoint reproduction](../recovery/v83/README.md) for the active
+build and source-to-ROM validation contract.
 
 ## Canonical data model
 

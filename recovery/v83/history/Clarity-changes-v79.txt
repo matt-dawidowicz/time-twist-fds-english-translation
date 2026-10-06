@@ -1,0 +1,21 @@
+Approved changes in v79
+
+TT3A/g2/r20
+Before: Can't reach him.
+After: Can't reach it.
+
+TT3A/g2/r10
+Before: I dig up a little{CTRL:0}pebble.
+After: I dig in the soil and{CTRL:0}find a pebble.
+
+TT3A/g2/r0
+Before: Ralph: Change after you{CTRL:0}get out. They'll get{CTRL:0}dirty.
+After: Ralph: Change after you{CTRL:0}escape, or your clothes{CTRL:0}will get dirty.
+
+TT3A/g3/r24
+Before: I reach down for the{CTRL:0}bottle. There's a piece{CTRL:0}of paper inside.
+After: I pick up the bottle.{CTRL:0}There's paper inside.
+
+TT3A menu label 37: Back -> Turn back. Forward and Soil remain unchanged. The other Back menu label in this bank is unchanged.
+
+All text fit, native text dispatch/render, menu geometry, action-route and quiz-route checks passed. The pebble acquisition continuation preserves the preceding text. Full emulator/PPU playtesting remains.
