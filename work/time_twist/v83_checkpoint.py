@@ -38,10 +38,16 @@ ADDED_RECORD_IDS = frozenset(
 RECOVERY_ROOT = Path(__file__).resolve().parents[2] / "recovery" / "v83"
 
 
-def load_v83_delta() -> bytes:
+def _recovery_root(recovery_root: Path | None) -> Path:
+    """Resolve checkpoint artifacts from the selected project checkout."""
+    return (recovery_root or RECOVERY_ROOT).expanduser().resolve()
+
+
+def load_v83_delta(*, recovery_root: Path | None = None) -> bytes:
     """Load the reviewed copy/literal delta and enforce its independent hash."""
+    root = _recovery_root(recovery_root)
     parts = sorted(
-        (RECOVERY_ROOT / "patches").glob("release-to-v83.ttd.zlib.b64.part*")
+        (root / "patches").glob("release-to-v83.ttd.zlib.b64.part*")
     )
     try:
         encoded = "".join(p.read_text(encoding="ascii").strip() for p in parts)
@@ -55,21 +61,34 @@ def load_v83_delta() -> bytes:
     return patch
 
 
-def promote_release_to_v83(raw: bytes) -> bytes:
+def promote_release_to_v83(
+    raw: bytes,
+    *,
+    recovery_root: Path | None = None,
+) -> bytes:
     """Apply the hash-guarded public-release-to-v83 checkpoint delta."""
-    result = apply_checkpoint_delta(raw, load_v83_delta())
+    result = apply_checkpoint_delta(
+        raw,
+        load_v83_delta(recovery_root=recovery_root),
+    )
     if hashlib.sha256(result).hexdigest().upper() != V83_SHA256:
         raise ReleaseBuildError("v83 checkpoint output SHA-256 mismatch")
     return result
 
 
-def validate_v83_sources(raw: bytes, translations_directory: Path) -> dict:
+def validate_v83_sources(
+    raw: bytes,
+    translations_directory: Path,
+    *,
+    recovery_root: Path | None = None,
+) -> dict:
     """Prove all current dialogue and menu source matches the actual ROM."""
+    root = _recovery_root(recovery_root)
     manifest = json.loads(
-        (RECOVERY_ROOT / "bank_manifest.json").read_text(encoding="utf-8")
+        (root / "bank_manifest.json").read_text(encoding="utf-8")
     )
     menus = json.loads(
-        (RECOVERY_ROOT / "menus.json").read_text(encoding="utf-8")
+        (root / "menus.json").read_text(encoding="utf-8")
     )
     if hashlib.sha256(raw).hexdigest().upper() != V83_SHA256:
         raise ReleaseBuildError(

@@ -1,6 +1,6 @@
 {
   "schema": "Time Twist release source lock v5",
-  "authority": "Exact private v25 seed, frozen v38 compiler, guarded historical deltas through v83, current dialogue maps and v83 menu/topology manifests. The private seed identity is unchanged; public source records were refreshed for the user-confirmed v83 checkpoint. See recovery/v83/README.md.",
+  "authority": "The exact private v25 safe-encoding baseline, frozen v38 compiler bundle, validated v38-to-v41, v41-to-v50, Simon-fix and v83 checkpoint deltas, and 13 active translation maps are the non-code-lock inputs. Compiler payloads and checkpoint deltas are independently hash-checked before execution. The recovered v38 bundle remains an immutable historical checkpoint and the guarded checkpoint lineage must reproduce exact v83. All 1,305 active dialogue records and 721 menu labels are decoded from the result and compared with current source.",
   "subtitle": "On the Outskirts of History...",
   "files": {
     "work/baseline/time_twist_v25_safe_encoding.fds": {
