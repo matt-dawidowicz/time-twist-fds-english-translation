@@ -17,23 +17,32 @@ binaries and BPS patch files are provided under `release/`.
 The current source includes the confirmed v83 fixes and
 [corrected walkthrough](docs/WALKTHROUGH.txt). See the
 [v83 checkpoint instructions](recovery/v83/README.md) to reproduce that build.
-The downloadable v1.0 patcher assets below have not yet been refreshed to v83.
+The v1.1 public patches and Windows package below contain that same v83 build.
 
 ## Download the English patch
 
 For most Windows users:
 
 - **[Download TimeTwistEnglishPatcher.exe](release/TimeTwistEnglishPatcher.exe)** — self-contained patcher with both BPS patches built in
-- **[Download the complete Windows package](release/Time-Twist-English-v1.0-Windows.zip)** — EXE, README, license, checksums, and both BPS patches
+- **[Download the complete Windows package](release/Time-Twist-English-v1.1-Windows.zip)** — EXE, README, license, checksums, and both BPS patches
 
 Manual BPS patches:
 
-- [Zenpen BPS patch](release/Time-Twist-English-v1.0-Zenpen.bps)
-- [Kouhen BPS patch](release/Time-Twist-English-v1.0-Kouhen.bps)
+- [Zenpen BPS patch](release/Time-Twist-English-v1.1-Zenpen.bps)
+- [Kouhen BPS patch](release/Time-Twist-English-v1.1-Kouhen.bps)
+
+Existing translated builds:
+
+- [Last v82 playtest → v83, combined image](release/Time-Twist-v82-to-v83-four-side.bps)
+- [Last v82 playtest → v83, Kouhen only](release/Time-Twist-v82-to-v83-Kouhen.bps)
+- [Simon-corrected public v1.0 → v1.1](release/Time-Twist-v1.0-Simon-to-v1.1-four-side.bps)
+
+See the [patch instructions](release_patcher/README.md) for exact inputs and the
+[change list](release_patcher/CHANGELOG.md) for what is included.
 
 The executable takes the two clean Japanese retail FDS images, identifies
 Zenpen/Kouhen automatically, and can create the two translated disks, the
-combined four-side v1.0 image, or both. It never contains or distributes the
+combined four-side v1.1 image, or both. It never contains or distributes the
 original game data.
 
 ## Start here

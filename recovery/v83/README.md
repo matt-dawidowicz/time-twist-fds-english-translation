@@ -33,9 +33,8 @@ included in this repository.
 
 Both images are 262,000 bytes. The source lock retains the unchanged private
 v25 seed identity; only public inputs were refreshed during this integration.
-No release target is promoted here. The downloadable v1.0 Windows patcher and
-BPS assets remain the previously published release, pending a separate release
-refresh.
+No release target is promoted here. The v1.1 public patcher and BPS assets
+now reproduce this same checkpoint; see `release_patcher/README.md`.
 
 ## Changes recovered
 
