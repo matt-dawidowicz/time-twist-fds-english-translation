@@ -477,10 +477,10 @@ class IncrementalBuildTests(unittest.TestCase):
             )
 
     def test_all_topologies_remain_explicit(self) -> None:
-        """Lock all 1,299 scenario records in one topology table."""
+        """Lock all 1,305 scenario records in one topology table."""
         self.assertEqual(len(GROUP_RECORD_COUNTS), 13)
         total = sum(sum(counts) for counts in GROUP_RECORD_COUNTS.values())
-        self.assertEqual(total, 1299)
+        self.assertEqual(total, 1305)
 
 
 if __name__ == "__main__":

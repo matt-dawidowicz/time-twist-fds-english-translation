@@ -50,7 +50,7 @@ class TT4FishermanSpeakerLabelTests(unittest.TestCase):
         tt4 = _production()
         self.assertEqual(
             tt4["TT4/g5/r7"],
-            "{CTRL:0}{CTRL:0}What were city-states in{CTRL:0}Greece called?",
+            "{CTRL:0}{CTRL:0}What was a Greek{CTRL:0}city-state called?",
         )
         self.assertEqual(
             tt4["TT4/g5/r10"],

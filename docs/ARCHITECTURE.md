@@ -2,6 +2,11 @@
 
 ## Design goal
 
+The current release candidate follows the guarded historical checkpoint path
+through v83. Its 1,305 dialogue records and 721 menu labels are checked against
+the reconstructed ROM. See [the v83 checkpoint](../recovery/v83/README.md);
+the compiler internals below describe the underlying historical pipeline.
+
 The tools make controlled, verifiable changes to a game whose text and
 graphics were not designed for an English localization. Every layer is
 lossless by default: parsing and serializing an unmodified input must reproduce
@@ -97,8 +102,8 @@ followed by data or code that must remain at its original CPU address.
    map directly and validates its renderer/control contracts. Legacy review and
    override layers are rejected rather than merged.
 2. `v38_build.py` validates the active maps against the recovered 1,299-record
-   topology and supplies them as the only scenario-text inputs to the frozen v38
-   compiler bundle.
+   topology plus the six reviewed v83 response additions. The frozen compiler
+   consumes its own immutable v38 inputs; guarded deltas then reconstruct v83.
 3. The frozen compiler rebuilds its entropy-packed scenario/menu streams and
    matching runtime changes against the private v25 safe-encoding baseline.
 4. `release.py` validates the source lock and executing-code provenance, delegates

@@ -26,20 +26,20 @@ def _production(bank_name: str) -> dict[str, str]:
 class InfoCardLayoutTests(unittest.TestCase):
     """Keep identity-card fields visually separate at both runtime entry points."""
 
-    def test_france_card_retains_playtested_four_row_geometry(self) -> None:
-        """Retain France's first two rows and append separate name/trade fields."""
+    def test_france_card_uses_standard_fields_and_scrolling(self) -> None:
+        """Retain the shared three-row heading and scroll the occupation field."""
         tt2 = _production("TT2")
         self.assertEqual(
             tt2["TT2/g1/r4"],
-            "October 1428. A castle{CTRL:0}town in France.",
+            "Time: October 1428{CTRL:0}Place: A castle town in{CTRL:0}France",
         )
         self.assertEqual(
             tt2["TT2/g1/r5"],
-            "{CTRL:0}{CTRL:0}Name: Pierre{CTRL:0}Trade: glassmaker",
+            "{CTRL:6}Name: Pierre{CTRL:4}Occupation: Glassmaker",
         )
         self.assertEqual(
             tt2["TT2/g1/r6"],
-            "{CTRL:0}{CTRL:0}Name: Chino{CTRL:0}Trade: locksmith",
+            "{CTRL:6}Name: Chino{CTRL:4}Occupation: Locksmith",
         )
 
     def test_long_identity_cards_keep_fields_on_separate_segments(
@@ -48,34 +48,34 @@ class InfoCardLayoutTests(unittest.TestCase):
         """Start every field on a new row, including the Nazareth identity card."""
         cards = {
             ("TT3A", "TT3A/g0/r14"): (
-                "TIME:",
-                "LOCATION:",
-                "NAME:",
-                "RANK:",
+                "Time:",
+                "Place:",
+                "Name:",
+                "Occupation:",
             ),
             ("TT4", "TT4/g1/r22"): (
-                "TIME:",
-                "PLACE:",
-                "NAME:",
-                "OCCUPATION:",
+                "Time:",
+                "Place:",
+                "Name:",
+                "Occupation:",
             ),
             ("TT5", "TT5/g1/r6"): (
-                "TIME:",
-                "PLACE:",
-                "NAME:",
-                "OCCUPATION:",
+                "Time:",
+                "Place:",
+                "Name:",
+                "Occupation:",
             ),
             ("TT6A", "TT6A/g0/r8"): (
-                "TIME:",
-                "PLACE:",
-                "NAME:",
-                "OCCUPATION:",
+                "Time:",
+                "Place:",
+                "Name:",
+                "Occupation:",
             ),
             ("TT6A", "TT6A/g1/r10"): (
-                "TIME:",
-                "PLACE:",
-                "NAME:",
-                "OCCUPATION:",
+                "Time:",
+                "Place:",
+                "Name:",
+                "Occupation:",
             ),
         }
         cache: dict[str, dict[str, str]] = {}
@@ -83,6 +83,8 @@ class InfoCardLayoutTests(unittest.TestCase):
             production = cache.setdefault(bank_name, _production(bank_name))
             text = production[record_id]
             validate_renderer_buffer_layout(text)
+            for label in labels:
+                self.assertIn(label, text)
             for segment in CONTROL_RE.split(text):
                 present = [label for label in labels if label in segment]
                 with self.subTest(record_id=record_id, segment=segment):

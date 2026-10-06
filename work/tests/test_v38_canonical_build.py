@@ -53,7 +53,7 @@ class V38CanonicalBuildTests(unittest.TestCase):
 
     def test_active_maps_keep_the_recovered_record_topology(self) -> None:
         """Allow reviewed post-v38 text while preserving every recovered record ID."""
-        self.assertEqual(len(self.actual), 1299)
+        self.assertEqual(len(self.actual), 1305)
         validate_checkpoint_record_ids(self.actual, self.approved)
 
     def test_every_v38_record_is_protected_against_checkpoint_edits(

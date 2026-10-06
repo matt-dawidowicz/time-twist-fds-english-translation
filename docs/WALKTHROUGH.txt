@@ -1,0 +1,1083 @@
+# Time Twist: Rekishi no Katasumi de
+
+## Complete English Walkthrough
+
+This walkthrough has been revised for the current English translation patch (v83; earlier v82 terminology is retained).
+
+Menu commands, objects, character names, locations, and puzzle answers use the English wording displayed by the patch wherever that wording is known. Directions such as “walk left” refer to direct character movement rather than menu selections.
+
+The optional `Info` steps below show the identity of the person or animal you currently inhabit. The option is tied to specific locations, so it does not appear in every chapter or room.
+
+---
+
+# PART 1 — ZENPEN
+
+## Prologue
+
+Answer the opening multiple-choice/personality questions however you like. Despite appearances, the Fortune-Telling Service Center does not score the questionnaire: your blood type alone determines the displayed personality profile; your birth month has no effect, and the Yes/No answers only change which statements appear next. All twelve birth months appear on one menu. Continue until the time shift occurs and the main game begins.
+
+---
+
+# 1995 — PRESENT DAY
+
+`Look → Museum`
+`Look → Sign`
+`Move → East`
+`Talk`
+`Move → West`
+`Move → West`
+`Move → West`
+`Move → Church`
+`Talk → Priest`
+`Listen → Sermon`
+`Talk → Priest`
+`Move → Outside`
+`Move → East`
+`Look → House`
+`Use → Intercom`
+`Talk`
+
+`Look → Picture`
+`Talk`
+`Talk`
+`Move → Outside`
+`Move → East`
+`Move → Museum`
+
+### Museum exhibits
+
+`Walk` — Go to the first display case.
+`Look → Exhibit`
+
+`Walk` — Go to the second display case.
+`Look → Exhibit`
+
+`Walk` — Go to the third display case.
+`Look → Exhibit`
+
+`Walk` — Go to the fourth display case.
+`Look → Exhibit`
+
+`Walk` — Go toward the fifth display case. You will stop at the window on the way; simply choose `Walk` again.
+`Look → Exhibit`
+
+`Walk` — Walk right to the Girl who has appeared.
+`Talk`
+`Talk`
+`Hit on → Compliment → Ears`
+`Look → Girl`
+`Use → Spell`
+`Use → Spell`
+
+`Walk` — Go to the far-left exhibit, which is now broken.
+`Talk`
+`Talk`
+
+`Walk` — Leave the museum.
+
+`Move → West`
+`Move → West`
+`Move → Church`
+`Move → Outside`
+`Move → East`
+`Move → House`
+`Talk`
+`Move → Outside`
+`Move → East`
+`Move → East`
+`Move → North`
+
+`Look → Area`
+`Poke`
+`Look → Ground`
+`Look → Map`
+`Move → Forward`
+
+`Look → House`
+`Talk`
+`Talk`
+`Talk`
+`Look → Ground`
+`Move → Deeper`
+`Talk`
+`Talk`
+
+The first major historical jump follows.
+
+---
+
+# 1428 — FRANCE
+
+## Pierre and the town
+
+`Look → Body`
+`Look → Body`
+`Talk`
+`Talk`
+`Smell`
+`Look → Pierre`
+`Move → Outside`
+
+Optional: On the town street, choose `Look → Posted sign`. Reading the notice unlocks `Info` for both Pierre and Chino while you inhabit them. `Info` appears on the street, not inside buildings.
+
+`Walk` — Walk all the way left to the bottles.
+`Look → Bottles`
+`Take → Empty bottle`
+
+`Walk` — Walk all the way right and enter the door by pressing Up.
+
+`Talk`
+
+For the questions, choose:
+
+`Jerusalem`
+`Hundred Years`
+`Commoners`
+`Guild`
+`da Vinci`
+
+`Use → Empty bottle`
+`Move → Outside`
+
+## Getting into the jail
+
+`Walk` — Go north through town to the jail entrance.
+`Talk → Lugot`
+`Use → Wine → Offer → Official`
+`Move → Town`
+
+`Walk` — Go right and enter the first door.
+`Use → Wine → Drink`
+`Use → Wine → Drink`
+`Move → Outside`
+
+`Walk` — Return north to the jail entrance.
+`Move → Building`
+
+`Look → Women`
+`Move → Outside`
+`Move → Town`
+
+`Walk` — Go right and enter the first door again.
+`Look → Pierre`
+`Move → Outside`
+
+`Walk` — Return north to the jail entrance.
+`Use → Wine → Offer → Official`
+`Move → Town`
+
+`Walk` — Go right and enter the first door again.
+`Use → Wine → Drink`
+`Use → Wine → Drink`
+`Move → Outside`
+
+`Walk` — Return north to the jail entrance.
+`Move → Jail`
+`Move → Cellar`
+
+`Listen`
+`Move → Cell`
+`Move → Outside`
+`Move → Town`
+
+## Lugot and the disguise
+
+Optional: Once you are inhabiting Chino, return to the town street and choose `Info` again to see his profile as a locksmith. If it is missing, choose `Look → Posted sign` first.
+
+`Walk` — Go left and enter the far-left door, the pub.
+
+`Listen`
+`Look → Pierre`
+`Look → Pierre`
+`Listen`
+`Look → Pierre`
+`Look → Chino`
+
+`Talk → Lugot`
+`Accept`
+`Talk → Lugot`
+`Move → Outside`
+
+`Walk` — Go right two doors and enter.
+
+`Look → Room`
+`Look → Tools`
+`Take → Key`
+`Look → Tools`
+`Move → Outside`
+
+`Walk` — Enter the door immediately to the left.
+
+`Talk`
+`No`
+`Use → Robe → Wear`
+`Move → Outside`
+
+`Walk` — Return north to the jail entrance.
+`Move → Jail`
+`Move → Cellar`
+
+`Look → Room`
+`Take → Rope`
+`Move → Cell`
+`Move → Cell`
+`Move → Outside`
+`Move → Jail`
+`Move → Cellar`
+
+## Secret passage
+
+`Look → Chino`
+`Look → Wall`
+`Push`
+`Move → Hole`
+
+`Walk` — From the hole, go left until you reach the two doorways.
+`Walk` — Enter the LEFT doorway by pressing Up while facing LEFT. If necessary, tap Left to set your facing direction before pressing Up.
+`Walk` — In the corridor beyond, keep walking LEFT until you reach the next junction with two doorways. Walking right returns you toward the entrance.
+`Walk` — At this second junction, enter the RIGHT doorway while facing LEFT: approach the doorway, tap Left if needed, then press Up. Entering this doorway facing right leads to a dead end.
+`Walk` — In the passage beyond, stand directly in front of the locked door.
+
+These directions assume you enter the first doorway facing left. If you entered it facing right instead, cross that corridor to the RIGHT to reach the same second junction.
+
+`Use → Key`
+`Look → Room`
+`Open → Box`
+`Look → Paper`
+`Move → Back`
+
+`Walk` — Walk right.
+`Walk` — Walk left and enter the door.
+`Walk` — Walk left.
+`Walk` — Walk right.
+
+`Move → Cell`
+`Use → Pact`
+
+---
+
+# 1944 — GERMANY
+
+## POW camp
+
+`Look → Body`
+`Look → Pocket`
+`Take → Wire cutters`
+`Use → Wire cutters`
+`Move → Outside`
+
+Optional: After you are caught and placed in solitary, choose `Info` to identify Cougar, a U.S. Air Force first lieutenant. You can also select `Info` in the barracks and escape tunnel.
+
+`Look → Wall`
+`Hit → Wall`
+`Talk`
+`Talk`
+`Use → Body`
+
+`Walk` — Go to the far-left bunk bed.
+`Look → Bed`
+`Take → Sheet`
+`Take → Clothes`
+`Talk`
+`Talk`
+
+`Walk` — Go to the man sitting on the right bunk.
+`Talk`
+`Talk`
+`Talk`
+
+`Walk` — Go to the man standing on the left.
+`Talk`
+`Talk`
+
+`Walk` — Try to go outside. You will be caught, but when you return it will be dark.
+
+`Walk` — Go to the stove.
+`Look → Stove`
+`Push → Stove`
+`Enter → Tunnel`
+
+`Walk` — Go to the man at the right bunk.
+`Talk`
+
+`Walk` — Return to the stove.
+`Enter → Tunnel`
+
+`Take → Soil`
+`Move → Forward`
+`Move → Forward`
+`Move → Forward`
+`Move → Forward`
+
+`Use → Pebble → Throw → Wire fence`
+
+---
+
+## Town and resistance contacts
+
+`Move → East`
+`Talk`
+
+Choose:
+
+`Gestapo`
+`Résistance`
+`U-boat`
+`Gabin`
+`Eisenhower`
+`No`
+
+`Move → Back`
+
+`Move → West`
+`Use → Greeting`
+`Talk`
+`Saw it`
+
+Choose either of the available follow-up answers.
+
+`Move → Back`
+
+`Move → North`
+`Use → Greeting`
+`Talk`
+`Saw it`
+
+Again, choose either available follow-up answer.
+
+`Look → Fountain`
+`Take → Bottle`
+`Take out → Paper`
+`Look → Red writing`
+
+`Move → Back`
+
+`Use → Password`
+
+Choose:
+
+`Yes`
+
+`Talk`
+`Talk`
+`Talk`
+
+`Look → Simon`
+`Look → Blue writing`
+`Look → Notes`
+`Use → Notes → Combine`
+
+`Move → Watermill`
+
+---
+
+## Mill and confrontation
+
+The Gypsy Amulet is the pendant Frankie gave you; it appears as `Amulet` in the menu. This sequence begins after `Move → Watermill`.
+
+### At the watermill
+
+`Use → Amulet` — Simon notices it, and you explain that rust obscures its inscription. Do this before finishing the conversation below.
+`Talk` — Simon wishes he could turn back time.
+`Talk` — Simon discusses Einstein. A woman interrupts and holds you at gunpoint. Advance through all of this dialogue until the command menu returns.
+`Look → Area` — A car approaches. The woman hands you and Simon over to Schmidt, and the scene changes to the car.
+
+If you have already talked to Simon or used the amulet, some of these exchanges will already be complete. The checkpoints above identify when to continue; repeating a completed action does not restart its dialogue.
+
+### In Schmidt's car
+
+`Talk → Schmidt` — Schmidt reassures Simon that he will not have to build another bomb.
+`Talk → Schmidt` — Schmidt gives the password and explains the escape plan. Advance the ensuing dialogue and attack scene until the combat menu appears.
+
+### The confrontation
+
+`Fight` — Schmidt fires his pistol.
+`Fight` — Simon throws his shoe.
+`Fight` — Simon spits at Hitler.
+`Fight` — Schmidt throws his knife.
+
+Advance the response after each attack. After the knife attack, `Use` becomes available. If you have already made some attacks, continue from the corresponding point above rather than counting four more from your current position.
+
+`Use → Amulet` — The amulet shines and hurts Hitler. The game then presents the next commands in sequence.
+`Look → Amulet` — The rust falls away, exposing the inscription.
+`Read → Text` — You start reading it, but are forced out of Cougar's body. Advance the scene until the `Look`, `Talk`, `Listen`, and `Move` menu appears.
+
+### Reach Cougar
+
+You are now speaking to Cougar from outside his body. Alternate talking and listening:
+
+`Talk → Cougar` — You draw attention to the words on the amulet.
+`Listen` — Cougar hears you and notices the amulet.
+`Talk → Cougar` — You tell him to read the inscription aloud.
+`Listen` — Cougar notices the words; your further instruction and his full recitation follow within this same exchange. Keep advancing the dialogue.
+
+If you used `Listen` before drawing Cougar's attention to the inscription, you only hear the three men crying out. Resume the sequence with `Talk → Cougar`. Once you have told Cougar to read aloud and heard him acknowledge the amulet, `Listen` advances to the recitation.
+
+After the recitation, continue through the automatic scenes: the men recover in the car, Schmidt discusses reaching the border, Hitler speaks with the Devil, and you are pulled into another time shift. No further command selections are needed before the Part 1 ending and “TO BE CONTINUED.”
+
+---
+
+# PART 2 — KOUHEN
+
+At the main menu, choose the third option and continue with the second disk/Part 2.
+
+When the game identifies the second half at the title flow, choose `Part 2`.
+
+---
+
+# ANCIENT ATHENS
+
+> Note: Older walkthroughs incorrectly place this entire section under “1864.” It is the Ancient Athens chapter. The actual 1864 Atlanta chapter begins later.
+
+## Dario
+
+Optional: In the treatment room with Dario and the injured youth, choose `Info` to identify Nicras, a physician in ancient Athens.
+
+`Look → Body`
+`Look → Youth`
+`Talk → Dario`
+
+`Treat`
+
+Choose the treatment options in this order:
+
+`Raise`
+`Cool`
+`Leave it`
+`Wrap with cloth`
+
+`Talk → Youth`
+`Move → Outside`
+
+---
+
+## Fisherman's quiz (optional)
+
+Before heading to the wounded soldier, you can visit the fisherman at the cape. From the street immediately outside Dario's treatment room:
+
+`Move → South`
+`Talk → Fisherman`
+
+Answer his five questions in this order:
+
+1. Greek city-state: `Polis`
+2. Athens' rival: `Sparta`
+3. Greatest hero of Greek mythology: `Heracles`
+4. Temple dedicated to Athena: `Parthenon`
+5. Major crop alongside olives and grapes: `Fig`
+
+The quiz is optional. After passing it, further conversations with the fisherman can provide treatment hints. Visit him before the merchant takes you to the cape to examine the child; the fisherman is no longer available during that later scene.
+
+`Move → Back` — Return to the street outside Dario's treatment room, then follow the wounded soldier route below.
+
+---
+
+## Wounded soldier
+
+`Move → North`
+`Move → East`
+
+`Look → Soldier`
+`Treat`
+
+`Take → Spear`
+`Use → Spear → Swing`
+`Take → Olive`
+
+`Treat → Medicinal herb → Fish mint → Grind`
+
+`Use → Spear → Give`
+`Talk → Soldier`
+
+`Move → Back`
+`Move → West`
+
+---
+
+## Sick man
+
+`Look → Man`
+`Treat → Medicinal herb → Jiaogulan → Boil`
+
+`Move → Outside`
+`Move → West`
+
+`Talk → Man`
+`Move → Outside`
+
+---
+
+## Mother and daughter
+
+`Move → South`
+`Move → East`
+
+`Talk → Mother`
+`Treat → Medicinal herb → Plantain herb → Boil`
+`Use → Olive → Give`
+
+`Move → Outside`
+`Move → East`
+
+`Talk → Girl`
+`Move → Outside`
+
+`Move → North`
+`Move → North`
+
+---
+
+## Temple priest
+
+`Move → Temple`
+
+`Look → Priest`
+
+`Treat`
+
+Use the following treatment sequence:
+
+`Lift chin`
+`Pinch nose`
+`Continuously`
+
+`Move → Outside`
+
+---
+
+## Merchant
+
+`Talk → Man`
+`Talk → Man`
+`Talk → Man`
+
+`Talk → Merchant`
+`Sell → Oil`
+
+`Oil` is the olive oil received from the girl.
+
+`Talk → Merchant`
+`Buy`
+`Buy`
+
+`Look → Child`
+
+`Move → Back`
+`Move → North`
+`Move → North`
+
+`Move → Temple`
+`Talk → Statue`
+
+`Move → Outside`
+`Move → South`
+`Move → East`
+
+`Talk → Statue`
+
+---
+
+## Five sages puzzle
+
+Walk to the five men and talk to each of them from left to right:
+
+Far left — `Talk`
+Second from left — `Talk`
+Center — `Talk`
+Second from right — `Talk`
+Far right — `Talk`
+
+Now assign the names:
+
+`Walk` — Select `Homer`
+
+`Walk` — Go to the second man from the right.
+Select `Pythagoras`
+
+`Walk` — Go to the center man.
+Select `Herodotus`
+
+`Walk` — Go to the second man from the left.
+Select `Socrates`
+
+`Walk` — Go to the far-left man.
+Select `Plato`
+
+The next sequence begins the 1864 chapter.
+
+---
+
+# SEPTEMBER 1864 — ATLANTA
+
+## House and work schedule
+
+Optional: Inside the shack, choose `Info` to identify George, a farmhand on Meyer’s farm in Atlanta.
+
+`Look → Room`
+`Look → Room`
+`Open → Drawer`
+`Look → Money`
+
+`Talk`
+`Talk`
+`Talk`
+
+Choose:
+
+`Yes`
+`Okay`
+`Schedule`
+
+Enter the work schedule as follows:
+
+* `Pick cotton → 28 baskets`
+* `Split wood → 70 centimeters`
+* `Get water → 6 buckets`
+* `Pull weeds → 60 minutes`
+* `Repair roof → 4 places`
+
+---
+
+## Livestock puzzle
+
+Choose `Answer`.
+
+Enter:
+
+`Cow → Five`
+`Sheep → Seven`
+
+For the pigs:
+
+`Pig`
+`Tens digit → Three`
+`Ones digit → Six or more → Eight`
+
+The resulting answer is **38 pigs**, giving **50 animals total**.
+
+---
+
+## Bottle puzzle
+
+Use the following sequence exactly:
+
+`Pour in`
+`Medium bottle`
+`Large bottle`
+
+`Pour in`
+`Small bottle`
+`Medium bottle`
+
+`Pour in`
+`Large bottle`
+`Small bottle`
+
+`Pour in`
+`Small bottle`
+`Medium bottle`
+
+`Pour in`
+`Medium bottle`
+`Large bottle`
+
+`Finish`
+
+---
+
+`Talk`
+`Look → Window`
+
+`Listen`
+`Look → Belle`
+`Look → Area`
+
+`Move → Hoofprints`
+`Move → Cave`
+
+`Look → Cave`
+`Look → Statue`
+`Listen`
+
+---
+
+## Town
+
+`Talk`
+`Move → West`
+`Move → West`
+`Talk`
+`Move → West`
+
+### Trader's quiz — Atlanta
+
+Start the five-question quiz with `Talk → Trader`. Choose these answers in order:
+
+1. Force that protected white settlers in the West: `Cavalry`
+2. Fleet that forced Japan to open its ports: `Black ship`
+3. Author of Uncle Tom's Cabin: `Mrs. Stowe`
+4. Mountain bearing four presidents' faces: `Rushmore`
+5. Edison's third invention named by the quiz: `Projector`
+
+### After the trader's quiz
+
+`Talk → Tom`
+`Look → Money`
+
+---
+
+# CIVIL WAR CONTINUATION — MEYER AND LINCOLN
+
+## Meyer's property
+
+### Serve the coffee
+
+`Talk → Meyer` — He asks you to take coffee to the guards.
+`Look → Wagon` — Find the coffee pot and cups.
+
+These two steps can be done in either order. Both are needed before the pot becomes available under `Use`.
+
+`Use → Pot` — Pour a cup of coffee.
+`Move → Outside`
+`Use → Coffee → Offer` — Give the coffee to the guards and advance their conversation.
+`Move → Mansion`
+`Talk → Meyer` — He gives you permission to rest upstairs. This conversation moves you into the guest room automatically.
+
+If you have already poured the coffee, continue with offering it; pouring again only reports that the pot is empty. If you already served the guards, return to Meyer. Talking to Lincoln and George is optional.
+
+### Search the study
+
+`Move → Hallway`
+`Move → Study`
+
+`Look → Desk` — Discover the three drawers; this makes `Open` available.
+`Open → Drawer → Third drawer` — It is locked. This unsuccessful attempt is necessary: it makes `Drawer` available under `Take`.
+`Take → Drawer → Second drawer` — Pull out the middle drawer completely. You do not need to open it first.
+`Look → Drawer → Third drawer` — Look through the gap and discover the whip and hood. Advance the entire revelation scene.
+
+Opening the first or second drawer is optional. Removing the first drawer is also possible, but it does not reveal the third drawer's contents; you still need to remove the second. The third drawer remains locked. If you have already removed the second drawer, go straight to inspecting the third. Merely removing the second drawer does not complete the investigation: you must see the whip and hood.
+
+### Eavesdrop from the stairs
+
+`Move → Hallway`
+`Move → Stairs`
+
+`Listen` — Meyer notices you and asks what is wrong. This is the setup for finding a hiding place, not the private conversation yet.
+`Look → Area` — Notice the thick, ornate pillar.
+`Hide` — Hide behind the pillar.
+`Listen` — Hear Meyer request an appointment as Lincoln's adviser.
+`Listen` — Hear Lincoln refuse. Continue through the ensuing confrontation and the revelation about the guards' coffee.
+
+`Move → Go up` — Return toward the upstairs hallway. Meyer calls Belle and George downstairs, and the next scene leads to the island and boat puzzle.
+
+If you explored in a different order:
+
+- Visiting the guest room or stairs before the study is allowed; return to the study and discover the whip and hood before trying to find the hiding place.
+- `Look → Area` reveals the pillar only after both the study discovery and an encounter in which Meyer notices you. Looking too early only describes the landing; look again after both events.
+- Before discovering the evidence, `Talk` or `Move → Get down` at the stairs can also make Meyer notice you. If that already happened, you can skip the first `Listen` and go straight to `Look → Area` after discovering the evidence.
+- If the pillar is already found, choose `Hide`. If already hidden, continue with `Listen`.
+- If you already heard Meyer's request, only the next `Listen` is needed. Once the confrontation is complete, further listening repeats dialogue; choose `Move → Go up`.
+- Going upstairs before the confrontation is complete does not advance to the island. Return to the stairs and finish eavesdropping.
+
+---
+
+# BOAT PUZZLE
+
+Begin with:
+
+`Listen`
+
+Then perform the crossings exactly as follows:
+
+`Get on → Me`
+`Get on → Coyote 1`
+`Boat`
+
+`Get down → Coyote 1`
+`Boat`
+
+`Get on → Coyote 2`
+`Boat`
+
+`Get down → Coyote 2`
+`Boat`
+
+`Get down → Me`
+
+`Get on → Lincoln`
+`Get on → George`
+`Boat`
+
+`Get down → Lincoln`
+
+`Get on → Coyote 1`
+`Boat`
+
+`Get down → George`
+
+`Get on → Me`
+`Boat`
+
+`Get down → Me`
+
+`Get on → Lincoln`
+`Boat`
+
+`Get down → Coyote 1`
+
+`Get on → George`
+`Boat`
+
+`Get down → Lincoln`
+
+`Boat`
+
+`Get on → Coyote 1`
+`Boat`
+
+`Get down → Coyote 1`
+
+`Boat`
+
+`Get on → Coyote 3`
+`Boat`
+
+`Get down → George`
+`Get down → Coyote 3`
+
+---
+
+# CIRCA 4 BC — NAZARETH AND BETHLEHEM
+
+## Joseph on the hill
+
+`Listen` — Joseph asks you to hear him out.
+`Nod` — Agree; he explains why he has broken off his engagement to Mary.
+`Listen` — Hear his despair and advance the recognition/profile scene. The game moves you to the village well automatically.
+
+## Village well — untie Kashim
+
+Optional: Choose `Info` here to identify Kashim, the donkey. The profile lists Nazareth, Israel, around 4 BC. This selectable `Info` command is at the well; the opening hill scene displays the profile as part of its dialogue.
+
+`Look → Area`
+`Look → Body` — Discover that you are tied to a post.
+`Look → Rope` — Notice the loose knot.
+`Hold → Rope` — Undo the knot. Continue until you are free.
+
+## Investigate both wedding gifts
+
+`Move → Right house` — Joseph's workshop.
+`Look → Room` — Discover the necklace on the shelf.
+`Hold → Necklace` — You cannot reach it yet. Continue through Joseph's explanation of the wedding gift.
+`Move → Outside`
+
+`Move → Left house` — Mary's house.
+`Look → Room` — Discover the bracelet on the shelf.
+`Hold → Bracelet` — You cannot obtain it yet. Continue through Mary's explanation of the wedding gift.
+`Move → Outside`
+
+These initial unsuccessful attempts matter: after you have tried both gifts, the child invites the elder to the river. You may investigate the two houses in either order, but complete both attempts and return outside before proceeding.
+
+## The elder's story and Joseph's necklace
+
+`Move → River`
+`Listen` — Hear the elder's story through the prophecy about Bethlehem. This advances the situation at Joseph's workshop.
+
+`Move → Village`
+`Move → Right house`
+`Look → Stand`
+`Get on → On stand`
+`Hold → Necklace` — Take it in your mouth.
+`Get down`
+`Move → Outside`
+
+If the children are still waiting for the elder, return to the houses and complete both initial gift attempts. If Joseph still stops you in the workshop, finish listening to the elder's story before trying again.
+
+## Deliver the gifts
+
+`Move → Left house`
+`Listen` — Mary notices Joseph's necklace and asks whether he sent it.
+`Nod` — She accepts and puts on the necklace.
+`Hold → Bracelet` — Mary places her gift for Joseph in your mouth.
+`Move → Outside`
+
+`Move → Hill`
+`Listen` — Joseph notices the bracelet and asks whether Mary sent it.
+`Nod` — Confirm that she did.
+
+Advance the entire scene: the Devil appears as an angel, Joseph and Mary marry, several months pass, and the census order sends them toward Bethlehem. The following sleeve and tongue commands belong to the desert journey, after this transition.
+
+If you previously listened to Mary without the necklace, that earlier conversation does not deliver the gift. Listen again while carrying it. Do not leave for Joseph until Mary has accepted the necklace and given you the bracelet.
+
+---
+
+## Desert journey — find shelter
+
+`Hold → Sleeve → Stick out tongue` — Draw Joseph's attention to your thirst. He checks the canteen and finds it empty.
+`Look → Body` — Notice your exhaustion.
+`Look → Body` — Kashim can no longer continue; advance the collapse scene.
+
+`Listen` — Joseph realizes they are lost.
+`Listen` — Learn that the food and water are gone.
+`Smell → Area` — Detect hay and realize there is a dwelling nearby.
+`Hold → Sleeve → Shout` — Alert Joseph and run toward shelter. Advance the scene until you reach the nomads' tent.
+
+If `Look → Body` only repeats the exhaustion description, first use the sleeve/tongue interaction about water. If `Smell → Area` only describes dust, finish the collapse and the two conversations above, then smell again. Once you have detected hay, use the sleeve/shout interaction.
+
+## The nomads' directions puzzle
+
+At the tent:
+
+`Listen` — Joseph calls to the occupants; three men emerge.
+`Listen` — Hear their conflicting directions: right says east, middle says north, left says west.
+`Listen` — Hear their statements about one another. This third conversation supplies the remaining clues; the old guide omitted it.
+
+`Talk → Camel` — Ask about the hay.
+`Talk → Camel` — The camel says he is honest.
+`Talk → Camel` — Learn that one man always tells the truth, one always lies, and one is unreliable.
+
+The truthful man is the one on the left. Choose:
+
+`Move → West`
+
+If Joseph tells you to wait, you have not yet heard both the men's directions and the camel's explanation of the three men. Complete those conversations and try again. Talking repeatedly to the camel before hearing the directions will not reveal his final clue.
+
+## Road to Bethlehem
+
+After setting off west, choose:
+
+`Move → Forward`
+`Move → Forward`
+`Move → Forward`
+`Move → Forward`
+
+On the fourth forward move, you reach the Bethlehem sign. Advance the scenes with the travelers and the innkeeper until Joseph and Mary are admitted to the stable.
+
+---
+
+## Bethlehem stable — talk to the animals
+
+Use `Walk` to stand beside the named animal before choosing the command.
+
+`Walk` — Go to the Cow.
+`Talk` — Hear her feeling that something important is about to happen.
+
+### Sheep's quiz — Bethlehem stable
+
+`Walk` — Go to the Sheep.
+`Talk` — Start the five-question quiz.
+
+Choose these answers in order:
+
+1. What Eve ate after the serpent tempted her: `Fruit of wisdom`
+2. The one God of Judaism: `Jehovah`
+3. Country Moses led the Israelites out of: `Egypt`
+4. King who built the Temple in Jerusalem: `Solomon`
+5. Savior title meaning "anointed one": `Christ`
+
+Complete all five successfully. The answer wording above matches the game's choices. In this stable sequence, passing the quiz is a prerequisite for finishing the meal and advancing the story.
+
+### Win the mare's permission and eat
+
+`Walk` — Go to the Mare.
+`Look → Mare`
+`Attack → Compliment → Mane` — Compliment her hairstyle. `Attack` is the command's actual label in this scene.
+`Eat → Hay` — Keep advancing the exchange until Kashim takes a large mouthful and thanks her for the meal.
+
+The first Cow conversation and the completed Sheep quiz are both required for this full meal. If you ate earlier and only got a short eating response, complete those conversations, return to the Mare, and choose `Eat → Hay` again. If she objects to eating without permission, use the mane compliment first.
+
+`Walk` — Return to the Cow.
+`Talk` — Her rambling conversation makes the now-full Kashim sleepy. Advance the transition through the child's birth.
+
+If the Cow only repeats her feeling that something important is coming, the full meal is not complete. Return to the Mare after satisfying the requirements above and eat again.
+
+---
+
+# NATIVITY / FINAL HISTORICAL CONFRONTATION
+
+## The visitors arrive
+
+`Look → Baby` — Hear Joseph explain the baby's name.
+`Look → Room` — Notice someone approaching; advance the visitors' arrival and introduction.
+`Listen` — Continue through the offering, the discussion of the name, and the Devil's appearance and explanation.
+
+The Baby examination triggers the arrival check. If `Look → Room` only describes the stable, examine the Baby first and then look around again.
+
+## Confront the Devil
+
+When the game presents the restricted commands:
+
+`Look → Devil`
+`Leap at → Devil`
+
+Advance the full confrontation and its aftermath until the regular command menu returns. These are prompted steps within the scene; do not look for `Leap at` on the earlier stable menu.
+
+## Return to your body and use the belt
+
+`Look → My body` — Examine your original body and advance the scene in which you return to it.
+`Look → Body` — Now inspect the body you inhabit; this reveals the Time Belt around your waist.
+`Use → Time Belt` — Open the buckle and expose its controls.
+`Use → Time Belt` — Set the date and return to 1995.
+
+`My body` and `Body` are distinct targets at different stages. Complete the return-to-your-body scene before looking for the belt. If `Use` is unavailable, inspect `Body` after returning to it.
+
+The game continues in the ruined present-day setting described below; this time jump is not the ending.
+
+---
+
+# 1995 — FINALE
+
+`Look → Ground`
+
+`Move aside → Ash`
+`Open → Lid`
+`Move → Hole`
+
+`Look → Room`
+`Look → Room`
+`Look → Picture`
+`Read → Text`
+
+`Use → Time Belt`
+
+`Take → Jar`
+
+---
+
+## Devil shuffle
+
+Watch the Devil carefully while the characters are shuffled.
+
+Choose:
+
+`Left`
+`Up`
+or
+`Right`
+
+Select the Devil successfully three times.
+
+The game will then proceed to the final quiz.
+
+---
+
+# FINAL QUIZ ANSWERS
+
+Choose the following answers, in order:
+
+1. `Five`
+2. `Cougar`
+3. `Glassmaker`
+4. `Isabel`
+5. `Rebecca`
+6. `Switzerland`
+7. `Plantain herb`
+8. `Cerberus`
+9. `Tom`
+10. `Coyote`
+11. `Silver bracelet`
+12. `Bethlehem`
+13. `Nicras`
+14. `Joseph`
+
+Complete the quiz to finish the game.

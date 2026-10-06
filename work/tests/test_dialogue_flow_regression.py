@@ -25,7 +25,7 @@ class DialogueFlowRegressionTests(unittest.TestCase):
                 with self.subTest(record=record_id):
                     trace_dialogue(record_id, text)
                 checked += 1
-        self.assertEqual(checked, 1299)
+        self.assertEqual(checked, 1305)
 
     def test_no_unintended_premature_scroll_controls(self) -> None:
         """Reject scroll controls that manufacture blank dialogue rows."""
@@ -73,12 +73,7 @@ class DialogueFlowRegressionTests(unittest.TestCase):
         """Keep the five playtest-reviewed pagination repairs intact."""
         expected = {
             "T22": {
-                "T22/g0/r11": (
-                    "Baron: Th-this is…!{CTRL:1}Jailer: Definitely the"
-                    "{CTRL:0}bishop's handwriting!{CTRL:0}Baron: I knew it…"
-                    "{CTRL:3}Jailer: We have to save{CTRL:4}that girl!"
-                    "{CTRL:4}Baron: Right!"
-                ),
+                "T22/g0/r11": "Baron: Th-this is…!{CTRL:1}Jailer: It's his{CTRL:0}handwriting!{CTRL:6}Baron: I knew it…{CTRL:4}Jailer: We have to save{CTRL:4}her!{CTRL:4}Baron: Right!"
             },
             "TT3A": {
                 "TT3A/g2/r29": (
@@ -146,7 +141,7 @@ class DialogueFlowRegressionTests(unittest.TestCase):
         )
         self.assertEqual(
             payload["TT6C/g0/r29"],
-            "They gaze solemnly at{CTRL:0}the baby.",
+            "They gaze solemnly{CTRL:0}at the baby.",
         )
         trace_dialogue("TT6C/g0/r29", payload["TT6C/g0/r29"])
 

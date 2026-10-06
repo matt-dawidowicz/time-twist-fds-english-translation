@@ -1,0 +1,64 @@
+TIME TWIST v69 — INFO TEXT
+
+Actual physical text lines, in display order. The window scrolls after four rows.
+Every line is at most 22 characters; the renderer supports 24.
+
+Pierre
+------
+Time: October 1428
+Place: A castle town in
+France
+Name: Pierre
+Occupation: Glassmaker
+
+Chino
+-----
+Time: October 1428
+Place: A castle town in
+France
+Name: Chino
+Occupation: Locksmith
+
+Cougar
+------
+Time: July 1944
+Place: POW camp,
+southern Germany
+Name: Cougar
+Occupation: U.S. Air
+Force first lieutenant
+[Existing conditional continuation:]
+In fact, he's an
+intelligence agent.
+
+Nicras
+------
+Time: Around the 4th
+century BC
+Place: Athens, ancient
+Greece
+Name: Nicras
+Occupation: Physician
+
+George
+------
+Time: September 1864
+Place: Atlanta, United
+States
+Name: George
+Occupation: Farmhand on
+Meyer's farm
+
+Kashim (first entry)
+--------------------
+Time: Around 4 BC
+Place: Nazareth, Israel
+Name: Kashim
+Occupation: Donkey
+
+Kashim (second entry)
+---------------------
+Time: Around 4 BC
+Place: Nazareth, Israel
+Name: Kashim
+Occupation: Donkey

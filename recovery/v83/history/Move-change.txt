@@ -1,0 +1,10 @@
+TIME TWIST v78 — GREEK MOVE RESPONSE
+
+TT4/g1/r21
+Before: I shouldn't move him.
+After:  I'd better stay put.
+
+This is a conditional refusal of the player's Move command. The Japanese
+うかつに うごかないほうがいい refers to the speaker moving, not moving another person.
+
+All other v77 dialogue, menu labels and gameplay scripts remain unchanged.

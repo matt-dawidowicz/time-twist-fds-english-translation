@@ -1,6 +1,6 @@
 {
   "schema": "Time Twist release source lock v5",
-  "authority": "The exact private v25 safe-encoding baseline, frozen v38 compiler bundle, validated v38-to-v41, v41-to-v50, and final Simon-fix checkpoint deltas, and 13 active translation maps are the non-code-lock inputs. Compiler payloads and checkpoint deltas are independently hash-checked before execution. The recovered v38 bundle remains an immutable historical checkpoint and the guarded checkpoint lineage must reproduce exact final v50.",
+  "authority": "Exact private v25 seed, frozen v38 compiler, guarded historical deltas through v83, current dialogue maps and v83 menu/topology manifests. The private seed identity is unchanged; public source records were refreshed for the user-confirmed v83 checkpoint. See recovery/v83/README.md.",
   "subtitle": "On the Outskirts of History...",
   "files": {
     "work/baseline/time_twist_v25_safe_encoding.fds": {
@@ -105,63 +105,63 @@
     },
     "work/translations/TT1B.json": {
       "normalization": "lf",
-      "sha256": "C6A7BB7E6EBB651A11C5F52B35EB5EFD6F52899B576C7AAB1069EE5C752A5AE9",
-      "bytes": 13092
+      "sha256": "339B7A2428BBF9BDCD19AA61EB562EBD949D8F005C3BF59ACC8E325DF037CB5F",
+      "bytes": 13102
     },
     "work/translations/TT2.json": {
       "normalization": "lf",
-      "sha256": "098426B16B2C5E0B35068E0AE20FD4C2CC873F8235D38114CD4FEA5B4AF19005",
-      "bytes": 11912
+      "sha256": "4B402F1F0205FFAD786B92E7D3C5EDF6CB565C89B6A1620C075181920E5E6DF8",
+      "bytes": 11907
     },
     "work/translations/T22.json": {
       "normalization": "lf",
-      "sha256": "EA9337C697E99B788D241D1C8D442020DE2053A625E1A3E7B076D4214789F766",
-      "bytes": 5331
+      "sha256": "C09863519F0222DAC325354CBF73FB7CE0818B3B5E154F2245AA9F4A2DA64F16",
+      "bytes": 5092
     },
     "work/translations/TT3A.json": {
       "normalization": "lf",
-      "sha256": "A6E48B7D70A3193492860921F0678032FFC39EC51FB5582CBD62533C8AB04DF4",
-      "bytes": 11771
+      "sha256": "E26077CA4106F6B2682B98CAF18FF6F38CBDF561113F456B886B770C27407A80",
+      "bytes": 11768
     },
     "work/translations/TT3B.json": {
       "normalization": "lf",
-      "sha256": "9C62A0C53C4B9217D392AF54FBDBFDAECA424C557A6A503B8185A90CB41D4511",
-      "bytes": 6065
+      "sha256": "477926CDD98CF3CE0230D89252EC269EF1330E0F804AD8CBEDEA935FE244E071",
+      "bytes": 6007
     },
     "work/translations/TT4.json": {
       "normalization": "lf",
-      "sha256": "DDC273558FB25141EF37584BA2DE24D5CC7278DB0540D3A43FB1130C94A60878",
-      "bytes": 14257
+      "sha256": "71F8DAF29845956E33A9E2DC42D8BA79DB852385CCFC8A1FD833A06DBCA3BFEE",
+      "bytes": 14306
     },
     "work/translations/TT5.json": {
       "normalization": "lf",
-      "sha256": "402C6069EB547039DC7E5FFA4B04BEAF46B21E56D1144F6782A296CCCB84C7C1",
-      "bytes": 10991
+      "sha256": "9B8D0B4D5E1C8940A4590586BD0CB9B9F3141A557DE31A4207A22212E98F9728",
+      "bytes": 11073
     },
     "work/translations/T25.json": {
       "normalization": "lf",
-      "sha256": "5341DF9517258E20CD077864681C853DA5F7768BDB5B4ACE54BB018AC9067636",
-      "bytes": 6989
+      "sha256": "0350DC200AE9AECDD635BD15F2344AF440E027F78A18F590E778EA919B95B461",
+      "bytes": 7001
     },
     "work/translations/TT6A.json": {
       "normalization": "lf",
-      "sha256": "580BBED8A37D96356C1BBA026DB99C8710C0F59A95A518FF741245CACBCE0A93",
-      "bytes": 8296
+      "sha256": "2921C289211DCC457606FBB41FAC2D2B676CCE50F353229C8BCDED48EA54D158",
+      "bytes": 8331
     },
     "work/translations/TT6B.json": {
       "normalization": "lf",
-      "sha256": "AA6F5954AD3E6414ED9C4F94434E4AB18A34B78C0BAD11508DA4910C885592BD",
-      "bytes": 7341
+      "sha256": "AE79E8106C15C42B3671060582F0FDB435AE833B0EA5ECAAF23A5723FF021C6E",
+      "bytes": 7360
     },
     "work/translations/TT6C.json": {
       "normalization": "lf",
-      "sha256": "D5B0AF7D065050CD2A508C3F44EDEDB506B8FEB630EEAE0A9BA8A416F2DB11E7",
+      "sha256": "C849C91836E825DABF1DCEADC96B03C5B84E40D06BC0B82FCFA45A153D6B3352",
       "bytes": 11538
     },
     "work/translations/TT6D.json": {
       "normalization": "lf",
-      "sha256": "33BE7847F50896FED7D751D19EBB233D07E408C52AD45FC8D3BC74D7DC3638C4",
-      "bytes": 876
+      "sha256": "1DFC4DBD5130E49011545A9186D340D66595B1369DFD0F417A3AC2BFB3E3C750",
+      "bytes": 878
     },
     "recovery/v41/README.md": {
       "normalization": "raw",
@@ -192,6 +192,31 @@
       "normalization": "raw",
       "sha256": "74CD8F7FDBCD838BAAA44919E0CCA89079D9C96BB2DB9E76C7D191C904D7BF33",
       "bytes": 54977
+    },
+    "recovery/v83/bank_manifest.json": {
+      "normalization": "raw",
+      "sha256": "751F7AD8CF3E137B790FD3DBBC3240608AF218CAB18D0EDDD3EF2BF7B12967B4",
+      "bytes": 1361
+    },
+    "recovery/v83/menus.json": {
+      "normalization": "raw",
+      "sha256": "4D0547FCDF20880165C87C135386EDFEEBDF579048D21A899B9C429DCFCFF5C9",
+      "bytes": 10386
+    },
+    "recovery/v83/patches/release-to-v83.ttd.zlib.b64.part01": {
+      "normalization": "raw",
+      "sha256": "EC303D2476DA5AC733CEC3B8B6A83388EA80CB4AB99E00CF20DA2FBBA76E8F45",
+      "bytes": 12001
+    },
+    "recovery/v83/patches/release-to-v83.ttd.zlib.b64.part02": {
+      "normalization": "raw",
+      "sha256": "65D19BAA58B217BA1F8BE77CD52AFE268CF1CFB13A3A6CE1E4F5029CAAB63440",
+      "bytes": 12001
+    },
+    "recovery/v83/patches/release-to-v83.ttd.zlib.b64.part03": {
+      "normalization": "raw",
+      "sha256": "2E76C883A74AC1223539B4C4D67C8734E7014CC8A151EEDD7FD45B4AE7CAD029",
+      "bytes": 4965
     }
   }
 }

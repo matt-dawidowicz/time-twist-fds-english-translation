@@ -1,0 +1,15 @@
+{
+  "input_sha256": "5301a1e48aafc600f156c802bd4980eccf19af8c0f30a1159d2b327beb242b0e",
+  "output_sha256": "4bbccb13033b39570b3fe3eb64fbeba4a9bd4c5c73248852f22665e4a3a9e17a",
+  "original_records_preserved": 1304,
+  "added_record": "TT5/g4/r0",
+  "added_text": "She's unconscious.",
+  "changed_script_operand": "0xA351",
+  "new_text_address": "0xbb05",
+  "new_pointer_table": "0xbafd",
+  "bank_expansion": 0,
+  "native_belle_route_and_render_verified": true,
+  "native_george_and_talk_renders_unchanged": true,
+  "changed_bank_bytes": 22,
+  "scope": "Native 6502 branch, text lookup and renderer; no full emulator playtest."
+}

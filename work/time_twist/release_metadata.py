@@ -417,10 +417,14 @@ def authoritative_source_paths(paths: ReleasePaths) -> tuple[Path, ...]:
     )
     checkpoint_root = paths.project_root / "recovery" / "v41"
     final_patch_root = paths.project_root / "recovery" / "v50"
+    v83_root = paths.project_root / "recovery" / "v83"
     checkpoint_sources = (
         checkpoint_root / "README.md",
         *sorted((checkpoint_root / "patches").glob("*.part*")),
         *sorted((final_patch_root / "patches").glob("*.part*")),
+        v83_root / "bank_manifest.json",
+        v83_root / "menus.json",
+        *sorted((v83_root / "patches").glob("*.part*")),
     )
     return (
         paths.checkpoint_baseline,
@@ -507,13 +511,14 @@ def build_source_lock_payload(
         "schema": SOURCE_LOCK_SCHEMA,
         "authority": (
             "The exact private v25 safe-encoding baseline, frozen v38 compiler "
-            "bundle, validated v38-to-v41, v41-to-v50, and final Simon-fix "
+            "bundle, validated v38-to-v41, v41-to-v50, Simon-fix and v83 "
             "checkpoint deltas, and 13 active translation maps are the "
             "non-code-lock inputs. Compiler "
             "payloads and checkpoint deltas are independently hash-checked before "
             "execution. The recovered v38 bundle remains an immutable historical "
             "checkpoint and the guarded checkpoint lineage must reproduce exact "
-            "final v50."
+            "v83. All 1,305 active dialogue records and 721 menu labels "
+            "are decoded from the result and compared with current source."
         ),
         "subtitle": DEFAULT_SUBTITLE,
         "files": files,
@@ -659,6 +664,7 @@ def validate_source_lock_metadata(payload: object) -> dict[str, object]:
                 != ("recovery", "v38", "repro_bundle")
                 and logical_path.parts[:2] != ("recovery", "v41")
                 and logical_path.parts[:2] != ("recovery", "v50")
+                and logical_path.parts[:2] != ("recovery", "v83")
             )
             or ".." in logical_path.parts
         ):

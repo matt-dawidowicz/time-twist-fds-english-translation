@@ -14,6 +14,11 @@ The repository contains no original or patched game images, FDS BIOS files,
 emulator bundles, save states, or extracted retail payloads. Public patcher
 binaries and BPS patch files are provided under `release/`.
 
+The current source includes the confirmed v83 fixes and
+[corrected walkthrough](docs/WALKTHROUGH.txt). See the
+[v83 checkpoint instructions](recovery/v83/README.md) to reproduce that build.
+The downloadable v1.0 patcher assets below have not yet been refreshed to v83.
+
 ## Download the English patch
 
 For most Windows users:

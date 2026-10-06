@@ -75,6 +75,10 @@ def make_synthetic_project(root: Path) -> Path:
         PROJECT_ROOT / "recovery/v41",
         root / "recovery/v41",
     )
+    shutil.copytree(
+        PROJECT_ROOT / "recovery/v83",
+        root / "recovery/v83",
+    )
     return root
 
 
@@ -211,6 +215,12 @@ class ReleaseConfigurationUnitTests(unittest.TestCase):
                     for bank in KNOWN_SCENARIO_BANKS
                 },
                 "recovery/v41/README.md",
+                "recovery/v83/bank_manifest.json",
+                "recovery/v83/menus.json",
+                *{
+                    path.relative_to(root).as_posix()
+                    for path in (root / "recovery/v83/patches").glob("*.part*")
+                },
                 *{
                     path.relative_to(root).as_posix()
                     for path in (root / "recovery/v41/patches").glob("*.part*")

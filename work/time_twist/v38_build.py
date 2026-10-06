@@ -1,11 +1,12 @@
-"""Reproduce the final v50 release through frozen historical checkpoints.
+"""Reproduce the confirmed v83 build through frozen historical checkpoints.
 
 The private v25 seed and recovered compiler first reproduce exact v38. A
 source-controlled checkpoint delta promotes that immutable image to the
 validated late-v41 playtest state, then the guarded v50 finalizer applies only
-the documented v42-v50 changes. Current translation maps remain source-locked
-and topology-checked, but the historical v38 compiler is not falsely asked to
-pack text revisions that postdate its recovered allocation model.
+the documented v42-v50 changes. The subsequent Simon and v83 deltas recover
+the confirmed current image. All current dialogue and menu labels are decoded
+from that image and checked against the sole active source. The historical
+compiler still consumes its immutable v38 inputs.
 """
 
 from __future__ import annotations
@@ -28,6 +29,11 @@ from .release_metadata import (
 )
 from .v41_checkpoint import V38_SHA256, promote_v38_to_v41
 from .v50_finalizer import finalize_release_image
+from .v83_checkpoint import (
+    ADDED_RECORD_IDS,
+    promote_release_to_v83,
+    validate_v83_sources,
+)
 
 BASELINE_SHA256 = (
     "813cdceb190e9714f7489c1bd5500f8e2ead3b3942f789ccf68bc6f3696bfc19"
@@ -96,13 +102,14 @@ def validate_checkpoint_records(
 def validate_checkpoint_record_ids(
     actual: dict[str, str], approved: dict[str, str]
 ) -> None:
-    """Require active maps to retain the complete recovered v38 record topology."""
+    """Require the v38 topology plus exactly the six reviewed response records."""
     if len(approved) != 1299:
         raise ReleaseBuildError(
             "v38 checkpoint must contain exactly 1299 records"
         )
-    missing = sorted(approved.keys() - actual.keys())
-    extra = sorted(actual.keys() - approved.keys())
+    expected = approved.keys() | ADDED_RECORD_IDS
+    missing = sorted(expected - actual.keys())
+    extra = sorted(actual.keys() - expected)
     if missing or extra:
         raise ReleaseBuildError(
             "active text record topology differs from recovered v38; "
@@ -131,7 +138,7 @@ def build_release_images(
     translations_directory: Path,
     compiler_bundle: Path,
 ) -> tuple[dict[str, bytes], dict[str, object]]:
-    """Rebuild exact v38, promote through v50, then finalize the corrected release."""
+    """Rebuild exact v38 and promote through the reviewed v83 checkpoint."""
     if (
         len(baseline) != IMAGE_BYTES
         or hashlib.sha256(baseline).hexdigest() != BASELINE_SHA256
@@ -202,10 +209,14 @@ def build_release_images(
 
         built = promote_v38_to_v41(built)
         built = finalize_release_image(built)
+        built = promote_release_to_v83(built)
+        current_banks = validate_v83_sources(built, translations_directory)
 
         report = json.loads(
             (output / "reports/v38_build.json").read_text(encoding="utf-8")
         )
+        for name, info in current_banks.items():
+            report["banks"][name]["entry_count"] = info["dictionary_entries"]
     return _release_audit(baseline, built, report)
 
 

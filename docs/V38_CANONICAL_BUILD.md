@@ -1,5 +1,11 @@
 # Canonical v38 build
 
+This page describes historical v38 recovery. The current candidate builder
+reconstructs that immutable checkpoint, then applies guarded deltas through
+v83 and compares all current text with the resulting ROM. See
+[v83 reproduction and provenance](../recovery/v83/README.md). The current
+canonical maps contain 1,305 records; the frozen v38 oracle remains at 1,299.
+
 The recovered v38 bundle remains the immutable historical checkpoint for the
 approved v38 image. When the active maps are restored to the exact v38 text,
 `time-twist release-build --candidate` must still reproduce that image.

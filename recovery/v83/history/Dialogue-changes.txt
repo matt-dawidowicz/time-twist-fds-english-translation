@@ -1,0 +1,30 @@
+TIME TWIST v76 — DIALOGUE FIXES
+
+TT3A/g3/r10
+Before: Aw, man… these clothes{CTRL:0}are all wrinkled.
+After:  Aw, man… the paper's{CTRL:0}all crumpled.
+
+T22/g0/r5
+Before: Woman: I'm not a witch!{CTRL:0}Please let me out!{CTRL:2}My child is waiting at{CTRL:0}home. Please, Brother…
+After:  Woman 1: I'm not a{CTRL:0}witch! Please let me{CTRL:0}out!{CTRL:6}Woman 2: My child is{CTRL:4}waiting for me at home.{CTRL:4}Please, Brother…
+
+T22/g0/r12
+Before: Woman: Are they going to{CTRL:0}burn us?{CTRL:0}Woman: Oh, God…
+After:  Woman 1: Is the burning{CTRL:0}about to begin?{CTRL:0}Woman 2: Oh, God…
+
+TT6A/g2/r3
+Before: Mary: You'll carry it{CTRL:0}for me? She takes the{CTRL:0}bracelet from the shelf{CTRL:0}and places it in my{CTRL:4}mouth.
+After:  Mary: You'll carry it{CTRL:0}for me?{CTRL:2}She takes the bracelet{CTRL:0}from the shelf and{CTRL:4}places it in my mouth.
+
+TT6D/g0/r3
+Before: Girl: !{CTRL:0}Me: An earthquake!
+After:  Girl: Ah!{CTRL:0}Me: An earthquake!
+
+CHECKS
+Notes > Crumple executes the paper response via the actual native menu branch.
+Both versions of the prisoners' pleas use Woman 1 / Woman 2 and identical wording.
+Both burning questions use the same timing question.
+Mary's speech is followed by a wait before narration starts on row three.
+The ending earthquake reaction matches the opening.
+
+All other v75 dialogue, menu labels and gameplay scripts remain unchanged.

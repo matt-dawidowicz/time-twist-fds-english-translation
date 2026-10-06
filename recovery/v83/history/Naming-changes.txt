@@ -1,0 +1,40 @@
+TIME TWIST v75 — NAMING AND CAPITALIZATION
+
+T22/g0/r13
+Before: Baron: Isabelle… I swear{CTRL:0}I'll save you.{CTRL:2}Isabelle: I love you.{CTRL:0}Baron: And I love you.
+After:  Baron: Isabel… I swear{CTRL:0}I'll save you.{CTRL:2}Isabel: I love you.{CTRL:0}Baron: And I love you.
+
+T22/g0/r0
+Before: Jailer: Ah, Baron.{CTRL:0}You've come to see your{CTRL:0}wife?{CTRL:6}She's in grave danger…{CTRL:4}Baron: My wife, a witch?{CTRL:4}What proof do they{CTRL:4}have?! Where is the{CTRL:4}bishop?!{CTRL:3}He's so obsessed with{CTRL:4}hunting witches that{CTRL:4}he's neglecting the{CTRL:4}Church itself. Isn't{CTRL:4}that true?!{CTRL:3}Jailer: Yes. Some even{CTRL:4}say the bishop serves{CTRL:4}Satan.{CTRL:3}Baron: If only we had{CTRL:4}proof, we could drive{CTRL:4}him out…
+After:  Jailer: Ah, Baron.{CTRL:0}You've come to see your{CTRL:0}wife?{CTRL:6}She's in grave danger…{CTRL:4}Baron: My wife, a witch?{CTRL:4}What proof do they{CTRL:4}have?! Where is the{CTRL:4}bishop?!{CTRL:3}He's so obsessed with{CTRL:4}hunting witches that{CTRL:4}he's neglecting the{CTRL:4}Church itself. Isn't{CTRL:4}that true?!{CTRL:3}Jailer: Yes. Some even{CTRL:4}say the bishop serves{CTRL:4}the Devil.{CTRL:3}Baron: If only we had{CTRL:4}proof, we could drive{CTRL:4}him out…
+
+T22/g1/r8
+Before: Baron: Stop! Stop this{CTRL:0}at once! That girl is no{CTRL:0}witch! The bishop is the{CTRL:0}one who serves Satan!
+After:  Baron: Stop! Stop this{CTRL:0}at once! That girl is no{CTRL:0}witch! The bishop serves{CTRL:0}the Devil!
+
+TT2/g4/r14
+Before: Jailer: No. I need the{CTRL:0}Bishop's permission. I{CTRL:0}can't let her out.{CTRL:6}Me: But…{CTRL:4}Jailer: I know how you{CTRL:4}feel. Please go back.
+After:  Jailer: No. I need the{CTRL:0}bishop's permission. I{CTRL:0}can't let her out.{CTRL:6}Me: But…{CTRL:4}Jailer: I know how you{CTRL:4}feel. Please go back.
+
+TT2/g4/r19
+Before: Jailer: I need the{CTRL:0}Bishop's permission. I{CTRL:0}cannot free them.
+After:  Jailer: I need the{CTRL:0}bishop's permission. I{CTRL:0}cannot free them.
+
+MENU LABELS
+TT1B label 12: Hit On -> Hit on
+TT2 label 26: Old Man -> Old man
+TT6C label 45: Glazier -> Glassmaker
+
+WALKTHROUGH
+Hit On -> Hit on in the museum sequence.
+Final quiz answer 3: Glazier -> Glassmaker.
+
+ISABEL
+Both name occurrences in the Baron/wife dialogue now match the existing Isabel quiz answer.
+
+DEVIL
+Only the two French references to Satan are changed. The separate Satan quiz distractor remains intact.
+The longer Baron passage is rewrapped within the four-row text window.
+
+RETAINED
+Garadura spell normalization, Gypsy Amulet / Amulet, separate Spell command, fruit choices, Info formatting and action-specific prompts.

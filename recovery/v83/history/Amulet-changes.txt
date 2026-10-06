@@ -1,0 +1,43 @@
+TIME TWIST v73 — AMULET TERMINOLOGY
+
+Supersedes the charm/amulet naming decision in the v72 change log.
+
+TT1B/g0/r18
+Before: "Gypsy Charm":{CTRL:2}A star-shaped medal worn{CTRL:0}by nomadic Gypsies in{CTRL:4}the late 17th century to{CTRL:4}protect themselves from{CTRL:4}the dangers of travel.{CTRL:3}A warding spell is{CTRL:4}engraved on it.
+After:  "Gypsy Amulet":{CTRL:2}A star-shaped medal worn{CTRL:0}by nomadic Gypsies in{CTRL:4}the late 17th century to{CTRL:4}protect themselves from{CTRL:4}the dangers of travel.{CTRL:3}A warding spell is{CTRL:4}engraved on it.
+
+TT3A/g1/r9
+Before: Frankie: Take this…{CTRL:1}He holds out a pendant.{CTRL:2}Frankie: Grandma gave me{CTRL:0}this the night before I{CTRL:4}left for war. It's a{CTRL:4}Gypsy charm.{CTRL:3}With this, there's{CTRL:4}nothing to fear.{CTRL:3}I take the pendant and{CTRL:4}slip it around my neck.{CTRL:3}Frankie: Good luck…
+After:  Frankie: Take this…{CTRL:1}He holds out a pendant.{CTRL:2}Frankie: Grandma gave me{CTRL:0}this the night before I{CTRL:4}left for war. It's a{CTRL:4}Gypsy Amulet.{CTRL:3}With this, there's{CTRL:4}nothing to fear.{CTRL:3}I take the pendant and{CTRL:4}slip it around my neck.{CTRL:3}Frankie: Good luck…
+
+TT3B/g0/r14
+Before: Simon: A charm?!{CTRL:1}Me: It looks like a{CTRL:0}warding spell is written{CTRL:0}on it, but it's so{CTRL:4}rusted I can barely read{CTRL:4}the inscription.{CTRL:3}Simon: I see…
+After:  Simon: An amulet?!{CTRL:1}Me: It looks like a{CTRL:0}warding spell is written{CTRL:0}on it, but it's so{CTRL:4}rusted I can barely read{CTRL:4}the inscription.{CTRL:3}Simon: I see…
+
+TT3B/g1/r6
+Before: With trembling hands, I{CTRL:0}take the charm and{CTRL:0}hold it out in front of{CTRL:0}Hitler.{CTRL:3}Hitler: …!
+After:  With trembling hands, I{CTRL:0}take the amulet and{CTRL:0}hold it out in front of{CTRL:0}Hitler.{CTRL:3}Hitler: …!
+
+TT3B/g1/r7
+Before: The charm suddenly{CTRL:0}blazes with dazzling{CTRL:0}light, piercing Hitler's{CTRL:0}eyes!{CTRL:3}Hitler: Gwaaah!
+After:  The amulet suddenly{CTRL:0}blazes with dazzling{CTRL:0}light, piercing Hitler's{CTRL:0}eyes!{CTRL:3}Hitler: Gwaaah!
+
+TT3B/g1/r16
+Before: Cougar: Who is there?!{CTRL:1}The charm…!
+After:  Cougar: Who is there?!{CTRL:1}The amulet…!
+
+TT3B/g1/r17
+Before: Cougar: Th-the words on{CTRL:0}the charm…!
+After:  Cougar: Th-the words on{CTRL:0}the amulet…!
+
+MENUS
+TT1B label 20: Charm -> Spell (Japanese: おまじない, spoken incantation).
+TT3A label 15: Charm -> Amulet (Japanese: まもりふだ, protective object).
+TT3B label 11: Charm -> Amulet (Japanese: まもりふだ, protective object).
+
+WALKTHROUGH
+The two museum Use commands now read Use > Spell.
+The three Germany commands now read Use/Look > Amulet.
+The item explanation now uses Gypsy Amulet / Amulet.
+
+All other v72 dialogue and gameplay routes are retained.
