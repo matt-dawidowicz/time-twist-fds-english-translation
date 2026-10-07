@@ -24,7 +24,7 @@ The official tagged release is **v1.1.0**.
 
 For most Windows users:
 
-- **[Download TimeTwistEnglishPatcher.exe](release/TimeTwistEnglishPatcher.exe)** — self-contained patcher with both BPS patches built in
+- **[Download Time-Twist-English-v1.1-Patcher.exe](release/Time-Twist-English-v1.1-Patcher.exe)** — self-contained v1.1 patcher with both BPS patches built in
 - **[Download the complete Windows package](release/Time-Twist-English-v1.1-Windows.zip)** — EXE, README, license, checksums, and both BPS patches
 
 Manual BPS patches:
@@ -36,7 +36,6 @@ Existing translated builds:
 
 - [Last v82 playtest → v83, combined image](release/Time-Twist-v82-to-v83-four-side.bps)
 - [Last v82 playtest → v83, Kouhen only](release/Time-Twist-v82-to-v83-Kouhen.bps)
-- [Simon-corrected public v1.0 → v1.1](release/Time-Twist-v1.0-Simon-to-v1.1-four-side.bps)
 
 See the [patch instructions](release_patcher/README.md) for exact inputs and the
 [change list](release_patcher/CHANGELOG.md) for what is included.
