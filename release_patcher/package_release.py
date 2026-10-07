@@ -1,4 +1,4 @@
-"""Assemble the public patcher package and verified BPS upgrade patches."""
+"""Assemble the public patcher package and verified published BPS patches."""
 
 from __future__ import annotations
 
@@ -44,7 +44,7 @@ def load_patch(patch_dir: Path, kind: str) -> bytes:
 
 
 def main() -> None:
-    """Write all five BPS files and checksums for every packaged file."""
+    """Write all published BPS files and checksums for every packaged file."""
     parser = argparse.ArgumentParser()
     parser.add_argument("--package-dir", type=Path, required=True)
     args = parser.parse_args()

@@ -43,14 +43,10 @@ REQUIRED_PUBLIC_MARKERS = (
 )
 CHECKER_RELATIVE_PATH = Path("work/tools/check_public_tree.py")
 ALLOWED_RELEASE_ARTIFACTS = {
-    Path("release/TimeTwistEnglishPatcher.exe"),
-    Path("release/Time-Twist-English-v1.0-Windows.zip"),
-    Path("release/Time-Twist-English-v1.0-Zenpen.bps"),
-    Path("release/Time-Twist-English-v1.0-Kouhen.bps"),
+    Path("release/Time-Twist-English-v1.1-Patcher.exe"),
     Path("release/Time-Twist-English-v1.1-Windows.zip"),
     Path("release/Time-Twist-English-v1.1-Zenpen.bps"),
     Path("release/Time-Twist-English-v1.1-Kouhen.bps"),
-    Path("release/Time-Twist-v1.0-Simon-to-v1.1-four-side.bps"),
     Path("release/Time-Twist-v82-to-v83-four-side.bps"),
     Path("release/Time-Twist-v82-to-v83-Kouhen.bps"),
 }

@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: publish-time-twist-v1.1
@@ -43,7 +44,6 @@ jobs:
             'dist/Time-Twist-English-v1.1-Windows.zip',
             'dist/Time-Twist-English-v1.1-Zenpen.bps',
             'dist/Time-Twist-English-v1.1-Kouhen.bps',
-            'dist/Time-Twist-v1.0-Simon-to-v1.1-four-side.bps',
             'dist/Time-Twist-v82-to-v83-four-side.bps',
             'dist/Time-Twist-v82-to-v83-Kouhen.bps'
           )
@@ -68,3 +68,45 @@ jobs:
             gh release upload $tag $asset --repo $repo --clobber
             if ($LASTEXITCODE -ne 0) { throw "Could not upload release asset: $asset" }
           }
+
+
+      - name: Remove legacy v1.0 release asset
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Continue'
+          gh release delete-asset v1.1.0 "Time-Twist-v1.0-Simon-to-v1.1-four-side.bps" --repo $env:GITHUB_REPOSITORY --yes 2>$null
+          $ErrorActionPreference = 'Stop'
+
+      - name: Stage modern v1.1 release files in the repository
+        shell: powershell
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $syncBranch = "automation/refresh-v1.1-release-$env:GITHUB_RUN_ID"
+          $Dist = Join-Path $env:GITHUB_WORKSPACE 'dist'
+          $Package = Join-Path $Dist 'Time-Twist-English-v1.1'
+          $ReleaseDir = Join-Path $env:GITHUB_WORKSPACE 'release'
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git switch -c $syncBranch origin/main
+
+          New-Item -ItemType Directory -Force $ReleaseDir | Out-Null
+          Get-ChildItem -LiteralPath $ReleaseDir -Force | Remove-Item -Recurse -Force
+
+          Copy-Item (Join-Path $Package 'Time-Twist-English-v1.1-Patcher.exe') (Join-Path $ReleaseDir 'Time-Twist-English-v1.1-Patcher.exe')
+          Copy-Item (Join-Path $Dist 'Time-Twist-English-v1.1-Windows.zip') (Join-Path $ReleaseDir 'Time-Twist-English-v1.1-Windows.zip')
+          Copy-Item (Join-Path $Dist 'Time-Twist-English-v1.1-Zenpen.bps') (Join-Path $ReleaseDir 'Time-Twist-English-v1.1-Zenpen.bps')
+          Copy-Item (Join-Path $Dist 'Time-Twist-English-v1.1-Kouhen.bps') (Join-Path $ReleaseDir 'Time-Twist-English-v1.1-Kouhen.bps')
+          Copy-Item (Join-Path $Dist 'Time-Twist-v82-to-v83-four-side.bps') (Join-Path $ReleaseDir 'Time-Twist-v82-to-v83-four-side.bps')
+          Copy-Item (Join-Path $Dist 'Time-Twist-v82-to-v83-Kouhen.bps') (Join-Path $ReleaseDir 'Time-Twist-v82-to-v83-Kouhen.bps')
+
+          git add -A release
+          git commit -m "Refresh v1.1 release binaries"
+          git push --set-upstream origin $syncBranch
+
+          gh pr create --repo $env:GITHUB_REPOSITORY --base main --head $syncBranch --title "Refresh v1.1 release binaries" --body "Sync the rebuilt v1.1 Windows patcher and current v1.1/v83 release artifacts into the repository release directory. Legacy v1.0 full-release and migration artifacts are removed."
