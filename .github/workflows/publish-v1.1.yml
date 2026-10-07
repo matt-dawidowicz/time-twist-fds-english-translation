@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - '.github/workflows/publish-v1.1.yml'
+      - 'release_patcher/**'
   workflow_dispatch:
 
 permissions:
