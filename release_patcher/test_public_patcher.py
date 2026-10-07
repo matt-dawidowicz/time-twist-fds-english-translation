@@ -76,6 +76,40 @@ def main() -> None:
         else:
             raise AssertionError("corrupt BPS accepted")
 
+    # Variant-aware BPS verification: exact alternate source identity may use
+    # an alternate source/target CRC pair while ordinary inputs remain strict.
+    variant_source = bytearray(b"A" * 512)
+    canonical_source = bytes(variant_source)
+    variant_source[7] = ord("B")
+    variant_source = bytes(variant_source)
+    target = bytearray(canonical_source)
+    target[200:205] = b"PATCH"
+    target = bytes(target)
+    variant_target = bytearray(target)
+    variant_target[7] = ord("B")
+    variant_target = bytes(variant_target)
+    variant_patch = create_bps(canonical_source, target, "variant-fixture")
+    variant_source_crc = binascii.crc32(variant_source)
+    variant_target_crc = binascii.crc32(variant_target)
+    try:
+        patcher.apply_bps(variant_source, variant_patch)
+    except patcher.PatcherError:
+        pass
+    else:
+        raise AssertionError("unapproved alternate BPS source was accepted")
+    assert (
+        patcher.apply_bps(
+            variant_source,
+            variant_patch,
+            allowed_source_crcs=(variant_source_crc,),
+            allowed_target_crcs=(variant_target_crc,),
+        )
+        == variant_target
+    )
+
+    assert patcher.NOINTRO_KOUHEN_SOURCE_CRC32 == 0xA7D51BFA
+    assert patcher.NOINTRO_KOUHEN_TARGET_CRC32 == 0x308FCE52
+
     with tempfile.TemporaryDirectory() as temp_dir:
         root = Path(temp_dir)
 

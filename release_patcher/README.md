@@ -19,8 +19,14 @@ For another BPS patcher, use:
 - `Time-Twist-English-v1.1-Zenpen.bps` on clean Japanese Zenpen.
 - `Time-Twist-English-v1.1-Kouhen.bps` on clean Japanese Kouhen.
 
-Both inputs must be raw/headerless, 131,000-byte images. Do not apply these
-full translation patches to an already translated image.
+Both inputs must be raw/headerless, 131,000-byte images. The Kouhen path also
+accepts the standard No-Intro raw retail dump (CRC-32 `A7D51BFA`, MD5
+`134F65BD93A5E5C0ABAB3E560FF146A8`, SHA-1
+`E0747E6BA6111FAD733C832E6CA7C0172F4C056E`). This is a known byte-compatible
+retail variant whose FDS metadata/padding differs from the release-locked Kouhen
+source. The patcher verifies that exact dump identity before permitting its
+variant BPS CRCs; it does not broadly disable checksum protection. Do not apply
+these full translation patches to an already translated image.
 
 ## Updating an existing translated image
 

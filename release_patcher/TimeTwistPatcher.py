@@ -29,6 +29,12 @@ ZENPEN_SOURCE_SHA256 = (
 KOUHEN_SOURCE_SHA256 = (
     "F62A7424FE489CBE479C3EBAABE4CE62D85127601FFD3D08ABD4E5A0DC39442A"
 )
+# No-Intro/raw-dump variant of the Kouhen source. This is the standard
+# 131,000-byte retail dump and differs only in benign FDS metadata/padding
+# from the exact release-locked Kouhen source above.
+NOINTRO_KOUHEN_SOURCE_MD5 = "134F65BD93A5E5C0ABAB3E560FF146A8"
+NOINTRO_KOUHEN_SOURCE_SHA1 = "E0747E6BA6111FAD733C832E6CA7C0172F4C056E"
+NOINTRO_KOUHEN_SOURCE_CRC32 = 0xA7D51BFA
 ZENPEN_TARGET_SHA256 = (
     "0784FE632DB3DB424E963CCA840982942F689A4385EFE9BDE3E7940F325599F7"
 )
@@ -38,6 +44,7 @@ KOUHEN_TARGET_SHA256 = (
 FOUR_SIDE_TARGET_SHA256 = (
     "4BBCCB13033B39570B3FE3EB64FBEBA4A9BD4C5C73248852F22665E4A3A9E17A"
 )
+NOINTRO_KOUHEN_TARGET_CRC32 = 0x308FCE52
 ZENPEN_PATCH_SHA256 = (
     "85337a2a86b531d40e39005e6c965431cee4e985dc3098a409b3a0fb8e43de5e"
 )
@@ -69,6 +76,21 @@ class OutputResult:
 def _sha256(data: bytes) -> str:
     """Return an uppercase SHA-256 digest."""
     return hashlib.sha256(data).hexdigest().upper()
+
+
+def _known_source_variant(kind: str, data: bytes) -> str:
+    """Classify a source variant after the exact size/hash identity check."""
+    if kind == "kouhen":
+        md5 = hashlib.md5(data).hexdigest().upper()
+        sha1 = hashlib.sha1(data).hexdigest().upper()
+        crc32 = binascii.crc32(data)
+        if (
+            md5 == NOINTRO_KOUHEN_SOURCE_MD5
+            and sha1 == NOINTRO_KOUHEN_SOURCE_SHA1
+            and crc32 == NOINTRO_KOUHEN_SOURCE_CRC32
+        ):
+            return "no-intro"
+    return "release"
 
 
 def _resource_dir() -> Path:
@@ -128,8 +150,19 @@ def _bps_signed(value: int) -> int:
     return -(value >> 1) if value & 1 else value >> 1
 
 
-def apply_bps(source: bytes, patch: bytes) -> bytes:
-    """Apply a BPS patch and validate source, target, and patch CRCs."""
+def apply_bps(
+    source: bytes,
+    patch: bytes,
+    *,
+    allowed_source_crcs: tuple[int, ...] = (),
+    allowed_target_crcs: tuple[int, ...] = (),
+) -> bytes:
+    """Apply a BPS patch and validate source, target, and patch CRCs.
+
+    The optional CRC allowances are used only for an exact, pre-identified
+    known-good retail dump variant. They do not relax source-image identity
+    checks in the public patcher.
+    """
     if patch[:4] != b"BPS1" or len(patch) < 16:
         raise PatcherError("Invalid BPS patch header.")
 
@@ -204,9 +237,14 @@ def apply_bps(source: bytes, patch: bytes) -> bytes:
     if len(output) != target_size or position != action_end:
         raise PatcherError("BPS output/action length verification failed.")
 
-    if binascii.crc32(source) != int.from_bytes(patch[-12:-8], "little"):
+    source_crc = binascii.crc32(source)
+    expected_source_crc = int.from_bytes(patch[-12:-8], "little")
+    if source_crc != expected_source_crc and source_crc not in allowed_source_crcs:
         raise PatcherError("BPS source CRC does not match this disk image.")
-    if binascii.crc32(output) != int.from_bytes(patch[-8:-4], "little"):
+
+    target_crc = binascii.crc32(output)
+    expected_target_crc = int.from_bytes(patch[-8:-4], "little")
+    if target_crc != expected_target_crc and target_crc not in allowed_target_crcs:
         raise PatcherError("Patched output failed the BPS target CRC check.")
 
     return bytes(output)
@@ -232,7 +270,8 @@ def _identify(path: Path) -> tuple[str, bytes]:
 
     raise PatcherError(
         f"{path.name}: unsupported source image. SHA-256 is {digest}. "
-        "Use clean Japanese retail Zenpen/Kouhen dumps."
+        "Use a clean Japanese retail Zenpen/Kouhen dump. For Kouhen, the "
+        "standard No-Intro raw dump (CRC-32 A7D51BFA) is also supported."
     )
 
 
@@ -345,11 +384,29 @@ def _prepare_outputs(
         raise PatcherError("Both Zenpen and Kouhen retail images are required.")
 
     zenpen = apply_bps(identified["zenpen"], _patch_bytes("zenpen"))
-    kouhen = apply_bps(identified["kouhen"], _patch_bytes("kouhen"))
+
+    kouhen_variant = _known_source_variant("kouhen", identified["kouhen"])
+    if kouhen_variant == "no-intro":
+        kouhen = apply_bps(
+            identified["kouhen"],
+            _patch_bytes("kouhen"),
+            allowed_source_crcs=(NOINTRO_KOUHEN_SOURCE_CRC32,),
+            allowed_target_crcs=(NOINTRO_KOUHEN_TARGET_CRC32,),
+        )
+    else:
+        kouhen = apply_bps(identified["kouhen"], _patch_bytes("kouhen"))
 
     if len(zenpen) != SOURCE_BYTES or _sha256(zenpen) != ZENPEN_TARGET_SHA256:
         raise PatcherError("Translated Zenpen failed final SHA-256 verification.")
-    if len(kouhen) != SOURCE_BYTES or _sha256(kouhen) != KOUHEN_TARGET_SHA256:
+
+    if len(kouhen) != SOURCE_BYTES:
+        raise PatcherError("Translated Kouhen failed final size verification.")
+    if kouhen_variant == "no-intro":
+        if binascii.crc32(kouhen) != NOINTRO_KOUHEN_TARGET_CRC32:
+            raise PatcherError(
+                "Translated Kouhen failed the known No-Intro variant CRC check."
+            )
+    elif _sha256(kouhen) != KOUHEN_TARGET_SHA256:
         raise PatcherError("Translated Kouhen failed final SHA-256 verification.")
 
     prepared: dict[str, bytes] = {}
