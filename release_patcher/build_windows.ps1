@@ -5,7 +5,8 @@ $Patcher = Join-Path $PSScriptRoot 'TimeTwistPatcher.py'
 $PatchDir = Join-Path $PSScriptRoot 'patches'
 $Dist = Join-Path $Root 'dist'
 $Package = Join-Path $Dist 'Time-Twist-English-v1.1'
-$Exe = Join-Path $Package 'TimeTwistEnglishPatcher.exe'
+$ExeName = 'Time-Twist-English-v1.1-Patcher.exe'
+$Exe = Join-Path $Package $ExeName
 
 python -m pip install --upgrade pip
 python -m pip install pyinstaller
