@@ -1,3 +1,9 @@
+# v1.1.1 — public patcher compatibility fix
+
+- Accept the standard 131,000-byte No-Intro Kouhen dump (CRC-32 `A7D51BFA`) in the Windows patcher.
+- Keep strict source identity checks: only that exact known retail variant receives the alternate BPS source/target CRC allowances.
+- Preserve rejection of unknown or modified dumps.
+
 # v1.1 — confirmed v83 build
 
 The public patches now include the fixes from the intervening playtests,
