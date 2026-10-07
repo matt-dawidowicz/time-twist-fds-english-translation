@@ -6,7 +6,7 @@ No game images or save states are included.
 
 ## Starting from the original Japanese disks
 
-Run `TimeTwistEnglishPatcher.exe`, select the clean Japanese Zenpen and Kouhen
+Run `Time-Twist-English-v1.1-Patcher.exe`, select the clean Japanese Zenpen and Kouhen
 FDS images in either order, and choose an output folder. The two patches are
 built into the executable. It verifies both inputs and every output and never
 modifies the original images. Existing output files require confirmation.
@@ -34,7 +34,6 @@ The optional upgrade patches in `BPS-Patches` require these specific inputs:
 
 | Patch | Required input |
 | --- | --- |
-| `Time-Twist-v1.0-Simon-to-v1.1-four-side.bps` | The Simon-corrected v1.0 combined four-side image |
 | `Time-Twist-v82-to-v83-four-side.bps` | The last v82 combined four-side playtest image |
 | `Time-Twist-v82-to-v83-Kouhen.bps` | The last v82 two-side Kouhen playtest image |
 
@@ -53,7 +52,7 @@ the updated image. Preserve your existing saves and original disks.
 `CHANGELOG.md` lists the cumulative translation and bug fixes.
 `WALKTHROUGH.txt` includes the corrected routes, quizzes, alternatives, and
 Nativity prerequisites. `PATCH-INPUTS.json` gives the exact source, target,
-and patch identities for all five patches. `SHA256SUMS.txt` covers the package.
+and patch identities for the four published patches. `SHA256SUMS.txt` covers the package.
 
 ## Image SHA-256 values
 
@@ -71,7 +70,7 @@ exactly Zenpen followed by Kouhen.
 ## Command line
 
 ```powershell
-TimeTwistEnglishPatcher.exe Zenpen.fds Kouhen.fds -o translated
+Time-Twist-English-v1.1-Patcher.exe Zenpen.fds Kouhen.fds -o translated
 ```
 
 Use `--two-disk-only` or `--four-side-only` to select one layout. `--force`
@@ -84,7 +83,7 @@ allows replacement of existing outputs. `--version` reports 1.1.
 ```
 
 The build verifies embedded resources in the frozen executable, creates all
-five standalone BPS patches, includes the changelog and walkthrough, and writes
+four published standalone BPS patches, includes the changelog and walkthrough, and writes
 `dist/Time-Twist-English-v1.1-Windows.zip`. The source-only patch checks run with
 `python release_patcher/test_public_patcher.py`.
 
