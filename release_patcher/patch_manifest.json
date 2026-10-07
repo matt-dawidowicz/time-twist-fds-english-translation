@@ -25,17 +25,6 @@
       "patch_sha256": "9DC8C7EB2C417DEAAF737D54ED53F314AEF58234C25DA703E894B36476927A95",
       "target_crc32": "8C7BADD7"
     },
-    "upgrade_public": {
-      "filename": "Time-Twist-v1.0-Simon-to-v1.1-four-side.bps",
-      "input": "Simon-corrected v1.0, combined four-side",
-      "source_bytes": 262000,
-      "source_sha256": "39587318BC6CFD9BE3FE454372E7B483FA3DA81E884324C6D7BD84B8C435B9F5",
-      "target_bytes": 262000,
-      "target_sha256": "4BBCCB13033B39570B3FE3EB64FBEBA4A9BD4C5C73248852F22665E4A3A9E17A",
-      "patch_bytes": 21290,
-      "patch_sha256": "7A9F2C3CF83037785EE273DD083410865E1ABDA6BF8C9B7A79F37406579F92C5",
-      "target_crc32": "5FD591D7"
-    },
     "upgrade_v82": {
       "filename": "Time-Twist-v82-to-v83-four-side.bps",
       "input": "v82 playtest, combined four-side",
