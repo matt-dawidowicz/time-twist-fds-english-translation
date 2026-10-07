@@ -11,7 +11,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 concurrency:
   group: publish-time-twist-v1.1
@@ -106,7 +105,12 @@ jobs:
           Copy-Item (Join-Path $Dist 'Time-Twist-v82-to-v83-Kouhen.bps') (Join-Path $ReleaseDir 'Time-Twist-v82-to-v83-Kouhen.bps')
 
           git add -A release
+          git add -f (Join-Path $ReleaseDir '*.zip')
+          if (-not (git status --porcelain -- release)) {
+            Write-Host 'Repository release directory is already current; no sync commit is needed.'
+            exit 0
+          }
           git commit -m "Refresh v1.1 release binaries"
           git push --set-upstream origin $syncBranch
 
-          gh pr create --repo $env:GITHUB_REPOSITORY --base main --head $syncBranch --title "Refresh v1.1 release binaries" --body "Sync the rebuilt v1.1 Windows patcher and current v1.1/v83 release artifacts into the repository release directory. Legacy v1.0 full-release and migration artifacts are removed."
+          Write-Host "Release sync branch pushed: $syncBranch"
