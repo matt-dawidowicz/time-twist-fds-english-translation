@@ -76,6 +76,10 @@ jobs:
         run: |
           $ErrorActionPreference = 'Continue'
           gh release delete-asset v1.1.0 "Time-Twist-v1.0-Simon-to-v1.1-four-side.bps" --repo $env:GITHUB_REPOSITORY --yes 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host 'Legacy v1.0 release asset was already absent; continuing.'
+            $global:LASTEXITCODE = 0
+          }
           $ErrorActionPreference = 'Stop'
 
       - name: Stage modern v1.1 release files in the repository
