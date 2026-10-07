@@ -1,3 +1,10 @@
+## Release packaging cleanup
+
+- Remove obsolete v1.0 full-release artifacts from the public tree.
+- Remove the legacy v1.0-to-v1.1 Simon migration patch from the published patch set.
+- Use versioned `Time-Twist-English-v1.1-Patcher.exe` naming for the Windows release binary.
+- The rebuilt Windows patcher includes the strict No-Intro Kouhen compatibility fix from PR #149.
+
 # v1.1.1 — public patcher compatibility fix
 
 - Accept the standard 131,000-byte No-Intro Kouhen dump (CRC-32 `A7D51BFA`) in the Windows patcher.
