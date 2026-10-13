@@ -114,13 +114,21 @@ maintenance. The stable `build_parser` entry point and existing dispatch
 callbacks are unchanged. Both scenario commands share one immutable bank
 name tuple, preventing their accepted input policies from drifting.
 
-Before any edit, a snapshot of the root and all 15 subcommand help screens
+Before any edit, the root and all 15 original subcommand help screens
 produced SHA-256
-`164307CE3324534AF273E013A820FD6D5C3A234366966F8A7D0A466C43A44408`.
-The refactored local parser produced the **same** complete help fingerprint.
-`work/tests/test_cli_parser_equivalence.py` locks both the complete help
-surface and accepted bank arguments. This is a pure parser refactor; it does
-not modify any FDS payload, asset, translation, or release patch.
+`164307CE3324534AF273E013A820FD6D5C3A234366966F8A7D0A466C43A44408`
+on local Python 3.13. The refactored parser reproduced that exact output
+**on the same interpreter**. However, Python 3.11 formats the same `argparse`
+definitions into slightly different line wraps, so hashing rendered screens
+would incorrectly fail cross-version CI. The permanent test instead hashes
+the **version-neutral command registration contract**, including all 15
+names, argument order and types, accepted values, defaults, descriptions,
+help messages, and command callbacks. This was calculated on the *original*
+and refactored parsers before pushing: both returned SHA-256
+`DE5026C031C18027669111499844C7D2D67C8FE1C9A023CBD084153C005D3E20`.
+`work/tests/test_cli_parser_equivalence.py` enforces that contract and
+validates both bank-command arguments. This pure parser refactor does not
+modify any FDS payload, asset, translation, or release patch.
 
 ## Testing evidence and unresolved release gate
 
