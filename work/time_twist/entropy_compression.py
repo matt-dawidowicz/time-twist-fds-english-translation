@@ -9,6 +9,7 @@ Only the public inputs/outputs use the project's semantic token class.
 from __future__ import annotations
 
 from collections import Counter
+from functools import lru_cache
 from collections.abc import Sequence
 from dataclasses import dataclass
 
@@ -200,8 +201,14 @@ def _make_parser(expansions: Sequence[_TRecord]):
     for candidates in by_first.values():
         candidates.sort(key=lambda item: -len(item[1]))
 
+    @lru_cache(maxsize=4096)
     def parse(literal: _TRecord, maximum_index: int | None = None) -> _TRecord:
-        """Parse the supplied token stream with the current dictionary."""
+        """Parse immutable records once per dictionary and entry limit.
+
+        Candidate trials often reparse exactly the same records. This bounded
+        cache belongs to the fixed-dictionary closure; its entries cannot
+        affect another dictionary revision or independent optimization.
+        """
         length = len(literal)
         costs = [0] * (length + 1)
         parsed: list[_TRecord] = [()] * (length + 1)
