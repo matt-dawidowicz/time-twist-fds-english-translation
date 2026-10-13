@@ -27,6 +27,10 @@ jobs:
       - run: python -m pip install -r requirements.txt
       - name: Run quick deterministic checks
         run: python work/tools/quick_check.py
+      - name: Inventory every public Python source
+        run: python work/tools/audit_python_maintainability.py --format markdown
+      - name: Check synthetic optimizer output and hashing benchmark
+        run: python work/tools/benchmark_public_hotpaths.py --repetitions 3 --hash-megabytes 4
       - name: Test the public ROM-free patcher and source variants
         run: python release_patcher/test_public_patcher.py
 
