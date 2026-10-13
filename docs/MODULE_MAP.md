@@ -17,6 +17,9 @@ need to change.
 | English title | `work/time_twist/title.py` | `title_layout.py`, `title_assets.py`, `title_patch.py` | `work/tests/test_title_unit.py` and private title integration tests |
 | Packed scenario text | `work/time_twist/scenario.py` | `textcodec.py`, `compression.py`, `scenario_validation.py` | `work/tests/test_textcodec.py`, `test_scenario_validation_hardening.py` |
 | FDS container | `work/time_twist/fds.py` | — | `work/tests/test_fds_synthetic.py`, `test_binary_properties.py` |
+| Production entropy codec and nested dictionary | `work/time_twist/entropy_codec.py` | `entropy_compression.py`, `entropy_scenario.py`, `entropy_fixed_ui.py` | `work/tests/test_entropy_production.py` |
+| Incremental scenario bank layout | `work/time_twist/incremental_build.py` | `entropy_codec.py`, `entropy_compression.py` | `work/tests/test_incremental_build.py` (pre-cleanup allocator oracle) |
+| Native-format analysis compressor | `work/time_twist/compression.py` | `textcodec.py` | `work/tests/test_native_compression_scan.py`, `test_binary_properties.py` |
 
 `work/tests/test_modern_module_layout.py` protects the public facades and the
 generic private runtime-capture layout after module moves.
