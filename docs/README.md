@@ -22,6 +22,8 @@ are evidence, not release input.
 
 For safe code cleanup and optimization work, see the [repository modernization and preservation audit](REPOSITORY_MODERNIZATION_AUDIT.md).
 
+For this October's measured optimization results, source-audit tooling, and permanent design decisions, read the [maintenance and performance record](history/MAINTENANCE_PERFORMANCE_AUDIT_20261013.md).
+
 ## Source-of-truth boundaries
 
 Scenario English has one authority:
