@@ -44,6 +44,16 @@ canonical release hashes. These are preservation assets, not cleanup targets.
 | P2 | Documentation | Clarify current vs retired implementations; link decisions to current code and tests | Updated index and decision records |
 | P2 | Dependencies | Audit Python 3.11/3.14, pin policy, lint/test consistency, and workflow action versions | Green matrix CI |
 
+## Completed first implementation slice (2026-10-13)
+
+- Added reproducible AST inventory across all public Python sources, including per-file line/function counts, large function candidates, duplicate-body flags, and high-risk syntax checks; this is not a semantic proof of all source lines.
+- Optimized dictionary parsing using an immutable, per-grammar bounded cache; recorded ~3x improvement on the 80-record repeated synthetic fixture with the exact pre-change packed SHA-256 unchanged.
+- Switched release file hashes to bounded 1 MiB streaming; measured peak traced memory falling from about 28 MB to 2 MB on a 28 MB archive while preserving the exact digest.
+- Added fixture-free golden byte regression tests and a maintainer-only original-ROM equivalence verifier; verified all three public v1.1 release hashes locally without committing game data.
+- Preserved the full rationale, historical duplicate-code decisions, measurement method, and explicit private v25 build / emulator recertification gate in [the dated engineering record](history/MAINTENANCE_PERFORMANCE_AUDIT_20261013.md).
+
+**Still outstanding:** full private v25 candidate rebuild and emulator coverage; risky 6502, title, UI, and incremental-bank refactors are deferred until those inputs and gates can be applied. Performance measurements are local synthetic comparisons rather than verified production-corpus benchmarks.
+
 ## Proposed sequence of focused pull requests
 
 1. **Inventory and benchmarks:** add deterministic benchmark scripts using
