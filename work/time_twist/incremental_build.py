@@ -478,73 +478,90 @@ def _allocate_groups(
     resident_capacity: int,
     tail_capacity: int,
 ) -> dict[str, object] | None:
-    """Choose whole-group placement, falling back to one split group."""
+    """Choose deterministic whole-group placement, then one split if needed.
+
+    The number of groups is bounded by the native pointer topology (at most
+    six today), so enumerating nonempty resident masks is cheap. Previously
+    every possible split decoded those masks and re-summed the same complete
+    group sizes again. Cache their membership and byte totals once, then
+    adjust only the split group's prefix/suffix contribution.
+
+    The priority tuple and ascending mask/split enumeration intentionally
+    reproduce the original allocator's exact tie-breaking behavior. This is
+    important: a different layout can change ROM bytes even when both
+    layouts fit and carry identical text.
+    """
     sizes = tuple(len(pack_entropy_stream(group)) for group in groups)
     count = len(groups)
-    options: list[tuple[tuple[object, ...], dict[str, object]]] = []
-    for mask in range(1 << count):
-        resident = tuple(i for i in range(count) if mask & (1 << i))
-        if not resident:
-            continue
-        spill = tuple(i for i in range(count) if not mask & (1 << i))
-        used = (
-            sum(sizes[i] for i in resident)
-            + 2 * (count - 1)
-            + dictionary_bytes
-        )
-        spilled = sum(sizes[i] for i in spill)
-        if used <= resident_capacity and spilled <= tail_capacity:
-            options.append(
-                (
-                    (0, spilled, len(spill), -resident_capacity + used),
-                    {
-                        "resident": resident,
-                        "spill": spill,
-                        "split": None,
-                    },
-                )
+    fixed_overhead = 2 * (count - 1) + dictionary_bytes
+    total_group_bytes = sum(sizes)
+
+    # (mask, resident indices, spilled indices, resident bytes, spill bytes).
+    # Exclude mask 0: a nonempty resident group is required as an origin.
+    subsets: list[
+        tuple[int, tuple[int, ...], tuple[int, ...], int, int]
+    ] = []
+    for mask in range(1, 1 << count):
+        resident = tuple(index for index in range(count) if mask & (1 << index))
+        spill = tuple(index for index in range(count) if not mask & (1 << index))
+        resident_bytes = sum(sizes[index] for index in resident)
+        subsets.append(
+            (
+                mask,
+                resident,
+                spill,
+                resident_bytes,
+                total_group_bytes - resident_bytes,
             )
-    if options:
-        return min(options, key=lambda item: item[0])[1]
+        )
+
+    best_key: tuple[int, ...] | None = None
+    best_plan: dict[str, object] | None = None
+
+    for _, resident, spill, resident_bytes, spill_bytes in subsets:
+        used = resident_bytes + fixed_overhead
+        if used > resident_capacity or spill_bytes > tail_capacity:
+            continue
+        priority = (0, spill_bytes, len(spill), -resident_capacity + used)
+        if best_key is None or priority < best_key:
+            best_key = priority
+            best_plan = {"resident": resident, "spill": spill, "split": None}
+
+    # Prefer *any* legal whole-group layout over a split-group thunk.
+    if best_plan is not None:
+        return best_plan
 
     for split_group, group in enumerate(groups):
+        split_mask = 1 << split_group
+        full_size = sizes[split_group]
         for first in range(1, len(group)):
             prefix = len(pack_entropy_stream(group[:first]))
             suffix = len(pack_entropy_stream(group[first:]))
-            for mask in range(1 << count):
-                if not mask & (1 << split_group):
+            for mask, resident, spill, resident_bytes, spill_bytes in subsets:
+                if not mask & split_mask:
                     continue
-                resident = tuple(i for i in range(count) if mask & (1 << i))
-                spill = tuple(i for i in range(count) if not mask & (1 << i))
                 used = (
-                    sum(
-                        prefix if i == split_group else sizes[i]
-                        for i in resident
-                    )
-                    + dictionary_bytes
-                    + 2 * (count - 1)
-                    + 27
+                    resident_bytes - full_size + prefix + fixed_overhead + 27
                 )
-                spilled = sum(sizes[i] for i in spill) + suffix
-                if used <= resident_capacity and spilled <= tail_capacity:
-                    options.append(
-                        (
-                            (
-                                1,
-                                spilled,
-                                len(spill),
-                                -resident_capacity + used,
-                                split_group,
-                                first,
-                            ),
-                            {
-                                "resident": resident,
-                                "spill": spill,
-                                "split": (split_group, first),
-                            },
-                        )
-                    )
-    return min(options, key=lambda item: item[0])[1] if options else None
+                spilled = spill_bytes + suffix
+                if used > resident_capacity or spilled > tail_capacity:
+                    continue
+                priority = (
+                    1,
+                    spilled,
+                    len(spill),
+                    -resident_capacity + used,
+                    split_group,
+                    first,
+                )
+                if best_key is None or priority < best_key:
+                    best_key = priority
+                    best_plan = {
+                        "resident": resident,
+                        "spill": spill,
+                        "split": (split_group, first),
+                    }
+    return best_plan
 
 
 def _thunk(
