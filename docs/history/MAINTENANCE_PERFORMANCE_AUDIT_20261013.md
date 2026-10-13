@@ -120,15 +120,18 @@ produced SHA-256
 on local Python 3.13. The refactored parser reproduced that exact output
 **on the same interpreter**. However, Python 3.11 formats the same `argparse`
 definitions into slightly different line wraps, so hashing rendered screens
-would incorrectly fail cross-version CI. The permanent test instead hashes
-the **version-neutral command registration contract**, including all 15
-names, argument order and types, accepted values, defaults, descriptions,
-help messages, and command callbacks. This was calculated on the *original*
-and refactored parsers before pushing: both returned SHA-256
-`DE5026C031C18027669111499844C7D2D67C8FE1C9A023CBD084153C005D3E20`.
-`work/tests/test_cli_parser_equivalence.py` enforces that contract and
-validates both bank-command arguments. This pure parser refactor does not
-modify any FDS payload, asset, translation, or release patch.
+would incorrectly fail cross-version CI. The first attempt to hash *all argparse internals* also varied across
+interpreters, so the permanent test deliberately snapshots only explicitly
+authored command information: command names, positionals, option strings,
+description/help text, accepted choices, and ordering. It excludes
+argparse-generated help actions and version-dependent display formatting,
+then independently asserts all 15 callback dispatch names and both
+bank-command argument policies. This portable snapshot was captured on the
+*original* and refactored parsers before pushing: both returned SHA-256
+`24820006CE672E3D1667B74840BAEE5EA6F6AEDBFE8A249BD99F099FD2B40C77`.
+`work/tests/test_cli_parser_equivalence.py` enforces this contract. This
+pure parser refactor does not modify any FDS payload, asset, translation,
+or release patch.
 
 ## Testing evidence and unresolved release gate
 
