@@ -37,8 +37,10 @@ class ReleasePublicationSafetyTests(unittest.TestCase):
                 _atomic_publish_file(source, target)
 
             self.assertEqual(target.read_bytes(), b"existing release payload")
-            self.assertEqual(sorted(p.name for p in root.iterdir()),
-                             ["release.bin", "staged.bin"])
+            self.assertEqual(
+                sorted(p.name for p in root.iterdir()),
+                ["release.bin", "staged.bin"],
+            )
 
     def test_failed_fsync_cleans_temporary_and_keeps_existing_file(self) -> None:
         """Failure during durability verification also cleans partial output."""
@@ -59,8 +61,10 @@ class ReleasePublicationSafetyTests(unittest.TestCase):
                 _atomic_publish_file(source, target)
 
             self.assertEqual(target.read_bytes(), b"existing release payload")
-            self.assertEqual(sorted(p.name for p in root.iterdir()),
-                             ["release.bin", "staged.bin"])
+            self.assertEqual(
+                sorted(p.name for p in root.iterdir()),
+                ["release.bin", "staged.bin"],
+            )
 
 
 if __name__ == "__main__":
