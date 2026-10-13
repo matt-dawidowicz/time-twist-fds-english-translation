@@ -52,6 +52,7 @@ original game data.
 - **Improve English text:** [CONTRIBUTING_TRANSLATION.md](CONTRIBUTING_TRANSLATION.md)
 - **Improve tools or tests:** [CONTRIBUTING_CODE.md](CONTRIBUTING_CODE.md)
 - **Read the architecture:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- **Understand the public patcher and ROM verification:** [docs/PUBLIC_PATCHER_INTERNALS.md](docs/PUBLIC_PATCHER_INTERNALS.md)
 - **See what is reverse-engineered:** [docs/REVERSE_ENGINEERING_STATUS.md](docs/REVERSE_ENGINEERING_STATUS.md)
 - **Review major engine changes and bug fixes:** [docs/ENGINE_CHANGELOG.md](docs/ENGINE_CHANGELOG.md)
 - **See what the English ROM actually changes:** [docs/ROM_MODIFICATION_INVENTORY.md](docs/ROM_MODIFICATION_INVENTORY.md)

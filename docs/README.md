@@ -11,6 +11,7 @@ are evidence, not release input.
 | --- | --- | --- |
 | Play/test a candidate | [Playtesting guide](../PLAYTESTING.md) | [Playtest matrix](PLAYTEST_MATRIX.md) |
 | Set up or build | [Quickstart](../QUICKSTART.md) | [Maintainer release process](MAINTAINER_RELEASE_PROCESS.md) |
+| Understand or debug the Windows patcher | [Public patcher internals](PUBLIC_PATCHER_INTERNALS.md) | [Public patcher source](../release_patcher/TimeTwistPatcher.py) |
 | Edit scenario English | [Translation contributor guide](../CONTRIBUTING_TRANSLATION.md) | [Translation workflow](TRANSLATION_WORKFLOW.md), [English pagination policy](ENGLISH_PAGINATION_POLICY.md) |
 | Change Python/tooling | [Code contributor guide](../CONTRIBUTING_CODE.md) | [Code tour](CODE_TOUR.md), [Module map](MODULE_MAP.md) |
 | Investigate runtime behavior | [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) | [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md), [engine change history](ENGINE_CHANGELOG.md) |

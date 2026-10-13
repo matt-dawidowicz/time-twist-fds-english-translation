@@ -4,6 +4,8 @@ This release includes all confirmed fixes through the v83 playtest build.
 The Windows patcher and the manual patches produce exactly the same ROM.
 No game images or save states are included.
 
+See [public patcher internals](../docs/PUBLIC_PATCHER_INTERNALS.md) for a detailed contributor guide to the BPS format, accepted ROM fingerprints, integrity checks, source-variant routing, testing, and release builds.
+
 ## Starting from the original Japanese disks
 
 Run `Time-Twist-English-v1.1-Patcher.exe`, select the clean Japanese Zenpen and Kouhen

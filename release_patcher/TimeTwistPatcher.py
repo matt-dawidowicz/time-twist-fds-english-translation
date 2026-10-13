@@ -1,10 +1,19 @@
 """Self-contained public patcher for Time Twist English Translation v1.1 (v83).
 
-The Windows build bundles the Zenpen and Kouhen BPS payloads inside the
-executable. Users provide the two clean Japanese retail FDS images; the patcher
-identifies them by SHA-256, applies the correct patch, verifies every target,
-and writes either the original two-disk layout, a combined four-side image, or
-both.
+Users provide *both* legally obtained, headerless Japanese FDS images. The
+Windows build bundles two SHA-256-verified BPS payloads; no game images are
+distributed. Inputs are identified before either patch is applied, outputs are
+verified in memory, and disk writes occur only after all checks succeed.
+
+Two input identities are supported for Kouhen: the release-locked SHA-256
+image and one specifically fingerprinted No-Intro metadata/padding variant.
+The latter produces a correspondingly different, but CRC-verified, Kouhen
+output. The canonical combined-image SHA-256 is therefore checked only when
+both inputs are canonical; an alternate combined image consists of two already
+verified halves.
+
+For the trust boundaries, BPS mechanics, testing, and release packaging, see
+docs/PUBLIC_PATCHER_INTERNALS.md. This module is usable as a CLI or Tk GUI.
 """
 
 from __future__ import annotations
@@ -79,7 +88,13 @@ def _sha256(data: bytes) -> str:
 
 
 def _known_source_variant(kind: str, data: bytes) -> str:
-    """Classify a source variant after the exact size/hash identity check."""
+    """Return the retail source identity used to select verification rules.
+
+    Only Kouhen has a supported alternate dump. All three constants cover the
+    *entire* input image, not merely its FDS header. Callers must first check
+    the expected size and must never infer No-Intro compatibility from a CRC
+    alone. Unknown images fall back to "release" and fail identification.
+    """
     if kind == "kouhen":
         md5 = hashlib.md5(data).hexdigest().upper()
         sha1 = hashlib.sha1(data).hexdigest().upper()
@@ -251,7 +266,13 @@ def apply_bps(
 
 
 def _identify(path: Path) -> tuple[str, bytes]:
-    """Identify a clean retail image by size and SHA-256."""
+    """Read and identify exactly one accepted, unmodified retail image.
+
+    The canonical Zenpen and Kouhen sources require exact SHA-256 equality.
+    A specific No-Intro Kouhen dump is additionally accepted only when its
+    full-file MD5, SHA-1, and CRC-32 fingerprints all match the pinned values.
+    Every other file is rejected *before* patch execution or file writes.
+    """
     try:
         data = path.read_bytes()
     except OSError as exc:
@@ -268,6 +289,12 @@ def _identify(path: Path) -> tuple[str, bytes]:
     if digest == KOUHEN_SOURCE_SHA256:
         return "kouhen", data
 
+    # A No-Intro Kouhen dump differs from our release-locked source only in
+    # retail metadata/padding. The identity gate must recognize this variant:
+    # detecting it *after* _identify() would be unreachable.
+    if _known_source_variant("kouhen", data) == "no-intro":
+        return "kouhen", data
+
     raise PatcherError(
         f"{path.name}: unsupported source image. SHA-256 is {digest}. "
         "Use a clean Japanese retail Zenpen/Kouhen dump. For Kouhen, the "
@@ -276,9 +303,13 @@ def _identify(path: Path) -> tuple[str, bytes]:
 
 
 def identify_path(path: Path) -> str:
-    """Return a human-readable identity for a selected retail image."""
-    kind, _ = _identify(path)
-    return "Zenpen (Part 1)" if kind == "zenpen" else "Kouhen (Part 2)"
+    """Return the validated part and, where relevant, alternate dump variant."""
+    kind, data = _identify(path)
+    if kind == "zenpen":
+        return "Zenpen (Part 1)"
+    if _known_source_variant(kind, data) == "no-intro":
+        return "Kouhen (Part 2; verified No-Intro variant)"
+    return "Kouhen (Part 2)"
 
 
 def _same_file_or_path(left: Path, right: Path) -> bool:
@@ -366,7 +397,16 @@ def _prepare_outputs(
     two_disk: bool,
     four_side: bool,
 ) -> dict[str, bytes]:
-    """Patch both retail disks entirely in memory and verify final hashes."""
+    """Validate inputs, patch in memory, and certify outputs before any write.
+
+    Canonical inputs reproduce immutable Zenpen, Kouhen, and combined SHA-256
+    identities. The known No-Intro Kouhen source preserves different retail
+    metadata/padding through source-copy BPS operations: its Kouhen target is
+    instead verified against the pinned variant CRC after matching the exact
+    full-file source fingerprint and the verified BPS patch. The combined file
+    is then the concatenation of the independently verified disk halves, not
+    the canonical combined byte sequence.
+    """
     if not two_disk and not four_side:
         raise PatcherError("Select at least one output layout.")
 
@@ -415,10 +455,16 @@ def _prepare_outputs(
         prepared[KOUHEN_OUTPUT] = kouhen
 
     if four_side:
+        # Both halves have already passed their variant-specific integrity
+        # checks. For No-Intro, the combined bytes differ only because Kouhen
+        # retains the verified retail metadata/padding variant. Comparing that
+        # image to the canonical four-side SHA-256 would wrongly reject it.
         combined = zenpen + kouhen
+        if len(combined) != FOUR_SIDE_BYTES:
+            raise PatcherError("Combined four-side output has an invalid size.")
         if (
-            len(combined) != FOUR_SIDE_BYTES
-            or _sha256(combined) != FOUR_SIDE_TARGET_SHA256
+            kouhen_variant == "release"
+            and _sha256(combined) != FOUR_SIDE_TARGET_SHA256
         ):
             raise PatcherError(
                 "Combined four-side output failed final SHA-256 verification."
