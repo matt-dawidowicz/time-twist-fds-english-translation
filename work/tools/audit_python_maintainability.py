@@ -148,8 +148,10 @@ def markdown(report: dict[str, object]) -> str:
         "## Long functions (review candidates)",
         "",
     ]
-    for item in report["large_functions"][:30]:
-        lines.append(f"- `{item['location']}`: {item['lines']} lines")
+    lines += [
+        f"- `{item['location']}`: {item['lines']} lines"
+        for item in report["large_functions"][:30]
+    ]
     lines += ["", "## Missing production-function docstrings", ""]
     lines += [
         f"- `{name}`" for name in report["undocumented_production_functions"]
