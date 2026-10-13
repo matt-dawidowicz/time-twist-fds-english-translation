@@ -104,6 +104,24 @@ The in-memory retail BPS patching path measured around 8 ms. A speculative
 rewrite of its CRC, source-copy, or target-copy logic offers poor payoff for
 a comparatively high correctness risk, so it was deliberately left intact.
 
+## Behavior-preserving CLI structure cleanup
+
+The original `cli_parser.build_parser` was a 401-line declarative function
+registering 15 commands and repeating the same list of 13 scenario banks.
+Registration now lives in five documented, sequentially called helpers for
+FDS inspection, scenario work, assets, incremental builds, and release
+maintenance. The stable `build_parser` entry point and existing dispatch
+callbacks are unchanged. Both scenario commands share one immutable bank
+name tuple, preventing their accepted input policies from drifting.
+
+Before any edit, a snapshot of the root and all 15 subcommand help screens
+produced SHA-256
+`164307CE3324534AF273E013A820FD6D5C3A234366966F8A7D0A466C43A44408`.
+The refactored local parser produced the **same** complete help fingerprint.
+`work/tests/test_cli_parser_equivalence.py` locks both the complete help
+surface and accepted bank arguments. This is a pure parser refactor; it does
+not modify any FDS payload, asset, translation, or release patch.
+
 ## Testing evidence and unresolved release gate
 
 - Local public-source-tree checker: PASS.
