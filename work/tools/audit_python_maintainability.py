@@ -98,10 +98,10 @@ def audit(root: Path) -> dict[str, object]:
             ):
                 issue = "wildcard import"
             elif isinstance(node, ast.Call):
-                if (
-                    isinstance(node.func, ast.Name)
-                    and node.func.id in {"eval", "exec"}
-                ):
+                if isinstance(node.func, ast.Name) and node.func.id in {
+                    "eval",
+                    "exec",
+                }:
                     issue = f"dynamic {node.func.id}()"
                 elif any(
                     kw.arg == "shell"
@@ -152,8 +152,7 @@ def markdown(report: dict[str, object]) -> str:
         lines.append(f"- `{item['location']}`: {item['lines']} lines")
     lines += ["", "## Missing production-function docstrings", ""]
     lines += [
-        f"- `{name}`"
-        for name in report["undocumented_production_functions"]
+        f"- `{name}`" for name in report["undocumented_production_functions"]
     ]
     lines += ["", "## Identical function bodies (manual review only)", ""]
     for group in report["potential_duplicate_bodies"]:
