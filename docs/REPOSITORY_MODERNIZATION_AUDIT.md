@@ -50,6 +50,7 @@ canonical release hashes. These are preservation assets, not cleanup targets.
 - Optimized dictionary parsing using an immutable, per-grammar bounded cache; recorded ~3x improvement on the 80-record repeated synthetic fixture with the exact pre-change packed SHA-256 unchanged.
 - Switched release file hashes to bounded 1 MiB streaming; measured peak traced memory falling from about 28 MB to 2 MB on a 28 MB archive while preserving the exact digest.
 - Added fixture-free golden byte regression tests and a maintainer-only original-ROM equivalence verifier; verified all three public v1.1 release hashes locally without committing game data.
+- Split the 401-line CLI parser into five documented registrations and consolidated duplicate 13-bank choices; a golden test locks the exact root plus 15 subcommand help screens.
 - Preserved the full rationale, historical duplicate-code decisions, measurement method, and explicit private v25 build / emulator recertification gate in [the dated engineering record](history/MAINTENANCE_PERFORMANCE_AUDIT_20261013.md).
 
 **Still outstanding:** full private v25 candidate rebuild and emulator coverage; risky 6502, title, UI, and incremental-bank refactors are deferred until those inputs and gates can be applied. Performance measurements are local synthetic comparisons rather than verified production-corpus benchmarks.
