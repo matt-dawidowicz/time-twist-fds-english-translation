@@ -498,9 +498,7 @@ def _allocate_groups(
 
     # (mask, resident indices, spilled indices, resident bytes, spill bytes).
     # Exclude mask 0: a nonempty resident group is required as an origin.
-    subsets: list[
-        tuple[int, tuple[int, ...], tuple[int, ...], int, int]
-    ] = []
+    subsets: list[tuple[int, tuple[int, ...], tuple[int, ...], int, int]] = []
     for mask in range(1, 1 << count):
         resident = tuple(
             index for index in range(count) if mask & (1 << index)
