@@ -84,9 +84,14 @@ class _BitWriter:
             self.bit_position += 1
 
     def write_prefix(self, prefix: str) -> None:
-        """Write prefix."""
-        for bit in prefix:
-            self.write_bits(int(bit), 1)
+        """Write a frozen entropy prefix with one validated writer call.
+
+        One multi-bit write preserves the bit order and alignment of the
+        original per-bit loop without a Python method call for every prefix
+        bit. The empty prefix remains a no-op.
+        """
+        if prefix:
+            self.write_bits(int(prefix, 2), len(prefix))
 
     def align(self) -> None:
         """Support the align operation for this module."""
