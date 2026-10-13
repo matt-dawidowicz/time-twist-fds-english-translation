@@ -27,35 +27,27 @@ from .cli_commands import (
 )
 from .title import DEFAULT_SUBTITLE
 
+# Preserve historical command help and accepted bank identifiers together.
+# Both source extraction and conservative footprint diagnostics share this list.
+SCENARIO_BANK_CHOICES = (
+    "TT1A",
+    "TT1B",
+    "TT2",
+    "T22",
+    "TT3A",
+    "TT3B",
+    "TT4",
+    "TT5",
+    "T25",
+    "TT6A",
+    "TT6B",
+    "TT6C",
+    "TT6D",
+)
 
-def build_parser() -> argparse.ArgumentParser:
-    """Construct the complete command-line parser.
 
-    Returns:
-        Configured parser whose successful subcommand namespaces include a
-        ``function`` callback.
-
-    The function is side-effect free: it does not inspect the filesystem,
-    import user configuration, or parse process arguments.
-    """
-    parser = argparse.ArgumentParser(
-        prog="time-twist",
-        description=(
-            "Inspect, extract, translate, rebuild, and verify Time Twist "
-            "Famicom Disk System images."
-        ),
-        epilog=(
-            "All patch commands validate the recovered source layout. "
-            "Original and patched ROM images are intentionally not stored "
-            "in the repository."
-        ),
-    )
-    subparsers = parser.add_subparsers(
-        dest="command",
-        required=True,
-        metavar="COMMAND",
-    )
-
+def _register_fds_commands(subparsers: argparse._SubParsersAction) -> None:
+    """Register FDS inspection, extraction, round-trip, and combining commands."""
     manifest = subparsers.add_parser(
         "manifest",
         help="describe every side and named FDS file as JSON",
@@ -120,6 +112,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     combine.set_defaults(function=command_combine)
 
+
+def _register_scenario_commands(subparsers: argparse._SubParsersAction) -> None:
+    """Register source-text extraction, merge, and footprint inspection."""
     scenario_extract = subparsers.add_parser(
         "scenario-extract",
         help="decode a packed scenario bank to editable JSON",
@@ -134,21 +129,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     scenario_extract.add_argument(
         "--bank-name",
-        choices=(
-            "TT1A",
-            "TT1B",
-            "TT2",
-            "T22",
-            "TT3A",
-            "TT3B",
-            "TT4",
-            "TT5",
-            "T25",
-            "TT6A",
-            "TT6B",
-            "TT6C",
-            "TT6D",
-        ),
+        choices=SCENARIO_BANK_CHOICES,
         help="explicit bank name when the filename is nonstandard",
     )
     scenario_extract.add_argument(
@@ -201,21 +182,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     scenario_footprint.add_argument(
         "--bank-name",
-        choices=(
-            "TT1A",
-            "TT1B",
-            "TT2",
-            "T22",
-            "TT3A",
-            "TT3B",
-            "TT4",
-            "TT5",
-            "T25",
-            "TT6A",
-            "TT6B",
-            "TT6C",
-            "TT6D",
-        ),
+        choices=SCENARIO_BANK_CHOICES,
         help="explicit bank name when the filename is nonstandard",
     )
     scenario_footprint.add_argument(
@@ -225,6 +192,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     scenario_footprint.set_defaults(function=command_scenario_footprint)
 
+
+def _register_asset_commands(subparsers: argparse._SubParsersAction) -> None:
+    """Register font, title, and individual FDS-file editing commands."""
     font_patch = subparsers.add_parser(
         "font-patch",
         help="install the translated 8x8 dialogue font",
@@ -287,6 +257,9 @@ def build_parser() -> argparse.ArgumentParser:
     replace_file.add_argument("output", type=Path, help="rebuilt output .fds")
     replace_file.set_defaults(function=command_replace_file)
 
+
+def _register_incremental_commands(subparsers: argparse._SubParsersAction) -> None:
+    """Register incremental translation build and inspection commands."""
     build = subparsers.add_parser(
         "build",
         help="incrementally rebuild changed scenario banks",
@@ -340,6 +313,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     inspect_layout.set_defaults(function=command_inspect_layout)
 
+
+def _register_release_commands(subparsers: argparse._SubParsersAction) -> None:
+    """Register reproducible release lock, build, and promotion commands."""
     release_lock = subparsers.add_parser(
         "release-lock",
         help="validate or update the approved release-input lock",
@@ -428,4 +404,39 @@ def build_parser() -> argparse.ArgumentParser:
         help="human-readable target identifier (default: english-playtest)",
     )
     release_promote.set_defaults(function=command_release_promote)
+
+
+def build_parser() -> argparse.ArgumentParser:
+    """Construct the complete command-line parser.
+
+    Returns:
+        Configured parser whose successful subcommand namespaces include a
+        ``function`` callback.
+
+    The function is side-effect free: it does not inspect the filesystem,
+    import user configuration, or parse process arguments.
+    """
+    parser = argparse.ArgumentParser(
+        prog="time-twist",
+        description=(
+            "Inspect, extract, translate, rebuild, and verify Time Twist "
+            "Famicom Disk System images."
+        ),
+        epilog=(
+            "All patch commands validate the recovered source layout. "
+            "Original and patched ROM images are intentionally not stored "
+            "in the repository."
+        ),
+    )
+    subparsers = parser.add_subparsers(
+        dest="command",
+        required=True,
+        metavar="COMMAND",
+    )
+
+    _register_fds_commands(subparsers)
+    _register_scenario_commands(subparsers)
+    _register_asset_commands(subparsers)
+    _register_incremental_commands(subparsers)
+    _register_release_commands(subparsers)
     return parser
