@@ -502,8 +502,12 @@ def _allocate_groups(
         tuple[int, tuple[int, ...], tuple[int, ...], int, int]
     ] = []
     for mask in range(1, 1 << count):
-        resident = tuple(index for index in range(count) if mask & (1 << index))
-        spill = tuple(index for index in range(count) if not mask & (1 << index))
+        resident = tuple(
+            index for index in range(count) if mask & (1 << index)
+        )
+        spill = tuple(
+            index for index in range(count) if not mask & (1 << index)
+        )
         resident_bytes = sum(sizes[index] for index in resident)
         subsets.append(
             (
