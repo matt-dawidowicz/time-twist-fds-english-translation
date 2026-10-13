@@ -524,7 +524,12 @@ def _allocate_groups(
         used = resident_bytes + fixed_overhead
         if used > resident_capacity or spill_bytes > tail_capacity:
             continue
-        priority = (0, spill_bytes, len(spill), -resident_capacity + used)
+        priority: tuple[int, ...] = (
+            0,
+            spill_bytes,
+            len(spill),
+            -resident_capacity + used,
+        )
         if best_key is None or priority < best_key:
             best_key = priority
             best_plan = {"resident": resident, "spill": spill, "split": None}
