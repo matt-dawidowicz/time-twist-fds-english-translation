@@ -113,7 +113,9 @@ def _register_fds_commands(subparsers: argparse._SubParsersAction) -> None:
     combine.set_defaults(function=command_combine)
 
 
-def _register_scenario_commands(subparsers: argparse._SubParsersAction) -> None:
+def _register_scenario_commands(
+    subparsers: argparse._SubParsersAction,
+) -> None:
     """Register source-text extraction, merge, and footprint inspection."""
     scenario_extract = subparsers.add_parser(
         "scenario-extract",
@@ -258,7 +260,9 @@ def _register_asset_commands(subparsers: argparse._SubParsersAction) -> None:
     replace_file.set_defaults(function=command_replace_file)
 
 
-def _register_incremental_commands(subparsers: argparse._SubParsersAction) -> None:
+def _register_incremental_commands(
+    subparsers: argparse._SubParsersAction,
+) -> None:
     """Register incremental translation build and inspection commands."""
     build = subparsers.add_parser(
         "build",
