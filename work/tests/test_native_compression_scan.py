@@ -49,8 +49,12 @@ class NativeCompressionScanTests(unittest.TestCase):
         """Catch any change in match counts for overlapping patterns."""
         rng = random.Random(20261013)
         for _ in range(500):
-            haystack = bytes(rng.randrange(6) for _ in range(rng.randrange(128)))
-            needle = bytes(rng.randrange(6) for _ in range(rng.randrange(1, 13)))
+            haystack = bytes(
+                rng.randrange(6) for _ in range(rng.randrange(128))
+            )
+            needle = bytes(
+                rng.randrange(6) for _ in range(rng.randrange(1, 13))
+            )
             self.assertEqual(
                 _non_overlapping_byte_occurrences(haystack, needle),
                 _legacy_occurrences(haystack, needle),
