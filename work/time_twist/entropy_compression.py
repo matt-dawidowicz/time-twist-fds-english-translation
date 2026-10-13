@@ -11,6 +11,7 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Sequence
 from dataclasses import dataclass
+from functools import lru_cache
 
 from .textcodec import PackedSymbol, SymbolKind
 
@@ -200,8 +201,16 @@ def _make_parser(expansions: Sequence[_TRecord]):
     for candidates in by_first.values():
         candidates.sort(key=lambda item: -len(item[1]))
 
+    @lru_cache(maxsize=4096)
     def parse(literal: _TRecord, maximum_index: int | None = None) -> _TRecord:
-        """Parse the supplied token stream with the current dictionary."""
+        """Parse a record with this fixed dictionary, caching identical inputs.
+
+        Optimization trials repeatedly reparse the same immutable records.
+        The dictionary is captured by this parser closure and never mutated,
+        so caching by the full record and optional maximum entry index is
+        correct. Each parser gets its own bounded cache: no entries can leak
+        across dictionary revisions or between independent builds.
+        """
         length = len(literal)
         costs = [0] * (length + 1)
         parsed: list[_TRecord] = [()] * (length + 1)
