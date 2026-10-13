@@ -152,8 +152,16 @@ def sha256_bytes(data: bytes) -> str:
 
 
 def sha256_file(path: Path) -> str:
-    """Return an uppercase SHA-256 digest for a file."""
-    return sha256_bytes(path.read_bytes())
+    """Hash a file in bounded chunks, preserving the exact uppercase digest.
+
+    Streaming avoids allocating the complete file in memory, including for
+    large release candidates and generated packages.
+    """
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        for block in iter(lambda: source.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest().upper()
 
 
 def _lf_normalized_bytes(data: bytes) -> bytes:
