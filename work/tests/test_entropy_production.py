@@ -10,6 +10,7 @@ from unittest import mock
 
 from time_twist.english import encode_english
 from time_twist.entropy_codec import (
+    _BitWriter,
     CATEGORY_BASES,
     CATEGORY_PAYLOAD_BITS,
     CATEGORY_PREFIXES,
@@ -74,6 +75,21 @@ def _sha256(data: bytes) -> str:
 
 class EntropyProductionTests(unittest.TestCase):
     """Group regression coverage for EntropyProduction."""
+
+    def test_writer_prefixes_are_bit_identical_and_unaligned(self) -> None:
+        """Keep every native category prefix and bit offset byte-exact."""
+        writer = _BitWriter()
+        writer.write_bits(0b101, 3)
+        bits = "101"
+        for prefix in ("", *CATEGORY_PREFIXES, *reversed(CATEGORY_PREFIXES)):
+            writer.write_prefix(prefix)
+            bits += prefix
+            self.assertEqual(writer.bit_position, len(bits))
+        writer.write_bits(0b10, 2)
+        bits += "10"
+        padded = bits.ljust(((len(bits) + 7) // 8) * 8, "0")
+        expected = int(padded, 2).to_bytes(len(padded) // 8, "big")
+        self.assertEqual(writer.to_bytes(), expected)
 
     def test_runtime_abi_is_frozen(self) -> None:
         """Verify runtime abi is frozen."""
