@@ -7,6 +7,7 @@ import hashlib
 from pathlib import Path
 import sys
 import tempfile
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
@@ -21,6 +22,99 @@ def _declared_sizes(patch: bytes) -> tuple[int, int]:
     source_size, position = patcher._bps_number(patch, position)
     target_size, _ = patcher._bps_number(patch, position)
     return source_size, target_size
+
+
+
+def test_patching_paths_without_retail_roms() -> None:
+    """Exercise identification through two-disk and four-side output paths.
+
+    The synthetic 512-byte fixture models only the exact source fingerprint,
+    BPS source-copy behavior, and immutable output identity gates. It does
+    *not* establish that an unavailable retail No-Intro dump plays correctly.
+    """
+    canonical_zenpen = b"Z" * 512
+    canonical_kouhen = b"K" * 512
+    alternate_kouhen = canonical_kouhen[:7] + b"V" + canonical_kouhen[8:]
+    translated_zenpen = canonical_zenpen[:20] + b"ENGLISH" + canonical_zenpen[27:]
+    translated_kouhen = canonical_kouhen[:20] + b"ENGLISH" + canonical_kouhen[27:]
+    variant_output = alternate_kouhen[:20] + b"ENGLISH" + alternate_kouhen[27:]
+    zenpen_patch = create_bps(canonical_zenpen, translated_zenpen)
+    kouhen_patch = create_bps(canonical_kouhen, translated_kouhen)
+    original_patch_bytes = patcher._patch_bytes
+
+    def fixture_patch(kind: str) -> bytes:
+        if kind == "zenpen":
+            return zenpen_patch
+        if kind == "kouhen":
+            return kouhen_patch
+        return original_patch_bytes(kind)
+
+    def fixture_variant(kind: str, data: bytes) -> str:
+        if kind == "kouhen" and data == alternate_kouhen:
+            return "no-intro"
+        return "release"
+
+    shared = [
+        patch.object(patcher, "SOURCE_BYTES", 512),
+        patch.object(patcher, "FOUR_SIDE_BYTES", 1024),
+        patch.object(patcher, "ZENPEN_SOURCE_SHA256", patcher._sha256(canonical_zenpen)),
+        patch.object(patcher, "KOUHEN_SOURCE_SHA256", patcher._sha256(canonical_kouhen)),
+        patch.object(patcher, "ZENPEN_TARGET_SHA256", patcher._sha256(translated_zenpen)),
+        patch.object(patcher, "KOUHEN_TARGET_SHA256", patcher._sha256(translated_kouhen)),
+        patch.object(patcher, "FOUR_SIDE_TARGET_SHA256",
+                     patcher._sha256(translated_zenpen + translated_kouhen)),
+        patch.object(patcher, "NOINTRO_KOUHEN_SOURCE_CRC32",
+                     binascii.crc32(alternate_kouhen)),
+        patch.object(patcher, "NOINTRO_KOUHEN_TARGET_CRC32",
+                     binascii.crc32(variant_output)),
+        patch.object(patcher, "_known_source_variant", side_effect=fixture_variant),
+        patch.object(patcher, "_patch_bytes", side_effect=fixture_patch),
+    ]
+    from contextlib import ExitStack
+
+    with ExitStack() as stack, tempfile.TemporaryDirectory() as directory:
+        for fixture in shared:
+            stack.enter_context(fixture)
+        root = Path(directory)
+        first = root / "first.fds"
+        second = root / "second.fds"
+        output = root / "out"
+        first.write_bytes(canonical_zenpen)
+        second.write_bytes(canonical_kouhen)
+        assert patcher.identify_path(second) == "Kouhen (Part 2)"
+        results = patcher.build_outputs(
+            first, second, output, two_disk=True, four_side=True
+        )
+        assert len(results) == 3
+        assert (output / patcher.FOUR_SIDE_OUTPUT).read_bytes() == (
+            translated_zenpen + translated_kouhen
+        )
+
+        # Fresh output folder: this alternate source must now be recognized
+        # before BPS is applied, including when disk input order is reversed.
+        second.write_bytes(alternate_kouhen)
+        assert "No-Intro" in patcher.identify_path(second)
+        results = patcher.build_outputs(
+            second, first, root / "variant", two_disk=True, four_side=True
+        )
+        assert len(results) == 3
+        assert (root / "variant" / patcher.KOUHEN_OUTPUT).read_bytes() == variant_output
+        assert (root / "variant" / patcher.FOUR_SIDE_OUTPUT).read_bytes() == (
+            translated_zenpen + variant_output
+        )
+
+        # An unknown byte change is never accepted, even if source length
+        # happens to match and a patch would otherwise be applicable.
+        second.write_bytes(alternate_kouhen[:-1] + b"X")
+        try:
+            patcher.build_outputs(
+                first, second, root / "reject", two_disk=True, four_side=True
+            )
+        except patcher.PatcherError:
+            pass
+        else:
+            raise AssertionError("unknown retail source was accepted")
+        assert not (root / "reject").exists()
 
 
 def main() -> None:
@@ -164,6 +258,7 @@ def main() -> None:
         patcher._atomic_write(atomic, b"verified")
         assert atomic.read_bytes() == b"verified"
 
+    test_patching_paths_without_retail_roms()
     print("Public patch resources and output-safety checks verified.")
 
 
