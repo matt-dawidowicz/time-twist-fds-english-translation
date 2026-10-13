@@ -44,7 +44,9 @@ def _literal(value):
     if isinstance(value, tuple | list):
         return [_literal(item) for item in value]
     if isinstance(value, dict):
-        return {str(key): _literal(item) for key, item in sorted(value.items())}
+        return {
+            str(key): _literal(item) for key, item in sorted(value.items())
+        }
     if callable(value):
         return f"callable:{value.__module__}.{value.__qualname__}"
     return f"type:{type(value).__module__}.{type(value).__qualname__}"
@@ -105,7 +107,10 @@ class CliParserEquivalenceTests(unittest.TestCase):
     def test_registered_api_matches_original_parser(self) -> None:
         """Compare all arguments, help, dispatch, defaults, and order."""
         contract = json.dumps(
-            _registry(), sort_keys=True, ensure_ascii=True, separators=(",", ":")
+            _registry(),
+            sort_keys=True,
+            ensure_ascii=True,
+            separators=(",", ":"),
         )
         self.assertEqual(
             hashlib.sha256(contract.encode("utf-8")).hexdigest().upper(),
