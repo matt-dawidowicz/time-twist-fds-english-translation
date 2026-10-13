@@ -71,9 +71,7 @@ def verify(zenpen: Path, kouhen: Path) -> None:
         )
         found = {result.path.name for result in results}
         if found != EXPECTED_OUTPUTS.keys():
-            raise ValueError(
-                f"unexpected output filenames: {sorted(found)}"
-            )
+            raise ValueError(f"unexpected output filenames: {sorted(found)}")
         for result in results:
             size, expected = EXPECTED_OUTPUTS[result.path.name]
             actual = _digest(result.path)
@@ -81,9 +79,7 @@ def verify(zenpen: Path, kouhen: Path) -> None:
                 raise ValueError(
                     f"release identity mismatch: {result.path.name}"
                 )
-            print(
-                f"PASS {result.path.name}: {size:,} bytes; SHA-256 {actual}"
-            )
+            print(f"PASS {result.path.name}: {size:,} bytes; SHA-256 {actual}")
     print("All outputs match the frozen English v1.1 release identity.")
 
 
