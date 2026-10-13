@@ -70,9 +70,11 @@ def run_benchmarks(repetitions: int, hash_megabytes: int) -> dict[str, object]:
         )
 
     result = optimize()
-    packed_hash = hashlib.sha256(
-        pack_entropy_stream(result.groups[0])
-    ).hexdigest().upper()
+    packed_hash = (
+        hashlib.sha256(pack_entropy_stream(result.groups[0]))
+        .hexdigest()
+        .upper()
+    )
     if packed_hash != EXPECTED_80_RECORD_PACKED_SHA256:
         raise RuntimeError("optimizer bytes changed from the frozen baseline")
     optimizer = _measure(optimize, repetitions)
