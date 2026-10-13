@@ -45,7 +45,12 @@ class DocumentationContractTests(unittest.TestCase):
             for node in ast.walk(tree):
                 if not isinstance(
                     node,
-                    (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef),
+                    (
+                        ast.Module,
+                        ast.ClassDef,
+                        ast.FunctionDef,
+                        ast.AsyncFunctionDef,
+                    ),
                 ):
                     continue
                 doc = ast.get_docstring(node)
