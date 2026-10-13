@@ -37,7 +37,7 @@ class EntropyCompressionResult:
 
 
 def _to_token(symbol: PackedSymbol) -> _Token:
-    """Support the to token operation for this module."""
+    """Convert one public semantic symbol to a compact optimizer token."""
     if symbol.kind is SymbolKind.COMMON:
         return "C", symbol.value
     if symbol.kind is SymbolKind.DICTIONARY:
@@ -54,7 +54,7 @@ def _to_token(symbol: PackedSymbol) -> _Token:
 
 
 def _from_token(token: _Token) -> PackedSymbol:
-    """Support the from token operation for this module."""
+    """Restore a public PackedSymbol from a compact optimizer token."""
     kind, value = token
     semantic = {
         "C": SymbolKind.COMMON,
@@ -66,7 +66,7 @@ def _from_token(token: _Token) -> PackedSymbol:
 
 
 def _to_groups(groups: ScenarioGroups) -> _TGroups:
-    """Support the to groups operation for this module."""
+    """Convert scenario groups to immutable compact optimizer tokens."""
     return tuple(
         tuple(
             tuple(_to_token(symbol) for symbol in record) for record in group
@@ -78,14 +78,14 @@ def _to_groups(groups: ScenarioGroups) -> _TGroups:
 def _to_records(
     records: Sequence[Sequence[PackedSymbol]],
 ) -> tuple[_TRecord, ...]:
-    """Support the to records operation for this module."""
+    """Convert menu or dictionary records into compact optimizer tokens."""
     return tuple(
         tuple(_to_token(symbol) for symbol in record) for record in records
     )
 
 
 def _public_groups(groups: _TGroups) -> ScenarioGroups:
-    """Support the public groups operation for this module."""
+    """Restore semantic PackedSymbol groups from compact tokens."""
     return tuple(
         tuple(
             tuple(_from_token(token) for token in record) for record in group
@@ -97,7 +97,7 @@ def _public_groups(groups: _TGroups) -> ScenarioGroups:
 def _public_records(
     records: Sequence[_TRecord],
 ) -> tuple[tuple[PackedSymbol, ...], ...]:
-    """Support the public records operation for this module."""
+    """Restore semantic PackedSymbol records from compact tokens."""
     return tuple(
         tuple(_from_token(token) for token in record) for record in records
     )
@@ -146,7 +146,7 @@ def _total_bytes(
     menu: Sequence[_TRecord],
     dictionary: Sequence[_TRecord],
 ) -> int:
-    """Support the total bytes operation for this module."""
+    """Measure aligned group, menu, and dictionary byte footprints."""
     return sum(
         _record_bytes(record)
         for records in (*groups, tuple(menu), tuple(dictionary))
@@ -177,7 +177,7 @@ def _expand_definitions(
 def _expand_record(
     record: _TRecord, expansions: Sequence[_TRecord]
 ) -> _TRecord:
-    """Expand record."""
+    """Inline validated dictionary references in one compact record."""
     output: list[_Token] = []
     for token in record:
         if token[0] == "D":
@@ -192,7 +192,12 @@ def _expand_record(
 
 
 def _make_parser(expansions: Sequence[_TRecord]):
-    """Build parser."""
+    """Create a deterministic minimum-bit-cost dictionary parser.
+
+    Dynamic programming considers each literal token and matching expansion.
+    Exact ties prefer fewer encoded tokens, then lexicographically smaller
+    token sequences. These rules determine reproducible ROM bytes.
+    """
     by_first: dict[_Token, list[tuple[int, _TRecord]]] = {}
     for index, expansion in enumerate(expansions, start=1):
         if expansion:
@@ -272,7 +277,7 @@ def _parse_corpus(
 
 
 def _depths(definitions: Sequence[_TRecord]) -> tuple[int, ...]:
-    """Support the depths operation for this module."""
+    """Calculate the nesting depth of each backward-only definition."""
     depths: list[int] = []
     for definition in definitions:
         depths.append(
@@ -294,7 +299,7 @@ def _candidate_counts(
     menu: Sequence[_TRecord],
     maximum_tokens: int,
 ) -> Counter[_TRecord]:
-    """Support the candidate counts operation for this module."""
+    """Count overlapping substrings separated by control tokens."""
     counts: Counter[_TRecord] = Counter()
     for records in (*groups, tuple(menu)):
         for record in records:
@@ -315,12 +320,12 @@ def _candidate_expansion(
     candidate: _TRecord,
     expansions: Sequence[_TRecord],
 ) -> _TRecord:
-    """Support the candidate expansion operation for this module."""
+    """Expand a grammar candidate before duplicate and depth checks."""
     return _expand_record(candidate, expansions)
 
 
 def _candidate_depth(candidate: _TRecord, depths: Sequence[int]) -> int:
-    """Support the candidate depth operation for this module."""
+    """Compute candidate depth from any referenced definitions."""
     return 1 + max(
         (depths[value - 1] for kind, value in candidate if kind == "D"),
         default=0,
@@ -334,7 +339,7 @@ def _public_result(
     expansions: Sequence[_TRecord],
     optimizer_bytes: int,
 ) -> EntropyCompressionResult:
-    """Support the public result operation for this module."""
+    """Package optimized compact streams as public semantic symbols."""
     return EntropyCompressionResult(
         groups=_public_groups(groups),
         menu=_public_records(menu),
@@ -443,7 +448,7 @@ def _reference_counts_tokens(
     definitions: Sequence[_TRecord],
     count: int,
 ) -> tuple[int, ...]:
-    """Support the reference counts tokens operation for this module."""
+    """Count dictionary references across scenarios, menus, and definitions."""
     refs = [0] * count
     for records in (*groups, tuple(menu), tuple(definitions)):
         for record in records:
