@@ -11,7 +11,7 @@ the current implementation. For active recommendations, use
 - Repository: `matt-dawidowicz/time-twist-fds-english-translation`
 - Audited branch: `main`
 - Pre-cleanup commit: **`27b67b82e08f90046ad4cf9df595f0800de3cd6f`**
-- Git tree: `27b67b82e08f90046ad4cf9df595f0800de3cd6f`
+- Git tree: `96f8e0b3210d3a8ae6c73dd1952287e0b107e7d7`
 - Snapshot: 359 tracked blobs, 33,123,952 bytes of Git blob content.
 - Binary artifacts are counted here but are **not** original game ROMs.
 
