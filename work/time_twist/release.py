@@ -186,23 +186,27 @@ def _atomic_publish_file(source: Path, destination: Path) -> None:
     to the interactive emulator account. A destination-local temporary file
     inherits the intended directory ACL before the final atomic replacement.
     """
-    with tempfile.NamedTemporaryFile(
-        mode="wb",
-        dir=destination.parent,
-        prefix=f".{destination.name}.",
-        suffix=".tmp",
-        delete=False,
-    ) as handle:
-        temporary = Path(handle.name)
-        with source.open("rb") as staged:
-            shutil.copyfileobj(staged, handle)
-        handle.flush()
-        os.fsync(handle.fileno())
+    temporary: Path | None = None
     try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            dir=destination.parent,
+            prefix=f".{destination.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temporary = Path(handle.name)
+            with source.open("rb") as staged:
+                shutil.copyfileobj(staged, handle)
+            handle.flush()
+            os.fsync(handle.fileno())
         temporary.chmod(source.stat().st_mode)
         os.replace(temporary, destination)
     except BaseException:
-        temporary.unlink(missing_ok=True)
+        # Copying, flushing, and fsync can fail *before* os.replace. Clean
+        # their temporary file too, leaving the previous release untouched.
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
         raise
 
 
