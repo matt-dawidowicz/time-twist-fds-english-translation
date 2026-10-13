@@ -63,7 +63,11 @@ def _author_defined_contract() -> list[object]:
                     action.dest,
                     action.option_strings,
                     action.help,
-                    list(action.choices) if action.choices is not None else None,
+                    (
+                        list(action.choices)
+                        if action.choices is not None
+                        else None
+                    ),
                 ]
             )
         contract.append(
