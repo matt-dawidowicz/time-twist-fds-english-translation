@@ -10,10 +10,10 @@ from unittest import mock
 
 from time_twist.english import encode_english
 from time_twist.entropy_codec import (
-    _BitWriter,
     CATEGORY_BASES,
     CATEGORY_PAYLOAD_BITS,
     CATEGORY_PREFIXES,
+    _BitWriter,
     pack_entropy_pages,
     pack_entropy_stream,
     unpack_entropy_stream,
