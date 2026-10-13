@@ -1,3 +1,10 @@
+## Unreleased — public No-Intro compatibility regression fix
+
+- Recognize the already-fingerprinted No-Intro Kouhen source at the initial ROM identity gate.
+- Permit the verified No-Intro four-side output without incorrectly imposing the canonical four-side SHA-256 on a distinct byte sequence.
+- Add fixture-free end-to-end canonical/No-Intro path regression tests and contributor-facing patcher internals documentation.
+- The published v1.1 game translation content and canonical output hashes remain unchanged.
+
 ## Release packaging cleanup
 
 - Remove obsolete v1.0 full-release artifacts from the public tree.
