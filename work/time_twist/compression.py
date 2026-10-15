@@ -110,15 +110,16 @@ def _prepared_records(
 
 
 def _non_overlapping_byte_occurrences(haystack: bytes, needle: bytes) -> int:
-    """Count deterministic leftmost non-overlapping matches using C-level find."""
-    count = 0
-    position = 0
-    while True:
-        position = haystack.find(needle, position)
-        if position < 0:
-            return count
-        count += 1
-        position += len(needle)
+    """Count non-overlapping byte patterns without a Python-level search loop.
+
+    bytes.count uses native code and the same leftmost non-overlapping
+    semantics as repeatedly advancing find by the match length. Empty
+    candidates are invalid; otherwise an empty needle would count boundaries,
+    not candidate occurrences.
+    """
+    if not needle:
+        raise ValueError("candidate pattern must not be empty")
+    return haystack.count(needle)
 
 
 def _candidate_packed_size(

@@ -14,11 +14,16 @@ are evidence, not release input.
 | Understand or debug the Windows patcher | [Public patcher internals](PUBLIC_PATCHER_INTERNALS.md) | [Public patcher source](../release_patcher/TimeTwistPatcher.py) |
 | Edit scenario English | [Translation contributor guide](../CONTRIBUTING_TRANSLATION.md) | [Translation workflow](TRANSLATION_WORKFLOW.md), [English pagination policy](ENGLISH_PAGINATION_POLICY.md) |
 | Change Python/tooling | [Code contributor guide](../CONTRIBUTING_CODE.md) | [Code tour](CODE_TOUR.md), [Module map](MODULE_MAP.md) |
+| Audit performance or preserve pre-refactor code | [Code health and performance](CODE_HEALTH_AND_PERFORMANCE.md) | [13 October 2026 Git/code snapshot](history/CODE_HEALTH_BASELINE_20261013.md) |
 | Investigate runtime behavior | [Reverse-engineering guide](REVERSE_ENGINEERING_GUIDE.md) | [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md), [engine change history](ENGINE_CHANGELOG.md) |
 | Diagnose dialogue layout | [Text layout engine reference](TEXT_LAYOUT_ENGINE_REFERENCE.md) | [Native text-control state machine](TEXT_CONTROL_STATE_MACHINE.md) |
 | Diagnose gameplay script logic | [Gameplay script engine](GAMEPLAY_SCRIPT_ENGINE.md) | [Retail VM opcode reference](RETAIL_VM_OPCODE_REFERENCE.md) |
 | Diagnose graphics/scene composition | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | [ROM modification inventory](ROM_MODIFICATION_INVENTORY.md) |
 | Review English ROM-level changes | [ROM modification inventory](ROM_MODIFICATION_INVENTORY.md) | [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md) |
+
+For safe code cleanup and optimization work, see the [repository modernization and preservation audit](REPOSITORY_MODERNIZATION_AUDIT.md).
+
+For this October's measured optimization results, source-audit tooling, and permanent design decisions, read the [maintenance and performance record](history/MAINTENANCE_PERFORMANCE_AUDIT_20261013.md).
 
 ## Source-of-truth boundaries
 

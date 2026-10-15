@@ -152,10 +152,11 @@ def sha256_bytes(data: bytes) -> str:
 
 
 def sha256_file(path: Path) -> str:
-    """Hash a file in bounded chunks, preserving the exact uppercase digest.
+    """Hash a file in bounded chunks without loading its contents into RAM.
 
-    Streaming avoids allocating the complete file in memory, including for
-    large release candidates and generated packages.
+    Release inputs and generated candidates can be substantially larger than
+    source metadata. Streaming preserves the exact digest contract while
+    bounding working memory to the 1 MiB read buffer.
     """
     digest = hashlib.sha256()
     with path.open("rb") as source:

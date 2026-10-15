@@ -8,6 +8,9 @@ When later evidence changes current status without making the original historica
 
 Current historical records:
 
+- `CODE_HEALTH_BASELINE_20261013.md` — pre-cleanup `main` commit, exact Git blob inventory for 53 Python modules and public patcher files, preserved allocator and byte-counting reference semantics, and binary-safety constraints.
+
+- `MAINTENANCE_PERFORMANCE_AUDIT_20261013.md` — reproducible source review, measured byte-preserving optimizations, canonical ROM hashes, and private-release recertification limits.
 - `CONSTRAINT_MODERNIZATION_20260913.md` — original constraint-audit chronology, evidence, retired assumptions, and modernization proof.
 - `POST_INTEGRATION_VALIDATION_20260913.md` — later combined PR #60/#62 integration and GitHub Actions run #1264 validation, including Black, Ruff, pydocstyle, mypy, unit, build, wheel-smoke, and CLI gates.
 - `RUNTIME_BISECT_20260829.md` — preserved runtime-bisect/debugging-branch record covering the discarded Adaptive255 path, entropy-only migration, and the NOV4/TT1A codec-ownership failures.
