@@ -21,6 +21,10 @@ are evidence, not release input.
 | Diagnose graphics/scene composition | [Gameplay graphics engine](GAMEPLAY_GRAPHICS_ENGINE.md) | [ROM modification inventory](ROM_MODIFICATION_INVENTORY.md) |
 | Review English ROM-level changes | [ROM modification inventory](ROM_MODIFICATION_INVENTORY.md) | [Reverse-engineering status](REVERSE_ENGINEERING_STATUS.md) |
 
+For safe code cleanup and optimization work, see the [repository modernization and preservation audit](REPOSITORY_MODERNIZATION_AUDIT.md).
+
+For this October's measured optimization results, source-audit tooling, and permanent design decisions, read the [maintenance and performance record](history/MAINTENANCE_PERFORMANCE_AUDIT_20261013.md).
+
 ## Source-of-truth boundaries
 
 Scenario English has one authority:
