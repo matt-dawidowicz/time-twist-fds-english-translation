@@ -13,7 +13,9 @@ from time_twist.release import _atomic_publish_file
 class ReleasePublicationSafetyTests(unittest.TestCase):
     """Guarantee previously published bytes survive failed staging writes."""
 
-    def test_failed_copy_removes_temporary_and_keeps_existing_file(self) -> None:
+    def test_failed_copy_removes_temporary_and_keeps_existing_file(
+        self,
+    ) -> None:
         """A write failure must not leak a partial file or touch the target."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -42,7 +44,9 @@ class ReleasePublicationSafetyTests(unittest.TestCase):
                 ["release.bin", "staged.bin"],
             )
 
-    def test_failed_fsync_cleans_temporary_and_keeps_existing_file(self) -> None:
+    def test_failed_fsync_cleans_temporary_and_keeps_existing_file(
+        self,
+    ) -> None:
         """Failure during durability verification also cleans partial output."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
