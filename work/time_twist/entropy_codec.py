@@ -63,15 +63,15 @@ CATEGORY_BASES = tuple(category.base for category in ENTROPY_CATEGORIES)
 
 
 class _BitWriter:
-    """Represent BitWriter state and behavior."""
+    """Pack entropy category prefixes and payloads MSB-first into bytes."""
 
     def __init__(self) -> None:
-        """Initialize the helper state."""
+        """Start an empty bitstream at bit position zero."""
         self._data = bytearray()
         self.bit_position = 0
 
     def write_bits(self, value: int, width: int) -> None:
-        """Write bits."""
+        """Append a fixed-width unsigned value in high-bit-first order."""
         if width < 0 or value < 0 or value >= (1 << width):
             raise EntropyCodecError(
                 f"value {value} does not fit in {width} bits"
@@ -84,33 +84,38 @@ class _BitWriter:
             self.bit_position += 1
 
     def write_prefix(self, prefix: str) -> None:
-        """Write prefix."""
-        for bit in prefix:
-            self.write_bits(int(bit), 1)
+        """Write a frozen entropy prefix with one validated writer call.
+
+        One multi-bit write preserves the bit order and alignment of the
+        original per-bit loop without a Python method call for every prefix
+        bit. The empty prefix remains a no-op.
+        """
+        if prefix:
+            self.write_bits(int(prefix, 2), len(prefix))
 
     def align(self) -> None:
-        """Support the align operation for this module."""
+        """Move to the next byte boundary with implicit zero padding."""
         remainder = self.bit_position & 7
         if remainder:
             self.bit_position += 8 - remainder
 
     def to_bytes(self) -> bytes:
-        """Support the to bytes operation for this module."""
+        """Return accumulated bytes without altering the bit cursor."""
         return bytes(self._data)
 
 
 class _BitReader:
-    """Represent BitReader state and behavior."""
+    """Read bit-contiguous entropy streams, rejecting truncated inputs."""
 
     def __init__(self, data: bytes, bit_position: int = 0) -> None:
-        """Initialize the helper state."""
+        """Validate and store the initial bit position for an input stream."""
         if bit_position < 0 or bit_position > len(data) * 8:
             raise EntropyCodecError("bit position is outside entropy stream")
         self.data = data
         self.bit_position = bit_position
 
     def read_bit(self) -> int:
-        """Read bit."""
+        """Read one high-order-first bit, raising at end of stream."""
         if self.bit_position >= len(self.data) * 8:
             raise EntropyCodecError("unexpected end of entropy stream")
         byte_index, within = divmod(self.bit_position, 8)
@@ -118,7 +123,7 @@ class _BitReader:
         return (self.data[byte_index] >> (7 - within)) & 1
 
     def read_bits(self, width: int) -> int:
-        """Read bits."""
+        """Read a fixed-width unsigned value across byte boundaries."""
         value = 0
         for _ in range(width):
             value = (value << 1) | self.read_bit()
@@ -126,7 +131,7 @@ class _BitReader:
 
 
 def _category_index(symbol: PackedSymbol) -> int:
-    """Support the category index operation for this module."""
+    """Select the frozen prefix-category slot for a semantic symbol."""
     kind = symbol.kind
     value = symbol.value
     if kind is SymbolKind.SEPARATOR:

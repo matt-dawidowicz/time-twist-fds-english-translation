@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import random
 import unittest
 
 from time_twist.english import encode_english
@@ -206,6 +207,83 @@ def _tt1a_post_renderer_bank() -> tuple[bytes, dict[str, str]]:
         },
     }
     return bytes(data), translations
+
+
+def _reference_allocate_groups(
+    groups: tuple[tuple[tuple[PackedSymbol, ...], ...], ...],
+    *,
+    dictionary_bytes: int,
+    resident_capacity: int,
+    tail_capacity: int,
+) -> dict[str, object] | None:
+    """Preserve the pre-optimization exhaustive allocator as a test oracle.
+
+    This intentionally retains repeated resident/spill summation and every
+    original priority field. Do not optimize this independent reference in
+    lockstep with production: equivalence is the point of the regression.
+    """
+    sizes = tuple(len(pack_entropy_stream(group)) for group in groups)
+    count = len(groups)
+    options: list[tuple[tuple[object, ...], dict[str, object]]] = []
+    for mask in range(1 << count):
+        resident = tuple(i for i in range(count) if mask & (1 << i))
+        if not resident:
+            continue
+        spill = tuple(i for i in range(count) if not mask & (1 << i))
+        used = (
+            sum(sizes[i] for i in resident)
+            + 2 * (count - 1)
+            + dictionary_bytes
+        )
+        spilled = sum(sizes[i] for i in spill)
+        if used <= resident_capacity and spilled <= tail_capacity:
+            options.append(
+                (
+                    (0, spilled, len(spill), -resident_capacity + used),
+                    {"resident": resident, "spill": spill, "split": None},
+                )
+            )
+    if options:
+        return min(options, key=lambda item: item[0])[1]
+
+    for split_group, group in enumerate(groups):
+        for first in range(1, len(group)):
+            prefix = len(pack_entropy_stream(group[:first]))
+            suffix = len(pack_entropy_stream(group[first:]))
+            for mask in range(1 << count):
+                if not mask & (1 << split_group):
+                    continue
+                resident = tuple(i for i in range(count) if mask & (1 << i))
+                spill = tuple(i for i in range(count) if not mask & (1 << i))
+                used = (
+                    sum(
+                        prefix if i == split_group else sizes[i]
+                        for i in resident
+                    )
+                    + dictionary_bytes
+                    + 2 * (count - 1)
+                    + 27
+                )
+                spilled = sum(sizes[i] for i in spill) + suffix
+                if used <= resident_capacity and spilled <= tail_capacity:
+                    options.append(
+                        (
+                            (
+                                1,
+                                spilled,
+                                len(spill),
+                                -resident_capacity + used,
+                                split_group,
+                                first,
+                            ),
+                            {
+                                "resident": resident,
+                                "spill": spill,
+                                "split": (split_group, first),
+                            },
+                        )
+                    )
+    return min(options, key=lambda item: item[0])[1] if options else None
 
 
 class IncrementalBuildTests(unittest.TestCase):
@@ -459,6 +537,43 @@ class IncrementalBuildTests(unittest.TestCase):
         self.assertEqual(result.data[renderer_offset:rebuilt_start], renderer)
         verified = rebuild_entropy_bank(result.data, "TT1A", translations)
         self.assertEqual(verified.data, result.data)
+
+    def test_optimized_allocator_matches_precleanup_reference(self) -> None:
+        """Verify placements and tie-breaking against preserved old behavior."""
+        rng = random.Random(20261013)
+        for group_count in range(1, 6):
+            for case in range(12):
+                groups = tuple(
+                    tuple(
+                        encode_english("A" * rng.randint(1, 18))
+                        for _ in range(rng.randint(1, 4))
+                    )
+                    for _ in range(group_count)
+                )
+                total = sum(len(pack_entropy_stream(g)) for g in groups)
+                dictionary_bytes = rng.randint(0, 12)
+                for resident_capacity, tail_capacity in (
+                    (0, total + 64),
+                    (total + 64, 0),
+                    (total + 64, total + 64),
+                    (rng.randint(0, total + 64), rng.randint(0, total + 64)),
+                    (rng.randint(0, total + 64), rng.randint(0, total + 64)),
+                ):
+                    settings = {
+                        "dictionary_bytes": dictionary_bytes,
+                        "resident_capacity": resident_capacity,
+                        "tail_capacity": tail_capacity,
+                    }
+                    with self.subTest(
+                        groups=group_count,
+                        case=case,
+                        resident=resident_capacity,
+                        tail=tail_capacity,
+                    ):
+                        self.assertEqual(
+                            _allocate_groups(groups, **settings),
+                            _reference_allocate_groups(groups, **settings),
+                        )
 
     def test_allocator_can_select_split_group(self) -> None:
         """Use the native thunk when a whole group fits nowhere."""

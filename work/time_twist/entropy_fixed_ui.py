@@ -147,7 +147,7 @@ def _semantic(record: tuple[PackedSymbol, ...] | list[PackedSymbol]):
 
 
 def _word(data: bytes, offset: int) -> int:
-    """Support the word operation for this module."""
+    """Read a bounds-checked 16-bit little-endian component pointer."""
     if offset < 0 or offset + 2 > len(data):
         raise EntropyFixedTextError(
             f"word at 0x{offset:04X} is outside component"
@@ -169,7 +169,7 @@ def _assert_pointers(
 
 
 def _fit(payload: bytes, capacity: int, label: str) -> bytes:
-    """Support the fit operation for this module."""
+    """Reject oversized fixed UI payloads and zero-pad their reserved slot."""
     if len(payload) > capacity:
         raise EntropyFixedTextError(
             f"{label} needs {len(payload)} bytes but only {capacity} are reserved"
@@ -178,7 +178,7 @@ def _fit(payload: bytes, capacity: int, label: str) -> bytes:
 
 
 def _dictionary_records() -> tuple[tuple[PackedSymbol, ...], ...]:
-    """Support the dictionary records operation for this module."""
+    """Encode the exact resident NOV4 fixed-text dictionary entries."""
     return tuple(encode_english(text) for text in NOV4_DICTIONARY_TEXT)
 
 
@@ -256,7 +256,7 @@ def tt1a_entropy_payload() -> bytes:
 
 
 def _audit_nov4(data: bytes) -> None:
-    """Support the audit nov4 operation for this module."""
+    """Verify that installed NOV4 dictionary and fixed text match approved bytes."""
     dictionary = unpack_entropy_stream(
         data[NOV4_DICTIONARY_START:NOV4_DICTIONARY_END],
         record_count=len(NOV4_DICTIONARY_TEXT),

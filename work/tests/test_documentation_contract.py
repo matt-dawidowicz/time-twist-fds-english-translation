@@ -35,6 +35,43 @@ class DocumentationContractTests(unittest.TestCase):
             if "__pycache__" not in path.parts
         ]
 
+    def test_package_docstrings_are_not_generated_placeholders(self) -> None:
+        """Reject empty boilerplate in the maintained runtime package."""
+        placeholders: list[str] = []
+        package = WORK_ROOT / "time_twist"
+        for path, tree in self._trees():
+            if path.parent != package:
+                continue
+            for node in ast.walk(tree):
+                if not isinstance(
+                    node,
+                    (
+                        ast.Module,
+                        ast.ClassDef,
+                        ast.FunctionDef,
+                        ast.AsyncFunctionDef,
+                    ),
+                ):
+                    continue
+                doc = ast.get_docstring(node)
+                if doc is None:
+                    continue
+                first_line = doc.splitlines()[0]
+                if (
+                    first_line.startswith("Support the ")
+                    and first_line.endswith(" operation for this module.")
+                ) or first_line.endswith(" state and behavior."):
+                    placeholders.append(
+                        f"{path.relative_to(PROJECT_ROOT)}:"
+                        f"{getattr(node, 'lineno', 1)}: {first_line}"
+                    )
+        self.assertEqual(
+            placeholders,
+            [],
+            "Replace generated boilerplate with behavior/format contracts:\n"
+            + "\n".join(placeholders),
+        )
+
     def test_every_module_class_and_function_explains_its_purpose(
         self,
     ) -> None:
