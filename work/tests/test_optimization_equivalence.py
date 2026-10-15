@@ -28,9 +28,11 @@ class OptimizationEquivalenceTests(unittest.TestCase):
             lengths = (
                 0,
                 1,
+                8193,
                 1024 * 1024 - 1,
                 1024 * 1024,
                 1024 * 1024 + 1,
+                1024 * 1024 + 19,
             )
             for length in lengths:
                 payload = (bytes(range(256)) * (length // 256 + 1))[:length]
