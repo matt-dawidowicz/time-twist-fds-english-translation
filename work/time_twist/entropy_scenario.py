@@ -86,7 +86,7 @@ def _write_word(data: bytearray, offset: int, value: int) -> None:
 
 
 def _source_record_counts(bank: ScenarioBank) -> tuple[int, ...]:
-    """Support the source record counts operation for this module."""
+    """Count original scenario records in each recovered pointer group."""
     return tuple(
         sum(record.group_index == group for record in bank.records)
         for group in range(len(bank.group_addresses))
@@ -96,7 +96,7 @@ def _source_record_counts(bank: ScenarioBank) -> tuple[int, ...]:
 def _semantic_record(
     record: tuple[PackedSymbol, ...] | list[PackedSymbol],
 ) -> tuple[tuple[object, int], ...]:
-    """Support the semantic record operation for this module."""
+    """Discard bit offsets while retaining semantic token kind and value."""
     return tuple((symbol.kind, symbol.value) for symbol in record)
 
 
@@ -104,7 +104,7 @@ def _literal_groups(
     groups: ScenarioGroups,
     dictionary: ScenarioDictionary,
 ) -> ScenarioGroups:
-    """Support the literal groups operation for this module."""
+    """Expand all dictionary references to independently verifiable literal text."""
     expansions = expand_entropy_dictionary(dictionary)
     return tuple(
         tuple(expand_entropy_record(record, expansions) for record in group)
@@ -175,7 +175,7 @@ def relocate_entropy_fixed_record_table(
         )
 
     def header_offset(pointer_offset: int) -> int:
-        """Support the header offset operation for this module."""
+        """Convert a verified component header pointer to its file offset."""
         return _read_word(data, pointer_offset) - load_address
 
     if header_offset(FIXED_RECORD_TABLE_POINTER_OFFSET) != spec.start:

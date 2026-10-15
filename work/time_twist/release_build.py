@@ -182,7 +182,7 @@ class ReleaseBankResult:
 
 
 def _dictionary_key(dictionary: ScenarioDictionary) -> tuple[object, ...]:
-    """Support the dictionary key operation for this module."""
+    """Construct an immutable semantic key for exact dictionary comparison."""
     return tuple(
         tuple((symbol.kind.value, symbol.value) for symbol in record)
         for record in dictionary
@@ -190,7 +190,7 @@ def _dictionary_key(dictionary: ScenarioDictionary) -> tuple[object, ...]:
 
 
 def _menu_bytes(records: tuple[tuple[PackedSymbol, ...], ...]) -> int:
-    """Support the menu bytes operation for this module."""
+    """Measure the page-aligned entropy footprint of fixed-menu records."""
     if not records:
         return 0
     packed, _ = pack_entropy_pages(

@@ -83,7 +83,11 @@ for the overlay layout.
 | Candidate/release assembly | `work/time_twist/release.py`, `release_build.py`, `release_metadata.py` |
 
 See the [full module map](docs/MODULE_MAP.md) for the public-facade rule and
-matching test files.
+matching test files. For optimization and cleanup, also read the
+[code health guide](docs/CODE_HEALTH_AND_PERFORMANCE.md) and the
+[dated pre-refactor source inventory](docs/history/CODE_HEALTH_BASELINE_20261013.md).
+A ROM-free before/after benchmark is available at
+`python work/tools/benchmark_hotpaths.py`; it is informational, not a CI gate.
 
 ## Documentation is part of the change
 
