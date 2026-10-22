@@ -1,5 +1,12 @@
 # Runtime Playtest Matrix
 
+> **Evidence-ledger status (22 October 2026):** This is an unfilled
+> recertification checklist, not a claim that the shipped v83 game was never
+> played or is known to fail. The README records a complete historical
+> playthrough and ending test. Rows stay Pending until evidence tied to a
+> particular binary/hash is entered here. Do not change verified v83 gameplay
+> just to make this document look complete.
+
 ## Candidate under test
 
 **A fresh candidate is required after the final pre-playtest hardening.** The
