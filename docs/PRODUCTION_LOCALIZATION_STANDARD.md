@@ -57,7 +57,7 @@ The Japanese display mark `／` is an emphatic beat, not an em dash. Translate i
 
 Formal labels and exhibit descriptions should normally use a colon or the existing source-supported display/control boundary. Dates, locations, names, ranks, and occupations should use normal sentence punctuation or field separators rather than decorative dashes.
 
-The current materialized 1,299-record production corpus intentionally contains no em dash or en dash. `work/tests/test_production_typography.py` enforces that state. If a future record genuinely requires an em dash, it must receive record-specific source justification and an explicit regression-test exception.
+The current 1,305-record canonical scenario corpus intentionally contains no em dash or en dash. `work/tests/test_production_typography.py` enforces that state. If a future record genuinely requires an em dash, it must receive record-specific source justification and an explicit regression-test exception.
 
 ## UI standard
 
