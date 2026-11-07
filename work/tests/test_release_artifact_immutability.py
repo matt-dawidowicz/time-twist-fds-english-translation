@@ -15,19 +15,21 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 RELEASE = ROOT / "release"
 
-# (byte count, Git blob object ID) from main at commit 3e72973f516c.
+# (byte count, Git blob object ID). The BPS files date from main at commit
+# 3e72973f516c; the EXE and ZIP were rebuilt for the No-Intro Kouhen fix
+# (#162) by publish run 42335162711.
 ARTIFACTS: dict[str, tuple[int, str]] = {
     "Time-Twist-English-v1.1-Kouhen.bps": (
         25976,
         "fa0d8f75fcecfbc501d9240c11eb6c30160e0ca4",
     ),
     "Time-Twist-English-v1.1-Patcher.exe": (
-        11215414,
-        "3a6c0bed455c6cc8cc1643c0ce9f44ba68263766",
+        11216751,
+        "18c2a35442459edd419c2142e8b2df97e8fff1f9",
     ),
     "Time-Twist-English-v1.1-Windows.zip": (
-        11012383,
-        "298e1e1f15dd0d5cabb1644e936f38ece3671905",
+        11015456,
+        "16141a438fed287dd0b71e9ccab8f943336c7f1e",
     ),
     "Time-Twist-English-v1.1-Zenpen.bps": (
         30472,
