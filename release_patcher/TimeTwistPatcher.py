@@ -7,10 +7,8 @@ verified in memory, and disk writes occur only after all checks succeed.
 
 Two input identities are supported for Kouhen: the release-locked SHA-256
 image and one specifically fingerprinted No-Intro metadata/padding variant.
-The latter produces a correspondingly different, but CRC-verified, Kouhen
-output. The canonical combined-image SHA-256 is therefore checked only when
-both inputs are canonical; an alternate combined image consists of two already
-verified halves.
+The latter produces a correspondingly different Kouhen output and combined
+image, each verified against its own pinned SHA-256.
 
 For the trust boundaries, BPS mechanics, testing, and release packaging, see
 docs/PUBLIC_PATCHER_INTERNALS.md. This module is usable as a CLI or Tk GUI.
@@ -53,7 +51,16 @@ KOUHEN_TARGET_SHA256 = (
 FOUR_SIDE_TARGET_SHA256 = (
     "4BBCCB13033B39570B3FE3EB64FBEBA4A9BD4C5C73248852F22665E4A3A9E17A"
 )
-NOINTRO_KOUHEN_TARGET_CRC32 = 0x308FCE52
+# Translated output of the No-Intro Kouhen source. These values come from a
+# user-reported patch of a real No-Intro dump (issue report, November 2026);
+# the reported combined CRC-32 is consistent with our verified Zenpen output.
+NOINTRO_KOUHEN_TARGET_CRC32 = 0xCC2A7B65
+NOINTRO_KOUHEN_TARGET_SHA256 = (
+    "795D8A3CB8E778E4AA84CAC9F57BE418C490EDF92E2333A8059E134317EBDD3B"
+)
+NOINTRO_FOUR_SIDE_TARGET_SHA256 = (
+    "302D432105068AC6338DBE84C75301489B955E63A90B89ECC3050F1DD12E9CC3"
+)
 ZENPEN_PATCH_SHA256 = (
     "85337a2a86b531d40e39005e6c965431cee4e985dc3098a409b3a0fb8e43de5e"
 )
@@ -401,11 +408,8 @@ def _prepare_outputs(
 
     Canonical inputs reproduce immutable Zenpen, Kouhen, and combined SHA-256
     identities. The known No-Intro Kouhen source preserves different retail
-    metadata/padding through source-copy BPS operations: its Kouhen target is
-    instead verified against the pinned variant CRC after matching the exact
-    full-file source fingerprint and the verified BPS patch. The combined file
-    is then the concatenation of the independently verified disk halves, not
-    the canonical combined byte sequence.
+    metadata/padding through source-copy BPS operations, so its Kouhen and
+    combined outputs are checked against their own pinned SHA-256 values.
     """
     if not two_disk and not four_side:
         raise PatcherError("Select at least one output layout.")
@@ -442,9 +446,9 @@ def _prepare_outputs(
     if len(kouhen) != SOURCE_BYTES:
         raise PatcherError("Translated Kouhen failed final size verification.")
     if kouhen_variant == "no-intro":
-        if binascii.crc32(kouhen) != NOINTRO_KOUHEN_TARGET_CRC32:
+        if _sha256(kouhen) != NOINTRO_KOUHEN_TARGET_SHA256:
             raise PatcherError(
-                "Translated Kouhen failed the known No-Intro variant CRC check."
+                "Translated No-Intro Kouhen failed final SHA-256 verification."
             )
     elif _sha256(kouhen) != KOUHEN_TARGET_SHA256:
         raise PatcherError("Translated Kouhen failed final SHA-256 verification.")
@@ -455,17 +459,17 @@ def _prepare_outputs(
         prepared[KOUHEN_OUTPUT] = kouhen
 
     if four_side:
-        # Both halves have already passed their variant-specific integrity
-        # checks. For No-Intro, the combined bytes differ only because Kouhen
-        # retains the verified retail metadata/padding variant. Comparing that
-        # image to the canonical four-side SHA-256 would wrongly reject it.
+        # The No-Intro pairing is a distinct byte sequence (Kouhen keeps its
+        # retail metadata/padding), so it has its own pinned SHA-256.
         combined = zenpen + kouhen
         if len(combined) != FOUR_SIDE_BYTES:
             raise PatcherError("Combined four-side output has an invalid size.")
-        if (
-            kouhen_variant == "release"
-            and _sha256(combined) != FOUR_SIDE_TARGET_SHA256
-        ):
+        expected_combined = (
+            NOINTRO_FOUR_SIDE_TARGET_SHA256
+            if kouhen_variant == "no-intro"
+            else FOUR_SIDE_TARGET_SHA256
+        )
+        if _sha256(combined) != expected_combined:
             raise PatcherError(
                 "Combined four-side output failed final SHA-256 verification."
             )

@@ -1,5 +1,7 @@
 ## Unreleased — public No-Intro compatibility regression fix
 
+- Fix "Patched output failed the BPS target CRC check" for the No-Intro Kouhen dump: the pinned output CRC (`308FCE52`) had never been checked against a real dump. Pin the user-reported translated Kouhen (CRC-32 `CC2A7B65`) and verify the No-Intro Kouhen and combined outputs by full SHA-256.
+- Document the expected No-Intro output checksums in the README and patch instructions.
 - Recognize the already-fingerprinted No-Intro Kouhen source at the initial ROM identity gate.
 - Permit the verified No-Intro four-side output without incorrectly imposing the canonical four-side SHA-256 on a distinct byte sequence.
 - Add fixture-free end-to-end canonical/No-Intro path regression tests and contributor-facing patcher internals documentation.

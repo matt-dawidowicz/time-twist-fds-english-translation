@@ -67,6 +67,10 @@ def test_patching_paths_without_retail_roms() -> None:
                      binascii.crc32(alternate_kouhen)),
         patch.object(patcher, "NOINTRO_KOUHEN_TARGET_CRC32",
                      binascii.crc32(variant_output)),
+        patch.object(patcher, "NOINTRO_KOUHEN_TARGET_SHA256",
+                     patcher._sha256(variant_output)),
+        patch.object(patcher, "NOINTRO_FOUR_SIDE_TARGET_SHA256",
+                     patcher._sha256(translated_zenpen + variant_output)),
         patch.object(patcher, "_known_source_variant", side_effect=fixture_variant),
         patch.object(patcher, "_patch_bytes", side_effect=fixture_patch),
     ]
@@ -99,6 +103,19 @@ def test_patching_paths_without_retail_roms() -> None:
         )
         assert len(results) == 3
         assert (root / "variant" / patcher.KOUHEN_OUTPUT).read_bytes() == variant_output
+
+        # A No-Intro output that passes BPS CRCs but misses its pinned SHA-256
+        # must still be rejected before anything is written.
+        with patch.object(patcher, "NOINTRO_KOUHEN_TARGET_SHA256", "0" * 64):
+            try:
+                patcher.build_outputs(
+                    second, first, root / "bad-sha", two_disk=True, four_side=True
+                )
+            except patcher.PatcherError:
+                pass
+            else:
+                raise AssertionError("No-Intro output SHA-256 mismatch accepted")
+        assert not (root / "bad-sha").exists()
         assert (root / "variant" / patcher.FOUR_SIDE_OUTPUT).read_bytes() == (
             translated_zenpen + variant_output
         )
@@ -202,7 +219,13 @@ def main() -> None:
     )
 
     assert patcher.NOINTRO_KOUHEN_SOURCE_CRC32 == 0xA7D51BFA
-    assert patcher.NOINTRO_KOUHEN_TARGET_CRC32 == 0x308FCE52
+    assert patcher.NOINTRO_KOUHEN_TARGET_CRC32 == 0xCC2A7B65
+    assert patcher.NOINTRO_KOUHEN_TARGET_SHA256 == (
+        "795D8A3CB8E778E4AA84CAC9F57BE418C490EDF92E2333A8059E134317EBDD3B"
+    )
+    assert patcher.NOINTRO_FOUR_SIDE_TARGET_SHA256 == (
+        "302D432105068AC6338DBE84C75301489B955E63A90B89ECC3050F1DD12E9CC3"
+    )
 
     with tempfile.TemporaryDirectory() as temp_dir:
         root = Path(temp_dir)
