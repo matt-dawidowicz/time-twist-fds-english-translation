@@ -40,6 +40,15 @@ Existing translated builds:
 See the [patch instructions](release_patcher/README.md) for exact inputs and the
 [change list](release_patcher/CHANGELOG.md) for what is included.
 
+**Using the No-Intro Kouhen dump (CRC-32 `A7D51BFA`)?** Your translated Kouhen
+and combined images will have different checksums from the standard ones. The
+expected values are in
+[the No-Intro Kouhen table](release_patcher/README.md#no-intro-kouhen):
+translated Kouhen SHA-256
+`795D8A3CB8E778E4AA84CAC9F57BE418C490EDF92E2333A8059E134317EBDD3B`, combined
+four-side SHA-256
+`302D432105068AC6338DBE84C75301489B955E63A90B89ECC3050F1DD12E9CC3`.
+
 The executable takes the two clean Japanese retail FDS images, identifies
 Zenpen/Kouhen automatically, and can create the two translated disks, the
 combined four-side v1.1 image, or both. It never contains or distributes the

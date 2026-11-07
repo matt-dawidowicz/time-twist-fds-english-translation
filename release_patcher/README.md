@@ -69,6 +69,23 @@ and patch identities for the four published patches. `SHA256SUMS.txt` covers the
 Each translated part is 131,000 bytes; the combined image is 262,000 bytes,
 exactly Zenpen followed by Kouhen.
 
+### No-Intro Kouhen
+
+If your Kouhen is the No-Intro dump (CRC-32 `A7D51BFA`), the translated Kouhen
+and combined images keep that dump's retail metadata/padding, so their hashes
+differ from the table above. The Zenpen output is unchanged.
+
+| Image | CRC-32 | MD5 | SHA-256 |
+| --- | --- | --- | --- |
+| v1.1 Kouhen output (No-Intro input) | `CC2A7B65` | `F35C2271222B86CF21D1DA2FB6D144F2` | `795D8A3CB8E778E4AA84CAC9F57BE418C490EDF92E2333A8059E134317EBDD3B` |
+| v1.1 combined output (No-Intro Kouhen) | `1F844765` | `B592D23CD5E5A264BBAC8C08A951D28D` | `302D432105068AC6338DBE84C75301489B955E63A90B89ECC3050F1DD12E9CC3` |
+
+These values were reported by a user who patched a real No-Intro dump; the
+maintainer has not patched one independently. The reported combined CRC-32
+is consistent with the verified Zenpen output above. A generic BPS patcher
+needs its "ignore checksum" option for this dump, because the `.bps` file
+records the release-locked Kouhen CRC; compare the result to this table.
+
 ## Command line
 
 ```powershell

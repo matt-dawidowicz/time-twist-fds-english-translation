@@ -35,9 +35,18 @@ whole file, rejects invalid sizes, and identifies its part.
 
 The No-Intro exception is exact and specific to Kouhen. It is not a generic
 "ignore checksum errors" switch. An unknown or edited image must remain
-rejected. No-Intro support should use a pinned whole-file SHA-256 as well
-once an independently verified copy of that variant is available; do not
-invent the missing fingerprint.
+rejected.
+
+The No-Intro *output* identities (translated Kouhen SHA-256
+`795D8A3CB8E778E4AA84CAC9F57BE418C490EDF92E2333A8059E134317EBDD3B`, CRC-32
+`CC2A7B65`; combined SHA-256
+`302D432105068AC6338DBE84C75301489B955E63A90B89ECC3050F1DD12E9CC3`) come
+from a user report of patching a real No-Intro dump. An earlier pinned target
+CRC, `308FCE52`, was never derived from a real dump and rejected every
+No-Intro Kouhen. The reported combined CRC-32 (`1F844765`) equals the CRC-32
+combination of our verified Zenpen output (`DADBC540`) and the reported
+Kouhen output, which supports the report but is not an independent patch of
+the dump. Replace these values only with results from a real dump.
 
 The supplied maintainer-retail inputs checked for this fix were the two
 **canonical**, release-locked SHA-256 images above. They do not constitute a
@@ -56,16 +65,15 @@ runtime test of the different No-Intro variant.
 5. Canonical Kouhen must match its pinned target SHA-256. Exact No-Intro
    Kouhen may instead satisfy the pinned No-Intro source fingerprint plus
    its *specific* alternate BPS source and target CRC allowances
-   (`A7D51BFA` and `308FCE52`). These allowances do **not** apply to other
-   inputs. Differences in source-copied retail metadata/padding explain why
-   the alternate target is not necessarily byte-for-byte identical to the
-   release-locked canonical target.
+   (`A7D51BFA` and `CC2A7B65`), and then match its own pinned target
+   SHA-256. These allowances do **not** apply to other inputs. Differences
+   in source-copied retail metadata/padding explain why the alternate target
+   is not byte-for-byte identical to the release-locked canonical target.
 6. If requested, the four-side image is Zenpen followed by Kouhen. The
    canonical pairing is verified against the canonical combined SHA-256.
-   The No-Intro pairing is validated by the exact alternate-source identity,
-   verified BPS CRC result, validated Zenpen hash, and the expected combined
-   length. **Do not** compare the alternate pairing to the canonical combined
-   hash: they are distinct byte sequences.
+   The No-Intro pairing is verified against its own pinned combined SHA-256.
+   **Do not** compare the alternate pairing to the canonical combined hash:
+   they are distinct byte sequences.
 7. `build_outputs` rejects accidental input/output path aliasing and existing
    files unless overwrite is explicitly requested. Only after all in-memory
    validation succeeds does it write outputs using temporary files and
@@ -109,9 +117,8 @@ For the canonical Zenpen and Kouhen images, select both files in the patcher
 
 For the *actual* No-Intro Kouhen variant, first verify all its published
 fingerprints; select it with the canonical Zenpen source and request **both**
-output layouts. Confirm the alternate translated Kouhen CRC-32 is
-`308FCE52` and that the combined output is the verified Zenpen bytes
-followed by the verified alternate Kouhen bytes. Check it in an emulator,
+output layouts. Confirm the alternate translated Kouhen and combined outputs
+match the No-Intro table in `release_patcher/README.md`. Check it in an emulator,
 including the Part 1-to-Part 2 handoff and persistent disk state. Record
 input/output hashes and emulator observations privately.
 
